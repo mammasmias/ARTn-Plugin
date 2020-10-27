@@ -56,7 +56,7 @@ This is a working repo for the current version of the ARTn plugin
     USE dynamics_module,        ONLY : verlet, terminate_verlet, proj_verlet, fire
     ```
 
-     **lines 277:286**: add the on `calc` keyword
+     **lines 277:286**: add the test on `calc` keyword for fire algorithm 
 
     ```
     ELSEIF ( calc == 'fi' ) THEN
@@ -68,7 +68,7 @@ This is a working repo for the current version of the ARTn plugin
             '(/,5X,"The maximum number of steps has been reached.")' )
           WRITE( UNIT = stdout, &
              FMT = '(/,5X,"End of FIRE minimization")' )
-    ENDIF
+       ENDIF
     ```
 
     
