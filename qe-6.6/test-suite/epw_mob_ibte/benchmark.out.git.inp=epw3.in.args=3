@@ -1,0 +1,264 @@
+                                                                                      
+                                       ``:oss/                                        
+                           `.+s+.     .+ys--yh+     `./ss+.                           
+                          -sh//yy+`   +yy   +yy    -+h+-oyy                           
+                          -yh- .oyy/.-sh.   .syo-.:sy-  /yh                           
+                 `.-.`    `yh+   -oyyyo.     `/syys:    oys      `.`                  
+               `/+ssys+-` `sh+      `                   oys`   .:osyo`                
+               -yh- ./syyooyo`                          .sys+/oyo--yh/                
+               `yy+    .-:-.                             `-/+/:`  -sh-                
+                /yh.                                              oys                 
+          ``..---hho---------`   .---------..`      `.-----.`    -hd+---.             
+       `./osmNMMMMMMMMMMMMMMMs. +NNMMMMMMMMNNmh+.   yNMMMMMNm-  oNMMMMMNmo++:`        
+       +sy--/sdMMMhyyyyyyyNMMh- .oyNMMmyyyyyhNMMm+` -yMMMdyyo:` .oyyNMMNhs+syy`       
+       -yy/   /MMM+.`-+/``mMMy-   `mMMh:`````.dMMN:` `MMMy-`-dhhy```mMMy:``+hs        
+        -yy+` /MMMo:-mMM+`-oo/.    mMMh:     `dMMN/`  dMMm:`dMMMMy..MMMo-.+yo`        
+         .sys`/MMMMNNMMMs-         mMMmyooooymMMNo:   oMMM/sMMMMMM++MMN//oh:          
+          `sh+/MMMhyyMMMs- `-`     mMMMMMMMMMNmy+-`   -MMMhMMMsmMMmdMMd/yy+           
+    `-/+++oyy-/MMM+.`/hh/.`mNm:`   mMMd+/////:-.`      NMMMMMd/:NMMMMMy:/yyo/:.`      
+   +os+//:-..-oMMMo:--:::-/MMMo. .-mMMd+---`           hMMMMN+. oMMMMMo. `-+osyso:`   
+   syo     `mNMMMMMNNNNNNNNMMMo.oNNMMMMMNNNN:`         +MMMMs:`  dMMMN/`     ``:syo   
+   /yh`     :syyyyyyyyyyyyyyyy+.`+syyyyyyyyo:`         .oyys:`   .oyys:`        +yh   
+   -yh-        ````````````````    `````````              ``        ``          oys   
+   -+h/------------------------::::::::://////++++++++++++++++++++++///////::::/yd:   
+   shdddddddddddddddddddddddddddddhhhhhhhhyyyyyssssssssssssssssyyyyyyyhhhhhhhddddh`   
+                                                                                      
+  S. Ponce, E. R. Margine, C. Verdi, and F. Giustino,                                 
+                                                Comput. Phys. Commun. 209, 116 (2016) 
+                                                                                      
+
+     Program EPW v.5.2.0 starts on  9Jul2020 at 18:53:39 
+
+     This program is part of the open-source Quantum ESPRESSO suite
+     for quantum simulation of materials; please cite
+         "P. Giannozzi et al., J. Phys.:Condens. Matter 21 395502 (2009);
+         "P. Giannozzi et al., J. Phys.:Condens. Matter 29 465901 (2017);
+          URL http://www.quantum-espresso.org", 
+     in publications or presentations arising from this work. More details at
+     http://www.quantum-espresso.org/quote
+
+     Parallel version (MPI), running on     4 processors
+
+     MPI processes distributed on     1 nodes
+     K-points division:     npool     =       4
+     Fft bands division:     nmany     =       1
+                      
+     ------------------------------------------------------------------------ 
+                   RESTART - RESTART - RESTART - RESTART                         
+     Restart is done without reading PWSCF save file.                  
+     Be aware that some consistency checks are therefore not done.                  
+     ------------------------------------------------------------------------ 
+                      
+
+     --                                                                         
+
+     bravais-lattice index     =            0
+     lattice parameter (a_0)   =       0.0000  a.u.
+     unit-cell volume          =       0.0000 (a.u.)^3
+     number of atoms/cell      =            0
+     number of atomic types    =            0
+     kinetic-energy cut-off    =       0.0000  Ry
+     charge density cut-off    =       0.0000  Ry
+     Exchange-correlation= not set
+                           (  -1  -1  -1  -1  -1  -1  -1)
+
+
+     celldm(1)=    0.00000  celldm(2)=    0.00000  celldm(3)=    0.00000
+     celldm(4)=    0.00000  celldm(5)=    0.00000  celldm(6)=    0.00000
+
+     crystal axes: (cart. coord. in units of a_0)
+               a(1) = (  0.0000  0.0000  0.0000 )  
+               a(2) = (  0.0000  0.0000  0.0000 )  
+               a(3) = (  0.0000  0.0000  0.0000 )  
+
+     reciprocal axes: (cart. coord. in units 2 pi/a_0)
+               b(1) = (  0.0000  0.0000  0.0000 )  
+               b(2) = (  0.0000  0.0000  0.0000 )  
+               b(3) = (  0.0000  0.0000  0.0000 )  
+
+
+     Atoms inside the unit cell: 
+
+   Cartesian axes
+
+     site n.  atom      mass           positions (a_0 units)
+
+ 
+     No symmetry!
+
+     G cutoff =    0.0000  (      0 G-vectors)     FFT grid: (  0,  0,  0)
+     number of k points=    0
+                       cart. coord. in units 2pi/a_0
+     EPW          :      0.00s CPU      0.00s WALL
+
+     EPW          :      0.00s CPU      0.00s WALL
+
+
+     -------------------------------------------------------------------
+     Using si.ukk from disk
+     -------------------------------------------------------------------
+
+
+     Do not need to read .epb files; read .fmt files
+
+
+     Band disentanglement is used: nbndsub =    8
+     Use zone-centred Wigner-Seitz cells 
+     Number of WS vectors for electrons      279
+     Number of WS vectors for phonons       19
+     Number of WS vectors for electron-phonon       19
+     Maximum number of cores for efficient parallelization      114
+     Results may improve by using use_ws == .TRUE. 
+
+     Reading Hamiltonian, Dynamical matrix and EP vertex in Wann rep from file
+
+
+     Reading interatomic force constants
+
+     Read Z* and epsilon
+     IFC last   -0.0026124
+     Norm of the difference between old and new effective charges:    0.0000000
+     Norm of the difference between old and new force-constants:    0.0000073
+     Imposed crystal ASR
+
+     Finished reading ifcs
+
+
+     Finished reading Wann rep data from file
+
+     ===================================================================
+     Memory usage:  VmHWM =        54Mb
+                   VmPeak =       387Mb
+     ===================================================================
+     
+     Using uniform q-mesh:    7   7   7
+     Size of q point mesh for interpolation:        343
+     Using uniform k-mesh:    7   7   7
+     Size of k point mesh for interpolation:        686
+     Max number of k points per pool:              172
+
+     Fermi energy coarse grid =   6.255484 eV
+
+     Fermi energy is calculated from the fine k-mesh: Ef =   6.339672 eV
+
+     ===================================================================
+     Applying a scissor shift of   0.70000 eV to the CB      5
+
+              ibndmin =     2  ebndmin =     0.189
+              ibndmax =     7  ebndmax =     0.757
+
+
+     Number of ep-matrix elements per pool :        18576 ~=  145.12 Kb (@ 8 bytes/ DP)
+     Number of elements per core       1803
+      
+     =============================================================================================
+     BTE in the self-energy relaxation time approximation (SERTA)
+     =============================================================================================
+
+     =============================================================================================
+       Temp     Fermi   Hole density  Population SR                  Hole mobility 
+        [K]      [eV]     [cm^-3]      [h per cell]                    [cm^2/Vs]
+     =============================================================================================
+
+      400.000   6.8619   0.10000E+14  -0.17972E-12    0.606610E-02    0.136054E-02    0.135616E-02
+                                                      0.136054E-02    0.619530E-02    0.122695E-02
+                                                      0.135616E-02    0.122695E-02    0.619969E-02
+      500.000   7.0136   0.10000E+14  -0.12170E-12    0.346219E-01    0.761166E-02    0.758580E-02
+                                                      0.761166E-02    0.353840E-01    0.682363E-02
+                                                      0.758580E-02    0.682363E-02    0.354099E-01
+      
+     =============================================================================================
+     Start solving iterative Boltzmann Transport Equation
+     =============================================================================================
+
+     Iteration number:         1
+
+     =============================================================================================
+       Temp     Fermi   Hole density  Population SR                  Hole mobility 
+        [K]      [eV]     [cm^-3]      [h per cell]                    [cm^2/Vs]
+     =============================================================================================
+
+      400.000   6.8619   0.10000E+14  -0.35831E-12    0.653571E-02    0.145890E-02    0.145451E-02
+                                                      0.145890E-02    0.666492E-02    0.132530E-02
+                                                      0.145451E-02    0.132530E-02    0.666931E-02
+      500.000   7.0136   0.10000E+14  -0.23648E-12    0.374126E-01    0.815582E-02    0.812996E-02
+                                                      0.815582E-02    0.381747E-01    0.736780E-02
+                                                      0.812996E-02    0.736780E-02    0.382006E-01
+
+                                                      0.382006E-01    Max error
+     Iteration number:         2
+
+     =============================================================================================
+       Temp     Fermi   Hole density  Population SR                  Hole mobility 
+        [K]      [eV]     [cm^-3]      [h per cell]                    [cm^2/Vs]
+     =============================================================================================
+
+      400.000   6.8619   0.10000E+14  -0.53674E-12    0.667483E-02    0.151015E-02    0.150577E-02
+                                                      0.151015E-02    0.680403E-02    0.137656E-02
+                                                      0.150577E-02    0.137656E-02    0.680843E-02
+      500.000   7.0136   0.10000E+14  -0.35049E-12    0.382544E-01    0.847176E-02    0.844590E-02
+                                                      0.847176E-02    0.390165E-01    0.768373E-02
+                                                      0.844590E-02    0.768373E-02    0.390424E-01
+
+                                                      0.841828E-03    Max error
+     Iteration number:         3
+
+     =============================================================================================
+       Temp     Fermi   Hole density  Population SR                  Hole mobility 
+        [K]      [eV]     [cm^-3]      [h per cell]                    [cm^2/Vs]
+     =============================================================================================
+
+      400.000   6.8619   0.10000E+14  -0.71491E-12    0.670774E-02    0.152761E-02    0.152322E-02
+                                                      0.152761E-02    0.683694E-02    0.139401E-02
+                                                      0.152322E-02    0.139401E-02    0.684133E-02
+      500.000   7.0136   0.10000E+14  -0.46295E-12    0.384492E-01    0.856961E-02    0.854375E-02
+                                                      0.856961E-02    0.392113E-01    0.778158E-02
+                                                      0.854375E-02    0.778158E-02    0.392372E-01
+
+                                                      0.194773E-03    Max error
+     Iteration number:         4
+
+     =============================================================================================
+       Temp     Fermi   Hole density  Population SR                  Hole mobility 
+        [K]      [eV]     [cm^-3]      [h per cell]                    [cm^2/Vs]
+     =============================================================================================
+
+      400.000   6.8619   0.10000E+14  -0.89310E-12    0.671628E-02    0.153220E-02    0.152781E-02
+                                                      0.153220E-02    0.684549E-02    0.139860E-02
+                                                      0.152781E-02    0.139860E-02    0.684988E-02
+      500.000   7.0136   0.10000E+14  -0.57564E-12    0.385036E-01    0.859958E-02    0.857372E-02
+                                                      0.859958E-02    0.392657E-01    0.781156E-02
+                                                      0.857372E-02    0.781156E-02    0.392916E-01
+
+                                                      0.544160E-04    Max error
+     Iteration number:         5
+     =============================================================================================
+     The iteration reached the maximum but did not converge.
+     =============================================================================================
+
+
+     Unfolding on the coarse grid
+     elphon_wrap  :      0.00s CPU      0.00s WALL (       1 calls)
+
+     INITIALIZATION: 
+
+
+
+
+     Electron-Phonon interpolation
+     ephwann      :      0.17s CPU      0.22s WALL (       1 calls)
+
+     HamW2B       :      0.00s CPU      0.00s WALL (     172 calls)
+
+
+     Total program execution
+     EPW          :      0.17s CPU      0.23s WALL
+
+                                                                                          
+ Please consider citing:                                                                  
+ S. Ponce, E. R. Margine, C. Verdi and F. Giustino, Comput. Phys. Commun. 209, 116 (2016) 
+                                                                                          
+ In addition, since you have used the following functionalities, please cite:             
+   scattering :: S. Ponce, E. R. Margine and F. Giustino, Phys. Rev. B 97, 121201 (2018)     
+   iterative_bte :: S. Ponce, E. R. Margine and F. Giustino, Phys. Rev. B 97, 121201 (2018)  
+   iterative_bte :: F. Macheda and N. Bonini, Phys. Rev. B 98, 201201 (2018)                 

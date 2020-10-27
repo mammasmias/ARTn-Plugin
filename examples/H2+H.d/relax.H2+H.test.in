@@ -1,0 +1,48 @@
+ &CONTROL
+   calculation     =  'relax',
+   forc_conv_thr   =  0.5d-3,
+   nstep           =  455,
+   outdir          =  '/temp/matic/pw/H2+H',
+   prefix          =  "H2+H",
+   pseudo_dir      =  '/home/matic/pw/pseudo',
+   tprnfor         =  .true.,
+ /
+
+ &SYSTEM
+   celldm(1)       =  12.0,
+   celldm(2)       =  0.5,
+   celldm(3)       =  0.5,
+   degauss         =  0.03,
+   ecutrho         =  200.0,
+   ecutwfc         =  30.0,
+   ibrav           =  8,
+   nat             =  3,
+   nosym           =  .true.,
+   nspin           =  2,
+   ntyp            =  1,
+   occupations     =  "smearing",
+   starting_magnetization =  0.5,
+ /
+
+ &ELECTRONS
+   conv_thr        =  1.e-10,
+   mixing_beta     =  0.3,
+ /
+
+ &IONS
+   ion_dynamics    =  'fire',
+ /
+
+ATOMIC_SPECIES 
+  H    1.00794   H.pbe-rrkjus.UPF 
+
+
+ATOMIC_POSITIONS bohr
+  H       -5.274278671000   0.000000000000   0.000000000000   1  0  0
+  H        0.000000000000   0.000000000000   0.000000000000   1  0  0
+  H        1.490737029000   0.000000000000   0.000000000000   1  0  0
+
+K_POINTS gamma
+
+
+

@@ -1,0 +1,297 @@
+<tex2html_file>#./version.tex#
+
+<tex2html_endfile>#./version.tex#
+\begin<<520>>tex2html_deferred<<520>>\par\end<<521>>tex2html_deferred<<521>>
+\sloppy
+\usepackage<<6>>html<<6>>
+\begin<<522>>tex2html_deferred<<522>>\par\end<<523>>tex2html_deferred<<523>>
+\usepackage<<7>>graphicx<<7>>
+\usepackage<<8>>upquote<<8>>
+\usepackage<<9>>color<<9>>
+\usepackage[usenames,dvipsnames,svgnames,table]<<10>>xcolor<<10>>
+\begin<<524>>tex2html_deferred<<524>>\par\end<<525>>tex2html_deferred<<525>>
+\textwidth = 17cm
+\textheight = 24cm
+\topmargin =-1 cm
+\oddsidemargin = 0 cm
+\begin<<526>>tex2html_deferred<<526>>\par\end<<527>>tex2html_deferred<<527>>
+\begin<<38>>document<<38>> 
+\begin<<528>>tex2html_deferred<<528>>\author<<39>><<39>>\end<<529>>tex2html_deferred<<529>>
+\date<<40>><<40>>
+\begin<<530>>tex2html_deferred<<530>>\par\end<<531>>tex2html_deferred<<531>>
+\title<<232>>
+  \includegraphics[width=5cm]<<42>>../../../Doc/quantum_espresso.pdf<<42>> \\ 
+  <tex2html_comment_mark>5
+\begin<<532>>tex2html_deferred<<532>>\Huge\end<<533>>tex2html_deferred<<533>>\texttt<<277>>QE-emacs-modes<<277>>\ User's Guide (v.6.6) 
+<<232>>
+\begin<<534>>tex2html_deferred<<534>>\par\end<<535>>tex2html_deferred<<535>>
+\maketitle
+\begin<<536>>tex2html_deferred<<536>>\par\end<<537>>tex2html_deferred<<537>>
+\begin<<538>>tex2html_deferred<<538>>\tableofcontents\end<<539>>tex2html_deferred<<539>>
+\begin<<540>>tex2html_deferred<<540>>\par\end<<541>>tex2html_deferred<<541>>
+\section<<43>>Introduction<<43>>
+\begin<<542>>tex2html_deferred<<542>>\par\end<<543>>tex2html_deferred<<543>>
+This guide covers the usage of \texttt<<278>>QE-emacs-modes<<278>>\ package (aka \texttt<<279>>QE-modes<<279>>): an
+open-source collection of Emacs major-modes for making the editing of
+<<280>>\sc Quantum ESPRESSO<<280>>\ (QE) input files somewhat easier and more comfortable with Emacs
+editor. The package provides syntax highlighting (see
+Figure~\ref<<44>>fig:example<<44>>), basic auto-indentation, and several utility
+commands.
+\begin<<544>>tex2html_deferred<<544>>\par\end<<545>>tex2html_deferred<<545>>
+\section<<45>>Terms of use<<45>>
+\begin<<546>>tex2html_deferred<<546>>\par\end<<547>>tex2html_deferred<<547>>
+\texttt<<281>>QE-modes<<281>>\ is free software, released under the
+GNU General Public License. See:
+\texttt<<46>>http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt<<46>>, or the
+file \texttt<<47>>License<<47>> in the <<282>>\sc Quantum ESPRESSO<<282>>\ distribution.
+\begin<<548>>tex2html_deferred<<548>>\par\end<<549>>tex2html_deferred<<549>>
+The \texttt<<283>>QE-modes<<283>>\ package was written by Anton Kokalj. The implementation
+of \texttt<<284>>QE-modes<<284>>\ was made possible by several useful and helpful resources
+that are gratefully acknowledged, in particular: <<48>>\begin<<550>>tex2html_deferred<<550>>\it\end<<551>>tex2html_deferred<<551>>Mode Tutorial<<48>>
+of Scott Andrew Borton
+(\texttt<<49>>https://www.emacswiki.org/emacs/ModeTutorial<<49>> for
+indentation code), <<50>>\begin<<552>>tex2html_deferred<<552>>\it\end<<553>>tex2html_deferred<<553>>Derived Mode<<50>> and <<51>>\begin<<554>>tex2html_deferred<<554>>\it\end<<555>>tex2html_deferred<<555>>Sample Mode<<51>> pages
+(\texttt<<52>>https://www.emacswiki.org/emacs/DerivedMode<<52>>,
+\texttt<<53>>https://www.emacswiki.org/emacs/SampleMode<<53>>) as well as the
+very useful resources of Xah Lee
+(\texttt<<54>>http://ergoemacs.org/emacs/elisp\_syntax\_coloring.html<<54>>). Last
+but not the least Sebastijan Peljhan is acknowledged for his work on
+\texttt<<55>>xsf-mode<<55>> that inspired the idea of writing the \texttt<<285>>QE-modes<<285>>.
+\begin<<556>>tex2html_deferred<<556>>\par\end<<557>>tex2html_deferred<<557>>
+\begin<<56>>figure<<56>>[htb]
+  \begin<<558>>tex2html_deferred<<558>>\centering\end<<559>>tex2html_deferred<<559>>
+  \includegraphics[width=0.8\textwidth]<<57>>highlight.png<<57>>
+  \begin<<560>>tex2html_deferred<<560>>\caption<<233>>A \texttt<<286>>pw.x<<286>>\ input file opened with \textcolor<<287>>BlueViolet<<287>><<288>>\texttt<<289>>pw-mode<<289>><<288>>\ in Emacs. Note the
+    highlighted elements: namelists and their variables (blue and
+    brown), cards and their flags (purple and green), comments (red),
+    string and logical variable values (burgundy and cyan,
+    respectively). Note that mistyped variable (i.e.\ \texttt<<58>>ibrv<<58>>
+    instead of \texttt<<59>>ibrav<<59>>) is not highlighted.<<233>>\end<<561>>tex2html_deferred<<561>>
+  \label<<60>>fig:example<<60>>
+\end<<61>>figure<<61>>
+\begin<<562>>tex2html_deferred<<562>>\par\end<<563>>tex2html_deferred<<563>>
+\section<<62>>Installation<<62>>
+\begin<<564>>tex2html_deferred<<564>>\par\end<<565>>tex2html_deferred<<565>>
+The installation of \texttt<<290>>QE-modes<<290>>\ package consists of two parts: (i)
+installing the package itself and (ii) informing Emacs about it by
+editing the <tex2html_verb_mark>1<tex2html_verb_mark> (typically <tex2html_verb_mark>2<tex2html_verb_mark>).
+\begin<<566>>tex2html_deferred<<566>>\par\end<<567>>tex2html_deferred<<567>>
+\subsection<<63>>Installing the \texttt<<291>>QE-modes<<291>>\ package<<63>>
+Once the \texttt<<64>>QE-modes-6.6.tar.gz<<64>> archive is unpacked and you
+are located in its root directory, the installation is trivial. Simply
+copy the whole \texttt<<292>>qe-modes<<292>>\ subdirectory to appropriate place. To
+facilitate this copying on Unix-like operating systems, one can use:
+\begin<<65>>tex2html_preform<<65>><tex2html_verbatim_mark>verbatim14#\end<<66>>tex2html_preform<<66>>
+which will install the package in the \texttt<<293>>qe-modes<<293>>\ subdirectory of the
+\texttt<<67>>\$HOME/.emacs.d/<<67>> directory. If you prefer to install it into
+other directory, then use:
+\begin<<68>>flushleft<<68>>
+<tex2html_verb_mark>3<tex2html_verb_mark>\begin<<568>>tex2html_deferred<<568>>\textcolor<<294>>Blue<<294>><<295>>\texttt<<296>>\textit<<297>>where-to-install<<297>><<296>><<295>>\end<<569>>tex2html_deferred<<569>><tex2html_verb_mark>4<tex2html_verb_mark>
+\end<<70>>flushleft<<70>>
+which will install the package in the \texttt<<298>>qe-modes<<298>>\ subdirectory of
+\begin<<570>>tex2html_deferred<<570>>\textcolor<<299>>Blue<<299>><<300>>\texttt<<301>>\textit<<302>>where-to-install<<302>><<301>><<300>>\end<<571>>tex2html_deferred<<571>> directory.
+\begin<<572>>tex2html_deferred<<572>>\par\end<<573>>tex2html_deferred<<573>>
+\subsection<<234>>Editing the \texttt<<72>>user-init-file<<72>> file<<234>>
+\begin<<574>>tex2html_deferred<<574>>\par\end<<575>>tex2html_deferred<<575>>
+A default \texttt<<73>>user-init-file<<73>> for \texttt<<303>>QE-modes<<303>>\ is provided by the
+\texttt<<74>>qe-modes.emacs<<74>> file in the \texttt<<304>>QE-modes<<304>>\ source package root
+directory. If \texttt<<305>>QE-modes<<305>>\ were installed in default
+<tex2html_verb_mark>5<tex2html_verb_mark> location, then the
+\texttt<<75>>qe-modes.emacs<<75>> can be used verbatim; just append its content
+to your <tex2html_verb_mark>6<tex2html_verb_mark> file.
+\begin<<576>>tex2html_deferred<<576>>\par\end<<577>>tex2html_deferred<<577>>
+Here is a the explanation of the simplified \texttt<<76>>qe-modes.emacs<<76>>
+file.  Emacs is informed about the installed \texttt<<306>>QE-modes<<306>>\ by the
+following lines in the <tex2html_verb_mark>7<tex2html_verb_mark> (e.g.\
+<tex2html_verb_mark>8<tex2html_verb_mark>):
+\begin<<77>>flushleft<<77>>
+<<235>>\begin<<578>>tex2html_deferred<<578>>\color<<78>>red<<78>>\end<<579>>tex2html_deferred<<579>>
+<tex2html_verb_mark>9<tex2html_verb_mark><<235>>\\ 
+<tex2html_verb_mark>10<tex2html_verb_mark>\begin<<580>>tex2html_deferred<<580>>\textcolor<<307>>Blue<<307>><<308>>\texttt<<309>>\textit<<310>>/full/path/name/of<<310>><<309>><<308>>\end<<581>>tex2html_deferred<<581>><tex2html_verb_mark>11<tex2html_verb_mark>\\ [1em]
+<<236>>\begin<<582>>tex2html_deferred<<582>>\color<<80>>red<<80>>\end<<583>>tex2html_deferred<<583>>
+<tex2html_verb_mark>12<tex2html_verb_mark><<236>>\\ 
+<tex2html_verb_mark>13<tex2html_verb_mark>
+\end<<81>>flushleft<<81>>
+where \begin<<584>>tex2html_deferred<<584>>\textcolor<<311>>Blue<<311>><<312>>\texttt<<313>>\textit<<314>>/full/path/name/of<<314>><<313>><<312>>\end<<585>>tex2html_deferred<<585>> is the directory where the \texttt<<315>>qe-modes<<315>>\
+are installed (either the \texttt<<83>>\$HOME/.emacs.d/<<83>> or the above
+\begin<<586>>tex2html_deferred<<586>>\textcolor<<316>>Blue<<316>><<317>>\texttt<<318>>\textit<<319>>where-to-install<<319>><<318>><<317>>\end<<587>>tex2html_deferred<<587>>).
+\begin<<588>>tex2html_deferred<<588>>\par\end<<589>>tex2html_deferred<<589>>
+Furthermore, we can specify some filename patterns so that Emacs will
+automatically recognize from the filename if it is some variant of the
+<<320>>\sc Quantum ESPRESSO<<320>>\ input file.
+Say that we use the <tex2html_verb_mark>14<tex2html_verb_mark> extension for the <<321>>\sc Quantum ESPRESSO<<321>>\ input files in
+general and more specifically, the \texttt<<85>>pw.<<85>>, \texttt<<86>>scf.<<86>>,
+\texttt<<87>>relax.<<87>>, and \texttt<<88>>vc-relax.<<88>> prefixes for the \texttt<<322>>pw.x<<322>>\ input files
+and \texttt<<89>>neb.<<89>>, \texttt<<90>>ph.<<90>>,  and \texttt<<91>>pp.<<91>> prefixes for the
+\texttt<<323>>neb.x<<323>>, \texttt<<324>>ph.x<<324>>, and \texttt<<325>>pp.x<<325>>\ input files. These filename recognitions can be
+achieved by:
+\begin<<92>>flushleft<<92>>
+<<237>>\begin<<590>>tex2html_deferred<<590>>\color<<93>>red<<93>>\end<<591>>tex2html_deferred<<591>>
+<tex2html_verb_mark>15<tex2html_verb_mark><<237>>\\ 
+<tex2html_verb_mark>16<tex2html_verb_mark>\\ [1em]
+<<238>>\begin<<592>>tex2html_deferred<<592>>\color<<94>>red<<94>>\end<<593>>tex2html_deferred<<593>>
+<tex2html_verb_mark>17<tex2html_verb_mark>\\ 
+<tex2html_verb_mark>18<tex2html_verb_mark><<238>>\\ 
+<tex2html_verb_mark>19<tex2html_verb_mark>\\ 
+<tex2html_verb_mark>20<tex2html_verb_mark>\\ 
+<tex2html_verb_mark>21<tex2html_verb_mark>\\ 
+<tex2html_verb_mark>22<tex2html_verb_mark>\\ [1em]
+<<239>>\begin<<594>>tex2html_deferred<<594>>\color<<95>>red<<95>>\end<<595>>tex2html_deferred<<595>>
+<tex2html_verb_mark>23<tex2html_verb_mark><<239>>\\ 
+<tex2html_verb_mark>24<tex2html_verb_mark>\\ [1em]
+<<240>>\begin<<596>>tex2html_deferred<<596>>\color<<96>>red<<96>>\end<<597>>tex2html_deferred<<597>>
+<tex2html_verb_mark>25<tex2html_verb_mark><<240>>\\ 
+<tex2html_verb_mark>26<tex2html_verb_mark>\\ [1em]
+<<241>>\begin<<598>>tex2html_deferred<<598>>\color<<97>>red<<97>>\end<<599>>tex2html_deferred<<599>>
+<tex2html_verb_mark>27<tex2html_verb_mark><<241>>\\ 
+<tex2html_verb_mark>28<tex2html_verb_mark>\\ [1em]
+\end<<98>>flushleft<<98>>
+Beware that the more general \texttt<<99>>*.in<<99>> pattern for the generic
+\begin<<600>>tex2html_deferred<<600>>\textcolor<<326>>BlueViolet<<326>><<327>>\texttt<<328>>qe-mode<<328>><<327>>\end<<601>>tex2html_deferred<<601>>\begin<<602>>tex2html_deferred<<602>>\footnote<<100>>Please note the difference between \texttt<<329>>qe-modes<<329>>\ and
+  \textcolor<<330>>BlueViolet<<330>><<331>>\texttt<<332>>qe-mode<<332>><<331>>: the first implies the whole package, whereas the second
+  means the generic QE mode, which is only one among the available
+  modes in the \texttt<<333>>qe-modes<<333>>\ package.<<100>>\end<<603>>tex2html_deferred<<603>> should be specified first
+or else any \texttt<<101>>*.in<<101>> file will be recognized as generic QE input
+file.
+\begin<<604>>tex2html_deferred<<604>>\par\end<<605>>tex2html_deferred<<605>>
+For those who are fans of regular-expressions, the above four lines
+for \begin<<606>>tex2html_deferred<<606>>\textcolor<<334>>BlueViolet<<334>><<335>>\texttt<<336>>pw-mode<<336>><<335>>\end<<607>>tex2html_deferred<<607>>\ can be expressed by the following one-liner:
+\begin<<608>>tex2html_deferred<<608>>\par\end<<609>>tex2html_deferred<<609>>
+<<242>>\begin<<610>>tex2html_deferred<<610>>\footnotesize\end<<611>>tex2html_deferred<<611>>
+  \begin<<102>>tex2html_preform<<102>><tex2html_verbatim_mark>verbatim15#\end<<103>>tex2html_preform<<103>>
+<<242>>
+\begin<<612>>tex2html_deferred<<612>>\par\end<<613>>tex2html_deferred<<613>>
+Once the package is installed according to the above instructions, we
+are ready to use it. Let us, for the sake of example, open an existing
+\texttt<<104>>pw.x<<104>> input file whose name does not match the above specified
+filename pattern for the \begin<<614>>tex2html_deferred<<614>>\textcolor<<337>>BlueViolet<<337>><<338>>\texttt<<339>>pw-mode<<339>><<338>>\end<<615>>tex2html_deferred<<615>>. In such cases we can load the mode
+with \begin<<616>>tex2html_deferred<<616>>\textcolor<<340>>BlueViolet<<340>><<341>>\texttt<<342>>M-x pw-mode<<342>><<341>>\end<<617>>tex2html_deferred<<617>> command and we will get the content of the file
+highlighted as in Figure~\ref<<106>>fig:example<<106>>.
+\begin<<618>>tex2html_deferred<<618>>\par\end<<619>>tex2html_deferred<<619>>
+\section<<107>>Usage<<107>>
+\begin<<620>>tex2html_deferred<<620>>\par\end<<621>>tex2html_deferred<<621>>
+\subsection<<108>>Available modes defined by \texttt<<343>>qe-modes<<343>><<108>>
+\begin<<622>>tex2html_deferred<<622>>\par\end<<623>>tex2html_deferred<<623>>
+The \texttt<<344>>QE-modes<<344>>\ package contains a generic \begin<<624>>tex2html_deferred<<624>>\textcolor<<345>>BlueViolet<<345>><<346>>\texttt<<347>>qe-mode<<347>><<346>>\end<<625>>tex2html_deferred<<625>>\ and the following
+specific modes: \begin<<626>>tex2html_deferred<<626>>\textcolor<<348>>BlueViolet<<348>><<349>>\texttt<<350>>pw-mode<<350>><<349>>\end<<627>>tex2html_deferred<<627>>, \begin<<628>>tex2html_deferred<<628>>\textcolor<<351>>BlueViolet<<351>><<352>>\texttt<<353>>neb-mode<<353>><<352>>\end<<629>>tex2html_deferred<<629>>, \begin<<630>>tex2html_deferred<<630>>\textcolor<<354>>BlueViolet<<354>><<355>>\texttt<<356>>cp-mode<<356>><<355>>\end<<631>>tex2html_deferred<<631>>, \begin<<632>>tex2html_deferred<<632>>\textcolor<<357>>BlueViolet<<357>><<358>>\texttt<<359>>ph-mode<<359>><<358>>\end<<633>>tex2html_deferred<<633>>, \begin<<634>>tex2html_deferred<<634>>\textcolor<<360>>BlueViolet<<360>><<361>>\texttt<<362>>ld1-mode<<362>><<361>>\end<<635>>tex2html_deferred<<635>>, and \begin<<636>>tex2html_deferred<<636>>\textcolor<<363>>BlueViolet<<363>><<364>>\texttt<<365>>pp-mode<<365>><<364>>\end<<637>>tex2html_deferred<<637>>.
+The difference between them is only in the extent of the syntax
+highlighting and auto-indentation. Namely, these modes recognize and
+highlight namelists (and their variables) and cards (and their
+options/flags) that they know about.
+The generic \begin<<638>>tex2html_deferred<<638>>\textcolor<<366>>BlueViolet<<366>><<367>>\texttt<<368>>qe-mode<<368>><<367>>\end<<639>>tex2html_deferred<<639>>\ is aware of all of them for all those <<369>>\sc Quantum ESPRESSO<<369>>\
+programs that have explicit documentation in the form of
+<tex2html_verb_mark>29<tex2html_verb_mark>\begin<<640>>tex2html_deferred<<640>>\textcolor<<370>>Blue<<370>><<371>>\texttt<<372>>\textit<<373>>PROG<<373>><<372>><<371>>\end<<641>>tex2html_deferred<<641>><tex2html_verb_mark>30<tex2html_verb_mark> files (where \begin<<642>>tex2html_deferred<<642>>\textcolor<<374>>Blue<<374>><<375>>\texttt<<376>>\textit<<377>>PROG<<377>><<376>><<375>>\end<<643>>tex2html_deferred<<643>>
+typically stands for the uppercase name of the program). In contrast,
+a given specific mode is aware only of namelists, variables, cards, and
+options of the corresponding program.
+\begin<<644>>tex2html_deferred<<644>>\par\end<<645>>tex2html_deferred<<645>>
+\begin<<111>>figure<<111>>[htb]
+  \begin<<646>>tex2html_deferred<<646>>\centering\end<<647>>tex2html_deferred<<647>>
+  \includegraphics[width=0.8\textwidth]<<112>>insert-template.png<<112>>
+  \begin<<648>>tex2html_deferred<<648>>\caption<<243>>The result of executing the \textcolor<<378>>BlueViolet<<378>><<379>>\texttt<<380>>M-x pp-insert-template<<380>><<379>>
+    command, which insert a template for the \texttt<<381>>pp.x<<381>>\ input file into the
+    current buffer.<<243>>\end<<649>>tex2html_deferred<<649>>
+  \label<<114>>fig:insert-template<<114>>
+\end<<115>>figure<<115>>
+\subsection<<116>>Commands<<116>>
+\begin<<650>>tex2html_deferred<<650>>\par\end<<651>>tex2html_deferred<<651>>
+The \texttt<<382>>QE-modes<<382>>\ package provides the following commands:
+\begin<<117>>description<<117>>
+\item[\begin<<508>>tex2html_wrap_inline<<508>>$\bullet$\end<<509>>tex2html_wrap_inline<<509>>\space \begin<<652>>tex2html_deferred<<652>>\textcolor<<383>>BlueViolet<<383>><<384>>\texttt<<385>>M-X \textcolor<<387>>Blue<<387>><<388>>\texttt<<389>>\textit<<390>>mode<<390>><<389>><<388>>-mode<<385>><<384>>\end<<653>>tex2html_deferred<<653>>]\hfill\\  toggles
+  the respective mode, where \begin<<654>>tex2html_deferred<<654>>\textcolor<<391>>Blue<<391>><<392>>\texttt<<393>>\textit<<394>>mode<<394>><<393>><<392>>\end<<655>>tex2html_deferred<<655>> is one of \texttt<<120>>qe<<120>>,
+  \texttt<<121>>pw<<121>>, \texttt<<122>>neb<<122>>, \texttt<<123>>cp<<123>>, \texttt<<124>>ph<<124>>, \texttt<<125>>ld1<<125>>, or \texttt<<126>>pp<<126>>
+\begin<<656>>tex2html_deferred<<656>>\par\end<<657>>tex2html_deferred<<657>>
+\item[\begin<<510>>tex2html_wrap_inline<<510>>$\bullet$\end<<511>>tex2html_wrap_inline<<511>>\space \begin<<658>>tex2html_deferred<<658>>\textcolor<<395>>BlueViolet<<395>><<396>>\texttt<<397>>M-x indent-region<<397>><<396>>\end<<659>>tex2html_deferred<<659>>] ~~<<128>>\begin<<660>>tex2html_deferred<<660>>\rm\end<<661>>tex2html_deferred<<661>>or<<128>>~~ \begin<<662>>tex2html_deferred<<662>>\textcolor<<398>>BlueViolet<<398>><<399>>\texttt<<400>>C-M-\textbackslash<<400>><<399>>\end<<663>>tex2html_deferred<<663>>\hfill\\ 
+  indents region according to \texttt<<401>>qe-modes<<401>>\ rules, i.e., namelist and card
+  names are left aligned to the first column, while their content is
+  indented by \texttt<<130>>qe-indent<<130>> spaces to the right (see
+  Figure~\ref<<131>>fig:example<<131>>; default value of \texttt<<132>>qe-indent<<132>> is 3)
+\begin<<664>>tex2html_deferred<<664>>\par\end<<665>>tex2html_deferred<<665>>
+\item[\begin<<512>>tex2html_wrap_inline<<512>>$\bullet$\end<<513>>tex2html_wrap_inline<<513>>\space \begin<<666>>tex2html_deferred<<666>>\textcolor<<402>>BlueViolet<<402>><<403>>\texttt<<404>>M-x \textcolor<<406>>Blue<<406>><<407>>\texttt<<408>>\textit<<409>>prog<<409>><<408>><<407>>-insert-template<<404>><<403>>\end<<667>>tex2html_deferred<<667>>]\hfill\\ 
+  inserts a respective input file template (see Figure 2); this
+  command may not be defined for all the \begin<<668>>tex2html_deferred<<668>>\textcolor<<410>>Blue<<410>><<411>>\texttt<<412>>\textit<<413>>prog<<413>><<412>><<411>>\end<<669>>tex2html_deferred<<669>>s; currently
+  supported \begin<<670>>tex2html_deferred<<670>>\textcolor<<414>>Blue<<414>><<415>>\texttt<<416>>\textit<<417>>prog<<417>><<416>><<415>>\end<<671>>tex2html_deferred<<671>>s are: \texttt<<136>>pw<<136>>, \texttt<<137>>pp<<137>>, \texttt<<138>>neb<<138>>,
+  \texttt<<139>>ph<<139>>, \texttt<<140>>dynmat<<140>>, \texttt<<141>>ld1<<141>>, \texttt<<142>>projwfc<<142>>,
+  \texttt<<143>>dos<<143>>, and \texttt<<144>>bands<<144>>.
+\begin<<672>>tex2html_deferred<<672>>\par\end<<673>>tex2html_deferred<<673>>
+\item[\begin<<514>>tex2html_wrap_inline<<514>>$\bullet$\end<<515>>tex2html_wrap_inline<<515>>\space \begin<<674>>tex2html_deferred<<674>>\textcolor<<418>>BlueViolet<<418>><<419>>\texttt<<420>>M-x \textcolor<<422>>Blue<<422>><<423>>\texttt<<424>>\textit<<425>>prog-NAMELIST<<425>><<424>><<423>><<420>><<419>>\end<<675>>tex2html_deferred<<675>>]\hfill\\  
+  inserts a blank namelist section named \begin<<676>>tex2html_deferred<<676>>\textcolor<<426>>Blue<<426>><<427>>\texttt<<428>>\textit<<429>>NAMELIST<<429>><<428>><<427>>\end<<677>>tex2html_deferred<<677>>
+\begin<<678>>tex2html_deferred<<678>>\par\end<<679>>tex2html_deferred<<679>>
+\item[\begin<<516>>tex2html_wrap_inline<<516>>$\bullet$\end<<517>>tex2html_wrap_inline<<517>>\space \begin<<680>>tex2html_deferred<<680>>\textcolor<<430>>BlueViolet<<430>><<431>>\texttt<<432>>M-x \textcolor<<434>>Blue<<434>><<435>>\texttt<<436>>\textit<<437>>prog-CARD<<437>><<436>><<435>><<432>><<431>>\end<<681>>tex2html_deferred<<681>>]\hfill\\ 
+  inserts a blank card section named \begin<<682>>tex2html_deferred<<682>>\textcolor<<438>>Blue<<438>><<439>>\texttt<<440>>\textit<<441>>CARD<<441>><<440>><<439>>\end<<683>>tex2html_deferred<<683>>
+\begin<<684>>tex2html_deferred<<684>>\par\end<<685>>tex2html_deferred<<685>>
+\item[\begin<<518>>tex2html_wrap_inline<<518>>$\bullet$\end<<519>>tex2html_wrap_inline<<519>>\space \begin<<686>>tex2html_deferred<<686>>\textcolor<<442>>BlueViolet<<442>><<443>>\texttt<<444>>M-x \textcolor<<446>>Blue<<446>><<447>>\texttt<<448>>\textit<<449>>prog-variable<<449>><<448>><<447>><<444>><<443>>\end<<687>>tex2html_deferred<<687>>]\hfill\\ 
+  inserts a namelist variable named \begin<<688>>tex2html_deferred<<688>>\textcolor<<450>>Blue<<450>><<451>>\texttt<<452>>\textit<<453>>variable<<453>><<452>><<451>>\end<<689>>tex2html_deferred<<689>>
+\begin<<690>>tex2html_deferred<<690>>\par\end<<691>>tex2html_deferred<<691>>
+\end<<151>>description<<151>>
+The above italicized words have the following meaning:
+\begin<<152>>itemize<<152>>
+\item \begin<<692>>tex2html_deferred<<692>>\textcolor<<454>>Blue<<454>><<455>>\texttt<<456>>\textit<<457>>prog<<457>><<456>><<455>>\end<<693>>tex2html_deferred<<693>> stands for the lowercase name of respective program
+  without the \texttt<<154>>.x<<154>> suffix (i.e.\ it is the lowercase variant of
+  the \begin<<694>>tex2html_deferred<<694>>\textcolor<<458>>Blue<<458>><<459>>\texttt<<460>>\textit<<461>>PROG<<461>><<460>><<459>>\end<<695>>tex2html_deferred<<695>> in the respective \texttt<<249>>INPUT\_\begin<<696>>tex2html_deferred<<696>>\textcolor<<462>>Blue<<462>><<463>>\texttt<<464>>\textit<<465>>PROG<<465>><<464>><<463>>\end<<697>>tex2html_deferred<<697>>.html<<249>>
+  filename)
+\item \begin<<698>>tex2html_deferred<<698>>\textcolor<<466>>Blue<<466>><<467>>\texttt<<468>>\textit<<469>>NAMELIST<<469>><<468>><<467>>\end<<699>>tex2html_deferred<<699>> is the uppercase name for a given Fortran namelist
+\item \begin<<700>>tex2html_deferred<<700>>\textcolor<<470>>Blue<<470>><<471>>\texttt<<472>>\textit<<473>>CARD<<473>><<472>><<471>>\end<<701>>tex2html_deferred<<701>> is the uppercase name for a given card
+\item \begin<<702>>tex2html_deferred<<702>>\textcolor<<474>>Blue<<474>><<475>>\texttt<<476>>\textit<<477>>variable<<477>><<476>><<475>>\end<<703>>tex2html_deferred<<703>> is the lowercase name for a given namelist' variable
+\end<<160>>itemize<<160>>
+Note that in the above commands the spelling of namelist and card
+names (\begin<<704>>tex2html_deferred<<704>>\textcolor<<478>>Blue<<478>><<479>>\texttt<<480>>\textit<<481>>NAMELIST<<481>><<480>><<479>>\end<<705>>tex2html_deferred<<705>> and \begin<<706>>tex2html_deferred<<706>>\textcolor<<482>>Blue<<482>><<483>>\texttt<<484>>\textit<<485>>CARD<<485>><<484>><<483>>\end<<707>>tex2html_deferred<<707>>) are intentionally made uppercase
+as to differentiate them from the names of variables which are
+intentionally made lowercase.\begin<<708>>tex2html_deferred<<708>>\footnote<<163>>Note that in <<486>>\sc Quantum ESPRESSO<<486>>\ the namelist
+  and variable names are case-insensitive, while card names are
+  case-sensitive.<<163>>\end<<709>>tex2html_deferred<<709>>
+\begin<<710>>tex2html_deferred<<710>>\par\end<<711>>tex2html_deferred<<711>>
+\subsection<<164>>Auto-completion mechanism<<164>>
+It may at first seem that the above described commands are not a big
+deal. But given that <<487>>\sc Quantum ESPRESSO<<487>>\ contains hundreds of variables it is
+difficult to remember the precise spelling for all of them. It is here
+where these commands becomes useful due to Emacs auto-completion
+mechanism. For example, typing a space or tab after \texttt<<165>>M-x pw-C<<165>> 
+prints all the namelists and cards that starts with letter ``C'', i.e.:
+\begin<<166>>tex2html_preform<<166>><tex2html_verbatim_mark>verbatim16#\end<<167>>tex2html_preform<<167>>
+\noindent whereas typing a space or tab after \texttt<<168>>M-x pw-c<<168>>
+prints all the \texttt<<488>>pw.x<<488>>\ variables that starts with letter ``c'', i.e.:
+\begin<<169>>tex2html_preform<<169>><tex2html_verbatim_mark>verbatim17#\end<<170>>tex2html_preform<<170>>
+\noindent
+From this list we can see that there is only one variable that starts
+with ``ca'', hence typing \texttt<<171>>M-x pw-ca[space][return]<<171>>, where
+\texttt<<172>>[space][return]<<172>> stands for space and return keys, prints at
+the point position of the current buffer:
+\begin<<173>>tex2html_preform<<173>><tex2html_verbatim_mark>verbatim18#\end<<174>>tex2html_preform<<174>>
+\begin<<712>>tex2html_deferred<<712>>\par\end<<713>>tex2html_deferred<<713>>
+\subsection<<175>>Controlling indentation<<175>>
+\begin<<714>>tex2html_deferred<<714>>\par\end<<715>>tex2html_deferred<<715>>
+The basic indentation offset in \texttt<<489>>qe-modes<<489>>\ is 3. It is controlled by
+\texttt<<176>>qe-indent<<176>> variable. Hence if you want to change it, add the
+following into your \texttt<<177>>user-init-file<<177>>
+(e.g. \texttt<<178>>\$HOME/.emacs<<178>>):
+\begin<<179>>flushleft<<179>>
+<tex2html_verb_mark>31<tex2html_verb_mark>\begin<<716>>tex2html_deferred<<716>>\textcolor<<490>>Blue<<490>><<491>>\texttt<<492>>\textit<<493>>myOffset<<493>><<492>><<491>>\end<<717>>tex2html_deferred<<717>><tex2html_verb_mark>32<tex2html_verb_mark>
+\end<<181>>flushleft<<181>>
+where \begin<<718>>tex2html_deferred<<718>>\textcolor<<494>>Blue<<494>><<495>>\texttt<<496>>\textit<<497>>myOffset<<497>><<496>><<495>>\end<<719>>tex2html_deferred<<719>> is the integer value of the offset of your
+choice. For no indentation, set the \texttt<<183>>qe-indent<<183>> to 0 (this
+implies that auto-indentation will make all lines non-indented).
+\begin<<720>>tex2html_deferred<<720>>\par\end<<721>>tex2html_deferred<<721>>
+To disable the auto-indentation for a given mode (are you really sure
+you want to do this), add the following into your
+\texttt<<184>>user-init-file<<184>>:
+\begin<<722>>tex2html_deferred<<722>>\par\end<<723>>tex2html_deferred<<723>>
+<<250>>\begin<<724>>tex2html_deferred<<724>>\small\end<<725>>tex2html_deferred<<725>>
+\begin<<185>>flushleft<<185>>
+<tex2html_verb_mark>33<tex2html_verb_mark>\begin<<726>>tex2html_deferred<<726>>\textcolor<<498>>Blue<<498>><<499>>\texttt<<500>>\textit<<501>>mode<<501>><<500>><<499>>\end<<727>>tex2html_deferred<<727>><tex2html_verb_mark>34<tex2html_verb_mark>
+\end<<187>>flushleft<<187>>
+<<250>>
+\begin<<728>>tex2html_deferred<<728>>\par\end<<729>>tex2html_deferred<<729>>
+\noindent where \begin<<730>>tex2html_deferred<<730>>\textcolor<<502>>Blue<<502>><<503>>\texttt<<504>>\textit<<505>>mode<<505>><<504>><<503>>\end<<731>>tex2html_deferred<<731>> is \texttt<<189>>qe<<189>>, \texttt<<190>>pw<<190>>, \texttt<<191>>neb<<191>>, \texttt<<192>>cp<<192>>,
+\texttt<<193>>ph<<193>>, \texttt<<194>>ld1<<194>>, or \texttt<<195>>pp<<195>>.
+\begin<<732>>tex2html_deferred<<732>>\par\end<<733>>tex2html_deferred<<733>>
+\subsection<<251>>Note to \texttt<<196>>Vi<<196>> users<<251>>
+\begin<<734>>tex2html_deferred<<734>>\par\end<<735>>tex2html_deferred<<735>>
+A simple way to get a \texttt<<506>>QE-modes<<506>>\ aware \texttt<<197>>Vi<<197>>-compatible editor is
+to use the \texttt<<198>>Evil<<198>> package -- an \textbf<<199>>e<<199>>xtensible \textbf<<200>>vi<<200>>
+\textbf<<201>>l<<201>>ayer for Emacs
+(\texttt<<202>>https://bitbucket.org/lyro/evil/wiki/Home<<202>>). With the
+\texttt<<203>>Evil<<203>> mode enabled, Emacs will behave like the \texttt<<204>>Vi<<204>>
+editor, but with the \texttt<<507>>QE-modes<<507>>\ support.
+\begin<<736>>tex2html_deferred<<736>>\par\end<<737>>tex2html_deferred<<737>>
+\end<<205>>document<<205>>
