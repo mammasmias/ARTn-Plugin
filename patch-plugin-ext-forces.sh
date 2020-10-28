@@ -20,7 +20,8 @@ cat PW-src-modified/plugin_ext_forces.f90 \
     PW-src-modified/report_force.f90 \
     PW-src-modified/sum_force.f90 \
     PW-src-modified/perpforce.f90 \
-    qe-6.6/PW/src/plugin_ext_forces.f90
+    PW-src-modified/move_mode.f90 \
+    > qe-6.6/PW/src/plugin_ext_forces.f90
 #cp  PW-src-modified/plugin_ext_forces.f90  qe-6.6/PW/src/
 
 # configure and compile q-e
