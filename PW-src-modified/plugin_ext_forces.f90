@@ -181,7 +181,8 @@ SUBROUTINE plugin_ext_forces(force)
         push(:,:) = eigenvec(:,:)
      ENDIF
      CALL perpforce(force,push,fpara,nat)
-     CALL perpmove(nat,istepperp,push)
+     ! CALL perpmove(nat,istepperp,push)
+     CALL move_mode( nat, dlanc, v_in, force, istepperp, push, 'perp')
      istepperp = istepperp + 1
      !
      !
@@ -225,7 +226,8 @@ SUBROUTINE plugin_ext_forces(force)
      write (*,*) "ARTn: eigenvec rescaled by:",current_step_size
      write (*,*) "ARTn: used lanczos eigenvector: ", eigenvec(:,:)
      force(:,:) = eigenvec(:,:)
-     call eigenmove(force,nat)
+     ! call eigenmove(force,nat)
+     CALL move_mode( nat, dlanc, v_in, force, istepperp, push, 'eign')
      neigenstep = neigenstep + 1
      ! count the number of steps made with the eigenvector
      IF ( neigenstep == neigenstepmax  ) THEN
