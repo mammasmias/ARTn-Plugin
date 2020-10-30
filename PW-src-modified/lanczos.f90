@@ -1,5 +1,6 @@
 
-SUBROUTINE lanczos( nat, force, v_in, nlanciter, nlanc, lowest_eigval, lowest_eigvec, pushdir)
+SUBROUTINE lanczos( nat, force, vel, acc, alpha_init, dt, &
+     v_in, nlanciter, nlanc, lowest_eigval, lowest_eigvec, pushdir)
   USE kinds,            ONLY : DP
   USE io_files, ONLY: prefix,seqopn,tmp_dir
   !
@@ -8,6 +9,8 @@ SUBROUTINE lanczos( nat, force, v_in, nlanciter, nlanc, lowest_eigval, lowest_ei
   IMPLICIT NONE
   INTEGER,                INTENT(IN) :: nat
   REAL(DP), DIMENSION(3,nat), INTENT(IN) :: v_in
+  REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: vel, acc
+  REAL(DP), INTENT(IN) :: alpha_init, dt   
   REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: force
   REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: lowest_eigvec
   REAL(DP), INTENT(INOUT) :: lowest_eigval
@@ -88,7 +91,9 @@ SUBROUTINE lanczos( nat, force, v_in, nlanciter, nlanc, lowest_eigval, lowest_ei
      CLOSE (UNIT = iunlanc, STATUS = 'KEEP')
 
      ! CALL lancmove(nat, v0, dlanc, force )
-     CALL move_mode( nat, dlanc, v0, force, 0, pushdir, 'lanc')
+     CALL move_mode( nat, dlanc, v0, force, &
+          vel, acc, alpha_init, dt, & 
+          0, pushdir, 'lanc')
      ! GO BACK (make move, get new force)
      RETURN
   ELSEIF (nlanc == 1 ) THEN
@@ -124,7 +129,10 @@ SUBROUTINE lanczos( nat, force, v_in, nlanciter, nlanc, lowest_eigval, lowest_ei
           force(:,:)
      CLOSE (UNIT = iunlanc, STATUS = 'KEEP')
      ! CALL lancmove(nat, v1/beta, dlanc, force )
-     CALL move_mode( nat, dlanc, v1/beta, force, 0, pushdir, 'lanc')
+     CALL move_mode( nat, dlanc, v1/beta, force, &
+          vel, acc, alpha_init, dt,  & 
+          0, pushdir, 'lanc')
+     ! CALL move_mode( nat, dlanc, v1/beta, force, 0, pushdir, 'lanc')
      ! GO BACK  (make move, get new force)
      lowest_eigval = alpha
      RETURN
@@ -239,7 +247,10 @@ SUBROUTINE lanczos( nat, force, v_in, nlanciter, nlanc, lowest_eigval, lowest_ei
            ENDDO
            ! make the move back & delete the lanczos file
            ! CALL lancmove(nat, v1(:,:), dlanc, force(:,:) )
-           CALL move_mode( nat, dlanc, v1, force, 0, pushdir, 'lanc')
+           ! CALL move_mode( nat, dlanc, v1, force, 0, pushdir, 'lanc')
+           CALL move_mode( nat, dlanc, v1, force, &
+                vel, acc, alpha_init, dt,  & 
+                0, pushdir, 'lanc')
            CALL seqopn( iunlanc, 'artnlanc', 'FORMATTED', file_exists )
            CLOSE (UNIT = iunlanc, STATUS = 'DELETE')
            RETURN
@@ -265,7 +276,10 @@ SUBROUTINE lanczos( nat, force, v_in, nlanciter, nlanc, lowest_eigval, lowest_ei
            ! for the next move v2 will be v1 ...; call move with v2
            !
            ! CALL lancmove(nat, v2(:,:), dlanc, force(:,:) )
-           CALL move_mode( nat, dlanc, v2, force, 0, pushdir, 'lanc')
+           CALL move_mode( nat, dlanc, v2, force, &
+                vel, acc, alpha_init, dt,  & 
+                0, pushdir, 'lanc')
+           ! CALL move_mode( nat, dlanc, v2, force, 0, pushdir, 'lanc')
            !  GO BACK (make move, get new force)
            RETURN
         ENDIF
@@ -280,7 +294,10 @@ SUBROUTINE lanczos( nat, force, v_in, nlanciter, nlanc, lowest_eigval, lowest_ei
         ENDDO
         ! make the final move & delete lanczos file
         ! CALL lancmove(nat, v1(:,:), dlanc, force(:,:) )
-        CALL move_mode( nat, dlanc, v1, force, 0, pushdir, 'lanc')
+        CALL move_mode( nat, dlanc, v1, force, &
+             vel, acc, alpha_init, dt, & 
+             0, pushdir, 'lanc')
+        ! CALL move_mode( nat, dlanc, v1, force, 0, pushdir, 'lanc')
         CALL seqopn( iunlanc, 'artnlanc', 'FORMATTED', file_exists )
         CLOSE (UNIT = iunlanc, STATUS = 'DELETE')
         RETURN

@@ -1179,6 +1179,14 @@ MODULE input_parameters
         INTEGER :: n_muller=0!number of intermediate sub-cells
         INTEGER :: np_muller=1!period for velocity exchange
         LOGICAL :: l_exit_muller=.false.!if true do muller exchange after last MD step
+        ! 
+        ! Parameters for minimization with the FIRE algorithm   
+        !
+        INTEGER  :: fire_nmin = 5 ! minimum number of steps for time step increase 
+        REAL(DP) :: fire_f_inc = 1.1_DP ! factor for time step increase  
+        REAL(DP) :: fire_f_dec = 0.5_DP ! factor for time step decrease
+        REAL(DP) :: fire_alpha_init = 0.1_DP ! initial value of mixing factor
+        REAL(DP) :: fire_falpha = 0.99_DP ! modify the mixing factor
 
         
         !
@@ -1190,7 +1198,9 @@ MODULE input_parameters
                           wfc_extrapolation, nraise, remove_rigid_rot,         &
                           trust_radius_max, trust_radius_min,                  &
                           trust_radius_ini, w_1, w_2, bfgs_ndim,l_mplathe,     &
-                          n_muller,np_muller,l_exit_muller
+                          n_muller,np_muller,l_exit_muller,                    &
+                          fire_nmin, fire_f_inc, fire_f_dec, fire_alpha_init, fire_falpha
+
 
 
 !=----------------------------------------------------------------------------=!

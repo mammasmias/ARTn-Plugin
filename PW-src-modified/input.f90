@@ -54,7 +54,12 @@ SUBROUTINE iosys()
                               dt_         => dt, &
                               delta_t_    => delta_t, &
                               nraise_     => nraise, &
-                              refold_pos_ => refold_pos
+                              refold_pos_ => refold_pos, &
+                              fire_nmin_ => fire_nmin, &
+                              fire_f_inc_ => fire_f_inc, &
+                              fire_f_dec_ => fire_f_dec,  &
+                              fire_alpha_init_ => fire_alpha_init, &  
+                              fire_falpha_ => fire_falpha 
   !
   USE fcp_variables, ONLY : lfcpopt_ => lfcpopt, &
                             lfcpdyn_ => lfcpdyn, &
@@ -291,7 +296,9 @@ SUBROUTINE iosys()
                                refold_pos, remove_rigid_rot, upscale,          &
                                pot_extrapolation,  wfc_extrapolation,          &
                                w_1, w_2, trust_radius_max, trust_radius_min,   &
-                               trust_radius_ini, bfgs_ndim
+                               trust_radius_ini, bfgs_ndim, &
+                               fire_nmin, fire_f_inc, fire_f_dec, &
+                               fire_alpha_init, fire_falpha
   !
   ! ... CELL namelist
   !
@@ -401,6 +408,12 @@ SUBROUTINE iosys()
         !
         lmd     = .true.
         calc    = 'fi'
+        ! set fire variables
+        fire_nmin_ = fire_nmin
+        fire_f_inc_ = fire_f_inc
+        fire_f_dec_ = fire_f_dec
+        fire_alpha_init_ = fire_alpha_init
+        fire_falpha_ = fire_falpha
         !
         ntcheck = nstep + 1
         !

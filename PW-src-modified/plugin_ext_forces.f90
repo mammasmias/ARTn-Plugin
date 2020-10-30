@@ -21,6 +21,7 @@ SUBROUTINE plugin_ext_forces(force)
   USE ions_base,     ONLY : nat, tau, if_pos, ityp, amass
   USE cell_base,     ONLY : alat, at
   USE control_flags, ONLY : istep
+  USE dynamics_module, ONLY : vel, acc, dt, fire_alpha_init 
   USE io_files,      ONLY : prefix,seqopn,tmp_dir
   !
   IMPLICIT NONE
@@ -82,6 +83,8 @@ SUBROUTINE plugin_ext_forces(force)
   ! counters for the calculation of the hessian
   ihess = 1
   jhess = 1
+  
+  WRITE (*,*) "ARTn read FIRE Parms:",dt,fire_alpha_init 
   ! store original force
   force_in(:,:) = force(:,:)
   ALLOCATE(add_const(4,nat),source=0.D0)
@@ -182,7 +185,9 @@ SUBROUTINE plugin_ext_forces(force)
      ENDIF
      CALL perpforce(force,push,fpara,nat)
      ! CALL perpmove(nat,istepperp,push)
-     CALL move_mode( nat, dlanc, v_in, force, istepperp, push, 'perp')
+     CALL move_mode( nat, dlanc, v_in, force, &
+          vel, acc, fire_alpha_init, dt, & 
+          istepperp, push, 'perp')
      istepperp = istepperp + 1
      !
      !
@@ -227,7 +232,9 @@ SUBROUTINE plugin_ext_forces(force)
      write (*,*) "ARTn: used lanczos eigenvector: ", eigenvec(:,:)
      force(:,:) = eigenvec(:,:)
      ! call eigenmove(force,nat)
-     CALL move_mode( nat, dlanc, v_in, force, istepperp, push, 'eign')
+     CALL move_mode( nat, dlanc, v_in, force, &
+          vel, acc, fire_alpha_init, dt,  & 
+          istepperp, push, 'eign')
      neigenstep = neigenstep + 1
      ! count the number of steps made with the eigenvector
      IF ( neigenstep == neigenstepmax  ) THEN
@@ -275,7 +282,8 @@ SUBROUTINE plugin_ext_forces(force)
         v_in(:,:) = v_in(:,:)*if_pos(:,:)
         force(:,:) = force(:,:)*if_pos(:,:)
      ENDIF
-     CALL lanczos( nat, force, v_in, nlanciter, nlanc, lowest_eigval,  eigenvec, pushdir )
+     CALL lanczos( nat, force, vel, acc, fire_alpha_init, dt, &
+          v_in, nlanciter, nlanc, lowest_eigval,  eigenvec, pushdir )
 
      !
      ! when lanczos converges, nlanciter = number of steps it took to converge,

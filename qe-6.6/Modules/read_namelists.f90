@@ -541,8 +541,14 @@ MODULE read_namelists_module
        n_muller=0
        np_muller=1
        l_exit_muller=.false.
-       
-
+       !
+       ! FIRE minimization defaults 
+       !
+       fire_nmin = 5 ! minimum number of steps P > 0 before dt incread
+       fire_f_inc = 1.1_DP ! factor for time step increase
+       fire_f_dec = 0.5_DP ! factor for time step decrease 
+       fire_alpha_init = 0.1_DP ! initial value of mixing factor
+       fire_falpha = 0.99_DP ! modification of the mixing factor 
        RETURN
        !
      END SUBROUTINE
