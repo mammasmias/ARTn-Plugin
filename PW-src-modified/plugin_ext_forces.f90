@@ -47,6 +47,10 @@ SUBROUTINE plugin_ext_forces(force)
   INTEGER, ALLOCATABLE :: push_ids(:)
   REAL(DP) :: ran3,dnrm2, ddot
   REAL(DP) :: lowest_eigval
+
+
+  IF( ionode ) THEN
+
   convcrit = 1.0d-2
   init_step_size = 1.5
   step_size = 0.5
@@ -187,7 +191,7 @@ SUBROUTINE plugin_ext_forces(force)
      ! CALL perpmove(nat,istepperp,push)
      CALL move_mode( nat, dlanc, v_in, force, &
           vel, acc, fire_alpha_init, dt, & 
-          istepperp, push, 'perp')
+          istepperp, push, 'perp', prefix, tmp_dir)
      istepperp = istepperp + 1
      !
      !
@@ -234,7 +238,7 @@ SUBROUTINE plugin_ext_forces(force)
      ! call eigenmove(force,nat)
      CALL move_mode( nat, dlanc, v_in, force, &
           vel, acc, fire_alpha_init, dt,  & 
-          istepperp, push, 'eign')
+          istepperp, push, 'eign', prefix, tmp_dir)
      neigenstep = neigenstep + 1
      ! count the number of steps made with the eigenvector
      IF ( neigenstep == neigenstepmax  ) THEN
@@ -283,7 +287,7 @@ SUBROUTINE plugin_ext_forces(force)
         force(:,:) = force(:,:)*if_pos(:,:)
      ENDIF
      CALL lanczos( nat, force, vel, acc, fire_alpha_init, dt, &
-          v_in, nlanciter, nlanc, lowest_eigval,  eigenvec, pushdir )
+          v_in, nlanciter, nlanc, lowest_eigval,  eigenvec, pushdir, prefix, tmp_dir )
 
      !
      ! when lanczos converges, nlanciter = number of steps it took to converge,
@@ -359,4 +363,5 @@ SUBROUTINE plugin_ext_forces(force)
   ! end do
   ! flush(456)
 
+  ENDIF
 END SUBROUTINE plugin_ext_forces

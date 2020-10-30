@@ -1,14 +1,14 @@
 SUBROUTINE move_mode(nat, dlanc, v1, force, &
-                     vel, acc, alpha_init, dt, & 
+                     vel, acc, alpha_init, dt, &
                      istepperp, push, &
-                     mode)
+                     mode, prfx, tmpdir )
   !
   ! unify the move routines
   !
   USE kinds, ONLY: DP
   USE cell_base, ONLY: alat
   USE constants, ONLY: amu_ry
-  USE io_files, ONLY: prefix, seqopn, tmp_dir
+  ! USE io_files, ONLY: prefix, seqopn, tmp_dir
   !
   IMPLICIT NONE
   INTEGER, INTENT(IN) :: nat
@@ -16,16 +16,20 @@ SUBROUTINE move_mode(nat, dlanc, v1, force, &
   REAL(DP), DIMENSION(3,nat), INTENT(IN) :: v1
   REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: force
   REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: vel, acc
-  REAL(DP), INTENT(IN) :: alpha_init, dt  
+  REAL(DP), INTENT(IN) :: alpha_init, dt
   INTEGER, INTENT(IN) :: istepperp
   REAL(DP), DIMENSION(3,nat), INTENT(IN) :: push
   CHARACTER(LEN=4), INTENT(IN) :: mode
+  CHARACTER(LEN=255), INTENT(IN) :: tmpdir, prfx
+
   REAL(DP), EXTERNAL :: ddot,dnrm2
   ! variables read from the FIRE minimization algorithm
   INTEGER :: nsteppos
+  INTEGER :: ios
   REAL(DP) :: dt_curr, alpha, etot
   LOGICAL :: file_exists
-  
+  CHARACTER(len=256) :: filnam
+
   !
   ! write(*,*) 'in MOVE:'
   ! write(*,*) 'mode:',trim(mode)
@@ -37,16 +41,27 @@ SUBROUTINE move_mode(nat, dlanc, v1, force, &
   ! write(*,*) 'push',push
   ! write(*,*) 'file exists', file_exists
   !
-     
+
   !
   ! do things depending on mode of the move
   !
-  CALL seqopn( 4, 'fire', 'FORMATTED', file_exists )
+  ! CALL seqopn( 4, 'fire', 'FORMATTED', file_exists )
+
+  filnam = trim(tmpdir) // '/' // trim(prfx) // '.' //'fire'
+  INQUIRE( file = filnam, exist = file_exists )
+  OPEN( unit = 4, file = filnam, form = 'formatted', status = 'unknown', iostat = ios)
+  ! write(999,*) 'move_mode:', trim(mode)
+  ! write(999,*) 'open:', trim(filnam), ios, file_exists
+  ! flush(999)
+
+  !
   IF (file_exists ) THEN
+     !
      READ( UNIT = 4, FMT = * ) etot, nsteppos, dt_curr, alpha
      CLOSE( UNIT = 4, STATUS = 'KEEP' )
+     !
      SELECT CASE( TRIM(mode) )
-        
+
      CASE( 'perp' )
         ! write(*,*) 'MOVE: perp'
         !
@@ -98,15 +113,16 @@ SUBROUTINE move_mode(nat, dlanc, v1, force, &
      END SELECT
      !
      !
-     ! write the FIRE parameters to its scratch file 
-     CALL seqopn( 4, 'fire', 'FORMATTED', file_exists )
-     WRITE( UNIT = 4, FMT = * ) etot, nsteppos, dt_curr, alpha  
+     ! write the FIRE parameters to its scratch file
+     ! CALL seqopn( 4, 'fire', 'FORMATTED', file_exists )
+     OPEN( unit = 4, file = filnam, form = 'formatted', status = 'unknown', iostat = ios)
+     WRITE( UNIT = 4, FMT = * ) etot, nsteppos, dt_curr, alpha
      !
      CLOSE( UNIT = 4, STATUS = 'KEEP' )
      !
      !
   ELSE
-     CLOSE( UNIT = 4, STATUS = 'DELETE') 
+     CLOSE( UNIT = 4, STATUS = 'DELETE')
   ENDIF
 
 END SUBROUTINE move_mode

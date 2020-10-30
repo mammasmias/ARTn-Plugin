@@ -1,8 +1,8 @@
 
 SUBROUTINE lanczos( nat, force, vel, acc, alpha_init, dt, &
-     v_in, nlanciter, nlanc, lowest_eigval, lowest_eigvec, pushdir)
+     v_in, nlanciter, nlanc, lowest_eigval, lowest_eigvec, pushdir, prfx, tmpdir )
   USE kinds,            ONLY : DP
-  USE io_files, ONLY: prefix,seqopn,tmp_dir
+  ! USE io_files, ONLY: prefix,seqopn,tmp_dir
   !
   ! Lanczos subroutine for the ARTn algorithm; based on the lanczos subroutine as written by M. Gunde
   !
@@ -15,6 +15,7 @@ SUBROUTINE lanczos( nat, force, vel, acc, alpha_init, dt, &
   REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: lowest_eigvec
   REAL(DP), INTENT(INOUT) :: lowest_eigval
   REAL(DP), DIMENSION(3,nat), INTENT(IN) :: pushdir
+  CHARACTER(LEN=255), INTENT(IN) :: prfx, tmpdir
   !
   INTEGER :: i, j, io, id_min
   INTEGER, PARAMETER ::  iunlanc = 51
@@ -30,6 +31,8 @@ SUBROUTINE lanczos( nat, force, vel, acc, alpha_init, dt, &
   REAL(DP), EXTERNAL :: ran3,dnrm2,ddot
   REAL(DP) :: alpha, beta, lowest_eigval_old, eigvec_diff, largest_eigvec_diff, eigval_diff
   LOGICAL :: file_exists
+  CHARACTER(LEN=255) :: filnam
+  INTEGER :: ios
 
   !! allocate vectors
   ALLOCATE( q(3,nat) )
@@ -42,7 +45,15 @@ SUBROUTINE lanczos( nat, force, vel, acc, alpha_init, dt, &
   ALLOCATE( Vmat(3,nat,1:nlanciter), source=0.D0 )
   ALLOCATE( H(1:nlanciter,1:nlanciter), source=0.D0 )
   ALLOCATE( Hstep(1:nlanciter,1:nlanciter), source=0.D0 )
-  CALL seqopn( iunlanc, 'artnlanc', 'FORMATTED', file_exists )
+
+  ! CALL seqopn( iunlanc, 'artnlanc', 'FORMATTED', file_exists )
+
+  filnam = trim(tmpdir) // '/' // trim(prfx) // '.' // 'artnlanc'
+  INQUIRE( file = filnam, exist = file_exists )
+  OPEN( unit = iunlanc, file = filnam, form = 'formatted', status = 'unknown', iostat = ios)
+  ! write(999,*) 'lanczos'
+  ! write(999,*) 'open file:',trim(filnam), ios, file_exists
+  ! flush(999)
   !
   ! initialize lanczos counter and variables
   !
@@ -67,7 +78,7 @@ SUBROUTINE lanczos( nat, force, vel, acc, alpha_init, dt, &
         CLOSE( UNIT = iunlanc, STATUS = 'KEEP' )
      ENDIF
   ELSE
-     CLOSE(UNIT = iunlanc, STATUS = 'DELETE')
+     ! CLOSE(UNIT = iunlanc, STATUS = 'DELETE')
   END IF
   !
   ! in the first lanczos step we should give a random push to initiate the algorithm and then calc the force of the new pos with qe.
@@ -84,7 +95,8 @@ SUBROUTINE lanczos( nat, force, vel, acc, alpha_init, dt, &
      write (*,*) "ARTn Lanczos: initial vec:", v0(:,:)
      ! write lanczos data to file for future cycles
      nlanc = nlanc + 1
-     CALL seqopn( iunlanc, 'artnlanc', 'FORMATTED', file_exists )
+     ! CALL seqopn( iunlanc, 'artnlanc', 'FORMATTED', file_exists )
+     OPEN( unit = iunlanc, file = filnam, form = 'formatted', status = 'unknown', iostat = ios)
 
      WRITE (UNIT = iunlanc, FMT = * ) Vmat(:,:,1:nlanciter), H(1:nlanciter,1:nlanciter), &
           force(:,:)
@@ -93,7 +105,7 @@ SUBROUTINE lanczos( nat, force, vel, acc, alpha_init, dt, &
      ! CALL lancmove(nat, v0, dlanc, force )
      CALL move_mode( nat, dlanc, v0, force, &
           vel, acc, alpha_init, dt, & 
-          0, pushdir, 'lanc')
+          0, pushdir, 'lanc', prfx, tmpdir)
      ! GO BACK (make move, get new force)
      RETURN
   ELSEIF (nlanc == 1 ) THEN
@@ -124,14 +136,15 @@ SUBROUTINE lanczos( nat, force, vel, acc, alpha_init, dt, &
      write(555,'(i4,2f9.4)') nlanc, alpha, (alpha-lowest_eigval_old)/lowest_eigval_old
      flush(555)
      nlanc = nlanc + 1
-     CALL seqopn( iunlanc, 'artnlanc', 'FORMATTED', file_exists )
+     ! CALL seqopn( iunlanc, 'artnlanc', 'FORMATTED', file_exists )
+     OPEN( unit = iunlanc, file = filnam, form = 'formatted', status = 'unknown', iostat = ios)
      WRITE (UNIT = iunlanc, FMT = * ) Vmat(:,:,1:nlanciter), H(1:nlanciter,1:nlanciter), &
           force(:,:)
      CLOSE (UNIT = iunlanc, STATUS = 'KEEP')
      ! CALL lancmove(nat, v1/beta, dlanc, force )
      CALL move_mode( nat, dlanc, v1/beta, force, &
           vel, acc, alpha_init, dt,  & 
-          0, pushdir, 'lanc')
+          0, pushdir, 'lanc', prfx, tmpdir)
      ! CALL move_mode( nat, dlanc, v1/beta, force, 0, pushdir, 'lanc')
      ! GO BACK  (make move, get new force)
      lowest_eigval = alpha
@@ -210,7 +223,8 @@ SUBROUTINE lanczos( nat, force, vel, acc, alpha_init, dt, &
         WRITE (*,*) "ARTn Lanczos: eigenvalue converged at step:", nlanc, "eigenthr:", eigval_thr
         !
         nlanciter = nlanc
-        CALL seqopn( iunlanc, 'artnlanc', 'FORMATTED', file_exists )
+        ! CALL seqopn( iunlanc, 'artnlanc', 'FORMATTED', file_exists )
+        OPEN( unit = iunlanc, file = filnam, form = 'formatted', status = 'unknown', iostat = ios)
         WRITE (UNIT = iunlanc, FMT = * ) Vmat(:,:,1:nlanciter), Hstep(1:nlanciter,1:nlanciter), &
           force(:,:)
         CLOSE (UNIT = iunlanc, STATUS = 'KEEP')
@@ -250,8 +264,9 @@ SUBROUTINE lanczos( nat, force, vel, acc, alpha_init, dt, &
            ! CALL move_mode( nat, dlanc, v1, force, 0, pushdir, 'lanc')
            CALL move_mode( nat, dlanc, v1, force, &
                 vel, acc, alpha_init, dt,  & 
-                0, pushdir, 'lanc')
-           CALL seqopn( iunlanc, 'artnlanc', 'FORMATTED', file_exists )
+                0, pushdir, 'lanc', prfx, tmpdir)
+           ! CALL seqopn( iunlanc, 'artnlanc', 'FORMATTED', file_exists )
+           OPEN( unit = iunlanc, file = filnam, form = 'formatted', status = 'unknown', iostat = ios)
            CLOSE (UNIT = iunlanc, STATUS = 'DELETE')
            RETURN
         ELSE
@@ -265,7 +280,8 @@ SUBROUTINE lanczos( nat, force, vel, acc, alpha_init, dt, &
            Hstep(nlanc, nlanc+1) = beta
            nlanc = nlanc +1
 
-           CALL seqopn( iunlanc, 'artnlanc', 'FORMATTED', file_exists )
+           ! CALL seqopn( iunlanc, 'artnlanc', 'FORMATTED', file_exists )
+           OPEN( unit = iunlanc, file = filnam, form = 'formatted', status = 'unknown', iostat = ios)
 
            WRITE (UNIT = iunlanc, FMT = * ) Vmat(:,:,1:nlanciter), Hstep(1:nlanciter,1:nlanciter), &
                 force(:,:)
@@ -278,7 +294,7 @@ SUBROUTINE lanczos( nat, force, vel, acc, alpha_init, dt, &
            ! CALL lancmove(nat, v2(:,:), dlanc, force(:,:) )
            CALL move_mode( nat, dlanc, v2, force, &
                 vel, acc, alpha_init, dt,  & 
-                0, pushdir, 'lanc')
+                0, pushdir, 'lanc', prfx, tmpdir)
            ! CALL move_mode( nat, dlanc, v2, force, 0, pushdir, 'lanc')
            !  GO BACK (make move, get new force)
            RETURN
@@ -296,9 +312,10 @@ SUBROUTINE lanczos( nat, force, vel, acc, alpha_init, dt, &
         ! CALL lancmove(nat, v1(:,:), dlanc, force(:,:) )
         CALL move_mode( nat, dlanc, v1, force, &
              vel, acc, alpha_init, dt, & 
-             0, pushdir, 'lanc')
+             0, pushdir, 'lanc', prfx, tmpdir)
         ! CALL move_mode( nat, dlanc, v1, force, 0, pushdir, 'lanc')
-        CALL seqopn( iunlanc, 'artnlanc', 'FORMATTED', file_exists )
+        ! CALL seqopn( iunlanc, 'artnlanc', 'FORMATTED', file_exists )
+        OPEN( unit = iunlanc, file = filnam, form = 'formatted', status = 'unknown', iostat = ios)
         CLOSE (UNIT = iunlanc, STATUS = 'DELETE')
         RETURN
      END IF
