@@ -21,7 +21,7 @@ SUBROUTINE plugin_ext_forces(force)
   USE ions_base,     ONLY : nat, tau, if_pos, ityp, amass
   USE cell_base,     ONLY : alat, at
   USE control_flags, ONLY : istep
-  USE dynamics_module, ONLY : vel, acc, dt, fire_alpha_init 
+  USE dynamics_module, ONLY : vel, acc, dt, fire_alpha_init
   USE io_files,      ONLY : prefix,seqopn,tmp_dir
   !
   IMPLICIT NONE
@@ -47,6 +47,8 @@ SUBROUTINE plugin_ext_forces(force)
   INTEGER, ALLOCATABLE :: push_ids(:)
   REAL(DP) :: ran3,dnrm2, ddot
   REAL(DP) :: lowest_eigval
+  INTEGER :: ios
+  CHARACTER( LEN=255) :: filnam
 
 
   IF( ionode ) THEN
@@ -87,8 +89,8 @@ SUBROUTINE plugin_ext_forces(force)
   ! counters for the calculation of the hessian
   ihess = 1
   jhess = 1
-  
-  WRITE (*,*) "ARTn read FIRE Parms:",dt,fire_alpha_init 
+
+  WRITE (*,*) "ARTn read FIRE Parms:",dt,fire_alpha_init
   ! store original force
   force_in(:,:) = force(:,:)
   ALLOCATE(add_const(4,nat),source=0.D0)
@@ -104,7 +106,15 @@ SUBROUTINE plugin_ext_forces(force)
   !
   ! First read the scratch file and update flags
   !
-  CALL seqopn( iunart, 'artn', 'FORMATTED', file_exists )
+  ! CALL seqopn( iunart, 'artn', 'FORMATTED', file_exists )
+
+  filnam = trim(tmp_dir) // '/' // trim(prefix) // '.' // 'artn'
+  INQUIRE( file = filnam, exist = file_exists )
+  OPEN( unit = iunart, file = filnam, form = 'formatted', status = 'unknown', iostat = ios )
+  !
+  ! write(999,*) 'art'
+  ! write(999,*) 'open file:',trim(filnam), ios, file_exists
+  ! flush(999)
   IF ( file_exists ) THEN
      !
      ! ... the scratch file is read
@@ -190,7 +200,7 @@ SUBROUTINE plugin_ext_forces(force)
      CALL perpforce(force,push,fpara,nat)
      ! CALL perpmove(nat,istepperp,push)
      CALL move_mode( nat, dlanc, v_in, force, &
-          vel, acc, fire_alpha_init, dt, & 
+          vel, acc, fire_alpha_init, dt, &
           istepperp, push, 'perp', prefix, tmp_dir)
      istepperp = istepperp + 1
      !
@@ -237,7 +247,7 @@ SUBROUTINE plugin_ext_forces(force)
      force(:,:) = eigenvec(:,:)
      ! call eigenmove(force,nat)
      CALL move_mode( nat, dlanc, v_in, force, &
-          vel, acc, fire_alpha_init, dt,  & 
+          vel, acc, fire_alpha_init, dt,  &
           istepperp, push, 'eign', prefix, tmp_dir)
      neigenstep = neigenstep + 1
      ! count the number of steps made with the eigenvector
@@ -345,7 +355,10 @@ SUBROUTINE plugin_ext_forces(force)
      ENDIF
   ENDIF
 
-  CALL seqopn( iunart, 'artn', 'FORMATTED', file_exists )
+  ! CALL seqopn( iunart, 'artn', 'FORMATTED', file_exists )
+  OPEN( unit = iunart, file = filnam, form = 'formatted', status = 'unknown', iostat = ios )
+  ! write(999,*) 'open file:',trim(filnam), ios, file_exists
+  ! flush(999)
 
 
   WRITE (UNIT = iunart, FMT = * ) lpush_init, lperp, npush, nlanc, nlanciter, nlanccalls, &
