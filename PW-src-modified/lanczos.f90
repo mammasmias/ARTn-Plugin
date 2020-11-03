@@ -1,6 +1,6 @@
 
-SUBROUTINE lanczos( nat, force, vel, acc, alpha_init, dt, &
-     v_in, nlanciter, nlanc, lowest_eigval, lowest_eigvec, pushdir, prfx, tmpdir )
+SUBROUTINE lanczos( nat, alat, force, vel, acc, alpha_init, dt, &
+     v_in, dlanc, nlanciter, nlanc, lowest_eigval, lowest_eigvec, pushdir, prfx, tmpdir )
   USE kinds,            ONLY : DP
   ! USE io_files, ONLY: prefix,seqopn,tmp_dir
   !
@@ -10,18 +10,18 @@ SUBROUTINE lanczos( nat, force, vel, acc, alpha_init, dt, &
   INTEGER,                INTENT(IN) :: nat
   REAL(DP), DIMENSION(3,nat), INTENT(IN) :: v_in
   REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: vel, acc
-  REAL(DP), INTENT(IN) :: alpha_init, dt   
+  REAL(DP), INTENT(IN) :: alpha_init, dt, alat   
   REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: force
   REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: lowest_eigvec
   REAL(DP), INTENT(INOUT) :: lowest_eigval
   REAL(DP), DIMENSION(3,nat), INTENT(IN) :: pushdir
+  REAL(DP), INTENT(IN) :: dlanc
   CHARACTER(LEN=255), INTENT(IN) :: prfx, tmpdir
   !
   INTEGER :: i, j, io, id_min
   INTEGER, PARAMETER ::  iunlanc = 51
   INTEGER, INTENT(INOUT) :: nlanciter
   INTEGER, INTENT(INOUT) :: nlanc
-  REAL(DP) :: dlanc
   REAL(DP), PARAMETER :: eigvec_thr = 1.0D-3, eigval_thr = 1.0D-2
   REAL(DP), DIMENSION(3,nat) :: force_old, lowest_eigvec_old
   REAL(DP), ALLOCATABLE :: v0(:,:), v1(:,:), v2(:,:), q(:,:), eigvals(:)
@@ -63,7 +63,7 @@ SUBROUTINE lanczos( nat, force, vel, acc, alpha_init, dt, &
   lowest_eigval_old = lowest_eigval
   write (*,*) "Stored Eigenvalue:",lowest_eigval_old
   ! parameter for lanczos moves
-  dlanc = 1.0D-2
+  ! dlanc = 1.0D-2
   IF ( file_exists ) THEN
      !
      ! read lanczos data from the previous iteration  ...
@@ -103,7 +103,7 @@ SUBROUTINE lanczos( nat, force, vel, acc, alpha_init, dt, &
      CLOSE (UNIT = iunlanc, STATUS = 'KEEP')
 
      ! CALL lancmove(nat, v0, dlanc, force )
-     CALL move_mode( nat, dlanc, v0, force, &
+     CALL move_mode( nat,alat, dlanc, v0, force, &
           vel, acc, alpha_init, dt, & 
           0, pushdir, 'lanc', prfx, tmpdir)
      ! GO BACK (make move, get new force)
@@ -142,7 +142,7 @@ SUBROUTINE lanczos( nat, force, vel, acc, alpha_init, dt, &
           force(:,:)
      CLOSE (UNIT = iunlanc, STATUS = 'KEEP')
      ! CALL lancmove(nat, v1/beta, dlanc, force )
-     CALL move_mode( nat, dlanc, v1/beta, force, &
+     CALL move_mode( nat, alat, dlanc, v1/beta, force, &
           vel, acc, alpha_init, dt,  & 
           0, pushdir, 'lanc', prfx, tmpdir)
      ! CALL move_mode( nat, dlanc, v1/beta, force, 0, pushdir, 'lanc')
@@ -262,7 +262,7 @@ SUBROUTINE lanczos( nat, force, vel, acc, alpha_init, dt, &
            ! make the move back & delete the lanczos file
            ! CALL lancmove(nat, v1(:,:), dlanc, force(:,:) )
            ! CALL move_mode( nat, dlanc, v1, force, 0, pushdir, 'lanc')
-           CALL move_mode( nat, dlanc, v1, force, &
+           CALL move_mode( nat, alat, dlanc, v1, force, &
                 vel, acc, alpha_init, dt,  & 
                 0, pushdir, 'lanc', prfx, tmpdir)
            ! CALL seqopn( iunlanc, 'artnlanc', 'FORMATTED', file_exists )
@@ -292,7 +292,7 @@ SUBROUTINE lanczos( nat, force, vel, acc, alpha_init, dt, &
            ! for the next move v2 will be v1 ...; call move with v2
            !
            ! CALL lancmove(nat, v2(:,:), dlanc, force(:,:) )
-           CALL move_mode( nat, dlanc, v2, force, &
+           CALL move_mode( nat, alat, dlanc, v2, force, &
                 vel, acc, alpha_init, dt,  & 
                 0, pushdir, 'lanc', prfx, tmpdir)
            ! CALL move_mode( nat, dlanc, v2, force, 0, pushdir, 'lanc')
@@ -310,7 +310,7 @@ SUBROUTINE lanczos( nat, force, vel, acc, alpha_init, dt, &
         ENDDO
         ! make the final move & delete lanczos file
         ! CALL lancmove(nat, v1(:,:), dlanc, force(:,:) )
-        CALL move_mode( nat, dlanc, v1, force, &
+        CALL move_mode( nat, alat, dlanc, v1, force, &
              vel, acc, alpha_init, dt, & 
              0, pushdir, 'lanc', prfx, tmpdir)
         ! CALL move_mode( nat, dlanc, v1, force, 0, pushdir, 'lanc')

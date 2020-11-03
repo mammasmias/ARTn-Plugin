@@ -1,4 +1,4 @@
-SUBROUTINE move_mode(nat, dlanc, v1, force, &
+SUBROUTINE move_mode(nat, alat ,dlanc, v1, force, &
                      vel, acc, alpha_init, dt, &
                      istepperp, push, &
                      mode, prfx, tmpdir )
@@ -6,13 +6,11 @@ SUBROUTINE move_mode(nat, dlanc, v1, force, &
   ! unify the move routines
   !
   USE kinds, ONLY: DP
-  USE cell_base, ONLY: alat
   USE constants, ONLY: amu_ry
-  ! USE io_files, ONLY: prefix, seqopn, tmp_dir
   !
   IMPLICIT NONE
   INTEGER, INTENT(IN) :: nat
-  REAL(DP), INTENT(IN) :: dlanc
+  REAL(DP), INTENT(IN) :: dlanc, alat 
   REAL(DP), DIMENSION(3,nat), INTENT(IN) :: v1
   REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: force
   REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: vel, acc

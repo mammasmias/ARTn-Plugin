@@ -256,7 +256,7 @@ SUBROUTINE forces()
   !
   ! ... call void routine for user define/ plugin patches on external forces
   !
-  CALL plugin_ext_forces(force(:,:))
+  CALL plugin_ext_forces()
   !
   ! ... write on output the forces
   !

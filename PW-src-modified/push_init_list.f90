@@ -1,5 +1,5 @@
 
-SUBROUTINE push_init_list (nat, natpush, idum, push_ids, add_const, init_step_size, push)
+SUBROUTINE push_init_list (nat, idum, push_ids, add_const, init_step_size, push)
   !
   ! subroutine that generates a random push to a list of atoms specified by user;
   !
@@ -8,9 +8,9 @@ SUBROUTINE push_init_list (nat, natpush, idum, push_ids, add_const, init_step_si
   !
   USE kinds, ONLY : DP
   IMPLICIT none
-  INTEGER, INTENT(IN) :: nat,natpush, idum
+  INTEGER, INTENT(IN) :: nat,idum
   INTEGER :: na
-  INTEGER, INTENT(IN) :: push_ids(natpush)
+  INTEGER, INTENT(IN) :: push_ids(nat)
   REAL(DP), INTENT(IN) :: init_step_size
   REAL(DP), INTENT(IN) :: add_const(4,nat)
   REAL(DP), INTENT(OUT) :: push(3,nat)
