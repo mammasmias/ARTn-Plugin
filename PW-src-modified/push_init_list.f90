@@ -1,5 +1,5 @@
 
-SUBROUTINE push_init_list (nat, idum, push_ids, add_const, init_step_size, push)
+SUBROUTINE push_init_list (nat, idum, push_ids, add_const, init_step_size, push,mode)
   !
   ! subroutine that generates a random push to a list of atoms specified by user;
   !
@@ -13,6 +13,7 @@ SUBROUTINE push_init_list (nat, idum, push_ids, add_const, init_step_size, push)
   INTEGER, INTENT(IN) :: push_ids(nat)
   REAL(DP), INTENT(IN) :: init_step_size
   REAL(DP), INTENT(IN) :: add_const(4,nat)
+  CHARACTER(LEN=4), INTENT(IN) :: mode
   REAL(DP), INTENT(OUT) :: push(3,nat)
   REAL(DP), EXTERNAL :: ran3
   REAL(DP) :: dr2, pushat(3)
@@ -23,13 +24,20 @@ SUBROUTINE push_init_list (nat, idum, push_ids, add_const, init_step_size, push)
   !
   push(:,:) = 0.d0
   lvalid = .false.
-  DO na=1,nat
-     IF (ANY(push_ids == na)) THEN
-        atom_displaced(na) = 1
-     ELSE
-        atom_displaced(na) = 0
-     ENDIF
-  ENDDO
+  
+  IF ( mode == 'all' ) THEN
+     ! displace all atoms 
+     atom_displaced(:) = 1
+  ELSE IF ( mode == 'list' ) THEN 
+     ! displace only atoms in list 
+     DO na=1,nat
+        IF (ANY(push_ids == na)) THEN
+           atom_displaced(na) = 1
+        ELSE
+           atom_displaced(na) = 0
+        ENDIF
+     ENDDO
+  ENDIF
   !
   !
   DO na=1,nat
