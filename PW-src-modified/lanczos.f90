@@ -210,14 +210,8 @@ SUBROUTINE lanczos( nat, alat, force, vel, acc, alpha_init, dt, &
         ! set max number of iternations to current number
         !
         nlanciter = nlanc
-        !
-        ! Backtrack to initial position (sum all lanczos vectors generated)
-        !
+        ! increase lanczos counter for last step 
         nlanc = nlanc + 1
-        v1(:,:) = 0.D0
-        DO i = 1, nlanciter
-           v1(:,:) = v1(:,:) - Vmat(:,:,i)
-        ENDDO
         !
      ENDIF
      !
@@ -245,10 +239,6 @@ SUBROUTINE lanczos( nat, alat, force, vel, acc, alpha_init, dt, &
            ! Backtrack to initial position (sum all lanczos vectors generated)
            !
            nlanc = nlanc + 1
-           v1(:,:) = 0.D0
-           DO i = 1, nlanciter
-              v1(:,:) = v1(:,:) - Vmat(:,:,i)
-           ENDDO
            !
         ELSE
            !
@@ -265,6 +255,8 @@ SUBROUTINE lanczos( nat, alat, force, vel, acc, alpha_init, dt, &
            !
         ENDIF
         !
+     ELSE
+        
      END IF
      !
   ENDIF
@@ -273,6 +265,11 @@ SUBROUTINE lanczos( nat, alat, force, vel, acc, alpha_init, dt, &
   !
   IF( nlanc > nlanciter ) THEN
      ! lanczos has converged, no need to write anything, delete file
+     ! backtrack to initial position here 
+     v1(:,:) = 0.D0
+     DO i = 1, nlanciter
+           v1(:,:) = v1(:,:) - Vmat(:,:,i)
+     ENDDO
      CLOSE( UNIT = iunlanc, STATUS = 'DELETE' )
   ELSE
      ! write data and close file
