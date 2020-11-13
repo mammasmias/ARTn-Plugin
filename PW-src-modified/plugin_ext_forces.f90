@@ -21,13 +21,21 @@ SUBROUTINE plugin_ext_forces()
   USE ions_base,     ONLY : nat, tau, if_pos, ityp, amass
   USE cell_base,     ONLY : alat, at
   USE force_mod,     ONLY : force
+  USE ener,          ONLY : etot 
+  USE relax,         ONLY : epsf, epse
   USE control_flags, ONLY : istep
   USE dynamics_module, ONLY : vel, acc, dt, fire_alpha_init
   USE io_files,      ONLY : prefix,seqopn,tmp_dir
   !
   IMPLICIT NONE
-
+  ! 
+  LOGICAL :: lconv 
   IF ( ionode ) THEN
-     CALL artn(force,nat,alat,istep,if_pos,vel,acc,dt,fire_alpha_init,prefix,tmp_dir) 
+     CALL artn(force,etot,epsf,nat,alat,istep,if_pos,vel,acc,dt,fire_alpha_init,lconv,prefix,tmp_dir) 
   ENDIF
+  IF ( lconv ) THEN
+     WRITE (*,*) "ARTn calculation converged, stopping" 
+     !STOP 1
+  END IF
+  
 END SUBROUTINE plugin_ext_forces
