@@ -3,8 +3,7 @@ SUBROUTINE displacement_validation( atom_id, atom_const, push, lvalid)
   !
   ! subroutine that checks if the initial_displacement is within given parameters
   !
-  USE constants, ONLY : PI
-  USE kinds, ONLY : DP
+  USE artn_params, ONLY : DP, PI 
   !
   IMPLICIT NONE
   INTEGER, INTENT(IN) :: atom_id

@@ -1,5 +1,5 @@
 SUBROUTINE diag(n, A, eigvals, vec)
-  USE kinds,            ONLY : DP
+  USE artn_params,            ONLY : DP
   !! assuming a general square matrix (can be nonsymmetric).
   !! On output A is overwritten by eigenvectors in rows, if vec=0, then
   !! A is just 0.0 on output.

@@ -1,6 +1,6 @@
 
 SUBROUTINE center ( vec, nat)
-  USE kinds, ONLY: DP
+  USE artn_params, ONLY: DP
   !
   ! takes as input a vector of size (3,nat) and centers it
   !

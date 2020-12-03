@@ -5,7 +5,8 @@ MODULE artn_params
   IMPLICIT none
   SAVE
   ! constants 
-  INTEGER, PARAMETER :: DP = selected_real_kind(14,200) ! double precision 
+  INTEGER, PARAMETER :: DP = selected_real_kind(14,200) ! double precision
+  REAL(DP), PARAMETER :: PI     = 3.14159265358979323846_DP ! pi 
   REAL(DP), PARAMETER :: RY2EV =  13.605691930242388_DP ! Ry to eV conversion 
   REAL(DP), PARAMETER :: B2A =  0.529177210903_DP ! bohr to angstrom conversion
   REAL(DP), PARAMETER :: AMU_RY = 911.4442431086565_DP ! calculated from QE using DP 
