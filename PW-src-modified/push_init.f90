@@ -6,7 +6,7 @@ SUBROUTINE push_init (nat, idum, push_ids, add_const, init_step_size, push,mode)
   !
   ! the user should supply: number and list of atoms to push; and add_constraints on these atoms
   !
-  USE kinds, ONLY : DP
+  USE artn_params, ONLY : DP
   IMPLICIT none
   INTEGER, INTENT(IN) :: nat,idum
   INTEGER :: na
