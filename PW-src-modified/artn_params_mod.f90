@@ -7,7 +7,8 @@ MODULE artn_params
   ! constants 
   INTEGER, PARAMETER :: DP = selected_real_kind(14,200) ! double precision 
   REAL(DP), PARAMETER :: RY2EV =  13.605691930242388_DP ! Ry to eV conversion 
-  REAL(DP), PARAMETER :: B2A =  0.529177210903_DP ! bohr to angstrom conversion 
+  REAL(DP), PARAMETER :: B2A =  0.529177210903_DP ! bohr to angstrom conversion
+  REAL(DP), PARAMETER :: AMU_RY = 911.4442431086565_DP ! calculated from QE using DP 
   INTEGER, PARAMETER :: iunartin = 52  ! fortran file unit for ARTn input file  
   INTEGER, PARAMETER :: iunartout = 53 ! fortran file unit for ARTn output file 
   INTEGER, PARAMETER :: iunsaddle = 54 ! fortran file unit for writing the saddle coords 

@@ -3,7 +3,7 @@ SUBROUTINE perpforce(force,if_pos,push,fpara,nat)
   !
   ! subroutine that subtracts parallel components to push from force
   !
-  USE kinds, ONLY : DP
+  USE artn_params, ONLY : DP
   IMPLICIT NONE
   INTEGER, INTENT(IN) :: nat
   REAL(DP), INTENT(IN)  :: push(3,nat)

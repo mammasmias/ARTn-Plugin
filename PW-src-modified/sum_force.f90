@@ -3,7 +3,7 @@ SUBROUTINE sum_force(force,nat,force_tot)
   !
   ! subroutine that sums the forces on all atoms and returns the total force
   !
-  USE kinds, ONLY : DP
+  USE artn_params, ONLY : DP
   IMPLICIT NONE
   INTEGER, INTENT(IN) :: nat
   REAL(DP), INTENT(IN) :: force(3,nat)

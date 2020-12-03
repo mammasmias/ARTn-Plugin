@@ -5,8 +5,7 @@ SUBROUTINE move_mode(nat, alat ,dlanc, v1, force, &
   !
   ! unify the move routines
   !
-  USE kinds, ONLY: DP
-  USE constants, ONLY: amu_ry
+  USE artn_params, ONLY: DP, AMU_RY 
   !
   IMPLICIT NONE
   INTEGER, INTENT(IN) :: nat
@@ -19,7 +18,7 @@ SUBROUTINE move_mode(nat, alat ,dlanc, v1, force, &
   REAL(DP), DIMENSION(3,nat), INTENT(IN) :: push
   CHARACTER(LEN=4), INTENT(IN) :: mode
   CHARACTER(LEN=255), INTENT(IN) :: tmpdir, prfx
-
+  ! 
   REAL(DP), EXTERNAL :: ddot,dnrm2
   ! variables read from the FIRE minimization algorithm
   INTEGER :: nsteppos
