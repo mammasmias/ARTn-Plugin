@@ -1,80 +1,47 @@
 
 SUBROUTINE lanczos( nat, alat, force, vel, acc, alpha_init, dt, &
-     v_in, dlanc, nlanciter, nlanc, lowest_eigval, lowest_eigvec, pushdir, prfx, tmpdir )
-  USE kinds,            ONLY : DP
+     v_in, dlanc, nlanciter, nlanc, lowest_eigval, lowest_eigvec, pushdir, prfx,tmpdir )
+  USE artn_params,            ONLY: DP, Vmat, H, force_old, initialize_lanczos 
   !
   ! Lanczos subroutine for the ARTn algorithm; based on the lanczos subroutine as written by M. Gunde
   !
   IMPLICIT NONE
   INTEGER,                INTENT(IN) :: nat
   REAL(DP), DIMENSION(3,nat), INTENT(IN) :: v_in
-  REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: vel, acc
+  REAL(DP), DIMENSION(3,nat), INTENT(IN) :: pushdir
+  REAL(DP), INTENT(IN) :: dlanc
   REAL(DP), INTENT(IN) :: alpha_init, dt, alat
+  CHARACTER(LEN=255), INTENT(IN) :: tmpdir, prfx
+  REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: vel, acc
   REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: force
   REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: lowest_eigvec
   REAL(DP), INTENT(INOUT) :: lowest_eigval
-  REAL(DP), DIMENSION(3,nat), INTENT(IN) :: pushdir
-  REAL(DP), INTENT(IN) :: dlanc
-  CHARACTER(LEN=255), INTENT(IN) :: prfx, tmpdir
-  !
-  INTEGER :: i, j, io, id_min
-  INTEGER, PARAMETER ::  iunlanc = 51
   INTEGER, INTENT(INOUT) :: nlanciter
   INTEGER, INTENT(INOUT) :: nlanc
+  ! 
+  INTEGER :: i, j, io, id_min
   REAL(DP), PARAMETER :: eigvec_thr = 1.0D-3, eigval_thr = 1.0D-2
-  REAL(DP), DIMENSION(3,nat) :: force_old, lowest_eigvec_old
   REAL(DP), ALLOCATABLE :: v1(:,:), q(:,:), eigvals(:)
-  REAL(DP), ALLOCATABLE :: Vmat(:,:,:), Vmat_mul(:,:), H(:,:), Hstep(:,:)
+  REAL(DP), ALLOCATABLE :: Vmat_mul(:,:), Hstep(:,:)
   REAL(DP) :: lowest_eigvec_tmp(3*nat)
   REAL(DP) :: dir
   REAL(DP), EXTERNAL :: ran3,dnrm2,ddot
   REAL(DP) :: alpha, beta, lowest_eigval_old, eigvec_diff, largest_eigvec_diff, eigval_diff
-  LOGICAL :: file_exists
-  CHARACTER(LEN=255) :: filnam
-  INTEGER :: ios
-
   ! allocate vectors and put to zero
   ALLOCATE( q(3,nat), source=0.D0 )
   ALLOCATE( v1(3,nat), source=0.D0)
-
   ! allocate matrices and put to zero
   ALLOCATE( Vmat_mul(3*nat,nlanciter), source=0.D0)
-  ALLOCATE( Vmat(3,nat,1:nlanciter), source=0.D0 )
-  ALLOCATE( H(1:nlanciter,1:nlanciter), source=0.D0 )
   ALLOCATE( Hstep(1:nlanciter,1:nlanciter), source=0.D0 )
-  force_old(:,:) = 0.D0
-  !
-  ! open the lanczos data file
-  !
-  filnam = trim(tmpdir) // '/' // trim(prfx) // '.' // 'artnlanc'
-  INQUIRE( file = filnam, exist = file_exists )
-  OPEN( unit = iunlanc, file = filnam, form = 'formatted', status = 'unknown', iostat = ios)
-  ! write(999,*) 'lanczos'
-  ! write(999,*) 'open file:',trim(filnam), ios, file_exists
-  ! flush(999)
-  !
-  ! initialize lanczos counter and variables
-  !
-  ! store the eignvalue and eigenvec of previous iteration
-  write (*,*) "Read lowest Eigenvalue:",lowest_eigval
-  lowest_eigvec_old(:,:) = lowest_eigvec(:,:)
+  ! 
+  ! store the eigenvalue of the previous iteration
   lowest_eigval_old = lowest_eigval
-  write (*,*) "Stored Eigenvalue:",lowest_eigval_old
-  !
-  !
-  IF ( file_exists ) THEN
-     !
-     ! read lanczos data from the previous iteration, if it exists
-     !
-     READ( UNIT = iunlanc, FMT = * )  Vmat(:,:,1:nlanciter), H(1:nlanciter,1:nlanciter),  &
-         force_old(:,:)
-     REWIND( UNIT = iunlanc )
-     !
-  END IF
-  !
-  ! in the first lanczos step we should give a random push to initiate the algorithm and then calc the force of the new pos with qe.
   !
   IF ( nlanc  == 0 ) THEN
+     !
+     ! initialize the Lanczos algorithm (allocate the matrices) 
+     !
+     CALL initialize_lanczos(nlanciter,nat) 
      !
      ! normalize initial vector
      ! NOTE: the inital vector to lanczos is random
@@ -85,7 +52,6 @@ SUBROUTINE lanczos( nat, alat, force, vel, acc, alpha_init, dt, &
      ! store this vector
      !
      Vmat(:,:,1) = v1(:,:)
-     write (*,*) "ARTn Lanczos: initial vec:", v1(:,:)
      nlanc = nlanc + 1
      !
   ELSEIF (nlanc == 1 ) THEN
@@ -97,15 +63,9 @@ SUBROUTINE lanczos( nat, alat, force, vel, acc, alpha_init, dt, &
      q(:,:) = force(:,:) - force_old(:,:)
      !! now do q(:) = [Hessian]{dR}/d_lanc = [Hessian]{v0}
      q(:,:) = -q(:,:) / dlanc
+     !
      alpha = ddot(3*nat,Vmat(:,:,1),1,q(:,:),1)
-     ! check if the eigenvalue
-     !IF ( lowest_eigval_old /= 0.D0) THEN
-     !   IF ( (alpha - lowest_eigval_old)/lowest_eigval_old .lt. eigval_thr ) THEN
-     !      write (*,*) "ARTn Lanczos: new eigenvalue close to the old eigenvalue, STOPPING"
-     !      ! set the lanczos counter to current number of lanczos iterations
-     !      nlanciter = nlanc
-     !   ENDIF
-     !ENDIF
+     !
      v1(:,:) = q(:,:) - alpha*Vmat(:,:,1)
      !
      ! beta is the norm of v, used for next step
@@ -116,7 +76,6 @@ SUBROUTINE lanczos( nat, alat, force, vel, acc, alpha_init, dt, &
      ! store the vecs for future cycles
      !
      Vmat(:,:,2) = v1(:,:)
-     write (*,*) "ARTn Lanczos: second vec:", v1(:,:)
      H(1,1) = alpha
      H(2,1) = beta
      H(1,2) = beta
@@ -165,7 +124,7 @@ SUBROUTINE lanczos( nat, alat, force, vel, acc, alpha_init, dt, &
      Vmat_mul(nat+1:2*nat,:) = Vmat(2,:,:)
      Vmat_mul(2*nat+1:3*nat,:) = Vmat(3,:,:)
      !
-     ! H now sotres eigvecs of H
+     ! H now stores eigvecs of H
      ! eigvecs in coordinate space are computed as matmul(V, eigvec_H )
      !
      lowest_eigvec_tmp(:) = matmul(Vmat_mul(:,:),Hstep(:,id_min))
@@ -177,37 +136,20 @@ SUBROUTINE lanczos( nat, alat, force, vel, acc, alpha_init, dt, &
      !
      dir = ddot(3*nat,lowest_eigvec,1, pushdir, 1)
      IF ( dir < 0.D0 ) THEN
-        WRITE (*,*) "Dir is less than 0, flipping eigvec:", lowest_eigvec(:,:)
         lowest_eigvec(:,:) = -1.D0*lowest_eigvec(:,:)
      ENDIF
-     WRITE (*,*) "ARTn Lanczos: Eigenvalues:", eigvals(:), "at step:", nlanc
      !
      DEALLOCATE( eigvals )
-     ! calculate the largest difference between current eigenvec vs previous
-     !
-     !largest_eigvec_diff = 0.D0
-     !DO i=1,nat
-     !   DO j=1,3
-     !      eigvec_diff = ABS(lowest_eigvec(j,i)) - ABS(lowest_eigvec_old(j,i))
-     !      IF ( ABS(eigvec_diff) > largest_eigvec_diff ) THEN
-     !         largest_eigvec_diff = eigvec_diff
-     !      ENDIF
-     !   ENDDO
-     !ENDDO
      !
      ! Check for the convergence of the lanczos eigenvalue
      !
      eigval_diff = (lowest_eigval - lowest_eigval_old)/lowest_eigval_old
      write(555,'(i4,2f9.4)') nlanc, lowest_eigval, eigval_diff
      flush(555)
-     write (*,*) "Eigenvalue difference:", eigval_diff
      IF ( ABS(eigval_diff) <= eigval_thr ) THEN
         !
         ! lanczos has converged
-        !
-        WRITE (*,*) "ARTn Lanczos: eigenvalue converged at step:", nlanc, "eigenthr:", eigval_thr
-        !
-        ! set max number of iternations to current number
+        ! set max number of iternations to current iteration  
         !
         nlanciter = nlanc
         ! increase lanczos counter for last step 
@@ -234,7 +176,6 @@ SUBROUTINE lanczos( nat, alat, force, vel, acc, alpha_init, dt, &
            ! new lanczos vector very small, stop (converge)
            !
            nlanciter = nlanc
-           write (*,*) "ARTn Lanczos: Stopped because Lanczos vector very small!", dnrm2(3*nat, v1(:,:), 1)
            !
            ! Backtrack to initial position (sum all lanczos vectors generated)
            !
@@ -245,7 +186,6 @@ SUBROUTINE lanczos( nat, alat, force, vel, acc, alpha_init, dt, &
            ! normalize the new vector
            !
            v1(:,:) = v1(:,:)/dnrm2(3*nat,v1(:,:),1)
-           write (*,*) "ARTn Lanczos: next vec:", v1(:,:)
            Vmat(:,:,nlanc+1) = v1(:,:)
            ! store values to H
            beta = ddot(3*nat, q, 1, v1, 1)
@@ -256,27 +196,23 @@ SUBROUTINE lanczos( nat, alat, force, vel, acc, alpha_init, dt, &
         ENDIF
         !
      ELSE
-        
+        ! increas counter if lanczos is not converged in nlanciter
+       nlanc = nlanc + 1 
      END IF
      !
   ENDIF
+  ! store the force
+  force_old(:,:) = force(:,:)
   !
   ! write data for next lanczos step
   !
   IF( nlanc > nlanciter ) THEN
      ! lanczos has converged, no need to write anything, delete file
-     ! backtrack to initial position here 
+     ! backtrack to initial position here
      v1(:,:) = 0.D0
      DO i = 1, nlanciter
            v1(:,:) = v1(:,:) - Vmat(:,:,i)
      ENDDO
-     CLOSE( UNIT = iunlanc, STATUS = 'DELETE' )
-  ELSE
-     ! write data and close file
-     WRITE (UNIT = iunlanc, FMT = * ) Vmat(:,:,1:nlanciter), H(1:nlanciter,1:nlanciter), &
-          force(:,:)
-     CLOSE (UNIT = iunlanc, STATUS = 'KEEP')
-     !
   ENDIF
   !
   ! write data for move
@@ -285,9 +221,9 @@ SUBROUTINE lanczos( nat, alat, force, vel, acc, alpha_init, dt, &
        vel, acc, alpha_init, dt, &
        0, pushdir, 'lanc', prfx, tmpdir)
   !
-  ! deallocate
+  ! deallocate the matrices used only in the iteration 
   !
   DEALLOCATE( q, v1 )
-  DEALLOCATE(Vmat, Vmat_mul, H, Hstep)
+  DEALLOCATE(Vmat_mul, Hstep)
 
 END SUBROUTINE lanczos

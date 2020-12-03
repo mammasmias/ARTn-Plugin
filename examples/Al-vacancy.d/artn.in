@@ -1,12 +1,12 @@
 &ARTN_PARAMETERS
   npushmin = 3 
-  convcrit = 1.0d-2
+  convcrit_init = 1.0d-2
   init_step_size = 1.5
-  ! parameters for the push
-  lpush_list = .true.
+! parameters for the push
+  push_mode = 'list'
   ! define which atoms are to be pushed and the constraints ...
   push_ids = 1
-  add_const(:,1) = 1.0
+  add_const(:,1) = 1.0, 0.0, 1.0 
   ! lanczos parameters
   dlanc = 1.D-2 
   nlanciter_init = 16

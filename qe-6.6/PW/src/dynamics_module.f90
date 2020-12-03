@@ -1174,6 +1174,8 @@ END SUBROUTINE proj_verlet
      conv_ions = ( etotold - etot ) < epse
      conv_ions = conv_ions .and. ( MAXVAL( ABS( force ) ) < epsf )
      !
+     WRITE (*,*) "FIRE force maxval:", MAXVAL( ABS( force )) 
+     ! 
      IF ( conv_ions ) THEN
         !
         WRITE( UNIT = stdout, &
