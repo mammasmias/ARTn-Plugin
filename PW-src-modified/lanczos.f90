@@ -20,10 +20,9 @@ SUBROUTINE lanczos( nat, alat, force, vel, acc, alpha_init, dt, &
   INTEGER, INTENT(INOUT) :: nlanc
   ! 
   INTEGER :: i, j, io, id_min
-  REAL(DP), PARAMETER :: eigvec_thr = 1.0D-3, eigval_thr = 1.0D-2
+  REAL(DP), PARAMETER :: eigval_thr = 1.0D-2
   REAL(DP), ALLOCATABLE :: v1(:,:), q(:,:), eigvals(:)
-  REAL(DP), ALLOCATABLE :: Vmat_mul(:,:), Hstep(:,:)
-  REAL(DP) :: lowest_eigvec_tmp(3*nat)
+  REAL(DP), ALLOCATABLE ::  Hstep(:,:)
   REAL(DP) :: dir
   REAL(DP), EXTERNAL :: ran3,dnrm2,ddot
   REAL(DP) :: alpha, beta, lowest_eigval_old, eigvec_diff, largest_eigvec_diff, eigval_diff
@@ -31,7 +30,6 @@ SUBROUTINE lanczos( nat, alat, force, vel, acc, alpha_init, dt, &
   ALLOCATE( q(3,nat), source=0.D0 )
   ALLOCATE( v1(3,nat), source=0.D0)
   ! allocate matrices and put to zero
-  ALLOCATE( Vmat_mul(3*nat,nlanciter), source=0.D0)
   ALLOCATE( Hstep(1:nlanciter,1:nlanciter), source=0.D0 )
   ! 
   ! store the eigenvalue of the previous iteration
@@ -118,19 +116,29 @@ SUBROUTINE lanczos( nat, alat, force, vel, acc, alpha_init, dt, &
         ENDIF
      ENDDO
      !
-     ! reshape the V mat for now (FIX this so it uses the DGEMM from lapack)
+     ! Hstep now stores eigvecs of H
+     ! eigvecs in coordinate space are computed as matmul(V, lowest_eigvec_H )
      !
-     Vmat_mul(1:nat,:) = Vmat(1,:,:)
-     Vmat_mul(nat+1:2*nat,:) = Vmat(2,:,:)
-     Vmat_mul(2*nat+1:3*nat,:) = Vmat(3,:,:)
+     ! Multiply matrices (V_1 | ... | V_nlanc)*H(min)=eigen(min) using dgemm of lapack  
+     !  
      !
-     ! H now stores eigvecs of H
-     ! eigvecs in coordinate space are computed as matmul(V, eigvec_H )
-     !
-     lowest_eigvec_tmp(:) = matmul(Vmat_mul(:,:),Hstep(:,id_min))
-     lowest_eigvec(1,:) = lowest_eigvec_tmp(1:nat)
-     lowest_eigvec(2,:) = lowest_eigvec_tmp(nat+1:2*nat)
-     lowest_eigvec(3,:) = lowest_eigvec_tmp(2*nat+1:3*nat)
+     ! The call to dgemm contains:
+     ! (see http://www.math.utah.edu/software/lapack/lapack-blas/dgemm.html)
+     ! 'N'    ... do not transpose Vmat
+     ! 'N'    ... do not transpose Hstep(:,id_min)
+     ! 3*nat  ... rows of Vmat(1:3,1:nat)
+     ! 1      ... columns of Hstep
+     ! nlanc  ... columns of Vmat, rows of Hstep
+     ! 1.0_DP ... alpha for dgemm
+     ! Vmat(:,:,1:nlanc) ... Vmat of current step
+     ! 3*nat             ... first dimension of Vmat
+     ! Hstep(:,id_min)   ... eigenvector with lowest eigenvalue of H 
+     ! nlanc             ... first dimension of Hstep 
+     ! 0.0_DP            ... beta of dgemm
+     ! lowest_eigvec     ... resulting eigenvector dimensions (1:3,1:nat)
+     ! 3*nat             ... first dimension of lowest_eigvec
+     ! 
+     CALL dgemm('N','N',3*nat,1,nlanc,1.0_DP,Vmat(:,:,1:nlanc),3*nat,Hstep(:,id_min),nlanc,0.0_DP,lowest_eigvec,3*nat)
      !
      ! check if the obtained eigenvec points in the same direction as the input eigvec
      !
@@ -224,6 +232,6 @@ SUBROUTINE lanczos( nat, alat, force, vel, acc, alpha_init, dt, &
   ! deallocate the matrices used only in the iteration 
   !
   DEALLOCATE( q, v1 )
-  DEALLOCATE(Vmat_mul, Hstep)
+  DEALLOCATE(Hstep)
 
 END SUBROUTINE lanczos

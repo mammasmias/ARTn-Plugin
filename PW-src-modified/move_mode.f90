@@ -3,7 +3,7 @@ SUBROUTINE move_mode(nat, alat ,dlanc, v1, force, &
                      istepperp, push, &
                      mode, prfx, tmpdir )
   !
-  ! unify the move routines
+  ! translate specified move to appropriate force and set FIRE parameters accordingly  
   !
   USE artn_params, ONLY: DP, AMU_RY 
   !
@@ -97,14 +97,6 @@ SUBROUTINE move_mode(nat, alat ,dlanc, v1, force, &
         alpha = 0.0_DP
         force(:,:) = force(:,:)*alat*amu_ry/dt_curr**2
         !
-     CASE( 'hess' )
-        ! write(*,*) 'MOVE: hess'
-        !
-        acc(:,:) = 0.D0
-        vel(:,:) = 0.D0
-        alpha = 0.D0
-        dt_curr = 0.D0
-     !
      CASE default
         write(*,*) 'Problem with move_mode!'
      END SELECT
