@@ -1,5 +1,5 @@
 
-SUBROUTINE lanczos( nat, alat, force, vel, acc, alpha_init, dt, &
+SUBROUTINE lanczos( nat, force, vel, acc, alpha_init, dt, &
      v_in, dlanc, nlanciter, nlanc, lowest_eigval, lowest_eigvec, pushdir, prfx,tmpdir )
   USE artn_params,            ONLY: DP, Vmat, H, force_old, initialize_lanczos 
   !
@@ -10,7 +10,7 @@ SUBROUTINE lanczos( nat, alat, force, vel, acc, alpha_init, dt, &
   REAL(DP), DIMENSION(3,nat), INTENT(IN) :: v_in
   REAL(DP), DIMENSION(3,nat), INTENT(IN) :: pushdir
   REAL(DP), INTENT(IN) :: dlanc
-  REAL(DP), INTENT(IN) :: alpha_init, dt, alat
+  REAL(DP), INTENT(IN) :: alpha_init, dt
   CHARACTER(LEN=255), INTENT(IN) :: tmpdir, prfx
   REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: vel, acc
   REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: force
@@ -225,7 +225,7 @@ SUBROUTINE lanczos( nat, alat, force, vel, acc, alpha_init, dt, &
   !
   ! write data for move
   !
-  CALL move_mode( nat, alat, dlanc, v1, force, &
+  CALL move_mode( nat, dlanc, v1, force, &
        vel, acc, alpha_init, dt, &
        0, pushdir, 'lanc', prfx, tmpdir)
   !

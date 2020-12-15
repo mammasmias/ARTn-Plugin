@@ -6,18 +6,18 @@
 
 # overwrite modified files
 cat PW-src-modified/plugin_ext_forces.f90 \
-    PW-src-modified/artn_params_mod.f90 \
-    PW-src-modified/center.f90 \
-    PW-src-modified/diag.f90 \
-    PW-src-modified/lanczos.f90 \
-    PW-src-modified/displacement_validation.f90 \
-    PW-src-modified/push_init.f90 \
-    PW-src-modified/sum_force.f90 \
-    PW-src-modified/perpforce.f90 \
-    PW-src-modified/move_mode.f90 \
-    PW-src-modified/write_report.f90 \
-    PW-src-modified/write_struct.f90 \
-    PW-src-modified/artn.f90 \
+    src/artn_params_mod.f90 \
+    src/center.f90 \
+    src/diag.f90 \
+    src/lanczos.f90 \
+    src/displacement_validation.f90 \
+    src/push_init.f90 \
+    src/sum_force.f90 \
+    src/perpforce.f90 \
+    src/move_mode.f90 \
+    src/write_report.f90 \
+    src/write_struct.f90 \
+    src/artn.f90 \
     > qe-6.6/PW/src/plugin_ext_forces.f90
 #cp  PW-src-modified/plugin_ext_forces.f90  qe-6.6/PW/src/
 

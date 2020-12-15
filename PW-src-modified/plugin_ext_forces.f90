@@ -34,7 +34,7 @@ SUBROUTINE plugin_ext_forces()
   ! ARTn convergence flag 
   ! 
   lconv = .false. 
-  ! 
+  !
   IF ( ionode ) THEN
      CALL artn(force,etot,epsf,nat,ityp,atm,tau,at,alat,istep,if_pos,vel,acc,dt,fire_alpha_init,lconv,prefix,tmp_dir) 
   ENDIF

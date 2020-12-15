@@ -934,13 +934,9 @@ SUBROUTINE proj_verlet( conv_ions )
     ! ... Damped dynamics ( based on the projected-Verlet algorithm )
     !
     vel(:,:) = tau(:,:) - tau_old(:,:)
-    !
-    ! we have modified the forces not sure 
     ! 
     CALL force_precond( istep, force, etotold )
     !
-
-    ! write (*,*) "qe force:",force(:,:)
     !
     acc(:,:) = force(:,:) / alat / amu_ry
     !
@@ -1106,6 +1102,7 @@ END SUBROUTINE proj_verlet
      CALL seqopn( 4, 'fire', 'FORMATTED', file_exists )
      !
      !
+     !
      IF ( file_exists ) THEN
         !
         ! ... the file is read ...   
@@ -1194,7 +1191,7 @@ END SUBROUTINE proj_verlet
      WRITE( stdout, '(/,5X,"Entering FIRE :",&
           & T28,"iteration",T37," = ",I5)' ) istep
      !
-     ! calculate acceleration
+     ! calculate acceleration 
      !
      acc(:,:) = force(:,:) / alat / amu_ry
      !
@@ -1222,6 +1219,8 @@ END SUBROUTINE proj_verlet
      ! velocity mixing 
      !
      vel(:,:) = (1.D0 - alpha)*vel(:,:) + alpha*force(:,:)*dnrm2(3*nat,vel,1)/dnrm2(3*nat,force,1)
+     ! 
+     step(:,:) = 0.0_DP
      !
      ! ... manipulate the time step ... 
      !   
@@ -1247,12 +1246,11 @@ END SUBROUTINE proj_verlet
      WRITE (stdout, '(/,5X, "FIRE Parameters: P = ", F10.8 ", dt = " F5.2", & 
           alpha = " F5.3, " nsteppos = ", I3, " at step", I3, /)' ) P, dt_curr, alpha, nsteppos, istep
      ! 
-     step(:,:) = 0.0_DP
      ! 
      nsteppos = nsteppos + 1
      ! 
      ! calculate the displacement
-     ! 
+     !
      step(:,:) = step(:,:) +  vel(:,:)*dt_curr + 0.5_DP*acc(:,:)*dt_curr**2
      !
      norm_step = dnrm2( 3*nat, step, 1 )

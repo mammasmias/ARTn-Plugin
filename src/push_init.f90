@@ -15,7 +15,7 @@ SUBROUTINE push_init (nat, idum, push_ids, add_const, init_step_size, push,mode)
   REAL(DP), INTENT(IN) :: add_const(4,nat)
   CHARACTER(LEN=4), INTENT(IN) :: mode
   REAL(DP), INTENT(OUT) :: push(3,nat)
-  REAL(DP), EXTERNAL :: ran3
+  REAL(DP), EXTERNAL :: ran3, dnrm2 
   REAL(DP) :: dr2, pushat(3)
   LOGICAL :: lvalid
   INTEGER :: atom_displaced(nat)
@@ -55,9 +55,14 @@ SUBROUTINE push_init (nat, idum, push_ids, add_const, init_step_size, push,mode)
         ENDDO
      ENDIF
   ENDDO
+  ! if all atoms are pushed center the push vector to avoid translational motion 
+  IF ( mode == 'all')  CALL center(push(:,:), nat)
+  ! 
   !
-  ! scale the push according to initial step size
+  ! normalize so that maxval of the vector is 1.0
   !
+  push(:,:) = push(:,:)/MAXVAL(ABS(push(:,:)))
+  ! scale initial push vector according to step size 
   push(:,:) = init_step_size*push(:,:)
 
 END SUBROUTINE push_init

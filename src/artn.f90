@@ -9,7 +9,7 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
   ! artn_params for variables and counters that need to be stored   
   ! DEFINED IN: artn_params_mod.f90
   ! 
-  USE artn_params, ONLY: DP, RY2EV, iunartin, iunartout, iunsaddle, &
+  USE artn_params, ONLY: DP, RY2EV,B2A, iunartin, iunartout, iunsaddle, &
        lpush_init,lperp,leigen,llanczos, &
        istepperp, neigenstep, npush, nlanc, nlanciter, if_pos_ct, &
        lowest_eigval, etot_init, &
@@ -95,20 +95,23 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
      npush = npush + 1
      ! 
      ! modify the force to be equal to the push
-     ! 
-     force(:,:) =  push(:,:)
      !
-     CALL write_report(etot,force_in, 'push' , if_pos, istep, nat,  iunartout)
+     force(:,:) =  push(:,:)
+     CALL move_mode( nat, dlanc, v_in, force, &
+          vel, acc, fire_alpha_init, dt,  &
+          istepperp, push, 'eign', prefix, tmp_dir)
+     !
+     CALL write_report(etot,force_in, lowest_eigval, 'push' , if_pos, istep, nat,  iunartout)
      ! 
   ELSE IF ( lperp ) THEN
      !
      !  subtract parrallel components to push from force
      !
      CALL perpforce(force,if_pos,push,fpara,nat)
-     CALL move_mode( nat, alat, dlanc, v_in, force, &
-          vel, acc, fire_alpha_init, dt, &
+     !
+     CALL move_mode( nat,  dlanc, v_in, force, &
+          vel, acc, fire_alpha_init, dt,  &
           istepperp, push, 'perp', prefix, tmp_dir)
-     ! 
      istepperp = istepperp + 1
      !
      IF (( MAXVAL( ABS(force) )) < convcrit_init ) THEN
@@ -120,16 +123,19 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
         IF ( npush < npushmin ) THEN
            ! continue pushing in the specified direction
            force(:,:) =  push(:,:)
+           CALL move_mode( nat, dlanc, v_in, force, &
+                vel, acc, fire_alpha_init, dt,  &
+                istepperp, push, 'eign', prefix, tmp_dir)
            npush = npush + 1
            lperp = .true.
-           CALL write_report(etot,force_in, 'push' , if_pos, istep, nat,  iunartout)
+           CALL write_report(etot,force_in, lowest_eigval, 'push' , if_pos, istep, nat,  iunartout)
         ELSE IF ( npush >= npushmin  ) THEN
            ! regenerate force & start lanczos
            force(:,:) = force_in(:,:)
            llanczos = .true.
         END IF
      ELSE
-        CALL write_report(etot,force_in, 'perp' , if_pos, istep, nat,  iunartout)       
+        CALL write_report(etot,force_in, lowest_eigval, 'perp' , if_pos, istep, nat,  iunartout)       
      END IF
      ! leigen is always .true. after we obtain a good eigenvector
      ! except during lanczos iterations 
@@ -145,18 +151,22 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
         convcrit_init = convcrit_final  
      END IF
      ! rescale the eigenvector according to the current force in the parallel direction
-     current_step_size = MIN(step_size,ABS(fpara_tot)/MAX(ABS(lowest_eigval),0.5_DP))
+     ! see Cances_JCP130: some improvements of the ART technique doi:10.1063/1.3088532
      ! 
-     eigenvec(:,:) = -SIGN(1.0D0,fpara_tot)*eigenvec(:,:)*current_step_size
+     ! 0.13 is taken from ARTn, 0.5 eV/Angs^2 corresponds roughly to 0.01 Ry/Bohr^2
+     ! 
+     current_step_size = MIN(step_size,ABS(fpara_tot)/MAX(ABS(lowest_eigval),0.01_DP))
+     ! 
+     eigenvec(:,:) = -SIGN(1.0D0,fpara_tot)*eigenvec(:,:)*current_step_size 
      !  
      force(:,:) = eigenvec(:,:)
-     CALL move_mode( nat, alat, dlanc, v_in, force, &
+     CALL move_mode( nat, dlanc, v_in, force, &
           vel, acc, fire_alpha_init, dt,  &
           istepperp, push, 'eign', prefix, tmp_dir)
      ! update eigenstep counter 
      neigenstep = neigenstep + 1
      
-     CALL write_report(etot,force_in, 'eign' , if_pos, istep, nat,  iunartout)
+     CALL write_report(etot,force_in, lowest_eigval, 'eign' , if_pos, istep, nat,  iunartout)
      ! count the number of steps made with the eigenvector
      IF ( neigenstep == neigenstepmax  ) THEN
         ! do a perpendicular relax
@@ -171,7 +181,7 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
   !
   IF ( llanczos ) THEN 
      !
-     CALL write_report(etot,force_in, 'lanc' , if_pos, istep, nat,  iunartout)
+     CALL write_report(etot,force_in, lowest_eigval, 'lanc' , if_pos, istep, nat,  iunartout)
      IF (nlanc == 0 ) THEN
         IF ( .not. leigen ) THEN
            !
@@ -201,7 +211,7 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
         force(:,:) = force(:,:)*if_pos(:,:)
      ENDIF
      ! 
-     CALL lanczos( nat, alat, force, vel, acc, fire_alpha_init, dt, &
+     CALL lanczos( nat, force, vel, acc, fire_alpha_init, dt, &
           v_in, dlanc, nlanciter, nlanc, lowest_eigval,  eigenvec, push, prefix, tmp_dir)
      !
      ! when lanczos converges, nlanciter = number of steps it took to converge,

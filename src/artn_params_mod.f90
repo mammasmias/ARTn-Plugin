@@ -5,11 +5,11 @@ MODULE artn_params
   IMPLICIT none
   SAVE
   ! constants 
-  INTEGER, PARAMETER :: DP = selected_real_kind(14,200) ! double precision
+  INTEGER, PARAMETER ::  DP = selected_real_kind(14,200) ! double precision
   REAL(DP), PARAMETER :: PI     = 3.14159265358979323846_DP ! pi 
   REAL(DP), PARAMETER :: RY2EV =  13.605691930242388_DP ! Ry to eV conversion 
   REAL(DP), PARAMETER :: B2A =  0.529177210903_DP ! bohr to angstrom conversion
-  REAL(DP), PARAMETER :: AMU_RY = 911.4442431086565_DP ! calculated from QE using DP 
+  REAL(DP), PARAMETER :: AMU_RY = 911.44424310865645_DP ! calculated from QE using DP 
   INTEGER, PARAMETER :: iunartin = 52  ! fortran file unit for ARTn input file  
   INTEGER, PARAMETER :: iunartout = 53 ! fortran file unit for ARTn output file 
   INTEGER, PARAMETER :: iunsaddle = 54 ! fortran file unit for writing the saddle coords 
@@ -58,7 +58,7 @@ MODULE artn_params
   REAL(DP) :: fpara_convcrit ! parallel force convergence criterion, used to determine when to tighten convcrit_final
   REAL(DP) :: eigval_thr 
   ! step sizes
-  REAL(DP) :: init_step_size ! step size of inital push
+  REAL(DP) :: init_step_size ! step size of inital push in angstrom 
   REAL(DP) :: step_size      ! step size for a step with the lanczos eigenvector
   REAL(DP) :: current_step_size ! controls the current size of eigenvector step
   REAL(DP) :: dlanc         ! step size in the lanczos algorithm 
@@ -101,10 +101,10 @@ CONTAINS
     convcrit_init = 1.0d-2
     convcrit_final = 1.0d-3
     fpara_convcrit = 0.5d-2
-    eigval_thr = -0.05_DP 
+    eigval_thr = -0.01_DP ! in Ry/bohr^2 corresponds to 0.5 eV/Angs^2  
     ! 
-    init_step_size = 1.5
-    step_size = 0.5
+    init_step_size = 0.3
+    step_size = 0.2
     !
     push_mode = 'all' 
     !
@@ -150,15 +150,20 @@ CONTAINS
        WRITE (iunartout,'(5X, "--------------------------------------------------")')
        WRITE (iunartout,*) " "
        WRITE (iunartout,*) " "
-       WRITE (iunartout,'(5X,"istep",4X,"ART_step",12X,"Etot",9X," Ftot ",5X," Fperp ",5X," Fpara ")') 
-       WRITE (iunartout,'(34X, "[Ry]",9X,"-----------[Ry/a.u.]----------")')
+       WRITE (iunartout,'(5X,"istep",4X,"ART_step",12X,"Etot",9X," Ftot ",5X," Fperp ",5X," Fpara ",6X,"eigval")') 
+       WRITE (iunartout,'(34X, "[Ry]",9X,"-----------[Ry/a.u.]----------",6X,"Ry/a.u.^2")')
        CLOSE ( UNIT = iunartout, STATUS = 'KEEP')
     ELSE
        WRITE(*,*) "ARTn: Input file does not exist!"
        RETURN 
-ENDIF
+    ENDIF
     ! set initial number of lanczos iterations 
-    nlanciter = nlanciter_init 
+    nlanciter = nlanciter_init
+    ! convert push/lanczos/eigenvec step size to bohr (because force units are in Ry/bohr) 
+    step_size = step_size/B2A
+    init_step_size = init_step_size/B2A
+    dlanc = dlanc/B2A
+    ! 
   END SUBROUTINE initialize_artn
   !
   SUBROUTINE initialize_lanczos(nlanciter,nat)
