@@ -1039,7 +1039,7 @@ CONTAINS
      USE relax,              ONLY : epse, epsf
      USE control_flags,      only : istep, lconstrain
      !
-     USE constraints_module, ONLY : remove_constr_force, check_constraint
+     USE constraints_module, ONLY : remove_constr_force, remove_constr_vec, check_constraint
      ! TB
      USE extfield,      ONLY : relaxz
      !
@@ -1192,31 +1192,22 @@ CONTAINS
      !
      ! update velocity (in the first step vel_old and acc_old are set to 0)
      ! 
-     IF (ANY(if_pos(:,:) == 0 )) THEN
+     vel(:,:) = vel_old(:,:) + 0.5_DP*dt_curr*(acc(:,:) + acc_old(:,:))
+      
+     IF ( lconstrain )  THEN
         !
-        ! In FIRE the constraints must be applied to the velocity as well  
-        ! 
-        DO na=1,nat
-           DO i = 1,3
-              IF ( if_pos(i,na) == 0 ) THEN
-                 vel(i,na) = 0.D0
-              ELSE
-                 vel(i,na) = vel_old(i,na) + 0.5_DP*dt_curr*(acc(i,na) + acc_old(i,na))
-              ENDIF
-           ENDDO
-        ENDDO
-     ELSE
-        vel(:,:) = vel_old(:,:) + 0.5_DP*dt_curr*(acc(:,:) + acc_old(:,:))
+        ! apply constraints to the velocity as well  
+        !
+        CALL remove_constr_vec( nat, tau, if_pos, ityp, alat, vel )
      ENDIF
      ! calculate the projection of the velocity on the force 
      P = ddot(3*nat, vel, 1, force, 1)
      ! 
-     ! velocity mixing 
-     !
-     vel(:,:) = (1.D0 - alpha)*vel(:,:) + alpha*force(:,:)*dnrm2(3*nat,vel,1)/dnrm2(3*nat,force,1)
+     step(:,:) = 0.0_DP
      !
      ! ... manipulate the time step ... 
-     !   
+     !
+     ! 
      IF ( P < 0 ) THEN
         !
         ! FIRE 2.0 algorithm: if P < 0 go back by half a step 
@@ -1239,7 +1230,9 @@ CONTAINS
      WRITE (stdout, '(/,5X, "FIRE Parameters: P = ", F10.8 ", dt = " F5.2", & 
           alpha = " F5.3, " nsteppos = ", I3, " at step", I3, /)' ) P, dt_curr, alpha, nsteppos, istep
      ! 
-     step(:,:) = 0.0_DP
+     ! velocity mixing 
+     !
+     vel(:,:) = (1.D0 - alpha)*vel(:,:) + alpha*force(:,:)*dnrm2(3*nat,vel,1)/dnrm2(3*nat,force,1)
      ! 
      nsteppos = nsteppos + 1
      ! 
@@ -1249,7 +1242,7 @@ CONTAINS
      !
      norm_step = dnrm2( 3*nat, step, 1 )
      !
-     IF (norm_step /= 0.D0) step(:,:) = step(:,:) / norm_step
+     step(:,:) = step(:,:) / norm_step
      !
      ! keep the step within a threshold (taken from damped dynamics)  
      !
