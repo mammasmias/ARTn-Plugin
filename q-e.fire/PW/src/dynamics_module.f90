@@ -71,11 +71,16 @@ MODULE dynamics_module
    !! true if this is the first ionic iteration
    CHARACTER(len=10) :: thermostat
    !! the thermostat used to control the temperature
-   INTEGER ::  fire_nmin  ! minimum number of steps for time step increase 
-   REAL(DP) :: fire_f_inc ! factor for time step increase  
-   REAL(DP) :: fire_f_dec ! factor for time step decrease
-   REAL(DP) :: fire_alpha_init ! initial value of mixing factor
-   REAL(DP) :: fire_falpha ! modify the mixing factor
+   INTEGER ::  fire_nmin
+   !! FIRE: minimum number of steps for time step increase 
+   REAL(DP) :: fire_f_inc
+   !! FIRE: factor for time step increase  
+   REAL(DP) :: fire_f_dec
+   !! FIRE: factor for time step decrease
+   REAL(DP) :: fire_alpha_init
+   !! FIRE: initial value of mixing factor
+   REAL(DP) :: fire_falpha
+   !! FIRE: modify the mixing factor
    REAL(DP), ALLOCATABLE :: tau_smart(:,:)
    !! used for smart Monte Carlo to store the atomic position of the
    !! previous step.
@@ -1009,7 +1014,8 @@ CONTAINS
 
      !------------------------------------------------------------------------
      !! This routine performs one step of structural relaxation using
-     !! the FIRE (Fast Inertial Relaxation Engine) algorithm ;
+     !! the FIRE (Fast Inertial Relaxation Engine) algorithm using the
+     !! semi-implicit Euler integration scheme;
      !! 
      !! References: (1) Bitzek et al., Phys. Rev. Lett.,  97, 170201, (2006),
      !!                  doi: 10.1103/PhysRevLett.97.170201
@@ -1190,10 +1196,14 @@ CONTAINS
      !
      acc(:,:) = force(:,:) / alat / amu_ry
      !
-     ! update velocity (in the first step vel_old and acc_old are set to 0)
+     ! calculate velocity  
+     !      
+     IF (istep /= 1 ) THEN
+        vel(:,:) = vel_old(:,:) + 0.5_DP*dt_curr*(acc(:,:) + acc_old(:,:))
+     ELSE
+        vel(:,:) = 0.0_DP
+     ENDIF
      ! 
-     vel(:,:) = vel_old(:,:) + 0.5_DP*dt_curr*(acc(:,:) + acc_old(:,:))
-      
      IF ( lconstrain )  THEN
         !
         ! apply constraints to the velocity as well  
@@ -1201,14 +1211,18 @@ CONTAINS
         CALL remove_constr_vec( nat, tau, if_pos, ityp, alat, vel )
      ENDIF
      ! calculate the projection of the velocity on the force 
-     P = ddot(3*nat, vel, 1, force, 1)
+     P = ddot(3*nat,force, 1, vel, 1)
+     ! DEBUG:
+     write (*,*) "Fire debug:", istep, P
+     DO na=1,nat
+        write (*,*) ddot(3,force(:,na),1,vel(:,na),1) 
+     ENDDO
      ! 
      step(:,:) = 0.0_DP
      !
      ! ... manipulate the time step ... 
      !
-     ! 
-     IF ( P < 0 ) THEN
+     IF ( P < 0.0_DP ) THEN
         !
         ! FIRE 2.0 algorithm: if P < 0 go back by half a step 
         ! for details see reference (2), doi: 10.1016/j.commatsci.2020.109584
@@ -1221,7 +1235,7 @@ CONTAINS
         alpha = alpha_init
         nsteppos = 0
         dt_curr = dt_curr*f_dec
-     ELSE IF ( P >= 0 .AND. nsteppos > Nmin ) THEN
+     ELSE IF ( P >= 0.0_DP .AND. nsteppos > Nmin ) THEN
         ! increase time step and modify mixing factor
         dt_curr = MIN(dt_curr*f_inc, dt_max )
         alpha = alpha*falpha
@@ -1236,7 +1250,7 @@ CONTAINS
      ! 
      nsteppos = nsteppos + 1
      ! 
-     ! calculate the displacement
+     ! calculate the displacement x(t+dt) = x(t) + v(t+dt)*dt 
      ! 
      step(:,:) = step(:,:) +  vel(:,:)*dt_curr + 0.5_DP*acc(:,:)*dt_curr**2
      !
