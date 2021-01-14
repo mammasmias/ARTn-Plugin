@@ -1096,8 +1096,6 @@ CONTAINS
      dt_curr = dt
      dt_max = 10.D0*dt
      ! acc_old and vel_old are here to keep track of acceleration/velocity in the previous time step
-     vel_old(:,:) = vel(:,:) 
-     acc_old(:,:) = acc(:,:)   
      nsteppos = 0
      conv_ions = .FALSE.
      ! 
@@ -1121,8 +1119,8 @@ CONTAINS
         !
         IF ( refold_pos ) CALL refold_tau()
         !
-        vel_old(:,:) = 0.D0
-        acc_old(:,:) = 0.D0
+        vel(:,:) = 0.D0
+        acc(:,:) = 0.D0
         etotold = etot
         istep = 0
         WRITE( UNIT = stdout, &
@@ -1197,12 +1195,56 @@ CONTAINS
      acc(:,:) = force(:,:) / alat / amu_ry
      !
      ! calculate velocity  
-     !      
-     IF (istep /= 1 ) THEN
-        vel(:,:) = vel_old(:,:) + 0.5_DP*dt_curr*(acc(:,:) + acc_old(:,:))
-     ELSE
-        vel(:,:) = 0.0_DP
+     !
+     ! vel(:,:) = vel(:,:) + dt_curr*acc(:,:)
+     !IF (istep /= 1 ) THEN
+     !   vel(:,:) = vel_old(:,:) + 0.5_DP*dt_curr*(acc(:,:) + acc_old(:,:))
+     !ELSE
+     !   vel(:,:) = 0.0_DP
+     !ENDIF
+     ! 
+     
+     ! calculate the projection of the velocity on the force 
+     P = ddot(3*nat,force, 1, vel, 1)
+     ! 
+     step(:,:) = 0.0_DP
+     ! 
+     IF ( P < 0.0_DP  )  THEN 
+        ! FIRE 2.0 algorithm: if P <= 0 go back by half a step 
+        ! for details see reference (2), doi: 10.1016/j.commatsci.2020.109584
+        step(:,:) = step(:,:) - 0.5_DP*dt_curr*vel(:,:)
      ENDIF
+     !
+     ! ... manipulate the time step ... 
+     !
+     IF ( P >= 0.0_DP  .AND. (etot - etotold) <= 0.D0 ) THEN
+        ! increase time step and modify mixing factor only after Nmin steps in positive direction
+        nsteppos = nsteppos + 1
+        IF ( nsteppos > Nmin ) THEN 
+           dt_curr = MIN(dt_curr*f_inc, dt_max )
+           alpha = alpha*falpha
+        END IF
+     ELSE   
+        !
+        ! set velocity to 0; return alpha to the initial value; reduce time step
+        !
+        vel(:,:) = 0.D0
+        alpha = alpha_init
+        nsteppos = 0
+        dt_curr = dt_curr*f_dec        
+     END IF
+     ! report current parameters 
+     WRITE (stdout, '(/,5X, "FIRE Parameters: P = ", F10.8 ", dt = " F5.2", & 
+          alpha = " F5.3, " nsteppos = ", I3, " at step", I3, /)' ) P, dt_curr, alpha, nsteppos, istep
+     
+     !
+     ! calculate v(t+dt) = v(t) + a(t)*dt  
+     !
+     vel(:,:) = vel(:,:) + dt_curr*acc(:,:)
+     ! 
+     ! velocity mixing 
+     !
+     vel(:,:) = (1.D0 - alpha)*vel(:,:) + alpha*force(:,:)*dnrm2(3*nat,vel,1)/dnrm2(3*nat,force,1)
      ! 
      IF ( lconstrain )  THEN
         !
@@ -1210,49 +1252,12 @@ CONTAINS
         !
         CALL remove_constr_vec( nat, tau, if_pos, ityp, alat, vel )
      ENDIF
-     ! calculate the projection of the velocity on the force 
-     P = ddot(3*nat,force, 1, vel, 1)
-     ! DEBUG:
-     write (*,*) "Fire debug:", istep, P
-     DO na=1,nat
-        write (*,*) ddot(3,force(:,na),1,vel(:,na),1) 
-     ENDDO
      ! 
-     step(:,:) = 0.0_DP
-     !
-     ! ... manipulate the time step ... 
-     !
-     IF ( P < 0.0_DP ) THEN
-        !
-        ! FIRE 2.0 algorithm: if P < 0 go back by half a step 
-        ! for details see reference (2), doi: 10.1016/j.commatsci.2020.109584
-        ! 
-        step(:,:) = step(:,:) - 0.5_DP*dt_curr*vel(:,:) 
-        !
-        ! set velocity to 0; return alpha to the initial value; reduce time step
-        ! 
-        vel(:,:) = 0.D0
-        alpha = alpha_init
-        nsteppos = 0
-        dt_curr = dt_curr*f_dec
-     ELSE IF ( P >= 0.0_DP .AND. nsteppos > Nmin ) THEN
-        ! increase time step and modify mixing factor
-        dt_curr = MIN(dt_curr*f_inc, dt_max )
-        alpha = alpha*falpha
-     END IF
-     ! report current parameters 
-     WRITE (stdout, '(/,5X, "FIRE Parameters: P = ", F10.8 ", dt = " F5.2", & 
-          alpha = " F5.3, " nsteppos = ", I3, " at step", I3, /)' ) P, dt_curr, alpha, nsteppos, istep
-     ! 
-     ! velocity mixing 
-     !
-     vel(:,:) = (1.D0 - alpha)*vel(:,:) + alpha*force(:,:)*dnrm2(3*nat,vel,1)/dnrm2(3*nat,force,1)
-     ! 
-     nsteppos = nsteppos + 1
      ! 
      ! calculate the displacement x(t+dt) = x(t) + v(t+dt)*dt 
      ! 
-     step(:,:) = step(:,:) +  vel(:,:)*dt_curr + 0.5_DP*acc(:,:)*dt_curr**2
+     ! step(:,:) = step(:,:) +  vel(:,:)*dt_curr + 0.5_DP*acc(:,:)*dt_curr**2
+     step(:,:) = step(:,:) +  vel(:,:)*dt_curr
      !
      norm_step = dnrm2( 3*nat, step, 1 )
      !
