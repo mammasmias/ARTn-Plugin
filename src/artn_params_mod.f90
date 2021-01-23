@@ -13,7 +13,7 @@ MODULE artn_params
   INTEGER, PARAMETER :: iunartin = 52  ! fortran file unit for ARTn input file  
   INTEGER, PARAMETER :: iunartout = 53 ! fortran file unit for ARTn output file 
   INTEGER, PARAMETER :: iunsaddle = 54 ! fortran file unit for writing the saddle coords 
-  ! control flags 
+  ! control flags
   LOGICAL :: lpush_init ! initial push 
   LOGICAL :: lperp      ! perpendicular relax 
   LOGICAL :: leigen     ! push with lanczos eigenvector
@@ -44,10 +44,13 @@ MODULE artn_params
   ! variables that are read from the input  start here   
   !------------------------------------------------------------!  
   !
-  NAMELIST/artn_parameters/ npushmin, neigenstepmax, nlanciter_init, push_mode,&
+  NAMELIST/artn_parameters/ lrelax,npushmin, neigenstepmax, nlanciter_init, push_mode,&
        convcrit_init,convcrit_final,fpara_convcrit, eigval_thr, &
        init_step_size, dlanc, step_size, &
        push_ids,add_const
+  ! 
+  LOGICAL :: lrelax     ! do we want to ignore artn and do a regular relax calculation
+  ! 
   INTEGER :: npushmin              ! number of initial pushes before lanczos start
   INTEGER :: neigenstepmax         ! number of steps made with eigenvector before perp relax 
   INTEGER :: nlanciter_init        ! maximum number of lanczos iterations 
@@ -80,6 +83,7 @@ CONTAINS
     !
     ! set up defaults for flags and counters 
     !
+    lrelax = .false. 
     lpush_init = .true.
     lperp = .false.
     llanczos = .false.
@@ -155,6 +159,8 @@ CONTAINS
        CLOSE ( UNIT = iunartout, STATUS = 'KEEP')
     ELSE
        WRITE(*,*) "ARTn: Input file does not exist!"
+       lpush_init = .false.
+       lrelax = .true.
        RETURN 
     ENDIF
     ! set initial number of lanczos iterations 

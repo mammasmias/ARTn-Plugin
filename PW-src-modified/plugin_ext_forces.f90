@@ -24,7 +24,7 @@ SUBROUTINE plugin_ext_forces()
   USE ener,          ONLY : etot 
   USE relax,         ONLY : epsf, epse
   USE control_flags, ONLY : istep
-  USE dynamics_module, ONLY : vel, acc, dt, fire_alpha_init
+  USE dynamics_module, ONLY : vel, dt, fire_alpha_init
   USE io_files,      ONLY : prefix,tmp_dir
   !
   IMPLICIT NONE
@@ -36,7 +36,7 @@ SUBROUTINE plugin_ext_forces()
   lconv = .false. 
   !
   IF ( ionode ) THEN
-     CALL artn(force,etot,epsf,nat,ityp,atm,tau,at,alat,istep,if_pos,vel,acc,dt,fire_alpha_init,lconv,prefix,tmp_dir) 
+     CALL artn(force,etot,epsf,nat,ityp,atm,tau,at,alat,istep,if_pos,vel,dt,fire_alpha_init,lconv,prefix,tmp_dir) 
   ENDIF
   IF ( lconv ) THEN
      WRITE (*,*) "ARTn calculation converged, stopping" 

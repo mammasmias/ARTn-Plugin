@@ -1,5 +1,5 @@
 
-SUBROUTINE lanczos( nat, force, vel, acc, alpha_init, dt, &
+SUBROUTINE lanczos( nat, force, vel, alpha_init, dt, &
      v_in, dlanc, nlanciter, nlanc, lowest_eigval, lowest_eigvec, pushdir, prfx,tmpdir )
   USE artn_params,            ONLY: DP, Vmat, H, force_old, initialize_lanczos 
   !
@@ -12,7 +12,7 @@ SUBROUTINE lanczos( nat, force, vel, acc, alpha_init, dt, &
   REAL(DP), INTENT(IN) :: dlanc
   REAL(DP), INTENT(IN) :: alpha_init, dt
   CHARACTER(LEN=255), INTENT(IN) :: tmpdir, prfx
-  REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: vel, acc
+  REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: vel 
   REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: force
   REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: lowest_eigvec
   REAL(DP), INTENT(INOUT) :: lowest_eigval
@@ -36,6 +36,8 @@ SUBROUTINE lanczos( nat, force, vel, acc, alpha_init, dt, &
   lowest_eigval_old = lowest_eigval
   !
   IF ( nlanc  == 0 ) THEN
+     ! store the force of the initial position 
+     force_old = force(:,:) 
      !
      ! initialize the Lanczos algorithm (allocate the matrices) 
      !
@@ -83,6 +85,9 @@ SUBROUTINE lanczos( nat, force, vel, acc, alpha_init, dt, &
 
      lowest_eigval = alpha
      nlanc = nlanc + 1
+     !
+     ! correct v1 so that the move is made from the initial position 
+     v1(:,:) = v1(:,:) - Vmat(:,:,nlanc -1) 
      !
   ELSEIF (nlanc > 1 .and. nlanc <= nlanciter ) THEN
      !
@@ -206,32 +211,32 @@ SUBROUTINE lanczos( nat, force, vel, acc, alpha_init, dt, &
      ELSE
         ! increas counter if lanczos is not converged in nlanciter
        nlanc = nlanc + 1 
-     END IF
-     !
-  ENDIF
+    END IF
+    
+    ! correct v1 so that the move is made from the initial position
+    v1(:,:) = v1(:,:) - Vmat(:,:,nlanc-1)
+    !    
+ ENDIF
   ! store the force
-  force_old(:,:) = force(:,:)
+  ! force_old(:,:) = force(:,:)
   !
   ! write data for next lanczos step
   !
-  IF( nlanc > nlanciter ) THEN
-     ! lanczos has converged, no need to write anything, delete file
-     ! backtrack to initial position here
-     v1(:,:) = 0.D0
-     DO i = 1, nlanciter
-           v1(:,:) = v1(:,:) - Vmat(:,:,i)
-     ENDDO
-  ENDIF
-  !
-  ! write data for move
-  !
-  CALL move_mode( nat, dlanc, v1, force, &
-       vel, acc, alpha_init, dt, &
-       0, pushdir, 'lanc', prfx, tmpdir)
-  !
-  ! deallocate the matrices used only in the iteration 
-  !
-  DEALLOCATE( q, v1 )
-  DEALLOCATE(Hstep)
+ IF( nlanc > nlanciter ) THEN
+    ! final move back to initial position 
+    v1(:,:) = 0.D0
+    v1(:,:) = v1(:,:) - Vmat(:,:,nlanciter)  
+ ENDIF
+ !
+ ! write data for move
+ !
+ CALL move_mode( nat, dlanc, v1, force, &
+      vel, alpha_init, dt, &
+      0, pushdir, 'lanc', prfx, tmpdir)
+ !
+ ! deallocate the matrices used only in the iteration 
+ !
+ DEALLOCATE( q, v1 )
+ DEALLOCATE(Hstep)
 
 END SUBROUTINE lanczos

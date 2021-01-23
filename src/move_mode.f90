@@ -1,5 +1,5 @@
 SUBROUTINE move_mode(nat, dlanc, v1, force, &
-                     vel, acc, alpha_init, dt, &
+                     vel, alpha_init, dt, &
                      istepperp, push, &
                      mode, prfx, tmpdir )
   !
@@ -12,7 +12,7 @@ SUBROUTINE move_mode(nat, dlanc, v1, force, &
   REAL(DP), INTENT(IN) :: dlanc  
   REAL(DP), DIMENSION(3,nat), INTENT(IN) :: v1
   REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: force
-  REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: vel, acc
+  REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: vel
   REAL(DP), INTENT(IN) :: alpha_init, dt
   INTEGER, INTENT(IN) :: istepperp
   REAL(DP), DIMENSION(3,nat), INTENT(IN) :: push
@@ -49,14 +49,13 @@ SUBROUTINE move_mode(nat, dlanc, v1, force, &
   CASE( 'perp' )
      !
      IF( istepperp .eq. 0 ) THEN
-        ! for the first step forget previous acc and velocity (prevent P < 0)
-        acc(:,:) = 0.D0
+        ! for the first step forget previous velocity (prevent P < 0)
+        etot = 0.D0
         vel(:,:) = 0.D0
         alpha = alpha_init
         dt_curr = dt
      ELSE
         ! subtract the components that are parallel
-        acc(:,:) = acc(:,:) - ddot(3*nat,acc, 1, push, 1 )*push(:,:)/ddot(3*nat,push(:,:),1, push(:,:),1)
         vel(:,:) = vel(:,:) - ddot(3*nat,vel, 1, push, 1 )*push(:,:)/ddot(3*nat,push(:,:),1, push(:,:),1)
      ENDIF
         !
@@ -64,8 +63,8 @@ SUBROUTINE move_mode(nat, dlanc, v1, force, &
      !
      ! set the velocity and acceleration and alpha of previous step to move correctly
      !
+     etot = 0.D0
      vel(:,:) = 0.D0
-     acc(:,:) = 0.D0
      dt_curr = dt
      alpha = 0.D0
      nsteppos = 0
@@ -74,7 +73,7 @@ SUBROUTINE move_mode(nat, dlanc, v1, force, &
      !
   CASE( 'eign' )
      !
-     acc(:,:) = 0.D0
+     etot = 0.D0
      vel(:,:) = 0.D0
      alpha = 0.0_DP
      dt_curr = dt

@@ -548,7 +548,8 @@ MODULE read_namelists_module
        fire_f_inc = 1.1_DP ! factor for time step increase
        fire_f_dec = 0.5_DP ! factor for time step decrease 
        fire_alpha_init = 0.1_DP ! initial value of mixing factor
-       fire_falpha = 0.99_DP ! modification of the mixing factor 
+       fire_falpha = 0.99_DP ! modification of the mixing factor
+       fire_dtmax = 10.0_DP ! factor for calculating dtmax 
        RETURN
        !
      END SUBROUTINE

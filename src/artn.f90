@@ -3,14 +3,14 @@
 ! Main ARTn plugin subroutine:
 !        modifies the input force to perform the ARTn algorithm 
 !----------------------------------------------------------------------------
-SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_pos,vel,acc,dt,fire_alpha_init,lconv,prefix,tmp_dir)
+SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_pos,vel,dt,fire_alpha_init,lconv,prefix,tmp_dir)
   !----------------------------------------------------------------------------
   !
   ! artn_params for variables and counters that need to be stored   
   ! DEFINED IN: artn_params_mod.f90
   ! 
   USE artn_params, ONLY: DP, RY2EV,B2A, iunartin, iunartout, iunsaddle, &
-       lpush_init,lperp,leigen,llanczos, &
+       lrelax,lpush_init,lperp,leigen,llanczos, &
        istepperp, neigenstep, npush, nlanc, nlanciter, if_pos_ct, &
        lowest_eigval, etot_init, &
        npushmin, neigenstepmax, nlanciter_init, push_mode, convcrit_init, convcrit_final, &
@@ -20,7 +20,6 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
   IMPLICIT NONE
   REAL(DP), INTENT(INOUT) :: force(3,nat)     ! force calculated by the engine
   REAL(DP), INTENT(INOUT) :: vel(3,nat)       ! velocity of previous FIRE step
-  REAL(DP), INTENT(INOUT) :: acc(3,nat)       ! acceleration of previous FIRE step 
   REAL(DP), INTENT(IN) ::    etot             ! total energy in current step
   REAL(DP), INTENT(IN) ::    forc_conv_thr_qe ! force convergence threshold of the engine
   REAL(DP), INTENT(IN) ::    dt               ! default time step in FIRE  
@@ -44,7 +43,7 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
   REAL(DP)  :: v_in(3,nat)                    ! input vector for lanczos 
   REAL(DP)  :: fpara_tot                      ! total force in parallel direction 
   INTEGER   :: ios                            ! file IOSTAT  
-  CHARACTER( LEN=255) :: filin, filout, sadfname
+  CHARACTER( LEN=255) :: filin, filout, sadfname, initpfname, eigenfname
   !
   ! The ARTn algorithm proceeds as follows:
   ! (1) push atoms in the direction specified by user & relax in the perpendicular direction;
@@ -54,7 +53,7 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
   ! 
   ! 
   ! flag that controls convergence
-  ! 
+  !
   lconv = .false.
   !
   ! store original force
@@ -67,6 +66,8 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
   filin = 'artn.in'
   filout = 'artn.out'
   sadfname = 'saddle.xsf'
+  initpfname = 'initp.xsf'
+  eigenfname = 'latest_eigenvec.xsf'
   !
   ! initialize artn 
   !  
@@ -76,6 +77,7 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
      ! store the total energy of the initial state
      etot_init = etot 
   ENDIF
+  IF ( lrelax ) RETURN 
   ! 
   ! Open the output file for writing   
   ! 
@@ -98,10 +100,12 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
      !
      force(:,:) =  push(:,:)
      CALL move_mode( nat, dlanc, v_in, force, &
-          vel, acc, fire_alpha_init, dt,  &
+          vel, fire_alpha_init, dt,  &
           istepperp, push, 'eign', prefix, tmp_dir)
      !
      CALL write_report(etot,force_in, lowest_eigval, 'push' , if_pos, istep, nat,  iunartout)
+     !
+     CALL write_struct(alat, at, nat, tau, atm, ityp, force, 1.0_DP, 556, 'xsf', initpfname)
      ! 
   ELSE IF ( lperp ) THEN
      !
@@ -110,7 +114,7 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
      CALL perpforce(force,if_pos,push,fpara,nat)
      !
      CALL move_mode( nat,  dlanc, v_in, force, &
-          vel, acc, fire_alpha_init, dt,  &
+          vel, fire_alpha_init, dt,  &
           istepperp, push, 'perp', prefix, tmp_dir)
      istepperp = istepperp + 1
      !
@@ -123,8 +127,9 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
         IF ( npush < npushmin ) THEN
            ! continue pushing in the specified direction
            force(:,:) =  push(:,:)
+           write (*,*) "ARTn push:", force(:,:)
            CALL move_mode( nat, dlanc, v_in, force, &
-                vel, acc, fire_alpha_init, dt,  &
+                vel, fire_alpha_init, dt,  &
                 istepperp, push, 'eign', prefix, tmp_dir)
            npush = npush + 1
            lperp = .true.
@@ -161,13 +166,15 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
      !  
      force(:,:) = eigenvec(:,:)
      CALL move_mode( nat, dlanc, v_in, force, &
-          vel, acc, fire_alpha_init, dt,  &
+          vel, fire_alpha_init, dt,  &
           istepperp, push, 'eign', prefix, tmp_dir)
      ! update eigenstep counter 
      neigenstep = neigenstep + 1
      
      CALL write_report(etot,force_in, lowest_eigval, 'eign' , if_pos, istep, nat,  iunartout)
      ! count the number of steps made with the eigenvector
+     CALL write_struct(alat, at, nat, tau, atm, ityp, force, 0.1_DP, 556, 'xsf', eigenfname)
+     ! 
      IF ( neigenstep == neigenstepmax  ) THEN
         ! do a perpendicular relax
         lperp = .true.
@@ -210,8 +217,9 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
         v_in(:,:) = v_in(:,:)*if_pos(:,:)
         force(:,:) = force(:,:)*if_pos(:,:)
      ENDIF
-     ! 
-     CALL lanczos( nat, force, vel, acc, fire_alpha_init, dt, &
+     !
+     write (*,*) "Lanczos atom 1 pos:", tau(:,1)*alat*B2A, "at step", nlanc 
+     CALL lanczos( nat, force, vel, fire_alpha_init, dt, &
           v_in, dlanc, nlanciter, nlanc, lowest_eigval,  eigenvec, push, prefix, tmp_dir)
      !
      ! when lanczos converges, nlanciter = number of steps it took to converge,
@@ -229,7 +237,8 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
         ! check the eigenvalue, if it's lower than threshold use the eigenvector, otherwise push again ...
         !
         IF ( lowest_eigval < eigval_thr ) THEN
-           ! set push to be equal to the eigenvec check eigenvec here eventually ... 
+           ! set push to be equal to the eigenvec check eigenvec here eventually ...
+           write (*,*) "ARTn found eigenvec:",eigenvec(:,:)
            push(:,:) = eigenvec(:,:)
            ! 
            leigen = .true.
@@ -248,7 +257,7 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
   !
   ! check for convergence of total forces 
   !
-  IF (MAXVAL(ABS(force_in)) < convcrit_final .AND. istep /= 0 ) THEN
+  IF (MAXVAL(ABS(force_in*if_pos)) < convcrit_final .AND. istep /= 0 ) THEN
      force(:,:) = force_in(:,:)
      lconv = .true.
      CALL write_struct(alat, at, nat, tau, atm, ityp, force, 1.0_DP, 556, 'xsf', sadfname)
