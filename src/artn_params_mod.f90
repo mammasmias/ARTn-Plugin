@@ -44,7 +44,7 @@ MODULE artn_params
   ! variables that are read from the input  start here   
   !------------------------------------------------------------!  
   !
-  NAMELIST/artn_parameters/ lrelax,npushmin, neigenstepmax, nlanciter_init, push_mode,&
+  NAMELIST/artn_parameters/ lrelax,npushmin, neigenstepmax, nlanciter_init, push_mode, dist_thr, &
        convcrit_init,convcrit_final,fpara_convcrit, eigval_thr, &
        init_step_size, dlanc, step_size, &
        push_ids,add_const
@@ -54,8 +54,9 @@ MODULE artn_params
   INTEGER :: npushmin              ! number of initial pushes before lanczos start
   INTEGER :: neigenstepmax         ! number of steps made with eigenvector before perp relax 
   INTEGER :: nlanciter_init        ! maximum number of lanczos iterations 
-  CHARACTER (LEN = 4) :: push_mode ! type of initial push (all or list) 
-  ! convergence criteria 
+  CHARACTER (LEN = 4) :: push_mode ! type of initial push (all , list or rad) 
+  ! convergence criteria
+  REAL(DP) :: dist_thr       ! distance threshold for push mode "rad" 
   REAL(DP) :: convcrit_init  ! initial perp force convergence criterion for perp relax
   REAL(DP) :: convcrit_final ! tightened force convergence criterion when near the saddle point
   REAL(DP) :: fpara_convcrit ! parallel force convergence criterion, used to determine when to tighten convcrit_final
@@ -102,6 +103,8 @@ CONTAINS
     npushmin = 3
     neigenstepmax = 1 
     !
+    dist_thr = 0.0_DP 
+    ! 
     convcrit_init = 1.0d-2
     convcrit_final = 1.0d-3
     fpara_convcrit = 0.5d-2
@@ -169,6 +172,7 @@ CONTAINS
     step_size = step_size/B2A
     init_step_size = init_step_size/B2A
     dlanc = dlanc/B2A
+    dist_thr = dist_thr/B2A
     ! 
   END SUBROUTINE initialize_artn
   !

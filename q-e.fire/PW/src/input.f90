@@ -59,7 +59,8 @@ SUBROUTINE iosys()
                               fire_f_inc_ => fire_f_inc, &
                               fire_f_dec_ => fire_f_dec,  &
                               fire_alpha_init_ => fire_alpha_init, &  
-                              fire_falpha_ => fire_falpha 
+                              fire_falpha_ => fire_falpha, &
+                              fire_dtmax_ => fire_dtmax 
   !
   USE fcp_variables, ONLY : lfcpopt_ => lfcpopt, &
                             lfcpdyn_ => lfcpdyn, &
@@ -297,7 +298,7 @@ SUBROUTINE iosys()
                                w_1, w_2, trust_radius_max, trust_radius_min,   &
                                trust_radius_ini, bfgs_ndim, &
                                fire_nmin, fire_f_inc, fire_f_dec, &
-                               fire_alpha_init, fire_falpha
+                               fire_alpha_init, fire_falpha, fire_dtmax
   !
   ! ... CELL namelist
   !
@@ -413,6 +414,7 @@ SUBROUTINE iosys()
         fire_f_dec_ = fire_f_dec
         fire_alpha_init_ = fire_alpha_init
         fire_falpha_ = fire_falpha
+        fire_dtmax_ = fire_dtmax
         !
         ntcheck = nstep + 1
         !

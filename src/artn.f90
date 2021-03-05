@@ -13,7 +13,7 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
        lrelax,lpush_init,lperp,leigen,llanczos, &
        istepperp, neigenstep, npush, nlanc, nlanciter, if_pos_ct, &
        lowest_eigval, etot_init, &
-       npushmin, neigenstepmax, nlanciter_init, push_mode, convcrit_init, convcrit_final, &
+       npushmin, neigenstepmax, nlanciter_init, push_mode, dist_thr, convcrit_init, convcrit_final, &
        fpara_convcrit, eigval_thr, init_step_size, current_step_size, dlanc, step_size, &
        push_ids,add_const, push, eigenvec, initialize_artn
   ! 
@@ -89,7 +89,7 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
      !
      ! initial push 
      !
-     CALL push_init(nat, idum, push_ids, add_const, init_step_size, push ,push_mode)
+     CALL push_init(nat, tau, at, alat, idum, push_ids, dist_thr, add_const, init_step_size, push ,push_mode)
      ! set up the flags (we did an initial push, now we need to relax perpendiculary) 
      lpush_init = .false.
      lperp = .true.
@@ -194,9 +194,16 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
            !
            ! add_const is set to zero so no constraints are put on the atoms
            ! 
-           add_const(:,:) = 0.D0 
-           CALL push_init(nat,idum,push_ids,add_const,1.D0,v_in,'all ')
-           CALL center (v_in(:,:), nat)
+           ! add_const(:,:) = 0.D0 
+           ! CALL push_init(nat,idum,push_ids,add_const,1.D0,v_in,'all ')
+           ! the push vector is already centered within the push_init subroutine 
+           ! note push vector is normalized inside lanczos
+           v_in(:,:) = push(:,:)
+           ! input a different vector for testing purposes
+           !DO na=1,nat
+           !   ! do a translation 
+           !   v_in(:,na) = push(:,5) 
+           !ENDDO
         ELSE
            ! rescale the lanczos eigenvec back to original size
            v_in(:,:) = push(:,:)/current_step_size 
@@ -218,7 +225,6 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
         force(:,:) = force(:,:)*if_pos(:,:)
      ENDIF
      !
-     write (*,*) "Lanczos atom 1 pos:", tau(:,1)*alat*B2A, "at step", nlanc 
      CALL lanczos( nat, force, vel, fire_alpha_init, dt, &
           v_in, dlanc, nlanciter, nlanc, lowest_eigval,  eigenvec, push, prefix, tmp_dir)
      !
@@ -238,7 +244,6 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
         !
         IF ( lowest_eigval < eigval_thr ) THEN
            ! set push to be equal to the eigenvec check eigenvec here eventually ...
-           write (*,*) "ARTn found eigenvec:",eigenvec(:,:)
            push(:,:) = eigenvec(:,:)
            ! 
            leigen = .true.

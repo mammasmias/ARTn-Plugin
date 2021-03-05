@@ -1,7 +1,8 @@
 #!/bin/bash
 
 #
-# A small shell script to patch QE with ARTn; warning this will eventually be done completely differently, only a working version ...
+# A shell script to patch QE with ARTn subroutines ;
+# currently all the subroutines are copied into "PW/src/plugin_ext_forces.f90" 
 #
 
 # overwrite modified files
@@ -11,6 +12,8 @@ cat PW-src-modified/plugin_ext_forces.f90 \
     src/diag.f90 \
     src/lanczos.f90 \
     src/displacement_validation.f90 \
+    src/pbc.f90  \
+    src/invmat3x3.f90  \
     src/push_init.f90 \
     src/sum_force.f90 \
     src/perpforce.f90 \
@@ -19,7 +22,6 @@ cat PW-src-modified/plugin_ext_forces.f90 \
     src/write_struct.f90 \
     src/artn.f90 \
     > qe-6.6/PW/src/plugin_ext_forces.f90
-#cp  PW-src-modified/plugin_ext_forces.f90  qe-6.6/PW/src/
 
 # configure and compile q-e
 (

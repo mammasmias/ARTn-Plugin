@@ -41,10 +41,10 @@ MODULE dynamics_module
    PRIVATE
    PUBLIC :: verlet, proj_verlet, terminate_verlet, fire, &
              langevin_md, smart_MC, allocate_dyn_vars, deallocate_dyn_vars
-   PUBLIC :: temperature, refold_pos, vel, acc 
+   PUBLIC :: temperature, refold_pos, vel 
    PUBLIC :: dt, delta_t, nraise, control_temp, thermostat
    ! Fire parameters 
-   PUBLIC :: fire_nmin, fire_f_inc, fire_f_dec, fire_alpha_init, fire_falpha 
+   PUBLIC :: fire_nmin, fire_f_inc, fire_f_dec, fire_alpha_init, fire_falpha, fire_dtmax  
    !
    !
    REAL(DP) :: dt
@@ -81,6 +81,8 @@ MODULE dynamics_module
    !! FIRE: initial value of mixing factor
    REAL(DP) :: fire_falpha
    !! FIRE: modify the mixing factor
+   REAL(DP) :: fire_dtmax
+   !! FIRE: factor for max time step 
    REAL(DP), ALLOCATABLE :: tau_smart(:,:)
    !! used for smart Monte Carlo to store the atomic position of the
    !! previous step.
@@ -1015,14 +1017,16 @@ CONTAINS
      !------------------------------------------------------------------------
      !! This routine performs one step of structural relaxation using
      !! the FIRE (Fast Inertial Relaxation Engine) algorithm using the
-     !! semi-implicit Euler integration scheme;
+     !! semi-implicit Euler integration scheme with an energy monitor;
      !! 
      !! References: (1) Bitzek et al., Phys. Rev. Lett.,  97, 170201, (2006),
      !!                  doi: 10.1103/PhysRevLett.97.170201
-     !!             (2) (FIRE 2.0) Guénolé et al., Comp. Mater. Sci., 175, 109584, (2020),
+     !!             (2) Shuang et al., Comp. Mater. Sci., 156, 135-141 (2019),
+     !!                  doi: 10.1016/j.commatsci.2018.09.049
+     !!             (3) (FIRE 2.0) Guénolé et al., Comp. Mater. Sci., 175, 109584, (2020),
      !!                  doi: 10.1016/j.commatsci.2020.109584
      !! 
-     !! There are six global parameters that can be modified by the user:
+     !!  There are seven global parameters that can be modified by the user:
      !!
      !!  dt .... initial time step of calculation
      !!  fire_nmin ... number of steps with P > 0 before dt is increased 
@@ -1030,6 +1034,7 @@ CONTAINS
      !!  fire_f_dec ... factor for the decrease of the time step
      !!  fire_alpha_init ... initial value of the velocity mixing factor
      !!  fire_falpha ... modifies the velocity mixing factor
+     !!  fire_dtmax ... maximum time step; calculated as dtmax = fire_dtmax*dt 
      !!
      !! Defaults are (taken from ref (2)):
      !!   dt = 20.0  (the default time step in PW ==  20.0 a.u. or 0.9674 fs )
@@ -1065,7 +1070,6 @@ CONTAINS
      ! FIRE local variables 
      !
      REAL(DP) :: P, alpha, fmax, dt_max, dt_curr
-     REAL(DP), ALLOCATABLE :: vel_old(:,:), acc_old(:,:)
      INTEGER :: nsteppos
      ! 
      ! FIRE  parameters; read from input ...   
@@ -1077,8 +1081,6 @@ CONTAINS
      REAL(DP) :: falpha ! modify the mixing factor 
      !
      ALLOCATE( step( 3, nat ) )
-     ALLOCATE( vel_old(3, nat) )
-     ALLOCATE( acc_old(3,nat) )
      !
      ! set up local variables for global input parameters (better readability) ... 
      !
@@ -1094,7 +1096,7 @@ CONTAINS
      alpha = alpha_init
      ! maximum time step 
      dt_curr = dt
-     dt_max = 10.D0*dt
+     dt_max = fire_dtmax*dt
      ! acc_old and vel_old are here to keep track of acceleration/velocity in the previous time step
      nsteppos = 0
      conv_ions = .FALSE.
@@ -1132,9 +1134,9 @@ CONTAINS
         WRITE (UNIT = stdout, &
              FMT = '(/,5X," fire_nmin = ",I2," fire_f_inc = ", F4.2, & 
              " fire_f_dec = ",F4.2," fire_alpha = ",F4.2, & 
-             " fire_falpha = ",F4.2 )') &
+             " fire_falpha = ",F4.2, " dtmax = ",F5.1 )') &
              fire_nmin, fire_f_inc, fire_f_dec, &
-             fire_alpha_init, fire_falpha 
+             fire_alpha_init, fire_falpha, dt_max 
         !
      ENDIF
      !
@@ -1193,24 +1195,14 @@ CONTAINS
      ! calculate acceleration
      !
      acc(:,:) = force(:,:) / alat / amu_ry
-     !
-     ! calculate velocity  
-     !
-     ! vel(:,:) = vel(:,:) + dt_curr*acc(:,:)
-     !IF (istep /= 1 ) THEN
-     !   vel(:,:) = vel_old(:,:) + 0.5_DP*dt_curr*(acc(:,:) + acc_old(:,:))
-     !ELSE
-     !   vel(:,:) = 0.0_DP
-     !ENDIF
      ! 
-     
      ! calculate the projection of the velocity on the force 
      P = ddot(3*nat,force, 1, vel, 1)
      ! 
      step(:,:) = 0.0_DP
      ! 
      IF ( P < 0.0_DP  )  THEN 
-        ! FIRE 2.0 algorithm: if P <= 0 go back by half a step 
+        ! FIRE 2.0 algorithm: if P < 0 go back by half a step 
         ! for details see reference (2), doi: 10.1016/j.commatsci.2020.109584
         step(:,:) = step(:,:) - 0.5_DP*dt_curr*vel(:,:)
      ENDIF
@@ -1218,8 +1210,12 @@ CONTAINS
      ! ... manipulate the time step ... 
      !
      IF ( P >= 0.0_DP  .AND. (etot - etotold) <= 0.D0 ) THEN
-        ! increase time step and modify mixing factor only after Nmin steps in positive direction
+        ! 
+        ! NOTE in original FIRE the condition is P > 0,
+        ! however to prevent the time step decrease in the first step where v=0 (P=0 and etot=etotold)
+        ! the equality was changed to P >= 0 the energy monitor is added b
         nsteppos = nsteppos + 1
+        ! increase time step and modify mixing factor only after Nmin steps in positive direction
         IF ( nsteppos > Nmin ) THEN 
            dt_curr = MIN(dt_curr*f_inc, dt_max )
            alpha = alpha*falpha
@@ -1236,7 +1232,6 @@ CONTAINS
      ! report current parameters 
      WRITE (stdout, '(/,5X, "FIRE Parameters: P = ", F10.8 ", dt = " F5.2", & 
           alpha = " F5.3, " nsteppos = ", I3, " at step", I3, /)' ) P, dt_curr, alpha, nsteppos, istep
-     
      !
      ! calculate v(t+dt) = v(t) + a(t)*dt  
      !
@@ -1256,7 +1251,6 @@ CONTAINS
      ! 
      ! calculate the displacement x(t+dt) = x(t) + v(t+dt)*dt 
      ! 
-     ! step(:,:) = step(:,:) +  vel(:,:)*dt_curr + 0.5_DP*acc(:,:)*dt_curr**2
      step(:,:) = step(:,:) +  vel(:,:)*dt_curr
      !
      norm_step = dnrm2( 3*nat, step, 1 )
@@ -1296,8 +1290,6 @@ CONTAINS
 #endif
      !
      DEALLOCATE( step )
-     DEALLOCATE( vel_old )
-     DEALLOCATE( acc_old )
      !
    END SUBROUTINE fire 
    !

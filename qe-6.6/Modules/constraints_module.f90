@@ -1065,6 +1065,7 @@ CONTAINS
       !
       IF ( nconstr == 1 ) THEN
          !
+         !
          CALL constraint_grad( 1, nat, tau, &
                               if_pos, ityp, tau_units, g, dg(:,:,1) )
          !

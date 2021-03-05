@@ -30,7 +30,7 @@ MODULE input_parameters
 !=----------------------------------------------------------------------------=!
   !
   USE kinds,      ONLY : DP
-  USE parameters, ONLY : nsx, natx
+  USE parameters, ONLY : nsx, natx, sc_size
   USE wannier_new,ONLY : wannier_data
   !
   IMPLICIT NONE
@@ -403,7 +403,7 @@ MODULE input_parameters
         REAL(DP) :: starting_ns_eigenvalue(lqmax,nspinx,nsx) = -1.0_DP
         REAL(DP) :: hubbard_u(nsx) = 0.0_DP
         REAL(DP) :: hubbard_u_back(nsx) = 0.0_DP
-        REAL(DP) :: hubbard_v(natx,27*natx,4) = 0.0_DP 
+        REAL(DP) :: hubbard_v(natx,natx*(2*sc_size+1)**3,4) = 0.0_DP 
         REAL(DP) :: hubbard_j0(nsx) = 0.0_DP
         REAL(DP) :: hubbard_j(3,nsx) = 0.0_DP
         REAL(DP) :: hubbard_alpha(nsx) = 0.0_DP
@@ -1187,8 +1187,7 @@ MODULE input_parameters
         REAL(DP) :: fire_f_dec = 0.5_DP ! factor for time step decrease
         REAL(DP) :: fire_alpha_init = 0.1_DP ! initial value of mixing factor
         REAL(DP) :: fire_falpha = 0.99_DP ! modify the mixing factor
-
-        
+        REAL(DP) :: fire_dtmax = 10.0_DP ! maximum time step; calculated as dtmax = fire_dtmax*dt 
         !
         NAMELIST / ions / ion_dynamics, iesr, ion_radius, ion_damping,         &
                           ion_positions, ion_velocities, ion_temperature,      &
@@ -1199,8 +1198,8 @@ MODULE input_parameters
                           trust_radius_max, trust_radius_min,                  &
                           trust_radius_ini, w_1, w_2, bfgs_ndim,l_mplathe,     &
                           n_muller,np_muller,l_exit_muller,                    &
-                          fire_nmin, fire_f_inc, fire_f_dec, fire_alpha_init, fire_falpha
-
+                          fire_nmin, fire_f_inc, fire_f_dec, fire_alpha_init,  &
+                          fire_falpha, fire_dtmax 
 
 
 !=----------------------------------------------------------------------------=!

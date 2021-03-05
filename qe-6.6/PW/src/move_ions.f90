@@ -48,7 +48,7 @@ SUBROUTINE move_ions( idone, ions_status )
   USE dynamics_module,        ONLY : verlet, terminate_verlet, proj_verlet, fire
   USE dynamics_module,        ONLY : smart_MC, langevin_md, dt
   USE dynamics_module,        ONLY : fire_nmin, fire_f_inc, fire_f_dec, &
-                                     fire_alpha_init, fire_falpha
+                                     fire_alpha_init, fire_falpha, fire_dtmax
   USE fcp,                    ONLY : fcp_verlet, fcp_line_minimisation, &
                                      fcp_mdiis_update, fcp_mdiis_end
   USE fcp_variables,          ONLY : lfcpopt, lfcpdyn, fcp_mu, &
@@ -339,6 +339,8 @@ SUBROUTINE move_ions( idone, ions_status )
      !
      ! ... before leaving check that the new positions still transform
      ! ... according to the symmetry of the system.
+     ! ... FIXME: should be done in all cases, not just for vc-md
+     ! ... FIXME 2: why not impose symmetry instead of just checking it?
      !
      CALL checkallsym( nat, tau, ityp)
      !

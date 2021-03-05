@@ -41,10 +41,10 @@ MODULE dynamics_module
    PRIVATE
    PUBLIC :: verlet, proj_verlet, terminate_verlet, fire, &
              langevin_md, smart_MC, allocate_dyn_vars, deallocate_dyn_vars
-   PUBLIC :: temperature, refold_pos, vel, acc 
+   PUBLIC :: temperature, refold_pos, vel 
    PUBLIC :: dt, delta_t, nraise, control_temp, thermostat
    ! Fire parameters 
-   PUBLIC :: fire_nmin, fire_f_inc, fire_f_dec, fire_alpha_init, fire_falpha 
+   PUBLIC :: fire_nmin, fire_f_inc, fire_f_dec, fire_alpha_init, fire_falpha, fire_dtmax  
    !
    !
    REAL(DP) :: dt
@@ -71,11 +71,18 @@ MODULE dynamics_module
    !! true if this is the first ionic iteration
    CHARACTER(len=10) :: thermostat
    !! the thermostat used to control the temperature
-   INTEGER ::  fire_nmin  ! minimum number of steps for time step increase 
-   REAL(DP) :: fire_f_inc ! factor for time step increase  
-   REAL(DP) :: fire_f_dec ! factor for time step decrease
-   REAL(DP) :: fire_alpha_init ! initial value of mixing factor
-   REAL(DP) :: fire_falpha ! modify the mixing factor
+   INTEGER ::  fire_nmin
+   !! FIRE: minimum number of steps for time step increase 
+   REAL(DP) :: fire_f_inc
+   !! FIRE: factor for time step increase  
+   REAL(DP) :: fire_f_dec
+   !! FIRE: factor for time step decrease
+   REAL(DP) :: fire_alpha_init
+   !! FIRE: initial value of mixing factor
+   REAL(DP) :: fire_falpha
+   !! FIRE: modify the mixing factor
+   REAL(DP) :: fire_dtmax
+   !! FIRE: factor for max time step 
    REAL(DP), ALLOCATABLE :: tau_smart(:,:)
    !! used for smart Monte Carlo to store the atomic position of the
    !! previous step.
@@ -806,221 +813,220 @@ CONTAINS
      !
      WRITE( UNIT = stdout, &
           FMT = '(/,5X,"The maximum number of steps has been reached.")' )
-    WRITE( UNIT = stdout, &
-        FMT = '(/,5X,"End of molecular dynamics calculation")' )
-    !
-    CALL print_averages()
-    !
-END SUBROUTINE terminate_verlet
-!
-!
-!------------------------------------------------------------------------
-SUBROUTINE proj_verlet( conv_ions )
-    !------------------------------------------------------------------------
-    !! This routine performs one step of structural relaxation using
-    !! the preconditioned-projected-Verlet algorithm. 
-    !
-    USE ions_base,          ONLY : nat, ityp, tau, if_pos
-    USE cell_base,          ONLY : alat
-    USE ener,               ONLY : etot
-    USE force_mod,          ONLY : force
-    USE relax,              ONLY : epse, epsf
-    USE control_flags,      ONLY : istep, lconstrain
-    !
-    USE constraints_module, ONLY : remove_constr_force, check_constraint
-    ! TB
-    USE extfield,      ONLY : relaxz
-    !
-    IMPLICIT NONE
-    !
-    LOGICAL, INTENT(OUT) :: conv_ions
-    !
-    REAL(DP), ALLOCATABLE :: step(:,:)
-    REAL(DP)              :: norm_step, etotold, delta(3)
-    INTEGER               :: na
-    LOGICAL               :: file_exists,leof
-    !
-    REAL(DP), PARAMETER :: step_max = 0.6D0  ! bohr
-    !
-    REAL(DP), EXTERNAL :: dnrm2
-    !
-    !
-    ALLOCATE( step( 3, nat ) )
-    !
-    tau_old(:,:) = tau(:,:)
-    tau_new(:,:) = 0.D0
-    vel(:,:)     = 0.D0
-    acc(:,:)     = 0.D0
-    conv_ions = .FALSE.
-    !
-    CALL seqopn( 4, 'md', 'FORMATTED', file_exists )
-    !
-    IF ( file_exists ) THEN
-        !
-        ! ... the file is read
-        !
-        READ( UNIT = 4, FMT = * ) etotold, istep, tau_old(:,:)
-        !
-        CLOSE( UNIT = 4, STATUS = 'KEEP' )
-        !
-    ELSE
-        !
-        CLOSE( UNIT = 4, STATUS = 'DELETE' )
-        !
-        ! ... atoms are refold in the central box
-        !
-        IF ( refold_pos ) CALL refold_tau()
-        !
-        tau_old(:,:) = tau(:,:)
-        etotold = etot
-        istep = 0
-        WRITE( UNIT = stdout, &
-            FMT = '(/,5X,"Damped Dynamics Calculation")' )
-        !
-    ENDIF
-    !
-    IF ( lconstrain ) THEN
-        !
-        ! ... we first remove the component of the force along the
-        ! ... constraint gradient (this constitutes the initial guess
-        ! ... for the calculation of the lagrange multipliers)
-        !
-        CALL remove_constr_force( nat, tau, if_pos, ityp, alat, force )
-        !
+     WRITE( UNIT = stdout, &
+          FMT = '(/,5X,"End of molecular dynamics calculation")' )
+     !
+     CALL print_averages()
+     !
+   END SUBROUTINE terminate_verlet
+   !
+   !
+   !------------------------------------------------------------------------
+   SUBROUTINE proj_verlet( conv_ions )
+      !------------------------------------------------------------------------
+      !! This routine performs one step of structural relaxation using
+      !! the preconditioned-projected-Verlet algorithm. 
+      !
+      USE ions_base,          ONLY : nat, ityp, tau, if_pos
+      USE cell_base,          ONLY : alat
+      USE ener,               ONLY : etot
+      USE force_mod,          ONLY : force
+      USE relax,              ONLY : epse, epsf
+      USE control_flags,      ONLY : istep, lconstrain
+      !
+      USE constraints_module, ONLY : remove_constr_force, check_constraint
+      ! TB
+      USE extfield,           ONLY : relaxz
+      !
+      IMPLICIT NONE
+      !
+      LOGICAL, INTENT(OUT) :: conv_ions
+      !
+      REAL(DP), ALLOCATABLE :: step(:,:)
+      REAL(DP)              :: norm_step, etotold, delta(3)
+      INTEGER               :: na
+      LOGICAL               :: file_exists,leof
+      !
+      REAL(DP), PARAMETER :: step_max = 0.6D0  ! bohr
+      !
+      REAL(DP), EXTERNAL :: dnrm2
+      !
+      !
+      ALLOCATE( step( 3, nat ) )
+      !
+      tau_old(:,:) = tau(:,:)
+      tau_new(:,:) = 0.D0
+      vel(:,:)     = 0.D0
+      acc(:,:)     = 0.D0
+      conv_ions = .FALSE.
+      !
+      CALL seqopn( 4, 'md', 'FORMATTED', file_exists )
+      !
+      IF ( file_exists ) THEN
+         !
+         ! ... the file is read
+         !
+         READ( UNIT = 4, FMT = * ) etotold, istep, tau_old(:,:)
+         !
+         CLOSE( UNIT = 4, STATUS = 'KEEP' )
+         !
+      ELSE
+         !
+         CLOSE( UNIT = 4, STATUS = 'DELETE' )
+         !
+         ! ... atoms are refold in the central box
+         !
+         IF ( refold_pos ) CALL refold_tau()
+         !
+         tau_old(:,:) = tau(:,:)
+         etotold = etot
+         istep = 0
+         WRITE( UNIT = stdout, &
+                FMT = '(/,5X,"Damped Dynamics Calculation")' )
+         !
+      ENDIF
+      !
+      IF ( lconstrain ) THEN
+         !
+         ! ... we first remove the component of the force along the
+         ! ... constraint gradient (this constitutes the initial guess
+         ! ... for the calculation of the lagrange multipliers)
+         !
+         CALL remove_constr_force( nat, tau, if_pos, ityp, alat, force )
+         !
 #if ! defined (__REDUCE_OUTPUT)
-        !
-        WRITE( stdout, '(/,5X,"Constrained forces (Ry/au):",/)')
-        !
-        DO na = 1, nat
-        !
-        WRITE( stdout, &
-                '(5X,"atom ",I3," type ",I2,3X,"force = ",3F14.8)' ) &
-            na, ityp(na), force(:,na)
-        !
-        ENDDO
-        !
-        WRITE( stdout, &
-            '(/5X,"Total force = ",F12.6)') dnrm2( 3*nat, force, 1 )
-        !
+         !
+         WRITE( stdout, '(/,5X,"Constrained forces (Ry/au):",/)')
+         !
+         DO na = 1, nat
+            !
+            WRITE( stdout, &
+                  '(5X,"atom ",I3," type ",I2,3X,"force = ",3F14.8)' ) &
+               na, ityp(na), force(:,na)
+            !
+         ENDDO
+         !
+         WRITE( stdout, &
+               '(/5X,"Total force = ",F12.6)') dnrm2( 3*nat, force, 1 )
+         !
 #endif
-        !
-    ENDIF
-    !
-    ! ... check if convergence for structural minimization is achieved
-    !
-    conv_ions = ( etotold - etot ) < epse
-    conv_ions = conv_ions .and. ( MAXVAL( ABS( force ) ) < epsf )
-    !
-    IF ( conv_ions ) THEN
-        !
-        WRITE( UNIT = stdout, &
-            FMT = '(/,5X,"Damped Dynamics: convergence achieved in " &
-                    & ,I3," steps")' ) istep
-        WRITE( UNIT = stdout, &
-            FMT = '(/,5X,"End of damped dynamics calculation")' )
-        WRITE( UNIT = stdout, &
-            FMT = '(/,5X,"Final energy = ",F18.10," Ry"/)' ) etot
-        !
-        CALL output_tau( .TRUE., .TRUE. )
-        !
-        RETURN
-        !
-    ENDIF
-    !
-    istep = istep + 1
-    WRITE( stdout, '(/,5X,"Entering Dynamics:",&
-                    & T28,"iteration",T37," = ",I5)' ) istep
-    !
-    ! ... Damped dynamics ( based on the projected-Verlet algorithm )
-    !
-    vel(:,:) = tau(:,:) - tau_old(:,:)
-    ! 
-    CALL force_precond( istep, force, etotold )
-    !
-    !
-    acc(:,:) = force(:,:) / alat / amu_ry
-    !
-    CALL project_velocity()
-    !
-    step(:,:) = vel(:,:) + dt**2 * acc(:,:)
-    !
-    norm_step = dnrm2( 3*nat, step, 1 )
-    !
-    step(:,:) = step(:,:) / norm_step
-    !
-    tau_new(:,:) = tau(:,:) + step(:,:)*MIN( norm_step, step_max / alat )
-    !
-    ! TB
-    !IF ( .NOT. ANY( if_pos(:,:) == 0 ) ) THEN
-    IF ( .NOT. ANY( if_pos(:,:) == 0 ) .AND. (relaxz) ) THEN
-        WRITE( stdout, '("relaxz = .TRUE. => displacement of the center of mass is not subtracted")')
-    ENDIF
-    IF ( (.NOT. ANY( if_pos(:,:) == 0 )) .AND. (.NOT. relaxz) ) THEN
-        !
-        ! ... if no atom has been fixed  we compute the displacement of the
-        ! ... center of mass and we subtract it from the displaced positions
-        !
-        delta(:) = 0.D0
-        !
-        DO na = 1, nat
-        !
-        delta(:) = delta(:) + ( tau_new(:,na) - tau(:,na) )
-        !
-        ENDDO
-        !
-        delta(:) = delta(:) / DBLE( nat )
-        !
-        FORALL( na = 1:nat ) tau_new(:,na) = tau_new(:,na) - delta(:)
-        !
-    ENDIF
-    !
-    IF ( lconstrain ) THEN
-        !
-        ! ... check if the new positions satisfy the constrain equation
-        !
-        CALL check_constraint( nat, tau_new, tau, &
-                            force, if_pos, ityp, alat, dt, amu_ry )
-        !
-    ENDIF
-    !
-    ! ... save on file all the needed quantities
-    !
-    CALL seqopn( 4, 'md', 'FORMATTED',  file_exists )
-    !
-    leof = .TRUE.
-    WRITE( UNIT = 4, FMT = * ) etot, istep, tau(:,:), leof
-    !
-    CLOSE( UNIT = 4, STATUS = 'KEEP' )
-    !
-    ! ... here the tau are shifted
-    !
-    tau(:,:) = tau_new(:,:)
-    ! 
-    !
+         !
+      ENDIF
+      !
+      ! ... check if convergence for structural minimization is achieved
+      !
+      conv_ions = ( etotold - etot ) < epse
+      conv_ions = conv_ions .and. ( MAXVAL( ABS( force ) ) < epsf )
+      !
+      IF ( conv_ions ) THEN
+         !
+         WRITE( UNIT = stdout, &
+                FMT = '(/,5X,"Damped Dynamics: convergence achieved in " &
+                       & ,I3," steps")' ) istep
+         WRITE( UNIT = stdout, &
+                FMT = '(/,5X,"End of damped dynamics calculation")' )
+         WRITE( UNIT = stdout, &
+                FMT = '(/,5X,"Final energy = ",F18.10," Ry"/)' ) etot
+         !
+         CALL output_tau( .TRUE., .TRUE. )
+         !
+         RETURN
+         !
+      ENDIF
+      !
+      istep = istep + 1
+      WRITE( stdout, '(/,5X,"Entering Dynamics:",&
+                      & T28,"iteration",T37," = ",I5)' ) istep
+      !
+      ! ... Damped dynamics ( based on the projected-Verlet algorithm )
+      !
+      vel(:,:) = tau(:,:) - tau_old(:,:)
+      !
+      CALL force_precond( istep, force, etotold )
+      !
+      acc(:,:) = force(:,:) / alat / amu_ry
+      !
+      CALL project_velocity()
+      !
+      step(:,:) = vel(:,:) + dt**2 * acc(:,:)
+      !
+      norm_step = dnrm2( 3*nat, step, 1 )
+      !
+      step(:,:) = step(:,:) / norm_step
+      !
+      tau_new(:,:) = tau(:,:) + step(:,:)*MIN( norm_step, step_max / alat )
+      !
+      ! TB
+      !IF ( .NOT. ANY( if_pos(:,:) == 0 ) ) THEN
+      IF ( .NOT. ANY( if_pos(:,:) == 0 ) .AND. (relaxz) ) THEN
+         WRITE( stdout, '("relaxz = .TRUE. => displacement of the center of mass is not subtracted")')
+      ENDIF
+      IF ( (.NOT. ANY( if_pos(:,:) == 0 )) .AND. (.NOT. relaxz) ) THEN
+         !
+         ! ... if no atom has been fixed  we compute the displacement of the
+         ! ... center of mass and we subtract it from the displaced positions
+         !
+         delta(:) = 0.D0
+         !
+         DO na = 1, nat
+            !
+            delta(:) = delta(:) + ( tau_new(:,na) - tau(:,na) )
+            !
+         ENDDO
+         !
+         delta(:) = delta(:) / DBLE( nat )
+         !
+         FORALL( na = 1:nat ) tau_new(:,na) = tau_new(:,na) - delta(:)
+         !
+      ENDIF
+      !
+      IF ( lconstrain ) THEN
+         !
+         ! ... check if the new positions satisfy the constrain equation
+         !
+         CALL check_constraint( nat, tau_new, tau, &
+                                force, if_pos, ityp, alat, dt, amu_ry )
+         !
+      ENDIF
+      !
+      ! ... save on file all the needed quantities
+      !
+      CALL seqopn( 4, 'md', 'FORMATTED',  file_exists )
+      !
+      leof = .TRUE.
+      WRITE( UNIT = 4, FMT = * ) etot, istep, tau(:,:), leof
+      !
+      CLOSE( UNIT = 4, STATUS = 'KEEP' )
+      !
+      ! ... here the tau are shifted
+      !
+      tau(:,:) = tau_new(:,:)
+      !
 #if ! defined (__REDUCE_OUTPUT)
-    !
-    CALL output_tau( .FALSE., .FALSE. )
-    !
+      !
+      CALL output_tau( .FALSE., .FALSE. )
+      !
 #endif
-    !
-    DEALLOCATE( step )
-    !
-END SUBROUTINE proj_verlet
-!
-!
-!
+      !
+      DEALLOCATE( step )
+      !
+   END SUBROUTINE proj_verlet
+
    SUBROUTINE fire( conv_ions )
 
      !------------------------------------------------------------------------
      !! This routine performs one step of structural relaxation using
-     !! the FIRE (Fast Inertial Relaxation Engine) algorithm ;
+     !! the FIRE (Fast Inertial Relaxation Engine) algorithm using the
+     !! semi-implicit Euler integration scheme with an energy monitor;
      !! 
      !! References: (1) Bitzek et al., Phys. Rev. Lett.,  97, 170201, (2006),
      !!                  doi: 10.1103/PhysRevLett.97.170201
-     !!             (2) (FIRE 2.0) Guénolé et al., Comp. Mater. Sci., 175, 109584, (2020),
+     !!             (2) Shuang et al., Comp. Mater. Sci., 156, 135-141 (2019),
+     !!                  doi: 10.1016/j.commatsci.2018.09.049
+     !!             (3) (FIRE 2.0) Guénolé et al., Comp. Mater. Sci., 175, 109584, (2020),
      !!                  doi: 10.1016/j.commatsci.2020.109584
      !! 
-     !! There are six global parameters that can be modified by the user:
+     !!  There are seven global parameters that can be modified by the user:
      !!
      !!  dt .... initial time step of calculation
      !!  fire_nmin ... number of steps with P > 0 before dt is increased 
@@ -1028,6 +1034,7 @@ END SUBROUTINE proj_verlet
      !!  fire_f_dec ... factor for the decrease of the time step
      !!  fire_alpha_init ... initial value of the velocity mixing factor
      !!  fire_falpha ... modifies the velocity mixing factor
+     !!  fire_dtmax ... maximum time step; calculated as dtmax = fire_dtmax*dt 
      !!
      !! Defaults are (taken from ref (2)):
      !!   dt = 20.0  (the default time step in PW ==  20.0 a.u. or 0.9674 fs )
@@ -1043,7 +1050,7 @@ END SUBROUTINE proj_verlet
      USE relax,              ONLY : epse, epsf
      USE control_flags,      only : istep, lconstrain
      !
-     USE constraints_module, ONLY : remove_constr_force, check_constraint
+     USE constraints_module, ONLY : remove_constr_force, remove_constr_vec, check_constraint
      ! TB
      USE extfield,      ONLY : relaxz
      !
@@ -1063,7 +1070,6 @@ END SUBROUTINE proj_verlet
      ! FIRE local variables 
      !
      REAL(DP) :: P, alpha, fmax, dt_max, dt_curr
-     REAL(DP), ALLOCATABLE :: vel_old(:,:), acc_old(:,:)
      INTEGER :: nsteppos
      ! 
      ! FIRE  parameters; read from input ...   
@@ -1075,8 +1081,6 @@ END SUBROUTINE proj_verlet
      REAL(DP) :: falpha ! modify the mixing factor 
      !
      ALLOCATE( step( 3, nat ) )
-     ALLOCATE( vel_old(3, nat) )
-     ALLOCATE( acc_old(3,nat) )
      !
      ! set up local variables for global input parameters (better readability) ... 
      !
@@ -1092,15 +1096,12 @@ END SUBROUTINE proj_verlet
      alpha = alpha_init
      ! maximum time step 
      dt_curr = dt
-     dt_max = 10.D0*dt
+     dt_max = fire_dtmax*dt
      ! acc_old and vel_old are here to keep track of acceleration/velocity in the previous time step
-     vel_old(:,:) = vel(:,:) 
-     acc_old(:,:) = acc(:,:)   
      nsteppos = 0
      conv_ions = .FALSE.
      ! 
      CALL seqopn( 4, 'fire', 'FORMATTED', file_exists )
-     !
      !
      !
      IF ( file_exists ) THEN
@@ -1120,8 +1121,8 @@ END SUBROUTINE proj_verlet
         !
         IF ( refold_pos ) CALL refold_tau()
         !
-        vel_old(:,:) = 0.D0
-        acc_old(:,:) = 0.D0
+        vel(:,:) = 0.D0
+        acc(:,:) = 0.D0
         etotold = etot
         istep = 0
         WRITE( UNIT = stdout, &
@@ -1133,9 +1134,9 @@ END SUBROUTINE proj_verlet
         WRITE (UNIT = stdout, &
              FMT = '(/,5X," fire_nmin = ",I2," fire_f_inc = ", F4.2, & 
              " fire_f_dec = ",F4.2," fire_alpha = ",F4.2, & 
-             " fire_falpha = ",F4.2 )') &
+             " fire_falpha = ",F4.2, " dtmax = ",F5.1 )') &
              fire_nmin, fire_f_inc, fire_f_dec, &
-             fire_alpha_init, fire_falpha 
+             fire_alpha_init, fire_falpha, dt_max 
         !
      ENDIF
      !
@@ -1145,6 +1146,7 @@ END SUBROUTINE proj_verlet
         ! ... constraint gradient (this constitutes the initial guess
         ! ... for the calculation of the lagrange multipliers)
         !
+        write (*,*) "Called remove constr" 
         CALL remove_constr_force( nat, tau, if_pos, ityp, alat, force )
         !
 #if ! defined (__REDUCE_OUTPUT)
@@ -1194,71 +1196,67 @@ END SUBROUTINE proj_verlet
      ! calculate acceleration
      !
      acc(:,:) = force(:,:) / alat / amu_ry
-     !
-     ! update velocity (in the first step vel_old and acc_old are set to 0)
      ! 
-     IF (ANY(if_pos(:,:) == 0 )) THEN
-        !
-        ! In FIRE the constraints must be applied to the velocity as well  
-        ! 
-        DO na=1,nat
-           DO i = 1,3
-              IF ( if_pos(i,na) == 0 ) THEN
-                 vel(i,na) = 0.D0
-              ELSE
-                 vel(i,na) = vel_old(i,na) + 0.5_DP*dt_curr*(acc(i,na) + acc_old(i,na))
-              ENDIF
-           ENDDO
-        ENDDO
-     ELSE
-        vel(:,:) = vel_old(:,:) + 0.5_DP*dt_curr*(acc(:,:) + acc_old(:,:))
-     ENDIF
      ! calculate the projection of the velocity on the force 
-     P = ddot(3*nat, vel, 1, force, 1)
+     P = ddot(3*nat,force, 1, vel, 1)
+     ! 
+     step(:,:) = 0.0_DP
+     ! 
+     IF ( P < 0.0_DP  )  THEN 
+        ! FIRE 2.0 algorithm: if P < 0 go back by half a step 
+        ! for details see reference (2), doi: 10.1016/j.commatsci.2020.109584
+        step(:,:) = step(:,:) - 0.5_DP*dt_curr*vel(:,:)
+     ENDIF
+     !
+     ! ... manipulate the time step ... 
+     !
+     IF ( P >= 0.0_DP  .AND. (etot - etotold) <= 0.D0 ) THEN
+        ! 
+        ! NOTE in original FIRE the condition is P > 0,
+        ! however to prevent the time step decrease in the first step where v=0 (P=0 and etot=etotold)
+        ! the equality was changed to P >= 0 the energy monitor is added b
+        nsteppos = nsteppos + 1
+        ! increase time step and modify mixing factor only after Nmin steps in positive direction
+        IF ( nsteppos > Nmin ) THEN 
+           dt_curr = MIN(dt_curr*f_inc, dt_max )
+           alpha = alpha*falpha
+        END IF
+     ELSE   
+        !
+        ! set velocity to 0; return alpha to the initial value; reduce time step
+        !
+        vel(:,:) = 0.D0
+        alpha = alpha_init
+        nsteppos = 0
+        dt_curr = dt_curr*f_dec        
+     END IF
+     ! report current parameters 
+     WRITE (stdout, '(/,5X, "FIRE Parameters: P = ", F10.8 ", dt = " F5.2", & 
+          alpha = " F5.3, " nsteppos = ", I3, " at step", I3, /)' ) P, dt_curr, alpha, nsteppos, istep
+     !
+     ! calculate v(t+dt) = v(t) + a(t)*dt  
+     !
+     vel(:,:) = vel(:,:) + dt_curr*acc(:,:)
      ! 
      ! velocity mixing 
      !
      vel(:,:) = (1.D0 - alpha)*vel(:,:) + alpha*force(:,:)*dnrm2(3*nat,vel,1)/dnrm2(3*nat,force,1)
      ! 
-     step(:,:) = 0.0_DP
-     !
-     ! ... manipulate the time step ... 
-     !   
-     IF ( P < 0 ) THEN
+     IF ( lconstrain )  THEN
         !
-        ! FIRE 2.0 algorithm: if P < 0 go back by half a step 
-        ! for details see reference (2), doi: 10.1016/j.commatsci.2020.109584
-        ! 
-        step(:,:) = step(:,:) - 0.5_DP*dt_curr*vel(:,:) 
+        ! apply constraints to the velocity as well  
         !
-        ! set velocity to 0; return alpha to the initial value; reduce time step
-        ! 
-        vel(:,:) = 0.D0
-        alpha = alpha_init
-        nsteppos = 0
-        dt_curr = dt_curr*f_dec
-     ELSE IF ( P >= 0 .AND. nsteppos > Nmin ) THEN
-        ! increase time step and modify mixing factor
-        dt_curr = MIN(dt_curr*f_inc, dt_max )
-        alpha = alpha*falpha
-     END IF
-     ! report current parameters 
-     WRITE (stdout, '(/,5X, "FIRE Parameters: P = ", F10.8 ", dt = " F5.2", & 
-          alpha = " F5.3, " nsteppos = ", I3, " at step", I3, /)' ) P, dt_curr, alpha, nsteppos, istep
+        CALL remove_constr_vec( nat, tau, if_pos, ityp, alat, vel )
+     ENDIF
      ! 
      ! 
-     nsteppos = nsteppos + 1
+     ! calculate the displacement x(t+dt) = x(t) + v(t+dt)*dt 
      ! 
-     ! calculate the displacement
-     !
-     step(:,:) = step(:,:) +  vel(:,:)*dt_curr + 0.5_DP*acc(:,:)*dt_curr**2
-     write(*,*) "Fire total step:",step(:,1)
+     step(:,:) = step(:,:) +  vel(:,:)*dt_curr
      !
      norm_step = dnrm2( 3*nat, step, 1 )
      !
-     IF (norm_step /= 0.D0) step(:,:) = step(:,:) / norm_step
-     ! 
-     write (*,*) "Fire made step:", step(:,1)*MIN(norm_step, step_max)
+     step(:,:) = step(:,:) / norm_step
      !
      ! keep the step within a threshold (taken from damped dynamics)  
      !
@@ -1293,104 +1291,101 @@ END SUBROUTINE proj_verlet
 #endif
      !
      DEALLOCATE( step )
-     DEALLOCATE( vel_old )
-     DEALLOCATE( acc_old )
      !
-   END SUBROUTINE fire
-
-!
-!
-!------------------------------------------------------------------------
-SUBROUTINE langevin_md()
-    !------------------------------------------------------------------------
-    !! Langevin molecular dynamics.
-    !
-    USE ions_base,      ONLY : nat, ityp, tau, if_pos
-    USE cell_base,      ONLY : alat
-    USE ener,           ONLY : etot
-    USE force_mod,      ONLY : force
-    USE control_flags,  ONLY : istep, lconstrain
-    USE random_numbers, ONLY : gauss_dist
-    !
-    USE constraints_module, ONLY : nconstr
-    USE constraints_module, ONLY : remove_constr_force, check_constraint
-    !
-    IMPLICIT NONE
-    !
-    REAL(DP) :: sigma, kt
-    REAL(DP) :: delta(3)
-    INTEGER  :: na
-    LOGICAL  :: file_exists
-    !
-    REAL(DP), EXTERNAL :: dnrm2
-    !
-    CALL seqopn( 4, 'md', 'FORMATTED', file_exists )
-    !
-    IF ( file_exists ) THEN
-        !
-        ! ... the file is read :  simulation is continuing
-        !
-        READ( UNIT = 4, FMT = * ) istep
-        !
-        CLOSE( UNIT = 4, STATUS = 'KEEP' )
-        !
-    ELSE
-        !
-        CLOSE( UNIT = 4, STATUS = 'DELETE' )
-        !
-        ! ... the file is absent :  simulation is starting from scratch
-        !
-        istep = 0
-        !
-        WRITE( UNIT = stdout, &
-            FMT = '(/,5X,"Over-damped Langevin Dynamics Calculation")' )
-        !
-        ! ... atoms are refold in the central box if required
-        !
-        IF ( refold_pos ) CALL refold_tau()
-        !
-        WRITE( UNIT = stdout, &
-            FMT = '(5X,"Integration step",T27," = ",F8.2," a.u.,")' ) dt
-        !
-    ENDIF
-    !
-    istep = istep + 1
-    WRITE( UNIT = stdout, &
-            FMT = '(/,5X,"Entering Dynamics:",T28, &
-                &     "iteration",T37," = ",I5,/)' ) istep
-    !
-    IF ( lconstrain ) THEN
-        !
-        ! ... we first remove the component of the force along the
-        ! ... constraint gradient ( this constitutes the initial
-        ! ... guess for the calculation of the lagrange multipliers )
-        !
-        CALL remove_constr_force( nat, tau, if_pos, ityp, alat, force )
-        !
-    ENDIF
-    !
-    ! ... compute the stochastic term
-    !
-    kt = temperature / ry_to_kelvin
-    !
-    sigma = SQRT( 2.D0*dt*kt )
-    !
-    delta(:) = 0.D0
-    !
-    DO na = 1, nat
-        !
-        chi(:,na) = gauss_dist( 0.D0, sigma, 3 )*DBLE( if_pos(:,na) )
-        !
-        delta(:) = delta(:) + chi(:,na)
-        !
-    ENDDO
-    !
-    FORALL( na = 1:nat ) chi(:,na) = chi(:,na) - delta(:) / DBLE( nat )
-    !
-    PRINT *, "|F|   = ", dt*dnrm2( 3*nat, force, 1 )
-    PRINT *, "|CHI| = ", dnrm2( 3*nat, chi, 1 )
-    !
-    ! ... over-damped Langevin dynamics
+   END SUBROUTINE fire 
+   !
+   !
+   !------------------------------------------------------------------------
+   SUBROUTINE langevin_md()
+      !------------------------------------------------------------------------
+      !! Langevin molecular dynamics.
+      !
+      USE ions_base,      ONLY : nat, ityp, tau, if_pos
+      USE cell_base,      ONLY : alat
+      USE ener,           ONLY : etot
+      USE force_mod,      ONLY : force
+      USE control_flags,  ONLY : istep, lconstrain
+      USE random_numbers, ONLY : gauss_dist
+      !
+      USE constraints_module, ONLY : nconstr
+      USE constraints_module, ONLY : remove_constr_force, check_constraint
+      !
+      IMPLICIT NONE
+      !
+      REAL(DP) :: sigma, kt
+      REAL(DP) :: delta(3)
+      INTEGER  :: na
+      LOGICAL  :: file_exists
+      !
+      REAL(DP), EXTERNAL :: dnrm2
+      !
+      CALL seqopn( 4, 'md', 'FORMATTED', file_exists )
+      !
+      IF ( file_exists ) THEN
+         !
+         ! ... the file is read :  simulation is continuing
+         !
+         READ( UNIT = 4, FMT = * ) istep
+         !
+         CLOSE( UNIT = 4, STATUS = 'KEEP' )
+         !
+      ELSE
+         !
+         CLOSE( UNIT = 4, STATUS = 'DELETE' )
+         !
+         ! ... the file is absent :  simulation is starting from scratch
+         !
+         istep = 0
+         !
+         WRITE( UNIT = stdout, &
+               FMT = '(/,5X,"Over-damped Langevin Dynamics Calculation")' )
+         !
+         ! ... atoms are refold in the central box if required
+         !
+         IF ( refold_pos ) CALL refold_tau()
+         !
+         WRITE( UNIT = stdout, &
+                FMT = '(5X,"Integration step",T27," = ",F8.2," a.u.,")' ) dt
+         !
+      ENDIF
+      !
+      istep = istep + 1
+      WRITE( UNIT = stdout, &
+             FMT = '(/,5X,"Entering Dynamics:",T28, &
+                    &     "iteration",T37," = ",I5,/)' ) istep
+      !
+      IF ( lconstrain ) THEN
+         !
+         ! ... we first remove the component of the force along the
+         ! ... constraint gradient ( this constitutes the initial
+         ! ... guess for the calculation of the lagrange multipliers )
+         !
+         CALL remove_constr_force( nat, tau, if_pos, ityp, alat, force )
+         !
+      ENDIF
+      !
+      ! ... compute the stochastic term
+      !
+      kt = temperature / ry_to_kelvin
+      !
+      sigma = SQRT( 2.D0*dt*kt )
+      !
+      delta(:) = 0.D0
+      !
+      DO na = 1, nat
+         !
+         chi(:,na) = gauss_dist( 0.D0, sigma, 3 )*DBLE( if_pos(:,na) )
+         !
+         delta(:) = delta(:) + chi(:,na)
+         !
+      ENDDO
+      !
+      FORALL( na = 1:nat ) chi(:,na) = chi(:,na) - delta(:) / DBLE( nat )
+      !
+      PRINT *, "|F|   = ", dt*dnrm2( 3*nat, force, 1 )
+      PRINT *, "|CHI| = ", dnrm2( 3*nat, chi, 1 )
+      !
+      ! ... over-damped Langevin dynamics
       !
       tau_new(:,:) = tau(:,:) + ( dt*force(:,:) + chi(:,:) ) / alat
       !

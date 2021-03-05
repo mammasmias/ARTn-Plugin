@@ -1146,6 +1146,7 @@ CONTAINS
         ! ... constraint gradient (this constitutes the initial guess
         ! ... for the calculation of the lagrange multipliers)
         !
+        write (*,*) "Called remove constr" 
         CALL remove_constr_force( nat, tau, if_pos, ityp, alat, force )
         !
 #if ! defined (__REDUCE_OUTPUT)
@@ -1240,6 +1241,11 @@ CONTAINS
      ! velocity mixing 
      !
      vel(:,:) = (1.D0 - alpha)*vel(:,:) + alpha*force(:,:)*dnrm2(3*nat,vel,1)/dnrm2(3*nat,force,1)
+     !
+     !
+     ! ... the velocity of fixed ions must be zero
+     !
+     vel = vel * DBLE( if_pos )
      ! 
      IF ( lconstrain )  THEN
         !
