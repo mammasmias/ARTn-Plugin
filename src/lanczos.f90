@@ -210,7 +210,7 @@ SUBROUTINE lanczos( nat, force, vel, alpha_init, dt, &
         !
      ELSE
         ! increas counter if lanczos is not converged in nlanciter
-       nlanc = nlanc + 1 
+        nlanc = nlanc + 1
     END IF
     
     ! correct v1 so that the move is made from the initial position
