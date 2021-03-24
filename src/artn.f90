@@ -262,7 +262,7 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
   !
   ! check for convergence of total forces (only after eigevec was obtained)  
   !
-  IF (MAXVAL(ABS(force_in*if_pos)) < convcrit_final .AND. leigen = .true. ) THEN
+  IF (MAXVAL(ABS(force_in*if_pos)) < convcrit_final .AND. leigen ) THEN
      force(:,:) = force_in(:,:)
      lconv = .true.
      CALL write_struct(alat, at, nat, tau, atm, ityp, force, 1.0_DP, 556, 'xsf', sadfname)
