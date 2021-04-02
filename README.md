@@ -25,7 +25,8 @@ This is a working repo for the current version of the ARTn plugin; currently it 
 
 **First installation:**  Execute  the `patch-FIRE.sh` script (adds the FIRE minimization option to QE) 
 
-**Install/update the ARTn-plugin**: Execute the `patch-ARTn.sh` script
+**Install/update the ARTn-plugin**:
+First configure QE, then put correct paths of QE and ART in the Makefile, then run "make" to compile the libartn.a, and then run "make patch" to patch QE and make pw.
 
 ## How to run ARTn:
 
