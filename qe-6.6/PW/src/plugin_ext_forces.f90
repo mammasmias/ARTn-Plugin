@@ -17,5 +17,30 @@ SUBROUTINE plugin_ext_forces()
   !
   USE plugin_flags
   ! modifications start here
-
+  ! we take some stuff from QE
+  USE ions_base,     ONLY : nat, tau, if_pos, ityp, atm, amass
+  USE cell_base,     ONLY : alat, at
+  USE force_mod,     ONLY : force
+  USE ener,          ONLY : etot 
+  USE relax,         ONLY : epsf, epse
+  USE control_flags, ONLY : istep
+  USE dynamics_module, ONLY : vel, dt, fire_alpha_init
+  USE io_files,      ONLY : prefix,tmp_dir
+  !
+  IMPLICIT NONE
+  ! 
+  LOGICAL :: lconv
+  !
+  ! ARTn convergence flag 
+  ! 
+  lconv = .false. 
+  !
+  IF ( ionode ) THEN
+     CALL artn(force,etot,epsf,nat,ityp,atm,tau,at,alat,istep,if_pos,vel,dt,fire_alpha_init,lconv,prefix,tmp_dir) 
+  ENDIF
+  IF ( lconv ) THEN
+     WRITE (*,*) "ARTn calculation converged, stopping" 
+     STOP 1
+  END IF
+  
 END SUBROUTINE plugin_ext_forces

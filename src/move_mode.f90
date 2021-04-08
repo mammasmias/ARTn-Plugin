@@ -1,6 +1,6 @@
 SUBROUTINE move_mode(nat, dlanc, v1, force, &
                      vel, alpha_init, dt, &
-                     istepperp, push, &
+                     iperp, push, &
                      mode, prfx, tmpdir )
   !
   ! translate specified move to appropriate force and set FIRE parameters accordingly  
@@ -14,7 +14,7 @@ SUBROUTINE move_mode(nat, dlanc, v1, force, &
   REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: force
   REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: vel
   REAL(DP), INTENT(IN) :: alpha_init, dt
-  INTEGER, INTENT(IN) :: istepperp
+  INTEGER, INTENT(IN) :: iperp
   REAL(DP), DIMENSION(3,nat), INTENT(IN) :: push
   CHARACTER(LEN=4), INTENT(IN) :: mode
   CHARACTER(LEN=255), INTENT(IN) :: tmpdir, prfx
@@ -48,7 +48,7 @@ SUBROUTINE move_mode(nat, dlanc, v1, force, &
 
   CASE( 'perp' )
      !
-     IF( istepperp .eq. 0 ) THEN
+     IF( iperp .eq. 0 ) THEN
         ! for the first step forget previous velocity (prevent P < 0)
         etot = 0.D0
         vel(:,:) = 0.D0

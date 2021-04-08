@@ -1,7 +1,9 @@
 &ARTN_PARAMETERS
-  npushmin = 3 
+  npush = 3
+  lpush_final = .true. 
+  nsmooth = 2
   convcrit_init = 1.0d-2
-  init_step_size = 0.2
+  push_step_size = 0.2
 ! parameters for the push
   push_mode = 'list'
   ! define which atoms are to be pushed and the constraints ...
@@ -9,7 +11,7 @@
   add_const(:,1) = 1.0, 0.0, 1.0 
   ! lanczos parameters
   dlanc = 0.1D-1 
-  nlanciter_init = 16
+  nlanc_init = 16
   ! eigenpush parms
-  step_size = 0.5
+  eigen_step_size = 0.3
 /
