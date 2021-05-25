@@ -3,7 +3,7 @@
 ! Main ARTn plugin subroutine:
 !        modifies the input force to perform the ARTn algorithm 
 !------------------------------------------------------------------------------
-SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_pos,vel,dt,fire_alpha_init,lconv,prefix,tmp_dir)
+SUBROUTINE artn(force,etot,nat,ityp,atm,tau,at,alat,istep,if_pos,vel,dt,fire_alpha_init,lconv,prefix,tmp_dir)
   !----------------------------------------------------------------------------
   !
   ! artn_params for variables and counters that need to be stored in each step   
@@ -21,7 +21,6 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
   REAL(DP), INTENT(INOUT) :: force(3,nat)     ! force calculated by the engine
   REAL(DP), INTENT(INOUT) :: vel(3,nat)       ! velocity of previous FIRE step
   REAL(DP), INTENT(INOUT) :: tau(3,nat)       ! atomic positions (needed for output only)
-  REAL(DP), INTENT(INOUT) :: forc_conv_thr_qe ! force convergence threshold of the engine
   REAL(DP), INTENT(IN) ::    etot             ! total energy in current step
   REAL(DP), INTENT(IN) ::    dt               ! default time step in FIRE  
   REAL(DP), INTENT(IN) ::    fire_alpha_init  ! initial value of alpha in FIRE 
@@ -307,7 +306,9 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
   ! Push to adjacent minima after the saddle point  
   ! 
   IF ( lsaddle ) THEN
-     ! do we do a final push ? 
+     ! 
+     ! do we do a final push ?
+     ! 
      IF ( lpush_final ) THEN   
         ! set convergence and other flags to false ...
         lconv = .false.
