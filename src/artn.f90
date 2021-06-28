@@ -100,7 +100,7 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
      ! modify the force to be equal to the push
      !
      force(:,:) =  push(:,:)
-     CALL move_mode( nat, dlanc, v_in, force, &
+     CALL move_mode( nat, dlanc, force, &
           vel, fire_alpha_init, dt,  &
           iperp, push, 'eign', prefix, tmp_dir)
      !
@@ -124,7 +124,7 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
         convcrit_init = convcrit_final  
      END IF
      !
-     CALL move_mode( nat,  dlanc, v_in, force, &
+     CALL move_mode( nat,  dlanc, force, &
           vel, fire_alpha_init, dt,  &
           iperp, eigenvec, 'perp', prefix, tmp_dir)
      ! 
@@ -140,7 +140,7 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
         IF ( ipush < npush ) THEN
            ! continue pushing in the specified direction
            force(:,:) =  eigenvec(:,:)
-           CALL move_mode( nat, dlanc, v_in, force, &
+           CALL move_mode( nat, dlanc, force, &
                 vel, fire_alpha_init, dt,  &
                 iperp, eigenvec, 'eign', prefix, tmp_dir)
            ! 
@@ -165,7 +165,7 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
      ! if we have a good lanczos eigenvector use it
      !  
      force(:,:) = eigenvec(:,:)
-     CALL move_mode( nat, dlanc, v_in, force, &
+     CALL move_mode( nat, dlanc, force, &
           vel, fire_alpha_init, dt,  &
           iperp, eigenvec, 'eign', prefix, tmp_dir)
      ! update eigenstep counter 
@@ -222,7 +222,13 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
      ENDIF
      !
      CALL lanczos( nat, force, vel, fire_alpha_init, dt, &
-          v_in, dlanc, nlanc, ilanc, lowest_eigval,  eigenvec, push, prefix, tmp_dir)
+          v_in, dlanc, nlanc, ilanc, lowest_eigval,  eigenvec, push)
+
+     CALL move_mode( nat, dlanc, force, &
+        vel, fire_alpha_init, dt, &
+        0, push, 'lanc', prefix, tmp_dir)
+
+
      !
      ! when lanczos converges, nlanc = number of steps it took to converge,
      ! and ilanc = ilanc + 1
@@ -324,7 +330,7 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
            lrelax = .true.
         ELSE
            ! 
-           CALL move_mode( nat, dlanc, v_in, force, &
+           CALL move_mode( nat, dlanc, force, &
           vel, fire_alpha_init, dt,  &
           iperp, eigenvec, 'eign', prefix, tmp_dir)
            !
