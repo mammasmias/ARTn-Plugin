@@ -1,4 +1,4 @@
-SUBROUTINE move_mode(nat, dlanc, v1, force, &
+SUBROUTINE move_mode(nat, dlanc, force, &
                      vel, alpha_init, dt, &
                      iperp, push, &
                      mode, prfx, tmpdir )
@@ -10,7 +10,7 @@ SUBROUTINE move_mode(nat, dlanc, v1, force, &
   IMPLICIT NONE
   INTEGER, INTENT(IN) :: nat
   REAL(DP), INTENT(IN) :: dlanc  
-  REAL(DP), DIMENSION(3,nat), INTENT(IN) :: v1
+  ! REAL(DP), DIMENSION(3,nat), INTENT(IN) :: v1
   REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: force
   REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: vel
   REAL(DP), INTENT(IN) :: alpha_init, dt
@@ -69,7 +69,7 @@ SUBROUTINE move_mode(nat, dlanc, v1, force, &
      alpha = 0.D0
      nsteppos = 0
      ! the step performed should be like this now translate it into the correct force
-     force(:,:) = v1(:,:)*dlanc*amu_ry/dt_curr**2
+     force(:,:) = force(:,:)*dlanc*amu_ry/dt_curr**2
      !
   CASE( 'eign' )
      !
