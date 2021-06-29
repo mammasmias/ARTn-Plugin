@@ -26,7 +26,7 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
   REAL(DP), INTENT(IN) ::    dt               ! default time step in FIRE  
   REAL(DP), INTENT(IN) ::    fire_alpha_init  ! initial value of alpha in FIRE 
   REAL(DP), INTENT(IN) ::    alat             ! lattice parameter of QE
-  REAL(DP), INTENT(IN) ::    at(3,nat)        ! lattice parameters in alat units 
+  REAL(DP), INTENT(IN) ::    at(3,3)          ! lattice parameters in alat units 
   INTEGER,  INTENT(IN) ::    nat              ! number of atoms
   INTEGER,  INTENT(IN) ::    ityp(nat)        ! atom types
   INTEGER,  INTENT(IN) ::    istep            ! current step
