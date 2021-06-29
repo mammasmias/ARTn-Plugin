@@ -21,7 +21,7 @@ MODULE artn_params
   LOGICAL :: llanczos   ! lanczos algorithm
   LOGICAL :: lsaddle    ! saddle point obtained 
   ! counters
-  INTEGER :: iperp      ! number of steps in perpendicular relaxation
+  INTEGER, target :: iperp      ! number of steps in perpendicular relaxation
   INTEGER :: ieigen     ! number of steps made with eigenvector
   INTEGER :: ipush      ! number of pushes made
   INTEGER :: ilanc      ! current lanczos iteration
@@ -34,7 +34,7 @@ MODULE artn_params
   ! arrays that are needed by ARTn internally ! 
   !                                           ! 
   REAL(DP), ALLOCATABLE :: push(:,:)     ! initial push vector
-  REAL(DP), ALLOCATABLE :: eigenvec(:,:) ! lanczos eigenvector
+  REAL(DP), ALLOCATABLE, target :: eigenvec(:,:) ! lanczos eigenvector
   REAL(DP), ALLOCATABLE :: tau_saddle(:,:) ! coordinates of saddle point  
   !
   ! stored total energies and energy differences 
@@ -80,7 +80,7 @@ MODULE artn_params
   REAL(DP) :: eigen_step_size      ! step size for a step with the lanczos eigenvector
   REAL(DP) :: current_step_size ! controls the current size of eigenvector step
   REAL(DP) :: fpush_factor     ! factor for the final push 
-  REAL(DP) :: dlanc         ! step size in the lanczos algorithm 
+  REAL(DP), target :: dlanc         ! step size in the lanczos algorithm 
   ! arrays related to constraints 
   INTEGER,  ALLOCATABLE :: push_ids(:)    ! IDs of atoms to be pushed 
   REAL(DP), ALLOCATABLE :: add_const(:,:) ! constraints on initial push

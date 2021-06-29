@@ -6,6 +6,8 @@
 SUBROUTINE artn_QE( force, etot, forc_conv_thr_qe, nat, ityp, atm, tau, at, alat, istep, if_pos, vel, dt, fire_alpha_init, lconv, prefix, tmp_dir )
   !----------------------------------------------------------------------------
   !
+  USE artn_params, ONLY: DP, iperp, dlanc, eigenvec
+  !
   !  Interface Quantum ESPRESSO/ARTn:
   !  We convert/compute/adapt some variable 
   !
@@ -32,6 +34,9 @@ SUBROUTINE artn_QE( force, etot, forc_conv_thr_qe, nat, ityp, atm, tau, at, alat
   character(:), allocatable :: move
   real(dp)                  :: box(3,3)
   real(dp), allocatable     :: pos(:,:)
+  !INTEGER, :: iperp
+  !REAL(DP) :: dlanc      ! dR in Lanczos
+  !REAL(DP) :: eigvec(3,nat)   !
 
 
   ! ...Convert the length in angstrom
@@ -50,7 +55,7 @@ SUBROUTINE artn_QE( force, etot, forc_conv_thr_qe, nat, ityp, atm, tau, at, alat
   !call move_mode( vel, dt, fire_alpha_init, forc_conv_thr_qe )
   !call move_mode( nat, dlanc, force, vel, fire_alpha_init, dt, iperp, eigenvec, 'eign', prefix, tmp_dir)
   !                           inout
-  call move_mode( nat, dlanc, force, vel, fire_alpha_init, dt, iperp, eigenvec, move, prefix, tmp_dir)
+  call move_mode( nat, dlanc, force, vel, fire_alpha_init, dt, iperp, eigenvec, move, prefix, tmp_dir, forc_conv_thr_qe )
 
 
 END SUBROUTINE artn_QE 

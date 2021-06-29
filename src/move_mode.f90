@@ -1,7 +1,7 @@
 SUBROUTINE move_mode(nat, dlanc, force, &
                      vel, alpha_init, dt, &
                      iperp, push, &
-                     mode, prfx, tmpdir )
+                     mode, prfx, tmpdir, forc_thr )
   !
   ! translate specified move to appropriate force and set FIRE parameters accordingly  
   !
@@ -11,7 +11,7 @@ SUBROUTINE move_mode(nat, dlanc, force, &
   INTEGER, INTENT(IN)                       :: nat
   REAL(DP), INTENT(IN)                      :: dlanc  
   ! REAL(DP), DIMENSION(3,nat), INTENT(IN) :: v1
-  REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: force
+  REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: force, forc_thr
   REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: vel
   REAL(DP), INTENT(IN)                      :: alpha_init, dt
   INTEGER, INTENT(IN)                       :: iperp
@@ -89,6 +89,10 @@ SUBROUTINE move_mode(nat, dlanc, force, &
      nsteppos = 0
      force(:,:) = force(:,:)*amu_ry/dt_curr**2
      !
+
+  CASE( 'relx' )
+     forc_thr = 10D-8
+
   CASE default
      write(*,*) 'Problem with move_mode!'
   END SELECT

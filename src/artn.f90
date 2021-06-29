@@ -4,7 +4,7 @@
 !        modifies the input force to perform the ARTn algorithm 
 !------------------------------------------------------------------------------
 !SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_pos,vel,dt,fire_alpha_init,lconv,prefix,tmp_dir)
-SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, dlanc, eigenvec, iperp, move, lconv )
+SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, dlanc_ptr, eigvec_ptr, iperp_ptr, move, lconv )
   !----------------------------------------------------------------------------
   !
   ! artn_params for variables and counters that need to be stored in each step   
@@ -30,8 +30,9 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, dlanc, eigenvec, 
   CHARACTER(LEN=3),   INTENT(IN) :: atm(*)    ! name of atom corresponding to ityp
 
   CHARACTER(LEN=4), INTENT(OUT) :: move       ! Stage for move_mode
-  REAL(DP),         INTENT(OUT) :: dlanc      ! dR in Lanczos
-  REAL(DP),  INTENT(OUT) :: eigenvec(3,nat)    ! 
+  INTEGER, POINTER, INTENT(OUT) :: iperp_ptr
+  REAL(DP), pointer, INTENT(OUT) :: dlanc_ptr      ! dR in Lanczos
+  REAL(DP), pointer, INTENT(OUT) :: eigvec_ptr(:,:)   ! 
   LOGICAL,          INTENT(OUT) :: lconv      ! flag for controlling convergence 
 
   ! --- LOCAL VARIABLE
@@ -46,7 +47,6 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, dlanc, eigenvec, 
   INTEGER   :: ios                            ! file IOSTAT  
   CHARACTER( LEN=255) :: filin, filout, sadfname, initpfname, eigenfname, restartfname
 
-  character :: 
   integer, save :: istep
   !
   ! The ARTn algorithm proceeds as follows:
@@ -61,6 +61,11 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, dlanc, eigenvec, 
   lconv = .false.
   ! increment locally the ARTn-step
   istep = istep + 1      
+
+  ! ...Pointer to turn out
+  dlanc_ptr => dlanc
+  eigvec_ptr => eigenvec
+  iperp_ptr => iperp
   !
   ! store original force
   force_in(:,:) = force(:,:)
@@ -233,8 +238,9 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, dlanc, eigenvec, 
         force(:,:) = force(:,:)*if_pos(:,:)
      ENDIF
      !
-     CALL lanczos( nat, force, vel, fire_alpha_init, dt, &
-          v_in, dlanc, nlanc, ilanc, lowest_eigval,  eigenvec, push)
+     !CALL lanczos( nat, force, vel, fire_alpha_init, dt, &
+     !     v_in, dlanc, nlanc, ilanc, lowest_eigval,  eigenvec, push)
+     CALL lanczos( nat, force, v_in, dlanc, nlanc, ilanc, lowest_eigval,  eigenvec, push)
 
      move = 'lanc'
      iperp = 0
@@ -372,7 +378,8 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, dlanc, eigenvec, 
      IF ( MAXVAL(ABS(force_in(:,:)*if_pos(:,:))) <= convcrit_final  ) THEN
         IF ( fpush_factor == 1.0 ) THEN
            ! make sure QE doesn't converge
-           forc_conv_thr_qe = 1.0D-8
+           move = 'relx'
+           !forc_conv_thr_qe = 1.0D-8
            ! reverse direction of push 
            fpush_factor = -1.0
            ! restart from saddle point

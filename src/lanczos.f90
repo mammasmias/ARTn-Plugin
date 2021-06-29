@@ -1,6 +1,5 @@
 
-SUBROUTINE lanczos( nat, force, vel, alpha_init, dt, &
-     v_in, dlanc, nlanc, ilanc, lowest_eigval, lowest_eigvec, pushdir)
+SUBROUTINE lanczos( nat, force,  v_in, dlanc, nlanc, ilanc, lowest_eigval, lowest_eigvec, pushdir)
   USE artn_params,            ONLY: DP, Vmat, H, force_old 
   !
   ! Lanczos subroutine for the ARTn algorithm; based on the lanczos subroutine as written by M. Gunde
@@ -10,8 +9,8 @@ SUBROUTINE lanczos( nat, force, vel, alpha_init, dt, &
   REAL(DP), DIMENSION(3,nat), INTENT(IN) :: v_in
   REAL(DP), DIMENSION(3,nat), INTENT(IN) :: pushdir
   REAL(DP), INTENT(IN) :: dlanc
-  REAL(DP), INTENT(IN) :: alpha_init, dt
-  REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: vel 
+  !REAL(DP), INTENT(IN) :: alpha_init, dt
+  !REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: vel 
   REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: force
   REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: lowest_eigvec
   REAL(DP), INTENT(INOUT) :: lowest_eigval
