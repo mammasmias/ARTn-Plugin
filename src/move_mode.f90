@@ -8,16 +8,16 @@ SUBROUTINE move_mode(nat, dlanc, force, &
   USE artn_params, ONLY: DP, AMU_RY 
   !
   IMPLICIT NONE
-  INTEGER, INTENT(IN) :: nat
-  REAL(DP), INTENT(IN) :: dlanc  
+  INTEGER, INTENT(IN)                       :: nat
+  REAL(DP), INTENT(IN)                      :: dlanc  
   ! REAL(DP), DIMENSION(3,nat), INTENT(IN) :: v1
   REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: force
   REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: vel
-  REAL(DP), INTENT(IN) :: alpha_init, dt
-  INTEGER, INTENT(IN) :: iperp
-  REAL(DP), DIMENSION(3,nat), INTENT(IN) :: push
-  CHARACTER(LEN=4), INTENT(IN) :: mode
-  CHARACTER(LEN=255), INTENT(IN) :: tmpdir, prfx
+  REAL(DP), INTENT(IN)                      :: alpha_init, dt
+  INTEGER, INTENT(IN)                       :: iperp
+  REAL(DP), DIMENSION(3,nat), INTENT(IN)    :: push
+  CHARACTER(LEN=4), INTENT(IN)              :: mode
+  CHARACTER(LEN=255), INTENT(IN)            :: tmpdir, prfx
   ! 
   REAL(DP), EXTERNAL :: ddot,dnrm2
   ! variables read from the FIRE minimization algorithm
@@ -43,6 +43,15 @@ SUBROUTINE move_mode(nat, dlanc, force, &
   ELSE
      CLOSE( UNIT = 4, STATUS = 'DELETE')
   ENDIF
+
+
+  !
+  ! WARNING
+  ! iperp is incremented after the call move_mode so should be init at 0
+  ! But now no...
+  !
+
+
 
   SELECT CASE( TRIM(mode) )
 

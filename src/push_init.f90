@@ -1,5 +1,6 @@
 
-SUBROUTINE push_init (nat, tau, at, alat, idum, push_ids, dist_thr, add_const, init_step_size, push, mode)
+!SUBROUTINE push_init (nat, tau, at, alat, idum, push_ids, dist_thr, add_const, init_step_size, push, mode)
+SUBROUTINE push_init (nat, tau, at, idum, push_ids, dist_thr, add_const, init_step_size, push, mode)
   !
   ! subroutine that generates the initial push; options are specified by mode: 
   !           (1) 'all' generates a push on all atoms 
@@ -12,7 +13,8 @@ SUBROUTINE push_init (nat, tau, at, alat, idum, push_ids, dist_thr, add_const, i
   INTEGER, INTENT(IN) :: nat,idum
   INTEGER :: na, ia 
   INTEGER, INTENT(IN) :: push_ids(nat)
-  REAL(DP), INTENT(IN) :: alat, dist_thr, init_step_size
+  !REAL(DP), INTENT(IN) :: alat, dist_thr, init_step_size
+  REAL(DP), INTENT(IN) :: dist_thr, init_step_size
   REAL(DP), INTENT(IN) :: tau(3,nat), at(3,3), add_const(4,nat)
   CHARACTER(LEN=4), INTENT(IN) :: mode
   REAL(DP), INTENT(OUT) :: push(3,nat)
@@ -44,12 +46,15 @@ SUBROUTINE push_init (nat, tau, at, alat, idum, push_ids, dist_thr, add_const, i
         IF (ANY(push_ids == na)) THEN
            atom_displaced(na) = 1           
            !
-           tau0 = tau(:,na)*alat
+           !tau0 = tau(:,na)*alat
+           tau0 = tau(:,na)
            DO ia = 1,nat
               IF (ia /= na) THEN 
-                 dist(:) = tau(:,ia)*alat - tau0(:)
+                 !dist(:) = tau(:,ia)*alat - tau0(:)
+                 dist(:) = tau(:,ia) - tau0(:)
                  
-                 CALL pbc( dist, at, alat)
+                 !CALL pbc( dist, at, alat)
+                 CALL pbc( dist, at)
                  IF ( dnrm2(3,dist,1) <= dist_thr ) THEN
                     ! found an atom within dist_thr 
                     atom_displaced(ia) = 1

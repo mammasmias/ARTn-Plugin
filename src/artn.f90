@@ -3,7 +3,8 @@
 ! Main ARTn plugin subroutine:
 !        modifies the input force to perform the ARTn algorithm 
 !------------------------------------------------------------------------------
-SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_pos,vel,dt,fire_alpha_init,lconv,prefix,tmp_dir)
+!SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_pos,vel,dt,fire_alpha_init,lconv,prefix,tmp_dir)
+SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, dlanc, eigenvec, iperp, move, lconv )
   !----------------------------------------------------------------------------
   !
   ! artn_params for variables and counters that need to be stored in each step   
@@ -19,22 +20,20 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
   ! 
   IMPLICIT NONE
   REAL(DP), INTENT(INOUT) :: force(3,nat)     ! force calculated by the engine
-  REAL(DP), INTENT(INOUT) :: vel(3,nat)       ! velocity of previous FIRE step
   REAL(DP), INTENT(INOUT) :: tau(3,nat)       ! atomic positions (needed for output only)
-  REAL(DP), INTENT(INOUT) :: forc_conv_thr_qe ! force convergence threshold of the engine
+
   REAL(DP), INTENT(IN) ::    etot             ! total energy in current step
-  REAL(DP), INTENT(IN) ::    dt               ! default time step in FIRE  
-  REAL(DP), INTENT(IN) ::    fire_alpha_init  ! initial value of alpha in FIRE 
-  REAL(DP), INTENT(IN) ::    alat             ! lattice parameter of QE
   REAL(DP), INTENT(IN) ::    at(3,3)          ! lattice parameters in alat units 
   INTEGER,  INTENT(IN) ::    nat              ! number of atoms
   INTEGER,  INTENT(IN) ::    ityp(nat)        ! atom types
-  INTEGER,  INTENT(IN) ::    istep            ! current step
   INTEGER,  INTENT(IN) ::    if_pos(3,nat)    ! coordinates fixed by engine 
   CHARACTER(LEN=3),   INTENT(IN) :: atm(*)    ! name of atom corresponding to ityp
-  CHARACTER(LEN=255), INTENT(IN) :: tmp_dir   ! scratch directory of engine 
-  CHARACTER(LEN=255), INTENT(IN) :: prefix    ! prefix for scratch files of engine 
-  LOGICAL, INTENT(OUT) :: lconv               ! flag for controlling convergence 
+
+  CHARACTER(LEN=4), INTENT(OUT) :: move       ! Stage for move_mode
+  REAL(DP),         INTENT(OUT) :: dlanc      ! dR in Lanczos
+  LOGICAL,          INTENT(OUT) :: lconv      ! flag for controlling convergence 
+
+  ! --- LOCAL VARIABLE
   REAL(DP), EXTERNAL :: ran3, dnrm2, ddot     ! lapack functions 
   INTEGER :: na, icoor, idum                  ! integers for loops 
   !
@@ -42,9 +41,12 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
   REAL(DP)  :: fpara(3,nat)                   ! force parallel to push/eigenvec   
   REAL(DP)  :: v_in(3,nat)                    ! input vector for lanczos 
   REAL(DP)  :: fpara_tot                      ! total force in parallel direction
-  REAL(DP) ::  smoothing_factor               ! mixing factor for smooth transition between eigenvec and push
+  REAL(DP)  :: smoothing_factor               ! mixing factor for smooth transition between eigenvec and push
   INTEGER   :: ios                            ! file IOSTAT  
   CHARACTER( LEN=255) :: filin, filout, sadfname, initpfname, eigenfname, restartfname
+
+  character :: 
+  integer, save :: istep
   !
   ! The ARTn algorithm proceeds as follows:
   ! (1) push atoms in the direction specified by user & relax in the perpendicular direction;
@@ -56,6 +58,8 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
   ! flag that controls convergence
   !
   lconv = .false.
+  ! increment locally the ARTn-step
+  istep = istep + 1      
   !
   ! store original force
   force_in(:,:) = force(:,:)
@@ -90,7 +94,8 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
      !
      ! initial push 
      !
-     CALL push_init(nat, tau, at, alat, idum, push_ids, dist_thr, add_const, push_step_size, push ,push_mode)
+     !CALL push_init(nat, tau, at, alat, idum, push_ids, dist_thr, add_const, push_step_size, push ,push_mode)
+     CALL push_init(nat, tau, at, idum, push_ids, dist_thr, add_const, push_step_size, push ,push_mode)
      ! set up the flags (we did an initial push, now we need to relax perpendiculary) 
      lpush_init = .false.
      lperp = .true.
@@ -100,13 +105,15 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
      ! modify the force to be equal to the push
      !
      force(:,:) =  push(:,:)
-     CALL move_mode( nat, dlanc, force, &
-          vel, fire_alpha_init, dt,  &
-          iperp, push, 'eign', prefix, tmp_dir)
+     move = 'eign'
+     !CALL move_mode( nat, dlanc, force, &
+     !     vel, fire_alpha_init, dt,  &
+     !     iperp, push, 'eign', prefix, tmp_dir)
      !
      CALL write_report(etot,force_in, lowest_eigval, 'push' , if_pos, istep, nat,  iunartout)
      !
-     CALL write_struct(alat, at, nat, tau, atm, ityp, force, 1.0_DP, iunstruct, 'xsf', initpfname)
+     !CALL write_struct(alat, at, nat, tau, atm, ityp, force, 1.0_DP, iunstruct, 'xsf', initpfname)
+     CALL write_struct( at, nat, tau, atm, ityp, force, 1.0_DP, iunstruct, 'xsf', initpfname)
      ! 
   ELSE IF ( lperp ) THEN
      !
@@ -124,9 +131,10 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
         convcrit_init = convcrit_final  
      END IF
      !
-     CALL move_mode( nat,  dlanc, force, &
-          vel, fire_alpha_init, dt,  &
-          iperp, eigenvec, 'perp', prefix, tmp_dir)
+     move = 'perp'
+     !CALL move_mode( nat,  dlanc, force, &
+     !     vel, fire_alpha_init, dt,  &
+     !     iperp, eigenvec, 'perp', prefix, tmp_dir)
      ! 
      iperp = iperp + 1
      !
@@ -140,9 +148,10 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
         IF ( ipush < npush ) THEN
            ! continue pushing in the specified direction
            force(:,:) =  eigenvec(:,:)
-           CALL move_mode( nat, dlanc, force, &
-                vel, fire_alpha_init, dt,  &
-                iperp, eigenvec, 'eign', prefix, tmp_dir)
+           move = 'eign'
+           !CALL move_mode( nat, dlanc, force, &
+           !     vel, fire_alpha_init, dt,  &
+           !     iperp, eigenvec, 'eign', prefix, tmp_dir)
            ! 
            ipush = ipush + 1
            ! 
@@ -165,15 +174,17 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
      ! if we have a good lanczos eigenvector use it
      !  
      force(:,:) = eigenvec(:,:)
-     CALL move_mode( nat, dlanc, force, &
-          vel, fire_alpha_init, dt,  &
-          iperp, eigenvec, 'eign', prefix, tmp_dir)
+     move = 'eign'
+     !CALL move_mode( nat, dlanc, force, &
+     !     vel, fire_alpha_init, dt,  &
+     !     iperp, eigenvec, 'eign', prefix, tmp_dir)
      ! update eigenstep counter 
      ieigen = ieigen + 1
      !      
      CALL write_report(etot,force_in, lowest_eigval, 'eign' , if_pos, istep, nat,  iunartout)
      ! count the number of steps made with the eigenvector
-     CALL write_struct(alat, at, nat, tau, atm, ityp, force, 1.0_DP, iunstruct, 'xsf', eigenfname)
+     !CALL write_struct(alat, at, nat, tau, atm, ityp, force, 1.0_DP, iunstruct, 'xsf', eigenfname)
+     CALL write_struct( at, nat, tau, atm, ityp, force, 1.0_DP, iunstruct, 'xsf', eigenfname)
      ! 
      IF ( ieigen == neigen  ) THEN
         ! do a perpendicular relax
@@ -224,9 +235,11 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
      CALL lanczos( nat, force, vel, fire_alpha_init, dt, &
           v_in, dlanc, nlanc, ilanc, lowest_eigval,  eigenvec, push)
 
-     CALL move_mode( nat, dlanc, force, &
-        vel, fire_alpha_init, dt, &
-        0, push, 'lanc', prefix, tmp_dir)
+     move = 'lanc'
+     iperp = 0
+     !CALL move_mode( nat, dlanc, force, &
+     !   vel, fire_alpha_init, dt, &
+     !   0, push, 'lanc', prefix, tmp_dir)
 
 
      !
@@ -292,7 +305,8 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
         tau_saddle = tau
         ! 
         lsaddle = .true.
-        CALL write_struct(alat, at, nat, tau, atm, ityp, force, 1.0_DP, iunstruct, 'xsf', sadfname)
+        !CALL write_struct(alat, at, nat, tau, atm, ityp, force, 1.0_DP, iunstruct, 'xsf', sadfname)
+        CALL write_struct( at, nat, tau, atm, ityp, force, 1.0_DP, iunstruct, 'xsf', sadfname)
         !
         WRITE (iunartout,'(5X, "--------------------------------------------------")')
         WRITE (iunartout,'(5X, "    *** ARTn found a potential saddle point ***   ")')
@@ -330,9 +344,10 @@ SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_po
            lrelax = .true.
         ELSE
            ! 
-           CALL move_mode( nat, dlanc, force, &
-          vel, fire_alpha_init, dt,  &
-          iperp, eigenvec, 'eign', prefix, tmp_dir)
+           move = 'eign'
+           !CALL move_mode( nat, dlanc, force, &
+           !  vel, fire_alpha_init, dt,  &
+           !  iperp, eigenvec, 'eign', prefix, tmp_dir)
            !
            CALL write_report(etot,force_in, lowest_eigval, 'eign' , if_pos, istep, nat,  iunartout)
         END IF

@@ -1,4 +1,5 @@
-SUBROUTINE write_struct(alat, at, nat, tau, atm, ityp, force, fscale, ounit, form, fname)
+!SUBROUTINE write_struct(alat, at, nat, tau, atm, ityp, force, fscale, ounit, form, fname)
+SUBROUTINE write_struct( at, nat, tau, atm, ityp, force, fscale, ounit, form, fname)
   !
   ! A subroutine that writes the structure to a file (based on xsf_struct of QE)  
   !
@@ -8,7 +9,7 @@ SUBROUTINE write_struct(alat, at, nat, tau, atm, ityp, force, fscale, ounit, for
   INTEGER, INTENT(IN) :: ityp(nat)       ! atom type
   CHARACTER(LEN=3), INTENT(IN) :: atm(*) ! contains information on atomic types 
   INTEGER, INTENT(IN) :: ounit           ! output fortran unit 
-  REAL(DP), INTENT(IN) :: alat           ! alat of QE   
+  !REAL(DP), INTENT(IN) :: alat           ! alat of QE   
   REAL(DP), INTENT(IN) :: tau(3,nat)     ! atomic positions 
   REAL(DP), INTENT(IN) :: at(3,3)        ! lattice parameters in alat units 
   REAL(DP), INTENT(IN) :: force(3,nat)   ! forces
@@ -24,7 +25,8 @@ SUBROUTINE write_struct(alat, at, nat, tau, atm, ityp, force, fscale, ounit, for
      
      DO i=1,3
         DO j=1,3
-           at_angs(j,i) = at(j,i)*alat*B2A
+           !at_angs(j,i) = at(j,i)*alat*B2A
+           at_angs(j,i) = at(j,i)*B2A
         ENDDO
      ENDDO
 
@@ -36,13 +38,15 @@ SUBROUTINE write_struct(alat, at, nat, tau, atm, ityp, force, fscale, ounit, for
      
      DO na=1,nat
         ! positions are in Angstroms
-        WRITE(ounit,'(a3,3x,6f15.9)') atm(ityp(na)), &
-             tau(1,na)*alat*B2A, &
-             tau(2,na)*alat*B2A, &
-             tau(3,na)*alat*B2A, &
-             force(1,na)*fscale, &
-             force(2,na)*fscale, &
-             force(3,na)*fscale
+        !WRITE(ounit,'(a3,3x,6f15.9)') atm(ityp(na)), &
+        !     tau(1,na)*alat*B2A, &
+        !     tau(2,na)*alat*B2A, &
+        !     tau(3,na)*alat*B2A, &
+        !     force(1,na)*fscale, &
+        !     force(2,na)*fscale, &
+        !     force(3,na)*fscale
+        WRITE(ounit,'(a3,3x,6f15.9)') atm(ityp(na)), tau(:,na)*B2A, force(:,na)*fscale
+
      ENDDO
   ELSE
      WRITE (ounit,*) "Specified structure format not supported"

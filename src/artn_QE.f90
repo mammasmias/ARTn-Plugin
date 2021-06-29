@@ -28,24 +28,29 @@ SUBROUTINE artn_QE( force, etot, forc_conv_thr_qe, nat, ityp, atm, tau, at, alat
   CHARACTER(LEN=255), INTENT(IN) :: tmp_dir   ! scratch directory of engine 
   CHARACTER(LEN=255), INTENT(IN) :: prefix    ! prefix for scratch files of engine 
   LOGICAL, INTENT(OUT) :: lconv               ! flag for controlling convergence 
-  !
-  real(dp) :: box(3,3)
-  real(dp), allocatable :: pos(:,:)
+  !  
+  character(:), allocatable :: move
+  real(dp)                  :: box(3,3)
+  real(dp), allocatable     :: pos(:,:)
+
 
   ! ...Convert the length in angstrom
   box = at * alat
   allocate( pos(3,nat) )
   pos = tau * alat  
 
-  ! ...
 
   ! ...Launch ARTn
   !call artn( force, etot, forc_conv_thr_qe, nat, ityp, atm, tau, at, alat, istep, if_pos, vel, dt, fire_alpha_init, lconv,prefix, tmp_dir )
-  call artn( force, etot, nat, ityp, atm, pos, box, if_pos, lconv )
+  !          in     in    in   in    in  inout in   in      out     out      out   out   out
+  call artn( force, etot, nat, ityp, atm, pos, box, if_pos, dlanc, eigenvec, iperp, move, lconv )
+
 
   ! ...Convert the dR given by ARTn to forces
-  call move_atom( vel, dt, fire_alpha_init, forc_conv_thr_qe )
-
+  !call move_mode( vel, dt, fire_alpha_init, forc_conv_thr_qe )
+  !call move_mode( nat, dlanc, force, vel, fire_alpha_init, dt, iperp, eigenvec, 'eign', prefix, tmp_dir)
+  !                           inout
+  call move_mode( nat, dlanc, force, vel, fire_alpha_init, dt, iperp, eigenvec, move, prefix, tmp_dir)
 
 
 END SUBROUTINE artn_QE 
