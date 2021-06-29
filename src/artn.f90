@@ -31,6 +31,7 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, dlanc, eigenvec, 
 
   CHARACTER(LEN=4), INTENT(OUT) :: move       ! Stage for move_mode
   REAL(DP),         INTENT(OUT) :: dlanc      ! dR in Lanczos
+  REAL(DP),  INTENT(OUT) :: eigenvec(3,nat)    ! 
   LOGICAL,          INTENT(OUT) :: lconv      ! flag for controlling convergence 
 
   ! --- LOCAL VARIABLE
