@@ -1,0 +1,46 @@
+ &CONTROL
+   calculation     =  'relax',
+   etot_conv_thr   =  1.0D-6,
+   forc_conv_thr   =  0.5d-3,
+   nstep           =  455,
+   outdir          =  '/temp/matic/pw/ClCH3+Cl',
+   pseudo_dir      =  '/home/matic/pw/pseudo',
+   tprnfor         =  .true.,
+ /
+
+ &SYSTEM
+   celldm(1)       =  12.00,
+   celldm(2)       =  1.0,
+   celldm(3)       =  3.0,
+   degauss         =  0.05,
+   ecutwfc         =  40.0,
+   ibrav           =  8,
+   nat             =  6,
+   nosym           =  .true.,
+   ntyp            =  3,
+   occupations     =  'smearing',
+   smearing        =  'gauss',
+ /
+
+ &ELECTRONS
+ /
+
+ &IONS
+   ion_dynamics    =  'fire',
+ /
+
+ATOMIC_SPECIES 
+  H    1.007825035   H.pbe-kjpaw_psl.1.0.0.UPF 
+  C    12.0   C.pbe-n-kjpaw_psl.1.0.0.UPF 
+  Cl    35.4527   Cl.pbe-n-van.UPF 
+
+
+ATOMIC_POSITIONS angstrom
+  C       -0.000001358300  -0.027625209600   4.719998714400
+  Cl       0.000006782300   0.129953258100   6.499364911900
+  H        0.898222596000   0.459053736000   4.329860639500
+  H       -0.898222140700   0.459060584500   4.329864999800
+  H       -0.000008094600  -1.092381971900   4.469465235400
+  Cl       0.000002215400   0.073385582900   1.358924078800
+
+
