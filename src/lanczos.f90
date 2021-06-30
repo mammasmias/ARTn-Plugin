@@ -1,6 +1,6 @@
 
 SUBROUTINE lanczos( nat, force, vel, alpha_init, dt, &
-     v_in, dlanc, nlanc, ilanc, lowest_eigval, lowest_eigvec, pushdir, prfx,tmpdir )
+     v_in, dlanc, nlanc, ilanc, lowest_eigval, lowest_eigvec, pushdir)
   USE artn_params,            ONLY: DP, Vmat, H, force_old 
   !
   ! Lanczos subroutine for the ARTn algorithm; based on the lanczos subroutine as written by M. Gunde
@@ -11,7 +11,6 @@ SUBROUTINE lanczos( nat, force, vel, alpha_init, dt, &
   REAL(DP), DIMENSION(3,nat), INTENT(IN) :: pushdir
   REAL(DP), INTENT(IN) :: dlanc
   REAL(DP), INTENT(IN) :: alpha_init, dt
-  CHARACTER(LEN=255), INTENT(IN) :: tmpdir, prfx
   REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: vel 
   REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: force
   REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: lowest_eigvec
@@ -220,12 +219,15 @@ SUBROUTINE lanczos( nat, force, vel, alpha_init, dt, &
  !
  ! write data for move
  !
- CALL move_mode( nat, dlanc, v1, force, &
-      vel, alpha_init, dt, &
-      0, pushdir, 'lanc', prfx, tmpdir)
+! CALL move_mode( nat, dlanc, v1, force, &
+!      vel, alpha_init, dt, &
+!      0, pushdir, 'lanc', prfx, tmpdir)
  !
  ! deallocate the matrices used only in the iteration 
  !
+
+ force(:,:) = v1(:,:)
+ 
  DEALLOCATE( q, v1 )
  DEALLOCATE(Hstep)
 

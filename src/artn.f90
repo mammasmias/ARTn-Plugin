@@ -25,7 +25,7 @@ SUBROUTINE artn(force,etot,nat,ityp,atm,tau,at,alat,istep,if_pos,vel,dt,fire_alp
   REAL(DP), INTENT(IN) ::    dt               ! default time step in FIRE  
   REAL(DP), INTENT(IN) ::    fire_alpha_init  ! initial value of alpha in FIRE 
   REAL(DP), INTENT(IN) ::    alat             ! lattice parameter of QE
-  REAL(DP), INTENT(IN) ::    at(3,nat)        ! lattice parameters in alat units 
+  REAL(DP), INTENT(IN) ::    at(3,3)          ! lattice parameters in alat units 
   INTEGER,  INTENT(IN) ::    nat              ! number of atoms
   INTEGER,  INTENT(IN) ::    ityp(nat)        ! atom types
   INTEGER,  INTENT(IN) ::    istep            ! current step
@@ -99,7 +99,7 @@ SUBROUTINE artn(force,etot,nat,ityp,atm,tau,at,alat,istep,if_pos,vel,dt,fire_alp
      ! modify the force to be equal to the push
      !
      force(:,:) =  push(:,:)
-     CALL move_mode( nat, dlanc, v_in, force, &
+     CALL move_mode( nat, dlanc, force, &
           vel, fire_alpha_init, dt,  &
           iperp, push, 'eign', prefix, tmp_dir)
      !
@@ -123,7 +123,7 @@ SUBROUTINE artn(force,etot,nat,ityp,atm,tau,at,alat,istep,if_pos,vel,dt,fire_alp
         convcrit_init = convcrit_final  
      END IF
      !
-     CALL move_mode( nat,  dlanc, v_in, force, &
+     CALL move_mode( nat,  dlanc, force, &
           vel, fire_alpha_init, dt,  &
           iperp, eigenvec, 'perp', prefix, tmp_dir)
      ! 
@@ -139,7 +139,7 @@ SUBROUTINE artn(force,etot,nat,ityp,atm,tau,at,alat,istep,if_pos,vel,dt,fire_alp
         IF ( ipush < npush ) THEN
            ! continue pushing in the specified direction
            force(:,:) =  eigenvec(:,:)
-           CALL move_mode( nat, dlanc, v_in, force, &
+           CALL move_mode( nat, dlanc, force, &
                 vel, fire_alpha_init, dt,  &
                 iperp, eigenvec, 'eign', prefix, tmp_dir)
            ! 
@@ -164,7 +164,7 @@ SUBROUTINE artn(force,etot,nat,ityp,atm,tau,at,alat,istep,if_pos,vel,dt,fire_alp
      ! if we have a good lanczos eigenvector use it
      !  
      force(:,:) = eigenvec(:,:)
-     CALL move_mode( nat, dlanc, v_in, force, &
+     CALL move_mode( nat, dlanc, force, &
           vel, fire_alpha_init, dt,  &
           iperp, eigenvec, 'eign', prefix, tmp_dir)
      ! update eigenstep counter 
@@ -221,7 +221,13 @@ SUBROUTINE artn(force,etot,nat,ityp,atm,tau,at,alat,istep,if_pos,vel,dt,fire_alp
      ENDIF
      !
      CALL lanczos( nat, force, vel, fire_alpha_init, dt, &
-          v_in, dlanc, nlanc, ilanc, lowest_eigval,  eigenvec, push, prefix, tmp_dir)
+          v_in, dlanc, nlanc, ilanc, lowest_eigval,  eigenvec, push)
+
+     CALL move_mode( nat, dlanc, force, &
+        vel, fire_alpha_init, dt, &
+        0, push, 'lanc', prefix, tmp_dir)
+
+
      !
      ! when lanczos converges, nlanc = number of steps it took to converge,
      ! and ilanc = ilanc + 1
@@ -325,7 +331,7 @@ SUBROUTINE artn(force,etot,nat,ityp,atm,tau,at,alat,istep,if_pos,vel,dt,fire_alp
            lrelax = .true.
         ELSE
            ! 
-           CALL move_mode( nat, dlanc, v_in, force, &
+           CALL move_mode( nat, dlanc, force, &
           vel, fire_alpha_init, dt,  &
           iperp, eigenvec, 'eign', prefix, tmp_dir)
            !
