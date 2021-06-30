@@ -71,7 +71,8 @@ SUBROUTINE move_mode(nat, force, vel, alpha_init, dt, mode, prfx, tmpdir, forc_t
 
   CASE( 'perp' )
      !
-     IF( iperp .eq. 0 ) THEN
+     !IF( iperp .eq. 0 ) THEN
+     IF( iperp - 1 .eq. 0 ) THEN  !%! Because I invrement iperp before to enter in move_mode
         ! for the first step forget previous velocity (prevent P < 0)
         etot = 0.D0
         vel(:,:) = 0.D0
