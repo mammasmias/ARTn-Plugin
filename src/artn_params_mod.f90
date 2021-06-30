@@ -15,6 +15,7 @@ MODULE artn_params
   INTEGER, PARAMETER :: iunstruct = 556 ! fortran file unit for writing the structure
   INTEGER, PARAMETER :: iunrestart = 557 ! fortran file unit for writing the structure
   ! control flags
+  LOGICAL :: lartn = .true. ! We use ARTn or not
   LOGICAL :: lpush_init ! initial push 
   LOGICAL :: lperp      ! perpendicular relax 
   LOGICAL :: leigen     ! push with lanczos eigenvector
@@ -96,6 +97,22 @@ CONTAINS
     CHARACTER (LEN=255), INTENT(IN) :: filnam,filout
     LOGICAL :: file_exists
     INTEGER :: ios
+
+
+    lartn = .true.
+    INQUIRE( file = filnam, exist = file_exists )
+    
+    IF( .not.file_exists )THEN
+
+       WRITE(*,*) "ARTn: Input file does not exist!"
+       lartn = .false.
+       lpush_init = .false.
+       lrelax = .true.
+       RETURN 
+
+
+    ELSE !%! FILE EXIST
+
     !
     ! set up defaults for flags and counters 
     !
@@ -146,9 +163,8 @@ CONTAINS
     IF ( .not. ALLOCATED(push)) ALLOCATE(push(3,nat), source = 0.D0)
     IF ( .not. ALLOCATED(eigenvec)) ALLOCATE(eigenvec(3,nat), source = 0.D0)
     IF ( .not. ALLOCATED(tau_saddle)) ALLOCATE(tau_saddle(3,nat), source = 0.D0)
-    INQUIRE( file = filnam, exist = file_exists )
     ! 
-    IF ( file_exists ) THEN
+    !IF ( file_exists ) THEN
        ! read the ARTn input file  
        OPEN( UNIT = iunartin, FILE = filnam, FORM = 'formatted', STATUS = 'unknown', IOSTAT = ios)
        READ( NML = artn_parameters, UNIT = iunartin)
@@ -182,11 +198,11 @@ CONTAINS
        WRITE (iunartout,'(5X,"istep",4X,"ART_step",12X,"Etot",9X," Ftot ",5X," Fperp ",5X," Fpara ",6X,"eigval")') 
        WRITE (iunartout,'(34X, "[Ry]",9X,"-----------[Ry/a.u.]----------",6X,"Ry/a.u.^2")')
        CLOSE ( UNIT = iunartout, STATUS = 'KEEP')
-    ELSE
-       WRITE(*,*) "ARTn: Input file does not exist!"
-       lpush_init = .false.
-       lrelax = .true.
-       RETURN 
+    !ELSE
+    !   WRITE(*,*) "ARTn: Input file does not exist!"
+    !   lpush_init = .false.
+    !   lrelax = .true.
+    !   RETURN 
     ENDIF
     ! set initial number of lanczos iterations 
     nlanc = nlanc_init

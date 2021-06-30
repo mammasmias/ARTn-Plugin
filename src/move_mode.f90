@@ -54,7 +54,8 @@ SUBROUTINE move_mode(nat, force, vel, alpha_init, dt, mode, prfx, tmpdir, forc_t
   ! iperp is incremented after the call move_mode so should be init at 0
   ! But now no...
   !
-  print*, " * IN MOVE_MODE::iperp ", iperp
+  print*, " * ARTn::MOVE_MODE::mode ", trim(mode)
+  print*, " * ARTn::MOVE_MODE::iperp ", iperp
 
 
 

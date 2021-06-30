@@ -12,7 +12,7 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, move, lconv )
   ! DEFINED IN: artn_params_mod.f90
   ! 
   USE artn_params, ONLY: DP, RY2EV,B2A, iunartin, iunartout, iunstruct, &
-       lrelax,lpush_init,lperp,leigen,llanczos, lsaddle, lpush_final, &
+       lartn, lrelax,lpush_init,lperp,leigen,llanczos, lsaddle, lpush_final, &
        iperp, ieigen, ipush, ilanc, ismooth, nlanc, if_pos_ct, &
        lowest_eigval, etot_init, etot_saddle, etot_final, de_saddle, de_back, de_fwd, &
        npush, neigen, nlanc_init, nsmooth, push_mode, dist_thr, convcrit_init, convcrit_final, &
@@ -61,6 +61,9 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, move, lconv )
   !
   lconv = .false.
 
+  write(*,'(x,a)') " * ARTn:: lrelax | lpush_init | lperp | leigen | llanczos | lsaddle | lpush_final "
+  write(*,'(x,a,*(2x,l4))') " * ", lrelax,lpush_init,lperp,leigen,llanczos, lsaddle, lpush_final
+
   ! store original force
   force_in(:,:) = force(:,:)
 
@@ -77,9 +80,10 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, move, lconv )
   !
   ! initialize artn 
   !  
-  IF (istep == 0 ) THEN
+  IF( istep == 0 ) THEN
      ! read the input parameters 
      CALL initialize_artn(nat,iunartin,iunartout,filin,filout)
+     if( .not.lartn )return
      ! store the total energy of the initial state
      etot_init = etot 
   ENDIF

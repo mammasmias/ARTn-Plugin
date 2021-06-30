@@ -6,7 +6,7 @@
 SUBROUTINE artn_QE( force, etot, forc_conv_thr_qe, nat, ityp, atm, tau, at, alat, istep, if_pos, vel, dt, fire_alpha_init, lconv, prefix, tmp_dir )
   !----------------------------------------------------------------------------
   !
-  USE artn_params, ONLY: DP !, iperp, dlanc, eigenvec
+  USE artn_params, ONLY: DP, lartn !, iperp, dlanc, eigenvec
   !
   !  Interface Quantum ESPRESSO/ARTn:
   !  We convert/compute/adapt some variable 
@@ -37,6 +37,9 @@ SUBROUTINE artn_QE( force, etot, forc_conv_thr_qe, nat, ityp, atm, tau, at, alat
   !INTEGER, :: iperp
   !REAL(DP) :: dlanc      ! dR in Lanczos
   !REAL(DP) :: eigvec(3,nat)   !
+
+  !%! Return if artn.in does not exist
+  if( .not.lartn )return
 
   print*, " * IN ARTn_QE::"
 
