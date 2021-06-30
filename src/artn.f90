@@ -4,7 +4,8 @@
 !        modifies the input force to perform the ARTn algorithm 
 !------------------------------------------------------------------------------
 !SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_pos,vel,dt,fire_alpha_init,lconv,prefix,tmp_dir)
-SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, dlanc_ptr, eigvec_ptr, iperp_ptr, move, lconv )
+!SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, dlanc_ptr, eigvec_ptr, iperp_ptr, move, lconv )
+SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, move, lconv )
   !----------------------------------------------------------------------------
   !
   ! artn_params for variables and counters that need to be stored in each step   
@@ -30,9 +31,9 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, dlanc_ptr, eigvec
   CHARACTER(LEN=3),   INTENT(IN) :: atm(*)    ! name of atom corresponding to ityp
 
   CHARACTER(LEN=4), INTENT(OUT) :: move       ! Stage for move_mode
-  INTEGER, POINTER, INTENT(OUT) :: iperp_ptr
-  REAL(DP), pointer, INTENT(OUT) :: dlanc_ptr      ! dR in Lanczos
-  REAL(DP), pointer, INTENT(OUT) :: eigvec_ptr(:,:)   ! 
+!  INTEGER, POINTER, INTENT(OUT) :: iperp_ptr
+!  REAL(DP), pointer, INTENT(OUT) :: dlanc_ptr      ! dR in Lanczos
+!  REAL(DP), pointer, INTENT(OUT) :: eigvec_ptr(:,:)   ! 
   LOGICAL,          INTENT(OUT) :: lconv      ! flag for controlling convergence 
 
   ! --- LOCAL VARIABLE
@@ -47,7 +48,7 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, dlanc_ptr, eigvec
   INTEGER   :: ios                            ! file IOSTAT  
   CHARACTER( LEN=255) :: filin, filout, sadfname, initpfname, eigenfname, restartfname
 
-  integer, save :: istep
+  integer, save :: istep = 0
   !
   ! The ARTn algorithm proceeds as follows:
   ! (1) push atoms in the direction specified by user & relax in the perpendicular direction;
@@ -59,16 +60,10 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, dlanc_ptr, eigvec
   ! flag that controls convergence
   !
   lconv = .false.
-  ! increment locally the ARTn-step
-  istep = istep + 1      
 
-  ! ...Pointer to turn out
-  dlanc_ptr => dlanc
-  eigvec_ptr => eigenvec
-  iperp_ptr => iperp
-  !
   ! store original force
   force_in(:,:) = force(:,:)
+
   !
   ! fpara_tot is used to scale the magnitude of the eigenvector 
   ! 
@@ -110,8 +105,8 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, dlanc_ptr, eigvec
      ! 
      ! modify the force to be equal to the push
      !
-     force(:,:) =  push(:,:)
-     move = 'eign'
+     !force(:,:) =  push(:,:)
+     move = 'init'
      !CALL move_mode( nat, dlanc, force, &
      !     vel, fire_alpha_init, dt,  &
      !     iperp, push, 'eign', prefix, tmp_dir)
@@ -119,7 +114,8 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, dlanc_ptr, eigvec
      CALL write_report(etot,force_in, lowest_eigval, 'push' , if_pos, istep, nat,  iunartout)
      !
      !CALL write_struct(alat, at, nat, tau, atm, ityp, force, 1.0_DP, iunstruct, 'xsf', initpfname)
-     CALL write_struct( at, nat, tau, atm, ityp, force, 1.0_DP, iunstruct, 'xsf', initpfname)
+     !CALL write_struct( at, nat, tau, atm, ityp, force, 1.0_DP, iunstruct, 'xsf', initpfname)
+     CALL write_struct( at, nat, tau, atm, ityp, push, 1.0_DP, iunstruct, 'xsf', initpfname)
      ! 
   ELSE IF ( lperp ) THEN
      !
@@ -408,6 +404,13 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, dlanc_ptr, eigvec
      END IF
      ! 
   END IF
+
+
+  ! ...Increment locally the ARTn-step
+  istep = istep + 1      
+
+
+
 
   CLOSE (UNIT = iunartout, STATUS = 'KEEP') 
 END SUBROUTINE artn 

@@ -1,21 +1,25 @@
-SUBROUTINE move_mode(nat, dlanc, force, &
-                     vel, alpha_init, dt, &
-                     iperp, push, &
-                     mode, prfx, tmpdir, forc_thr )
+!SUBROUTINE move_mode(nat, dlanc, force, &
+!                     vel, alpha_init, dt, &
+!                     iperp, push, &
+!                     mode, prfx, tmpdir, forc_thr )
+SUBROUTINE move_mode(nat, force, vel, alpha_init, dt, mode, prfx, tmpdir, forc_thr )
   !
   ! translate specified move to appropriate force and set FIRE parameters accordingly  
   !
-  USE artn_params, ONLY: DP, AMU_RY 
+  USE artn_params, ONLY: DP, AMU_RY, iperp, push0 => push, push=>eigenvec, dlanc
   !
   IMPLICIT NONE
   INTEGER, INTENT(IN)                       :: nat
-  REAL(DP), INTENT(IN)                      :: dlanc  
+  !REAL(DP), INTENT(IN)                      :: dlanc  
   ! REAL(DP), DIMENSION(3,nat), INTENT(IN) :: v1
-  REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: force, forc_thr
+
+  REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: force
   REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: vel
+  REAL(DP),                   INTENT(INOUT) :: forc_thr
+
   REAL(DP), INTENT(IN)                      :: alpha_init, dt
-  INTEGER, INTENT(IN)                       :: iperp
-  REAL(DP), DIMENSION(3,nat), INTENT(IN)    :: push
+  !INTEGER, INTENT(IN)                       :: iperp
+  !REAL(DP), DIMENSION(3,nat), INTENT(IN)    :: push
   CHARACTER(LEN=4), INTENT(IN)              :: mode
   CHARACTER(LEN=255), INTENT(IN)            :: tmpdir, prfx
   ! 
@@ -50,10 +54,20 @@ SUBROUTINE move_mode(nat, dlanc, force, &
   ! iperp is incremented after the call move_mode so should be init at 0
   ! But now no...
   !
+  print*, " * IN MOVE_MODE::iperp ", iperp
 
 
 
   SELECT CASE( TRIM(mode) )
+
+  CASE( 'init' )
+     !
+     etot = 0.D0
+     vel(:,:) = 0.D0
+     alpha = 0.0_DP
+     dt_curr = dt
+     nsteppos = 0
+     force = push0*amu_ry/dt_curr**2
 
   CASE( 'perp' )
      !

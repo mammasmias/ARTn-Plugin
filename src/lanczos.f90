@@ -20,15 +20,23 @@ SUBROUTINE lanczos( nat, force,  v_in, dlanc, nlanc, ilanc, lowest_eigval, lowes
   INTEGER :: i, j, io, id_min
   REAL(DP), PARAMETER :: eigval_thr = 1.0D-2
   REAL(DP), ALLOCATABLE :: v1(:,:), q(:,:), eigvals(:)
-  REAL(DP), ALLOCATABLE ::  Hstep(:,:)
+  !REAL(DP), ALLOCATABLE, target ::  Hstep(:,:)
   REAL(DP) :: dir
   REAL(DP), EXTERNAL :: ran3,dnrm2,ddot
   REAL(DP) :: alpha, beta, lowest_eigval_old, eigvec_diff, largest_eigvec_diff, eigval_diff
+
+  ! Try to remove a temporary array when call diag
+  !real(dp), pointer :: rptr(:,:)
+  real(dp) :: Htmp(ilanc,ilanc), Hstep(nlanc,nlanc)
+
   ! allocate vectors and put to zero
   ALLOCATE( q(3,nat), source=0.D0 )
   ALLOCATE( v1(3,nat), source=0.D0)
+
   ! allocate matrices and put to zero
-  ALLOCATE( Hstep(1:nlanc,1:nlanc), source=0.D0 )
+  !%! NS:Maybe it is not needed to dynamic allocate Hstep
+  !%! We can directly declare a matrix Hstep(nlanc,nlanc)
+  !ALLOCATE( Hstep(1:nlanc,1:nlanc), source=0.D0 )
   ! 
   ! store the eigenvalue of the previous iteration
   lowest_eigval_old = lowest_eigval
@@ -95,8 +103,11 @@ SUBROUTINE lanczos( nat, force,  v_in, dlanc, nlanc, ilanc, lowest_eigval, lowes
      ALLOCATE( eigvals(ilanc) )
      ! store the H matrix, because its overwritten by eigvecs on diagonalization
      Hstep(:,:) = H(:,:)
+     Htmp = H(1:ilanc,1:ilanc)  !%! NS: add this step to remove a warning
 
-     CALL diag(ilanc, Hstep(1:ilanc,1:ilanc), eigvals, 1 )
+     !CALL diag(ilanc, Hstep(1:ilanc,1:ilanc), eigvals, 1 )
+     CALL diag(ilanc, Htmp, eigvals, 1 )
+     Hstep(1:ilanc,1:ilanc) = Htmp
 
      lowest_eigval = eigvals(1)
      id_min = 1
@@ -228,6 +239,6 @@ SUBROUTINE lanczos( nat, force,  v_in, dlanc, nlanc, ilanc, lowest_eigval, lowes
  force(:,:) = v1(:,:)
  
  DEALLOCATE( q, v1 )
- DEALLOCATE(Hstep)
+ !DEALLOCATE(Hstep)
 
 END SUBROUTINE lanczos
