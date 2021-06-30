@@ -3,9 +3,13 @@
 ! Main ARTn plugin subroutine:
 !        modifies the input force to perform the ARTn algorithm 
 !------------------------------------------------------------------------------
+<<<<<<< HEAD
 !SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_pos,vel,dt,fire_alpha_init,lconv,prefix,tmp_dir)
 !SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, dlanc_ptr, eigvec_ptr, iperp_ptr, move, lconv )
 SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, move, lconv )
+=======
+SUBROUTINE artn(force,etot,nat,ityp,atm,tau,at,alat,istep,if_pos,vel,dt,fire_alpha_init,lconv,prefix,tmp_dir)
+>>>>>>> origin/master
   !----------------------------------------------------------------------------
   !
   ! artn_params for variables and counters that need to be stored in each step   
@@ -330,7 +334,9 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, move, lconv )
   ! Push to adjacent minima after the saddle point  
   ! 
   IF ( lsaddle ) THEN
-     ! do we do a final push ? 
+     ! 
+     ! do we do a final push ?
+     ! 
      IF ( lpush_final ) THEN   
         ! set convergence and other flags to false ...
         lconv = .false.
