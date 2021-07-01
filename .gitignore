@@ -3,5 +3,4 @@ qe-6.6
 *.mod
 *.x
 *.a
-*.UPF
 fort.*

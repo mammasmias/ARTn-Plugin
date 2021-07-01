@@ -1,9 +1,8 @@
  &CONTROL
    calculation     =  'relax',
    nstep           =  200,
-   outdir          =  '/temp/matic/pw/Al-vacancy',
-   prefix          =  "al21-scf",
-   pseudo_dir      =  '/home/matic/pw/pseudo',
+   outdir          =  './',
+   pseudo_dir      =  './',
    restart_mode    =  'from_scratch',
    tprnfor         =  .true.,
  /

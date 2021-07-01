@@ -3,8 +3,8 @@
    etot_conv_thr   =  1.0D-6,
    forc_conv_thr   =  0.5d-3,
    nstep           =  455,
-   outdir          =  '/temp/matic/pw/ClCH3+Cl',
-   pseudo_dir      =  '/home/matic/pw/pseudo',
+   outdir          =  './',
+   pseudo_dir      =  './',
    tprnfor         =  .true.,
  /
 

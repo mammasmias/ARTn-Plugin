@@ -1,8 +1,8 @@
  &CONTROL
    calculation     =  'relax',
    nstep           =  250,
-   outdir          =  '/scratch/mpoberzn/temp/mpoberzn/pw/Ofcc.Al111-2x2-4l',
-   pseudo_dir      =  '/scratch/mpoberzn/pw/pseudo',
+   outdir          =  './',
+   pseudo_dir      =  './',
    restart_mode    =  'from_scratch',
    wf_collect      =  .true.,
  /
