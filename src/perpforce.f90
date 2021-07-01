@@ -21,3 +21,4 @@ SUBROUTINE perpforce(force,if_pos,push,fpara,nat)
   IF ( ANY(if_pos(:,:) == 0)  ) force(:,:) = force(:,:)*if_pos(:,:) 
 
 END SUBROUTINE perpforce
+

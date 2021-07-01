@@ -2,11 +2,13 @@
 !                     vel, alpha_init, dt, &
 !                     iperp, push, &
 !                     mode, prfx, tmpdir, forc_thr )
-SUBROUTINE move_mode(nat, force, vel, alpha_init, dt, mode, prfx, tmpdir, forc_thr )
+!SUBROUTINE move_mode(nat, force, vel, alpha_init, dt, mode, prfx, tmpdir, forc_thr )
+SUBROUTINE move_mode(nat, force, vel, alpha_init, dt, mode, forc_thr )
   !
   ! translate specified move to appropriate force and set FIRE parameters accordingly  
   !
-  USE artn_params, ONLY: DP, AMU_RY, iperp, push0 => push, push=>eigenvec, dlanc
+  USE artn_params, ONLY: DP, AMU_RY, iperp, push0 => push, push=>eigenvec, dlanc,  &
+                         prfx => prefix, tmpdir=> tmp_dir
   !
   IMPLICIT NONE
   INTEGER, INTENT(IN)                       :: nat
@@ -21,7 +23,7 @@ SUBROUTINE move_mode(nat, force, vel, alpha_init, dt, mode, prfx, tmpdir, forc_t
   !INTEGER, INTENT(IN)                       :: iperp
   !REAL(DP), DIMENSION(3,nat), INTENT(IN)    :: push
   CHARACTER(LEN=4), INTENT(IN)              :: mode
-  CHARACTER(LEN=255), INTENT(IN)            :: tmpdir, prfx
+  !CHARACTER(LEN=255), INTENT(IN)            :: tmpdir, prfx
   ! 
   REAL(DP), EXTERNAL :: ddot,dnrm2
   ! variables read from the FIRE minimization algorithm
@@ -95,6 +97,7 @@ SUBROUTINE move_mode(nat, force, vel, alpha_init, dt, mode, prfx, tmpdir, forc_t
      nsteppos = 0
      ! the step performed should be like this now translate it into the correct force
      force(:,:) = force(:,:)*dlanc*amu_ry/dt_curr**2
+     !force(:,:) = eigenvec(:,:)*dlanc*amu_ry/dt_curr**2   ! Should be like that
      !
   CASE( 'eign' )
      !
@@ -104,10 +107,13 @@ SUBROUTINE move_mode(nat, force, vel, alpha_init, dt, mode, prfx, tmpdir, forc_t
      dt_curr = dt
      nsteppos = 0
      force(:,:) = force(:,:)*amu_ry/dt_curr**2
+     !force(:,:) = eigenvec(:,:)*amu_ry/dt_curr**2   ! Should be like that
      !
 
   CASE( 'relx' )
      forc_thr = 10D-8
+     alpha = alpha_init
+     dt_curr = dt
 
   CASE default
      write(*,*) 'Problem with move_mode!'

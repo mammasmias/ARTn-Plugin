@@ -11,7 +11,8 @@ SUBROUTINE sum_force(force,nat,force_tot)
   INTEGER :: na
   force_tot = 0.0
   DO na = 1, nat
-     force_tot = force_tot + force(1,na)**2 + force(2,na)**2 + force(3,na)**2
+     !force_tot = force_tot + force(1,na)**2 + force(2,na)**2 + force(3,na)**2
+     force_tot = force_tot + dot_product( force(:,na), force(:,na) )
   ENDDO
   force_tot = SQRT(force_tot)
 END SUBROUTINE sum_force

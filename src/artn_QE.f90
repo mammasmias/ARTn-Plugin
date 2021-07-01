@@ -3,10 +3,10 @@
 ! Main ARTn plugin subroutine:
 !        modifies the input force to perform the ARTn algorithm 
 !------------------------------------------------------------------------------
-SUBROUTINE artn_QE( force, etot, forc_conv_thr_qe, nat, ityp, atm, tau, at, alat, istep, if_pos, vel, dt, fire_alpha_init, lconv, prefix, tmp_dir )
+SUBROUTINE artn_QE( force, etot, forc_conv_thr_qe, nat, ityp, atm, tau, at, alat, istep, if_pos, vel, dt, fire_alpha_init, lconv, prefix_qe, tmp_dir_qe )
   !----------------------------------------------------------------------------
   !
-  USE artn_params, ONLY: DP, lartn !, iperp, dlanc, eigenvec
+  USE artn_params, ONLY: DP, lartn, prefix, tmp_dir 
   !
   !  Interface Quantum ESPRESSO/ARTn:
   !  We convert/compute/adapt some variable 
@@ -27,13 +27,14 @@ SUBROUTINE artn_QE( force, etot, forc_conv_thr_qe, nat, ityp, atm, tau, at, alat
   INTEGER,  INTENT(IN) ::    istep            ! current step
   INTEGER,  INTENT(IN) ::    if_pos(3,nat)    ! coordinates fixed by engine 
   CHARACTER(LEN=3),   INTENT(IN) :: atm(*)    ! name of atom corresponding to ityp
-  CHARACTER(LEN=255), INTENT(IN) :: tmp_dir   ! scratch directory of engine 
-  CHARACTER(LEN=255), INTENT(IN) :: prefix    ! prefix for scratch files of engine 
+  CHARACTER(LEN=255), INTENT(IN) :: tmp_dir_qe   ! scratch directory of engine 
+  CHARACTER(LEN=255), INTENT(IN) :: prefix_qe    ! prefix for scratch files of engine 
   LOGICAL, INTENT(OUT) :: lconv               ! flag for controlling convergence 
   !  
+  integer, save :: step = 0
   character(len=4)          :: move
   real(dp)                  :: box(3,3)
-  real(dp), allocatable     :: pos(:,:)
+  real(dp)                  :: pos(3,nat)
   !INTEGER, :: iperp
   !REAL(DP) :: dlanc      ! dR in Lanczos
   !REAL(DP) :: eigvec(3,nat)   !
@@ -43,9 +44,10 @@ SUBROUTINE artn_QE( force, etot, forc_conv_thr_qe, nat, ityp, atm, tau, at, alat
 
   print*, " * IN ARTn_QE::"
 
+
   ! ...Convert the length in angstrom
   box = at * alat
-  allocate( pos(3,nat) )
+  !allocate( pos(3,nat) )
   pos = tau * alat  
 
   print*, " * BOX::", box
@@ -57,14 +59,26 @@ SUBROUTINE artn_QE( force, etot, forc_conv_thr_qe, nat, ityp, atm, tau, at, alat
   !call artn( force, etot, nat, ityp, atm, pos, box, if_pos, dlanc, eigenvec, iperp, move, lconv )
   call artn( force, etot, nat, ityp, atm, pos, box, if_pos, move, lconv )
 
+  
+  tau = pos / alat
+
+  ! ...We give output dir once at the beginning 
+  if( step == 0 )then
+    prefix = prefix_qe
+    tmp_dir = tmp_dir_qe
+    step = step + 1
+  endif
+
 
   ! ...Convert the dR given by ARTn to forces
   !call move_mode( vel, dt, fire_alpha_init, forc_conv_thr_qe )
   !call move_mode( nat, dlanc, force, vel, fire_alpha_init, dt, iperp, eigenvec, 'eign', prefix, tmp_dir)
   !                           inout
   !call move_mode( nat, dlanc, force, vel, fire_alpha_init, dt, iperp, eigenvec, move, prefix, tmp_dir, forc_conv_thr_qe )
-  call move_mode( nat, force, vel, fire_alpha_init, dt, move, prefix, tmp_dir, forc_conv_thr_qe )
+  !call move_mode( nat, force, vel, fire_alpha_init, dt, move, prefix, tmp_dir, forc_conv_thr_qe )
+  call move_mode( nat, force, vel, fire_alpha_init, dt, move, forc_conv_thr_qe )
 
-  deallocate( pos )
+
+  !deallocate( pos )
 
 END SUBROUTINE artn_QE 

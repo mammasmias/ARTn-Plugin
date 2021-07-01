@@ -109,13 +109,14 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, move, lconv )
      ! 
      ! modify the force to be equal to the push
      !
-     !force(:,:) =  push(:,:)
+     !force(:,:) =  push(:,:) ! Use push in move mode
      move = 'init'
      !CALL move_mode( nat, dlanc, force, &
      !     vel, fire_alpha_init, dt,  &
      !     iperp, push, 'eign', prefix, tmp_dir)
      !
-     CALL write_report(etot,force_in, lowest_eigval, 'push' , if_pos, istep, nat,  iunartout)
+     !CALL write_report(etot,force_in, lowest_eigval, 'push' , if_pos, istep, nat,  iunartout)
+     CALL write_report(etot,force_in, lowest_eigval, move , if_pos, istep, nat,  iunartout)
      !
      !CALL write_struct(alat, at, nat, tau, atm, ityp, force, 1.0_DP, iunstruct, 'xsf', initpfname)
      !CALL write_struct( at, nat, tau, atm, ityp, force, 1.0_DP, iunstruct, 'xsf', initpfname)
@@ -133,7 +134,7 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, move, lconv )
      CALL perpforce(force,if_pos,eigenvec,fpara,nat)
      ! 
      IF (MAXVAL(ABS(fpara)) <= fpara_convcrit) THEN
-        ! tighten perpendicular convergance criterion
+        ! tighten perpendicular convergence criterion
         convcrit_init = convcrit_final  
      END IF
      !
@@ -163,7 +164,8 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, move, lconv )
            ! 
            lperp = .true.
            ! 
-           CALL write_report(etot,force_in, lowest_eigval, 'push' , if_pos, istep, nat,  iunartout)
+           !CALL write_report(etot,force_in, lowest_eigval, 'push' , if_pos, istep, nat,  iunartout)
+           CALL write_report(etot,force_in, lowest_eigval, move , if_pos, istep, nat,  iunartout)
            ! 
         ELSE IF ( ipush >= npush  ) THEN
            ! regenerate force & start lanczos
@@ -171,7 +173,8 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, move, lconv )
            llanczos = .true.
         END IF
      ELSE
-        CALL write_report(etot,force_in, lowest_eigval, 'perp' , if_pos, istep, nat,  iunartout)       
+        !CALL write_report(etot,force_in, lowest_eigval, 'perp' , if_pos, istep, nat,  iunartout)       
+        CALL write_report(etot,force_in, lowest_eigval, move , if_pos, istep, nat,  iunartout)       
      END IF
      ! leigen is always .true. after we obtain a good eigenvector
      ! except during lanczos iterations 
@@ -187,7 +190,9 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, move, lconv )
      ! update eigenstep counter 
      ieigen = ieigen + 1
      !      
-     CALL write_report(etot,force_in, lowest_eigval, 'eign' , if_pos, istep, nat,  iunartout)
+     !CALL write_report(etot,force_in, lowest_eigval, 'eign' , if_pos, istep, nat,  iunartout)
+     CALL write_report(etot,force_in, lowest_eigval, move , if_pos, istep, nat,  iunartout)
+
      ! count the number of steps made with the eigenvector
      !CALL write_struct(alat, at, nat, tau, atm, ityp, force, 1.0_DP, iunstruct, 'xsf', eigenfname)
      CALL write_struct( at, nat, tau, atm, ityp, force, 1.0_DP, iunstruct, 'xsf', eigenfname)
@@ -205,7 +210,9 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, move, lconv )
   !
   IF ( llanczos ) THEN 
      !
-     CALL write_report(etot,force_in, lowest_eigval, 'lanc' , if_pos, istep, nat,  iunartout)
+     move = 'lanc'
+     !CALL write_report(etot,force_in, lowest_eigval, 'lanc' , if_pos, istep, nat,  iunartout)
+     CALL write_report(etot,force_in, lowest_eigval, move , if_pos, istep, nat,  iunartout)
      IF (ilanc == 0 ) THEN
         IF ( .not. leigen ) THEN
            !
@@ -242,7 +249,7 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, move, lconv )
      !     v_in, dlanc, nlanc, ilanc, lowest_eigval,  eigenvec, push)
      CALL lanczos( nat, force, v_in, dlanc, nlanc, ilanc, lowest_eigval,  eigenvec, push)
 
-     move = 'lanc'
+     !move = 'lanc'  !! Declared higher
      iperp = 0
      !CALL move_mode( nat, dlanc, force, &
      !   vel, fire_alpha_init, dt, &
@@ -320,6 +327,9 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, move, lconv )
         WRITE (iunartout,'(5X, "--------------------------------------------------")')
         WRITE (iunartout,'(15X,"E_final - E_initial =", F12.5," eV")') (etot - etot_init)*RY2EV
         WRITE (iunartout,'(5X, "--------------------------------------------------")')
+
+        write( iunartout, * ) " ARTn::", MAXVAL(ABS(force_in*if_pos)), convcrit_final, leigen, lsaddle
+
         IF ( lpush_final ) THEN
            WRITE (iunartout, '(5X,"       *** Pushing to adjacent minima  ***      ")')
            WRITE (iunartout,'(5X, "------------------------------------------------")')
@@ -348,6 +358,7 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, move, lconv )
         !
         force(:,:) = fpush_factor*eigenvec(:,:)*eigen_step_size
         !
+        ! ...If diff Energy is negative
         IF ( etot - etot_saddle < relax_thr ) THEN
            ! we started going downhill ... 
            lrelax = .true.
@@ -358,7 +369,8 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, move, lconv )
            !  vel, fire_alpha_init, dt,  &
            !  iperp, eigenvec, 'eign', prefix, tmp_dir)
            !
-           CALL write_report(etot,force_in, lowest_eigval, 'eign' , if_pos, istep, nat,  iunartout)
+           !CALL write_report(etot,force_in, lowest_eigval, 'eign' , if_pos, istep, nat,  iunartout)
+           CALL write_report(etot,force_in, lowest_eigval, move , if_pos, istep, nat,  iunartout)
         END IF
      ELSE
         lconv = .true.       
@@ -371,9 +383,11 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, move, lconv )
      !
      ! reset force  
      !
+     move = 'relx'
      force(:,:) = force_in(:,:)
      ! 
-     CALL write_report(etot, force_in, lowest_eigval, 'relx', if_pos, istep, nat, iunartout)
+     !CALL write_report(etot, force_in, lowest_eigval, 'relx', if_pos, istep, nat, iunartout)
+     CALL write_report(etot, force_in, lowest_eigval, move, if_pos, istep, nat, iunartout)
      !
      ! check for convergence 
      ! 
@@ -412,7 +426,7 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, move, lconv )
   END IF
 
 
-  ! ...Increment locally the ARTn-step
+  ! ...Increment the ARTn-step
   istep = istep + 1      
 
 
