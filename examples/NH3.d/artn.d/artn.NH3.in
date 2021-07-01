@@ -1,0 +1,41 @@
+ &CONTROL
+   calculation     =  'relax',
+   etot_conv_thr   =  1.0D-6,
+   forc_conv_thr   =  0.5d-3,
+   nstep           =  455,
+   outdir          =  '/temp/matic/pw/NH3',
+   pseudo_dir      =  '/home/matic/pw/pseudo',
+   tprnfor         =  .true.,
+ /
+
+ &SYSTEM
+   celldm(1)       =  12.00,
+   degauss         =  0.05,
+   ecutwfc         =  40.0,
+   ibrav           =  1,
+   nat             =  4,
+   nosym           =  .true.,
+   ntyp            =  2,
+   occupations     =  'smearing',
+   smearing        =  'gauss',
+ /
+
+ &ELECTRONS
+ /
+
+ &IONS
+   ion_dynamics    =  'fire',
+ /
+
+ATOMIC_SPECIES 
+  H    1.007825035   H.pbe-kjpaw_psl.1.0.0.UPF 
+  N    14.00674   N.pbe-n-kjpaw_psl.1.0.0.UPF 
+
+
+ATOMIC_POSITIONS angstrom
+  N        0.000000663300   0.000156680500   3.022223510800
+  H        0.817523378500   0.472293969700   2.628864457800
+  H       -0.817523276000   0.472294878900   2.628867937500
+  H       -0.000000765800  -0.943299549100   2.627522674000
+
+
