@@ -1,8 +1,8 @@
  &CONTROL
    calculation     =  'relax'
    nstep           =  200
-   outdir          =  '/temp/matic/pw/Si.bulk.3x3x3.Si-vac'
-   pseudo_dir      =  '/home/matic/pw/pseudo'
+   outdir          =  '/home/mammasmias-1/Nico/Project_pARTn/artn-plugin-qe/examples/Si-vac.d/relax.Si.bulk.3x3x3.d/artn.d'
+   pseudo_dir      =  '/home/mammasmias-1/Public/Code/q-e-qe-6.7.0/pseudo'
    restart_mode    =  'from_scratch'
  /
 
@@ -30,7 +30,7 @@
  /
 
 ATOMIC_SPECIES 
-  Si    28.086   Si.pz-vbc.UPF 
+  Si    28.086   Si.pz-n-kjpaw_psl.0.1.UPF 
 
 
 CELL_PARAMETERS alat

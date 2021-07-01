@@ -1,6 +1,7 @@
 &ARTN_PARAMETERS
   npush = 4 
   convcrit_init = 1.0d-1
+  convcrit_final = 1.0d-3
   push_step_size = 0.2
 ! parameters for the push
   push_mode = 'list'
@@ -12,4 +13,5 @@
   nlanc_init = 16
   ! eigenpush parms
   eigen_step_size = 0.5
+  lpush_final = .true.
 /

@@ -1,5 +1,5 @@
 
-QE_PATH = /home/mgunde/qe/artn-plugin-qe/qe-6.6
+#QE_PATH = /home/mgunde/qe/artn-plugin-qe/qe-6.6
 ART_PATH = $(CURDIR)
 
 export QE_PATH

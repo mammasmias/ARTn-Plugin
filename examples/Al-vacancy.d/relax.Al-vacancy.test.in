@@ -1,9 +1,9 @@
  &CONTROL
    calculation     =  'relax',
    nstep           =  200,
-   outdir          =  '/temp/matic/pw/Al-vacancy',
+   outdir          =  '/home/mammasmias-1/Nico/Project_pARTn/artn-plugin-qe/examples/Al-vacancy.d',
    prefix          =  "al21-scf",
-   pseudo_dir      =  '/home/matic/pw/pseudo',
+   pseudo_dir      =  '/home/mammasmias-1/Public/Code/q-e-qe-6.7.0/pseudo',
    restart_mode    =  'from_scratch',
    tprnfor         =  .true.,
  /
@@ -36,7 +36,7 @@
  /
 
 ATOMIC_SPECIES 
-  Al    1.0   Al.pz-vbc.UPF 
+  Al    1.0   Al.pz-n-kjpaw_psl.0.1.UPF 
 
 
 CELL_PARAMETERS (alat=

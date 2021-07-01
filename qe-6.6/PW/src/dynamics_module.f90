@@ -1241,6 +1241,11 @@ CONTAINS
      ! velocity mixing 
      !
      vel(:,:) = (1.D0 - alpha)*vel(:,:) + alpha*force(:,:)*dnrm2(3*nat,vel,1)/dnrm2(3*nat,force,1)
+     !
+     !
+     ! ... the velocity of fixed ions must be zero
+     !
+     vel = vel * DBLE( if_pos )
      ! 
      IF ( lconstrain )  THEN
         !

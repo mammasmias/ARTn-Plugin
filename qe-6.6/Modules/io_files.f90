@@ -217,8 +217,6 @@ CONTAINS
        CALL delete_if_present( trim( file_path ) // '.md' )
        CALL delete_if_present( trim( file_path ) // '.bfgs' )
        CALL delete_if_present( trim( file_path ) // '.fire' )
-       CALL delete_if_present( trim( file_path ) // '.artn' )
-       CALL delete_if_present( trim( file_path ) // '.artnlanc' )
     ENDIF
     !
     RETURN
