@@ -1,8 +1,8 @@
  &CONTROL
    calculation     =  'relax'
    nstep           =  200
-   outdir          =  '/home/mammasmias-1/Nico/Project_pARTn/artn-plugin-qe/examples/Si-vac.d/relax.Si.bulk.3x3x3.d/artn.d'
-   pseudo_dir      =  '/home/mammasmias-1/Public/Code/q-e-qe-6.7.0/pseudo'
+   outdir          =  './'
+   pseudo_dir      =  './'
    restart_mode    =  'from_scratch'
  /
 

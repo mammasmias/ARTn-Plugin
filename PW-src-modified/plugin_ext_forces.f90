@@ -38,12 +38,10 @@ SUBROUTINE plugin_ext_forces()
   ! ...ARTn convergence flag 
   lconv = .false. 
   !
-  IF ( ionode ) THEN
-     !CALL artn(force,etot,epsf,nat,ityp,atm,tau,at,alat,istep,if_pos,vel,dt,fire_alpha_init,lconv,prefix,tmp_dir) 
-     CALL artn_QE( force, etot, epsf, nat, ityp, atm, tau, at, alat, istep, if_pos,   &
-                   vel, dt, fire_alpha_init, lconv, prefix, tmp_dir ) 
+  IF ( ionode .and. use_partn ) THEN
+     CALL artn_QE(force,etot,epsf,nat,ityp,atm,tau,at,alat,istep,if_pos,vel,dt,fire_alpha_init,lconv,prefix,tmp_dir) 
   ENDIF
-  IF ( lconv ) THEN
+  IF ( lconv .and. use_partn ) THEN
      WRITE (*,*) "ARTn calculation converged, stopping" 
      CALL stop_run( 0 )
      CALL do_stop( 0 )

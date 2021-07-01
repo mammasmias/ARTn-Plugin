@@ -1,8 +1,8 @@
  &CONTROL
    calculation     =  'relax',
    nstep           =  200,
-   outdir          =  '/temp/matic/pw/graphene-3x2.C-vac',
-   pseudo_dir      =  '/home/matic/pw/pseudo',
+   outdir          =  './',
+   pseudo_dir      =  './',
    restart_mode    =  'from_scratch',
  /
 
