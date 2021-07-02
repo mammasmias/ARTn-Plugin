@@ -28,7 +28,7 @@ FDEBUG := -check all  #-fcheck=all
 
 ifeq ($(F90),ifort)
   MOD   := -module $(OBJ)
-  FLAGS := $(FFLAGS) $(FDEBUG) $(LAPACK_LIBS)
+  FLAGS := $(FFLAGS) $(FDEBUG) $(LAPACK_LIBS) -fPIC
 else #($(F90),gfortran)
   MOD   := -I$(OBJ) -J$(OBJ) # -module $(OBJ)
   FLAGS := $(FFLAGS) $(FDEBUG) $(LAPACK_LIBS)
