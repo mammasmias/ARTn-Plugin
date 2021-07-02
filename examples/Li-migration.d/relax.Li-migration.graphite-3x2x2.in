@@ -1,8 +1,8 @@
  &CONTROL
    calculation     =  'relax',
    nstep           =  150,
-   outdir          =  '/temp/matic/pw/Li-hollow.graphite-3x2x2',
-   pseudo_dir      =  '/home/matic/pw/pseudo',
+   outdir          =  './',
+   pseudo_dir      =  './',
    restart_mode    =  'from_scratch',
  /
 
