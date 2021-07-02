@@ -1,3 +1,4 @@
+
 ! 
 ! 
 ! Main ARTn plugin subroutine:
@@ -5,12 +6,13 @@
 !------------------------------------------------------------------------------
 !SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_pos,vel,dt,fire_alpha_init,lconv,prefix,tmp_dir)
 !SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, dlanc_ptr, eigvec_ptr, iperp_ptr, move, lconv )
-SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, move, lconv )
+SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, cmove, lconv )
   !----------------------------------------------------------------------------
   !
   ! artn_params for variables and counters that need to be stored in each step   
   ! DEFINED IN: artn_params_mod.f90
   ! 
+  use iso_c_binding, only : c_char
   USE artn_params, ONLY: DP, RY2EV,B2A, iunartin, iunartout, iunstruct, &
        lartn, lrelax,lpush_init,lperp,leigen,llanczos, lsaddle, lpush_final, &
        iperp, ieigen, ipush, ilanc, ismooth, nlanc, if_pos_ct, &
@@ -30,13 +32,12 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, move, lconv )
   INTEGER,  INTENT(IN) ::    if_pos(3,nat)    ! coordinates fixed by engine 
   CHARACTER(LEN=3),   INTENT(IN) :: atm(*)    ! name of atom corresponding to ityp
 
-  CHARACTER(LEN=4), INTENT(OUT) :: move       ! Stage for move_mode
-!  INTEGER, POINTER, INTENT(OUT) :: iperp_ptr
-!  REAL(DP), pointer, INTENT(OUT) :: dlanc_ptr      ! dR in Lanczos
-!  REAL(DP), pointer, INTENT(OUT) :: eigvec_ptr(:,:)   ! 
+  CHARACTER(LEN=1,kind=c_char), allocatable, INTENT(OUT) :: cmove(:)       ! Stage for move_mode
+  !CHARACTER(LEN=4), INTENT(OUT) :: move       ! Stage for move_mode
   LOGICAL,          INTENT(OUT) :: lconv      ! flag for controlling convergence 
 
   ! --- LOCAL VARIABLE
+  CHARACTER(LEN=4)   :: move
   REAL(DP), EXTERNAL :: ran3, dnrm2, ddot     ! lapack functions 
   INTEGER :: na, icoor, idum                  ! integers for loops 
   !
@@ -49,6 +50,7 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, move, lconv )
   CHARACTER( LEN=255) :: filin, filout, sadfname, initpfname, eigenfname, restartfname
 
   integer, save :: istep = 0
+
   !
   ! The ARTn algorithm proceeds as follows:
   ! (1) push atoms in the direction specified by user & relax in the perpendicular direction;
@@ -332,7 +334,7 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, move, lconv )
         WRITE (iunartout,'(15X,"E_final - E_initial =", F12.5," eV")') (etot - etot_init)*RY2EV
         WRITE (iunartout,'(5X, "--------------------------------------------------")')
 
-        write( iunartout, * ) " ARTn::", MAXVAL(ABS(force_in*if_pos)), convcrit_final, leigen, lsaddle
+        !write( iunartout, * ) " ARTn::", MAXVAL(ABS(force_in*if_pos)), convcrit_final, leigen, lsaddle
 
         IF ( lpush_final ) THEN
            WRITE (iunartout, '(5X,"       *** Pushing to adjacent minima  ***      ")')
@@ -434,7 +436,47 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, move, lconv )
   istep = istep + 1      
 
 
+  ! ...FortanString convert to C_Char
+  call equal_f_2_c( move, cmove )
 
 
   CLOSE (UNIT = iunartout, STATUS = 'KEEP') 
+
+ contains
+
+
+  subroutine equal_f_2_c( f_in, c_out )
+    use iso_c_binding, only : c_null_char, c_char
+    implicit none
+    !
+    character(len=*), intent( in ) :: f_in
+    character(len=1, kind=c_char), allocatable, intent( out ) :: c_out(:)
+    !
+    integer :: l, i, idx, n
+    !
+    l = len_trim( f_in )
+    allocate( c_out(l+1) )
+    n = size( c_out )
+    !n = l + 1
+    !write(*,*) " in equal::", l, n
+    do i = 1,n
+       c_out(i) = ""
+    enddo
+    !
+    idx = 1
+    do i = 1,l
+       if( i > n )exit
+       !if( f_in(i:i) == " " )cycle
+       c_out(idx) = f_in(i:i)
+       idx = idx + 1
+    enddo
+    c_out( idx ) =  c_null_char
+    !write(*,*) 'Leave equal...'
+    !
+  end subroutine equal_f_2_c
+
+
 END SUBROUTINE artn 
+
+
+
