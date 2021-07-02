@@ -4,3 +4,4 @@ qe-6.6
 *.x
 *.a
 fort.*
+Makefile

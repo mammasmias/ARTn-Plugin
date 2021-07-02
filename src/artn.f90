@@ -144,6 +144,10 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, move, lconv )
      !     iperp, eigenvec, 'perp', prefix, tmp_dir)
      ! 
      iperp = iperp + 1
+
+     !
+     !! * If the forces component are small we continue 
+     !! * to push 
      !
      IF (( MAXVAL( ABS(force) )) < convcrit_init ) THEN
         !

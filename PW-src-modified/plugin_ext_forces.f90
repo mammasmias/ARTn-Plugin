@@ -33,7 +33,7 @@ SUBROUTINE plugin_ext_forces()
 
   ! ...ARTn Flag
   ! usage: ./pw.x -artn < input_qe
-  IF( .not.use_artn )RETURN
+  IF( .not.use_partn )RETURN
   !
   ! ...ARTn convergence flag 
   lconv = .false. 
@@ -45,7 +45,7 @@ SUBROUTINE plugin_ext_forces()
      WRITE (*,*) "ARTn calculation converged, stopping" 
      CALL stop_run( 0 )
      CALL do_stop( 0 )
-     !STOP 1
+     STOP 1
   END IF
   
 END SUBROUTINE plugin_ext_forces

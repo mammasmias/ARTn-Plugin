@@ -3,7 +3,8 @@
 !                     iperp, push, &
 !                     mode, prfx, tmpdir, forc_thr )
 !SUBROUTINE move_mode(nat, force, vel, alpha_init, dt, mode, prfx, tmpdir, forc_thr )
-SUBROUTINE move_mode(nat, force, vel, alpha_init, dt, mode, forc_thr )
+!SUBROUTINE move_mode(nat, force, vel, alpha_init, dt, mode, forc_thr )
+SUBROUTINE move_mode(nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_init, dt_init, mode, forc_thr )
   !
   ! translate specified move to appropriate force and set FIRE parameters accordingly  
   !
@@ -19,36 +20,43 @@ SUBROUTINE move_mode(nat, force, vel, alpha_init, dt, mode, forc_thr )
   REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: vel
   REAL(DP),                   INTENT(INOUT) :: forc_thr
 
-  REAL(DP), INTENT(IN)                      :: alpha_init, dt
+  REAL(DP), INTENT(IN)                      :: alpha_init, dt_init
+  REAL(DP), INTENT(INOUT)                   :: etot, alpha, dt_curr
+  INTEGER,  INTENT(INOUT)                   :: nsteppos
+  
   !INTEGER, INTENT(IN)                       :: iperp
   !REAL(DP), DIMENSION(3,nat), INTENT(IN)    :: push
   CHARACTER(LEN=4), INTENT(IN)              :: mode
+  ! tmpdir and prfx are only use to read the fire parameters
   !CHARACTER(LEN=255), INTENT(IN)            :: tmpdir, prfx
   ! 
   REAL(DP), EXTERNAL :: ddot,dnrm2
   ! variables read from the FIRE minimization algorithm
-  INTEGER :: nsteppos
+  !INTEGER :: nsteppos
   INTEGER :: ios
-  REAL(DP) :: dt_curr, alpha, etot
-  LOGICAL :: file_exists
-  CHARACTER(len=256) :: filnam
+  !REAL(DP) :: dt_curr, alpha, etot
+  !LOGICAL :: file_exists
+  !CHARACTER(len=256) :: filnam
   ! etot is set to zero to ensure that a value is written down in the initial push 
   etot = 0.D0
   !
   ! do things depending on mode of the move
   ! NOTE force units of Ry/a.u. are assumed ... 
   !
-  filnam = trim(tmpdir) // '/' // trim(prfx) // '.' //'fire'
-  INQUIRE( file = filnam, exist = file_exists )
-  OPEN( unit = 4, file = filnam, form = 'formatted', status = 'unknown', iostat = ios)
-  !
-  IF (file_exists ) THEN
-     ! if file exists read the data, otherwise just close it 
-     READ( UNIT = 4, FMT = * ) etot, nsteppos, dt_curr, alpha
-     CLOSE( UNIT = 4, STATUS = 'KEEP' )
-  ELSE
-     CLOSE( UNIT = 4, STATUS = 'DELETE')
-  ENDIF
+
+
+! ! 
+! filnam = trim(tmpdir) // '/' // trim(prfx) // '.' //'fire'
+! INQUIRE( file = filnam, exist = file_exists )
+! OPEN( unit = 4, file = filnam, form = 'formatted', status = 'unknown', iostat = ios)
+! !
+! IF (file_exists ) THEN
+!    ! if file exists read the data, otherwise just close it 
+!    READ( UNIT = 4, FMT = * ) etot, nsteppos, dt_curr, alpha
+!    CLOSE( UNIT = 4, STATUS = 'KEEP' )
+! ELSE
+!    CLOSE( UNIT = 4, STATUS = 'DELETE')
+! ENDIF
 
 
   !
@@ -68,7 +76,7 @@ SUBROUTINE move_mode(nat, force, vel, alpha_init, dt, mode, forc_thr )
      etot = 0.D0
      vel(:,:) = 0.D0
      alpha = 0.0_DP
-     dt_curr = dt
+     dt_curr = dt_init
      nsteppos = 0
      force = push0*amu_ry/dt_curr**2
 
@@ -80,7 +88,7 @@ SUBROUTINE move_mode(nat, force, vel, alpha_init, dt, mode, forc_thr )
         etot = 0.D0
         vel(:,:) = 0.D0
         alpha = alpha_init
-        dt_curr = dt
+        dt_curr = dt_init
      ELSE
         ! subtract the components that are parallel
         vel(:,:) = vel(:,:) - ddot(3*nat,vel, 1, push, 1 )*push(:,:)/ddot(3*nat,push(:,:),1, push(:,:),1)
@@ -92,7 +100,7 @@ SUBROUTINE move_mode(nat, force, vel, alpha_init, dt, mode, forc_thr )
      !
      etot = 0.D0
      vel(:,:) = 0.D0
-     dt_curr = dt
+     dt_curr = dt_init
      alpha = 0.D0
      nsteppos = 0
      ! the step performed should be like this now translate it into the correct force
@@ -104,7 +112,7 @@ SUBROUTINE move_mode(nat, force, vel, alpha_init, dt, mode, forc_thr )
      etot = 0.D0
      vel(:,:) = 0.D0
      alpha = 0.0_DP
-     dt_curr = dt
+     dt_curr = dt_init
      nsteppos = 0
      force(:,:) = force(:,:)*amu_ry/dt_curr**2
      !force(:,:) = eigenvec(:,:)*amu_ry/dt_curr**2   ! Should be like that
@@ -113,7 +121,7 @@ SUBROUTINE move_mode(nat, force, vel, alpha_init, dt, mode, forc_thr )
   CASE( 'relx' )
      forc_thr = 10D-8
      alpha = alpha_init
-     dt_curr = dt
+     dt_curr = dt_init
 
   CASE default
      write(*,*) 'Problem with move_mode!'
@@ -121,10 +129,10 @@ SUBROUTINE move_mode(nat, force, vel, alpha_init, dt, mode, forc_thr )
   !
   ! write the FIRE parameters to its scratch file
   ! 
-  OPEN( unit = 4, file = filnam, form = 'formatted', status = 'unknown', iostat = ios)
-  WRITE( UNIT = 4, FMT = * ) etot, nsteppos, dt_curr, alpha
-  !
-  CLOSE( UNIT = 4, STATUS = 'KEEP' )
+! OPEN( unit = 4, file = filnam, form = 'formatted', status = 'unknown', iostat = ios)
+! WRITE( UNIT = 4, FMT = * ) etot, nsteppos, dt_curr, alpha
+! !
+! CLOSE( UNIT = 4, STATUS = 'KEEP' )
   !
   !
  

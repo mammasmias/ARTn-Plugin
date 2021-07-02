@@ -14,9 +14,6 @@ MODULE artn_params
   INTEGER, PARAMETER :: iunartout = 53 ! fortran file unit for ARTn output file
   INTEGER, PARAMETER :: iunstruct = 556 ! fortran file unit for writing the structure
   INTEGER, PARAMETER :: iunrestart = 557 ! fortran file unit for writing the structure
-  ! ouput
-  CHARACTER(:), allocatable :: prefix
-  CHARACTER(:), allocatable :: tmp_dir
   ! control flags
   LOGICAL :: lartn = .true. ! We use ARTn or not
   LOGICAL :: lpush_init ! initial push 
