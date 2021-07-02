@@ -1,0 +1,10 @@
+# The following scripts is need for the user to set environment variables
+
+#
+#
+ART_PATH=`pwd`
+#
+# Path to the Energy and Force engines
+#
+# Quantum ESPRESSO
+QE_PATH=' '

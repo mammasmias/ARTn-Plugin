@@ -1,10 +1,4 @@
-
-QE_PATH = /scratch/marsamos/pART/artn-plugin-qe/qe-6.6
-ART_PATH = $(CURDIR)
-
-export QE_PATH
-
-#include ${QE_PATH}/make.inc
+include environment_variables
 
 default : source
 
@@ -33,5 +27,10 @@ unpatch :
 	cp plugin_arguments.f90 ${QE_PATH}/Modules/plugin_arguments.f90
 	head -n -1 ${QE_PATH}/make.inc > ${QE_PATH}/make.inc_tmp
 	mv ${QE_PATH}/make.inc_tmp ${QE_PATH}/make.inc
+	rm plugin_ext_forces.f90
+	rm plugin_flags.f90
+	rm plugin_arguments.f90
+
+	( cd ${QE_PATH}; $(MAKE) pw; cd - )
 
 
