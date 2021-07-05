@@ -41,8 +41,9 @@ using namespace FixConst;
 extern "C"{
   //void artn_( double **force, double etot, int nat, int *ityp, char *elt, double **tau, double lat[3][3], int *if_pos, char *move, bool lconv );
   //void move_mode_( int nat, double **force, double **vel, double etot, int nsteppos, double dt_curr, double alpha, double alpha_init, double dt_init, char *cmode );
-  void artn_( double **force, double* etot, int* nat, int *ityp, char *elt, double **tau, double lat[3][3], int *if_pos, int* disp, bool* lconv );
-  void move_mode_( int* nat, double **force, double **vel, double* etot, int* nsteppos, double* dt_curr, double* alpha, double* alpha_init, double* dt_init, int* disp );
+  //void artn_( double **force, double* etot, int* nat, int *ityp, char *elt, double **tau, double lat[3][3], int *if_pos, int* disp, bool* lconv );
+  void artn_( double **const force, double* etot, const int nat, const int *ityp, const char *elt, double **tau, const double lat[3][3], const int *if_pos, int* disp, bool* lconv );
+  void move_mode_( const int nat, double **force, double **vel, double* etot, int* nsteppos, double* dt_curr, double* alpha, const double* alpha_init, const double* dt_init, int* disp );
 }
 
 /* ---------------------------------------------------------------------- */
@@ -161,6 +162,16 @@ void FixARTn::min_post_force( int vflag ) {
   cout<<" * IN MIN_POST_FORCES..." << endl;
   post_force( vflag );
 
+  cout<<" * OUT MIN_POST_FORCES..." << endl;
+
+  double **x = atom->x;
+  double **f = atom->f;
+  int nat = atom->natoms;
+  for( int i(0); i<10; i++){
+    cout<< " * pos: "<< i<< " | "<< x[i][0]<< " "<<x[i][1]<< " "<<x[i][2]<< " "<<endl;
+    //cout<< " * frc: "<< i<< " | "<<f[i][0]<< " "<<f[i][1]<< " "<<f[i][2]<< " "<<endl;
+  }
+
 }
 
 
@@ -193,8 +204,8 @@ void FixARTn::post_force( int /*vflag*/ ){
   double epse = update-> etol;
   double epsf = update-> ftol;
 
-  int nat = atom-> natoms;
-  int *ityp = atom->type;
+  const int nat = atom-> natoms;
+  const int *ityp = atom->type;
 
   char *elt ;
   elt = new char[nat];
@@ -238,25 +249,39 @@ void FixARTn::post_force( int /*vflag*/ ){
 
 
   // PRE ARTn
-  cout<< " * PRE_ARTn::"<<endl;
+  cout<< " * PRE_ARTn:: "<< nat <<endl;
 
   //artn( force, etot, forc_conv_thr_qe, nat, ityp, atm, tau, at, alat, istep, if_pos, vel, dt, fire_alpha_init, lconv, prefix, tmp_dir )
   //artn_( force, etot, nat, ityp, elt, tau, lat, if_pos, move, lconv );
-  artn_( force, &etot, &nat, ityp, elt, tau, lat, if_pos, &disp, &lconv );
+  //artn_( force, &etot, &nat, ityp, elt, tau, lat, if_pos, &disp, &lconv );
+  artn_( force, &etot, nat, ityp, elt, tau, lat, if_pos, &disp, &lconv );
+
+  delete [] if_pos;
 
   //return;
 
   // POST ARTn/PRE MOVE_MODE
   cout<< " * POST_ARTn/PRE_MOVE_MODE::"<<endl;
+  for( int i(0); i<10; i++){
+    cout<< " * pos: "<< i<< " | "<< tau[i][0]<< " "<<tau[i][1]<< " "<<tau[i][2]<< " "<<endl;
+    cout<< " * frc: "<< i<< " | "<<force[i][0]<< " "<<force[i][1]<< " "<<force[i][2]<< " "<<endl;
+  }
 
   //disp = 5; //RELX
   //move_mode_( nat, force, vel, fire_alpha_init, dt );
   //move_mode_( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_init, dt_init, move );
-  move_mode_( &nat, force, vel, &etot, &nsteppos, &dt_curr, &alpha, &alpha_init, &dt_init, &disp );
+  move_mode_( nat, force, vel, &etot, &nsteppos, &dt_curr, &alpha, &alpha_init, &dt_init, &disp );
+
+  if( !force )cout<<" * FORCE loose the address"<<endl;
 
   // POST MOVE_MODE
-  cout<< " * POST_MOVE_MODE::"<<endl;
+  cout<< " * POST_MOVE_MODE::alpha "<< alpha <<" | "<< etot << " | "<< dt_curr<<" | "<<force[1][0]<<endl;
+  for( int i(0); i<10; i++){
+    cout<< " * pos: "<< i<< " | "<< tau[i][0]<< " "<<tau[i][1]<< " "<<tau[i][2]<< " "<<endl;
+    //cout<< " * frc: "<< i<< " | "<<force[i][0]<< " "<<force[i][1]<< " "<<force[i][2]<< " "<<endl;
+  }
 
+  return;
 
   // CHANGE FIRE PARAMETER
   int nword = 4;
@@ -265,8 +290,8 @@ void FixARTn::post_force( int /*vflag*/ ){
 
   word[0] = "alpha0";
   word[1] = "0.0";
-  word[2]= "alphashrink" ;
-  word[3]= "1.0" ;
+  word[2] = "alphashrink" ;
+  word[3] = "1.0" ;
   //word[4]= "delaystep" ;
   //word[5]= "5" ;
   //word[6]= "halfstepback" ;
@@ -277,6 +302,7 @@ void FixARTn::post_force( int /*vflag*/ ){
   for( int i(0); i<nword; i++) word[i] = NULL;
   delete [] word;
 
+  return;
 
 }
 
