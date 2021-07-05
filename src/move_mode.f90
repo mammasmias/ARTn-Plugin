@@ -98,6 +98,7 @@ SUBROUTINE move_mode(nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_init
 
   CASE default
      write(*,*) 'Problem with move_mode!'
+
   END SELECT
  
 
@@ -109,7 +110,7 @@ SUBROUTINE move_mode(nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_init
 !> @param[in] char_in   One length char
 !! @return    String Fortran Style
 
-function ctrim( char_in )
+function ctrim( char_in ) !BIND( C )
   use iso_c_binding, only : c_null_char
   implicit none
   !integer, intent( in ) :: n

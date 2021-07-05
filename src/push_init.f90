@@ -8,7 +8,7 @@ SUBROUTINE push_init (nat, tau, at, idum, push_ids, dist_thr, add_const, init_st
   !           (3) 'rad' generates a push on a list of atoms and all atoms within dist_thr 
   ! the user should supply: number and list of atoms to push; and add_constraints on these atoms
   !
-  USE artn_params, ONLY : DP
+  USE artn_params, ONLY : DP, ran3
   IMPLICIT none
   INTEGER, INTENT(IN) :: nat,idum
   INTEGER :: na, ia 
@@ -18,7 +18,8 @@ SUBROUTINE push_init (nat, tau, at, idum, push_ids, dist_thr, add_const, init_st
   REAL(DP), INTENT(IN) :: tau(3,nat), at(3,3), add_const(4,nat)
   CHARACTER(LEN=4), INTENT(IN) :: mode
   REAL(DP), INTENT(OUT) :: push(3,nat)
-  REAL(DP), EXTERNAL :: ran3, dnrm2 
+  !REAL(DP), EXTERNAL :: ran3, dnrm2 
+  REAL(DP), EXTERNAL :: dnrm2 
   REAL(DP) :: dr2, pushat(3)
   REAL(DP) :: dist(3), tau0(3) 
   LOGICAL :: lvalid

@@ -219,4 +219,59 @@ CONTAINS
     ! 
   END SUBROUTINE initialize_artn
   !
+
+!---------------------------------------------------------------------------
+REAL(8) FUNCTION ran3( idum )
+  !-------------------------------------------------------------------------
+  !! Random number generator.
+  !
+  !USE kinds, ONLY : DP
+  !
+  IMPLICIT NONE
+  !
+  SAVE
+  !         implicit real*4(m)
+  !         parameter (mbig=4000000.,mseed=1618033.,mz=0.,fac=2.5e-7)
+  integer :: mbig, mseed, mz
+  real(DP) :: fac
+  parameter (mbig = 1000000000, mseed = 161803398, mz = 0, fac = 1.d-9)
+
+  integer :: ma (55), iff, k, inext, inextp, ii, mj, idum, i, mk
+  !     common /ranz/ ma,inext,inextp
+  data iff / 0 /
+  if (idum.lt.0.or.iff.eq.0) then
+     iff = 1
+     mj = mseed-iabs (idum)
+     mj = mod (mj, mbig)
+     ma (55) = mj
+     mk = 1
+     do i = 1, 54
+        ii = mod (21 * i, 55)
+        ma (ii) = mk
+        mk = mj - mk
+        if (mk.lt.mz) mk = mk + mbig
+        mj = ma (ii)
+     enddo
+     do k = 1, 4
+        do i = 1, 55
+           ma (i) = ma (i) - ma (1 + mod (i + 30, 55) )
+           if (ma (i) .lt.mz) ma (i) = ma (i) + mbig
+        enddo
+     enddo
+     inext = 0
+     inextp = 31
+     idum = 1
+  endif
+  inext = inext + 1
+  if (inext.eq.56) inext = 1
+  inextp = inextp + 1
+  if (inextp.eq.56) inextp = 1
+  mj = ma (inext) - ma (inextp)
+  if (mj.lt.mz) mj = mj + mbig
+  ma (inext) = mj
+  ran3 = mj * fac
+  return
+END FUNCTION ran3
+
+
 END MODULE artn_params

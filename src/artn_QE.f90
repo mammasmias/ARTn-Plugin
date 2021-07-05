@@ -4,7 +4,8 @@
 !        modifies the input force to perform the ARTn algorithm 
 !------------------------------------------------------------------------------
 !SUBROUTINE artn_QE( force, etot, forc_conv_thr_qe, nat, ityp, atm, tau, at, alat, istep, if_pos, vel, dt_init, fire_alpha_init, lconv, prefix_qe, tmp_dir_qe )
-SUBROUTINE artn_QE( force, etot, epsf_qe, nat, ityp, atm, tau, at, alat, istep, if_pos, vel, dt_init, fire_alpha_init, lconv, prefix_qe, tmp_dir_qe )
+SUBROUTINE artn_QE( force, etot, epsf_qe, nat, ityp, atm, tau, at, alat, istep, if_pos,   &
+                    vel, dt_init, fire_alpha_init, lconv, prefix_qe, tmp_dir_qe )
   !----------------------------------------------------------------------------
   !
   use iso_c_binding, only : c_char, c_null_char
