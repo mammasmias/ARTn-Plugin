@@ -8,7 +8,7 @@ SUBROUTINE artn_QE( force, etot, epsf_qe, nat, ityp, atm, tau, at, alat, istep, 
                     vel, dt_init, fire_alpha_init, lconv, prefix_qe, tmp_dir_qe )
   !----------------------------------------------------------------------------
   !
-  use iso_c_binding, only : c_char, c_null_char
+  !use iso_c_binding, only : c_char, c_null_char
   USE artn_params, ONLY: DP, lartn, convcrit_final 
   !
   !  Interface Quantum ESPRESSO/ARTn:
@@ -36,7 +36,7 @@ SUBROUTINE artn_QE( force, etot, epsf_qe, nat, ityp, atm, tau, at, alat, istep, 
   !  
   !integer, save             :: step = 0
   !character(len=4)          :: move
-  character(len=1,kind=c_char), allocatable :: cmove(:)
+  !character(len=1,kind=c_char), allocatable :: cmove(:)
   real(dp)                  :: box(3,3)
   real(dp)                  :: pos(3,nat)
   real(dp)                  :: etot_fire, dt_curr, alpha
@@ -44,15 +44,16 @@ SUBROUTINE artn_QE( force, etot, epsf_qe, nat, ityp, atm, tau, at, alat, istep, 
 
   LOGICAL                   :: file_exists
   CHARACTER(len=256)        :: filnam
-  INTEGER                   :: ios, i
+  INTEGER                   :: ios, i, disp
   !REAL(DP) :: dlanc      ! dR in Lanczos
   !REAL(DP) :: eigvec(3,nat)   !
 
 
   !------------------------------------------------------------------------------------------------------------
   interface
-    SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, cmove, lconv )
-      use iso_c_binding, only : c_char
+    !SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, cmove, lconv )
+    SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, disp, lconv )
+      !use iso_c_binding, only : c_char
       USE artn_params, ONLY: DP
       IMPLICIT NONE
       REAL(DP), INTENT(INOUT) :: force(3,nat)     ! force calculated by the engine
@@ -65,12 +66,14 @@ SUBROUTINE artn_QE( force, etot, epsf_qe, nat, ityp, atm, tau, at, alat, istep, 
       INTEGER,  INTENT(IN) ::    if_pos(3,nat)    ! coordinates fixed by engine 
       CHARACTER(LEN=3),   INTENT(IN) :: atm(*)    ! name of atom corresponding to ityp
 
-      CHARACTER(LEN=1,kind=c_char), allocatable, INTENT(OUT) :: cmove(:)       ! Stage for move_mode
+      !CHARACTER(LEN=1,kind=c_char), allocatable, INTENT(OUT) :: cmove(:)       ! Stage for move_mode
+      INTEGER,          INTENT(OUT) :: disp
       LOGICAL,          INTENT(OUT) :: lconv  
     END SUBROUTINE artn
-    SUBROUTINE move_mode(nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_init, dt_init, cmode )
-      use iso_c_binding, only : c_char
-      USE artn_params, ONLY: DP, AMU_RY, iperp, push0 => push, push=>eigenvec, dlanc !,  &
+    !SUBROUTINE move_mode(nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_init, dt_init, cmode )
+    SUBROUTINE move_mode(nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_init, dt_init, disp )
+      !use iso_c_binding, only : c_char
+      USE artn_params, ONLY: DP, AMU_RY, iperp, push0 => push, push=>eigenvec, dlanc, move
       IMPLICIT NONE
       INTEGER, INTENT(IN)                       :: nat
       REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: force
@@ -78,7 +81,8 @@ SUBROUTINE artn_QE( force, etot, epsf_qe, nat, ityp, atm, tau, at, alat, istep, 
       REAL(DP), INTENT(IN)                      :: alpha_init, dt_init
       REAL(DP), INTENT(INOUT)                   :: etot, alpha, dt_curr
       INTEGER,  INTENT(INOUT)                   :: nsteppos
-      CHARACTER(LEN=1,KIND=c_char), INTENT(IN)  :: cmode(:)
+      !CHARACTER(LEN=1,KIND=c_char), INTENT(IN)  :: cmode(:)
+      INTEGER, INTENT(IN)                       :: disp
     END SUBROUTINE move_mode 
   end interface
   !------------------------------------------------------------------------------------------------------------
@@ -105,7 +109,8 @@ SUBROUTINE artn_QE( force, etot, epsf_qe, nat, ityp, atm, tau, at, alat, istep, 
 
 
   ! ...Launch ARTn
-  call artn( force, etot, nat, ityp, atm, pos, box, if_pos, cmove, lconv )
+  !call artn( force, etot, nat, ityp, atm, pos, box, if_pos, cmove, lconv )
+  call artn( force, etot, nat, ityp, atm, pos, box, if_pos, disp, lconv )
 
 
   ! ...Compare the Threshold
@@ -136,7 +141,8 @@ SUBROUTINE artn_QE( force, etot, epsf_qe, nat, ityp, atm, tau, at, alat, istep, 
   !print*, " * ARTn_QE::cmove ", cmove, size(cmove), (cmove(5)==c_null_char)
 
   ! ...Convert the dR given by ARTn to forces
-  call move_mode( nat, force, vel, etot_fire, nsteppos, dt_curr, alpha, fire_alpha_init, dt_init, cmove )
+  !call move_mode( nat, force, vel, etot_fire, nsteppos, dt_curr, alpha, fire_alpha_init, dt_init, cmove )
+  call move_mode( nat, force, vel, etot_fire, nsteppos, dt_curr, alpha, fire_alpha_init, dt_init, disp )
 
 
   !

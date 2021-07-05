@@ -1,12 +1,13 @@
 
 
 
-SUBROUTINE move_mode(nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_init, dt_init, cmode )
+!SUBROUTINE move_mode(nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_init, dt_init, cmode )
+SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_init, dt_init, disp )
   !
   ! translate specified move to appropriate force and set FIRE parameters accordingly  
   !
   use iso_c_binding, only : c_char
-  USE artn_params, ONLY: DP, AMU_RY, iperp, push0 => push, push=>eigenvec, dlanc !,  &
+  USE artn_params, ONLY: DP, AMU_RY, iperp, push0 => push, push=>eigenvec, dlanc, MOVE
   !
   IMPLICIT NONE
 
@@ -20,10 +21,11 @@ SUBROUTINE move_mode(nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_init
   REAL(DP), INTENT(INOUT)                   :: etot, alpha, dt_curr
   INTEGER,  INTENT(INOUT)                   :: nsteppos
   
-  CHARACTER(LEN=1,KIND=c_char), INTENT(IN)  :: cmode(:)
+  INTEGER, INTENT(IN)                       :: disp
+  !CHARACTER(LEN=1,KIND=c_har), INTENT(IN)  :: cmode(:)
   ! 
   ! -- Local Variable
-  CHARACTER(LEN=:), allocatable             :: mode
+  !CHARACTER(LEN=:), allocatable             :: mode
   !CHARACTER(LEN=:), allocatable, external    :: ctrim
   REAL(DP), EXTERNAL               :: ddot,dnrm2
 
@@ -34,15 +36,16 @@ SUBROUTINE move_mode(nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_init
 
   ! .. Convert C_Char to Fortran String
   !print*, " * ARTn::MOVE_MODE::", cmode
-  mode = ctrim( cmode )
+  !mode = ctrim( cmode )
 
 
-  print*, " * ARTn::MOVE_MODE::mode ", trim(mode), len_trim(mode)
+  print*, " * ARTn::MOVE_MODE::mode ", MOVE(disp), len_trim(MOVE(disp))
   print*, " * ARTn::MOVE_MODE::iperp ", iperp
 
 
 
-  SELECT CASE( TRIM(mode) )
+  !SELECT CASE( TRIM(mode) )
+  SELECT CASE( MOVE(disp) )
 
   CASE( 'init' )
      !

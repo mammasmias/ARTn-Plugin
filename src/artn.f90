@@ -6,7 +6,8 @@
 !------------------------------------------------------------------------------
 !SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_pos,vel,dt,fire_alpha_init,lconv,prefix,tmp_dir)
 !SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, dlanc_ptr, eigvec_ptr, iperp_ptr, move, lconv )
-SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, cmove, lconv )
+!SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, cmove, lconv )
+SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, disp, lconv )
   !----------------------------------------------------------------------------
   !
   ! artn_params for variables and counters that need to be stored in each step   
@@ -19,7 +20,8 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, cmove, lconv )
        lowest_eigval, etot_init, etot_saddle, etot_final, de_saddle, de_back, de_fwd, &
        npush, neigen, nlanc_init, nsmooth, push_mode, dist_thr, convcrit_init, convcrit_final, &
        fpara_convcrit, eigval_thr, relax_thr, push_step_size, current_step_size, dlanc, eigen_step_size, fpush_factor, &
-       push_ids,add_const, push, eigenvec, tau_saddle, initialize_artn
+       push_ids,add_const, push, eigenvec, tau_saddle, initialize_artn,  &
+       INIT, PERP, EIGN, LANC, RELX
   ! 
   IMPLICIT NONE
   REAL(DP), INTENT(INOUT) :: force(3,nat)     ! force calculated by the engine
@@ -32,8 +34,9 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, cmove, lconv )
   INTEGER,  INTENT(IN) ::    if_pos(3,nat)    ! coordinates fixed by engine 
   CHARACTER(LEN=3),   INTENT(IN) :: atm(*)    ! name of atom corresponding to ityp
 
-  CHARACTER(LEN=1,kind=c_char), allocatable, INTENT(OUT) :: cmove(:)       ! Stage for move_mode
+  !CHARACTER(LEN=1,kind=c_char), allocatable, INTENT(OUT) :: cmove(:)       ! Stage for move_mode
   !CHARACTER(LEN=4), INTENT(OUT) :: move       ! Stage for move_mode
+  INTEGER,          INTENT(OUT) :: disp
   LOGICAL,          INTENT(OUT) :: lconv      ! flag for controlling convergence 
 
   ! --- LOCAL VARIABLE
@@ -65,6 +68,7 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, cmove, lconv )
 
   write(*,'(x,a)') " * ARTn:: lrelax | lpush_init | lperp | leigen | llanczos | lsaddle | lpush_final "
   write(*,'(x,a,*(2x,l4))') " * ", lrelax,lpush_init,lperp,leigen,llanczos, lsaddle, lpush_final
+
 
   ! store original force
   force_in(:,:) = force(:,:)
@@ -113,12 +117,14 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, cmove, lconv )
      !
      !force(:,:) =  push(:,:) ! Use push in move mode
      move = 'init'
+     disp = INIT
      !CALL move_mode( nat, dlanc, force, &
      !     vel, fire_alpha_init, dt,  &
      !     iperp, push, 'eign', prefix, tmp_dir)
      !
      !CALL write_report(etot,force_in, lowest_eigval, 'push' , if_pos, istep, nat,  iunartout)
-     CALL write_report(etot,force_in, lowest_eigval, move , if_pos, istep, nat,  iunartout)
+     !CALL write_report(etot,force_in, lowest_eigval, move , if_pos, istep, nat,  iunartout)
+     CALL write_report(etot,force_in, lowest_eigval, disp, if_pos, istep, nat,  iunartout)
      !
      !CALL write_struct(alat, at, nat, tau, atm, ityp, force, 1.0_DP, iunstruct, 'xsf', initpfname)
      !CALL write_struct( at, nat, tau, atm, ityp, force, 1.0_DP, iunstruct, 'xsf', initpfname)
@@ -141,6 +147,7 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, cmove, lconv )
      END IF
      !
      move = 'perp'
+     disp = PERP
      !CALL move_mode( nat,  dlanc, force, &
      !     vel, fire_alpha_init, dt,  &
      !     iperp, eigenvec, 'perp', prefix, tmp_dir)
@@ -162,6 +169,7 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, cmove, lconv )
            ! continue pushing in the specified direction
            force(:,:) =  eigenvec(:,:)
            move = 'eign'
+           disp = EIGN
            !CALL move_mode( nat, dlanc, force, &
            !     vel, fire_alpha_init, dt,  &
            !     iperp, eigenvec, 'eign', prefix, tmp_dir)
@@ -171,7 +179,8 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, cmove, lconv )
            lperp = .true.
            ! 
            !CALL write_report(etot,force_in, lowest_eigval, 'push' , if_pos, istep, nat,  iunartout)
-           CALL write_report(etot,force_in, lowest_eigval, move , if_pos, istep, nat,  iunartout)
+           !CALL write_report(etot,force_in, lowest_eigval, move , if_pos, istep, nat,  iunartout)
+           CALL write_report(etot,force_in, lowest_eigval, disp, if_pos, istep, nat,  iunartout)
            ! 
         ELSE IF ( ipush >= npush  ) THEN
            ! regenerate force & start lanczos
@@ -180,7 +189,8 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, cmove, lconv )
         END IF
      ELSE
         !CALL write_report(etot,force_in, lowest_eigval, 'perp' , if_pos, istep, nat,  iunartout)       
-        CALL write_report(etot,force_in, lowest_eigval, move , if_pos, istep, nat,  iunartout)       
+        !CALL write_report(etot,force_in, lowest_eigval, move , if_pos, istep, nat,  iunartout)       
+        CALL write_report(etot,force_in, lowest_eigval, disp, if_pos, istep, nat,  iunartout)       
      END IF
      ! leigen is always .true. after we obtain a good eigenvector
      ! except during lanczos iterations 
@@ -190,6 +200,7 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, cmove, lconv )
      !  
      force(:,:) = eigenvec(:,:)
      move = 'eign'
+     disp = EIGN
      !CALL move_mode( nat, dlanc, force, &
      !     vel, fire_alpha_init, dt,  &
      !     iperp, eigenvec, 'eign', prefix, tmp_dir)
@@ -197,7 +208,8 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, cmove, lconv )
      ieigen = ieigen + 1
      !      
      !CALL write_report(etot,force_in, lowest_eigval, 'eign' , if_pos, istep, nat,  iunartout)
-     CALL write_report(etot,force_in, lowest_eigval, move , if_pos, istep, nat,  iunartout)
+     !CALL write_report(etot,force_in, lowest_eigval, move , if_pos, istep, nat,  iunartout)
+     CALL write_report(etot,force_in, lowest_eigval, disp, if_pos, istep, nat,  iunartout)
 
      ! count the number of steps made with the eigenvector
      !CALL write_struct(alat, at, nat, tau, atm, ityp, force, 1.0_DP, iunstruct, 'xsf', eigenfname)
@@ -217,8 +229,10 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, cmove, lconv )
   IF ( llanczos ) THEN 
      !
      move = 'lanc'
+     disp = LANC
      !CALL write_report(etot,force_in, lowest_eigval, 'lanc' , if_pos, istep, nat,  iunartout)
-     CALL write_report(etot,force_in, lowest_eigval, move , if_pos, istep, nat,  iunartout)
+     !CALL write_report(etot,force_in, lowest_eigval, move , if_pos, istep, nat,  iunartout)
+     CALL write_report(etot,force_in, lowest_eigval, disp, if_pos, istep, nat,  iunartout)
      IF (ilanc == 0 ) THEN
         IF ( .not. leigen ) THEN
            !
@@ -371,12 +385,14 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, cmove, lconv )
         ELSE
            ! 
            move = 'eign'
+           disp = EIGN
            !CALL move_mode( nat, dlanc, force, &
            !  vel, fire_alpha_init, dt,  &
            !  iperp, eigenvec, 'eign', prefix, tmp_dir)
            !
            !CALL write_report(etot,force_in, lowest_eigval, 'eign' , if_pos, istep, nat,  iunartout)
-           CALL write_report(etot,force_in, lowest_eigval, move , if_pos, istep, nat,  iunartout)
+           !CALL write_report(etot,force_in, lowest_eigval, move , if_pos, istep, nat,  iunartout)
+           CALL write_report(etot,force_in, lowest_eigval, disp, if_pos, istep, nat,  iunartout)
         END IF
      ELSE
         lconv = .true.       
@@ -390,10 +406,12 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, cmove, lconv )
      ! reset force  
      !
      move = 'relx'
+     disp = RELX
      force(:,:) = force_in(:,:)
      ! 
      !CALL write_report(etot, force_in, lowest_eigval, 'relx', if_pos, istep, nat, iunartout)
-     CALL write_report(etot, force_in, lowest_eigval, move, if_pos, istep, nat, iunartout)
+     !CALL write_report(etot, force_in, lowest_eigval, move, if_pos, istep, nat, iunartout)
+     CALL write_report(etot, force_in, lowest_eigval, disp, if_pos, istep, nat, iunartout)
      !
      ! check for convergence 
      ! 
@@ -401,6 +419,7 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, cmove, lconv )
         IF ( fpush_factor == 1.0 ) THEN
            ! make sure QE doesn't converge
            move = 'relx'
+           disp = RELX
            !forc_conv_thr_qe = 1.0D-8
            ! reverse direction of push 
            fpush_factor = -1.0
@@ -437,7 +456,7 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, cmove, lconv )
 
 
   ! ...FortanString convert to C_Char
-  call equal_f_2_c( move, cmove )
+  !call equal_f_2_c( move, cmove )
 
 
   CLOSE (UNIT = iunartout, STATUS = 'KEEP') 

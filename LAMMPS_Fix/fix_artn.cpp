@@ -39,8 +39,10 @@ using namespace LAMMPS_NS;
 using namespace FixConst;
 
 extern "C"{
-  void artn_( double **force, double etot, int nat, int *ityp, char *elt, double **tau, double lat[3][3], int *if_pos, char *move, bool lconv );
-  void move_mode_( int nat, double **force, double **vel, double etot, int nsteppos, double dt_curr, double alpha, double alpha_init, double dt_init, char *cmode );
+  //void artn_( double **force, double etot, int nat, int *ityp, char *elt, double **tau, double lat[3][3], int *if_pos, char *move, bool lconv );
+  //void move_mode_( int nat, double **force, double **vel, double etot, int nsteppos, double dt_curr, double alpha, double alpha_init, double dt_init, char *cmode );
+  void artn_( double **force, double* etot, int* nat, int *ityp, char *elt, double **tau, double lat[3][3], int *if_pos, int* disp, bool* lconv );
+  void move_mode_( int* nat, double **force, double **vel, double* etot, int* nsteppos, double* dt_curr, double* alpha, double* alpha_init, double* dt_init, int* disp );
 }
 
 /* ---------------------------------------------------------------------- */
@@ -227,22 +229,33 @@ void FixARTn::post_force( int /*vflag*/ ){
 
   //bool lconv = boolian variable - take care of the Fortran/C++ interface
   bool lconv;
-  char *move;
+  int disp;
+  //char *move;
   //char* prefix = prefix for scratch files of engine
   //char* prefix;
   //char* tmp_dir = scratch directory of engine 
   //char* tmp_dir;
 
 
+  // PRE ARTn
+  cout<< " * PRE_ARTn::"<<endl;
+
   //artn( force, etot, forc_conv_thr_qe, nat, ityp, atm, tau, at, alat, istep, if_pos, vel, dt, fire_alpha_init, lconv, prefix, tmp_dir )
-  artn_( force, etot, nat, ityp, elt, tau, lat, if_pos, move, lconv );
+  //artn_( force, etot, nat, ityp, elt, tau, lat, if_pos, move, lconv );
+  artn_( force, &etot, &nat, ityp, elt, tau, lat, if_pos, &disp, &lconv );
 
+  //return;
 
-  // 
+  // POST ARTn/PRE MOVE_MODE
+  cout<< " * POST_ARTn/PRE_MOVE_MODE::"<<endl;
 
-
+  //disp = 5; //RELX
   //move_mode_( nat, force, vel, fire_alpha_init, dt );
-  move_mode_( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_init, dt_init, move );
+  //move_mode_( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_init, dt_init, move );
+  move_mode_( &nat, force, vel, &etot, &nsteppos, &dt_curr, &alpha, &alpha_init, &dt_init, &disp );
+
+  // POST MOVE_MODE
+  cout<< " * POST_MOVE_MODE::"<<endl;
 
 
   // CHANGE FIRE PARAMETER
@@ -259,7 +272,10 @@ void FixARTn::post_force( int /*vflag*/ ){
   //word[6]= "halfstepback" ;
   //word[7]= "no" ;
 
-  minimize-> modify_params( nword, word );
+  //minimize-> modify_params( nword, word );
+
+  for( int i(0); i<nword; i++) word[i] = NULL;
+  delete [] word;
 
 
 }
