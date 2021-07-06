@@ -12,7 +12,7 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
   IMPLICIT NONE
 
   ! -- Arguments
-  INTEGER, INTENT(IN)                       :: nat
+  INTEGER, INTENT(IN), value                       :: nat
 
   REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: force
   REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: vel
@@ -29,6 +29,7 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
   !CHARACTER(LEN=:), allocatable, external    :: ctrim
   REAL(DP), EXTERNAL               :: ddot,dnrm2
 
+  integer :: i;
   !
   ! do things depending on mode of the move
   ! NOTE force units of Ry/a.u. are assumed ... 
@@ -41,7 +42,12 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
 
   print*, " * ARTn::MOVE_MODE::mode ", MOVE(disp), len_trim(MOVE(disp))
   print*, " * ARTn::MOVE_MODE::iperp ", iperp
+  print*, " * ARTn::MOVE_MODE::arg: ", nat, etot, amu_ry, dt_curr, dt_init
 
+!  do i = 1,10
+!     print*, " * force", i,force(:,i)
+!  enddo
+     print*, " * force", 28,force(:,28)
 
 
   !SELECT CASE( TRIM(mode) )
@@ -49,12 +55,12 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
 
   CASE( 'init' )
      !
-     etot = 0.D0
+     etot = 1.D0
      vel(:,:) = 0.D0
      alpha = 0.0_DP
      dt_curr = dt_init
      nsteppos = 0
-     force = push0*amu_ry/dt_curr**2
+     force(:,:) = push0(:,:)*amu_ry/dt_curr**2
 
   CASE( 'perp' )
      !
@@ -103,45 +109,15 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
      write(*,*) 'Problem with move_mode!'
 
   END SELECT
- 
 
- CONTAINS
 
-!................................................................................
-!> Convert C_CHAR (array of letter) in string char (fortran style)
-!
-!> @param[in] char_in   One length char
-!! @return    String Fortran Style
+  print*, " MOVE_MODE::END"
+!  do i = 1,10
+!     print*, " * force", i,force(:,i)
+!  enddo
+     print*, " * force", 28,force(:,28)
 
-function ctrim( char_in ) !BIND( C )
-  use iso_c_binding, only : c_null_char
-  implicit none
-  !integer, intent( in ) :: n
-  !character(len=1), dimension(n), intent( in ) :: char_in
-  character(len=1), dimension(:), intent( in ) :: char_in
-  character(len=:), allocatable :: ctrim
-  character(len=256) :: ctmp
-  !
-  integer :: i, idx, n
-  !
-  n = size( char_in )
-  !write(*,*) " * CTRIM::",n, char_in
-  idx=1
-  do i = 1,n
-     if( char_in(i) == " " ) cycle
-     if( char_in(i) == c_null_char) exit
-     ctmp(idx:idx) = char_in( i )
-     idx = idx + 1
-  enddo
-  allocate(character(idx-1) :: ctrim )
-  !print*, ' size ',idx, len(ctrim), len(trim(ctmp)), trim(ctmp)
-  do i = 1,idx-1
-     ctrim(i:i) = ctmp(i:i)
-  enddo
-  !ctrim(idx:idx) = c_null_char
-  !print*, 'leave ctrim', len(ctrim), ctrim
-  !
-end function ctrim
+
 
 END SUBROUTINE move_mode
 

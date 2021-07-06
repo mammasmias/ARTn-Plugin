@@ -42,8 +42,9 @@ extern "C"{
   //void artn_( double **force, double etot, int nat, int *ityp, char *elt, double **tau, double lat[3][3], int *if_pos, char *move, bool lconv );
   //void move_mode_( int nat, double **force, double **vel, double etot, int nsteppos, double dt_curr, double alpha, double alpha_init, double dt_init, char *cmode );
   //void artn_( double **force, double* etot, int* nat, int *ityp, char *elt, double **tau, double lat[3][3], int *if_pos, int* disp, bool* lconv );
-  void artn_( double **const force, double* etot, const int nat, const int *ityp, const char *elt, double **tau, const double lat[3][3], const int *if_pos, int* disp, bool* lconv );
-  void move_mode_( const int nat, double **force, double **vel, double* etot, int* nsteppos, double* dt_curr, double* alpha, const double* alpha_init, const double* dt_init, int* disp );
+  //void artn_( double **const force, double* etot, const int nat, const int *ityp, const char *elt, double **tau, const double lat[3][3], const int *if_pos, int* disp, bool* lconv );
+  void artn_( double *const force, double* etot, const int nat, const int *ityp, const char *elt, double *const tau, const double *lat, const int *if_pos, int* disp, bool* lconv );
+  void move_mode_( const int nat, double *const force, double *const vel, double* etot, int* nsteppos, double* dt_curr, double* alpha, const double* alpha_init, const double* dt_init, int* disp );
 }
 
 /* ---------------------------------------------------------------------- */
@@ -207,6 +208,8 @@ void FixARTn::post_force( int /*vflag*/ ){
   const int nat = atom-> natoms;
   const int *ityp = atom->type;
 
+  /*
+     Array of element */
   char *elt ;
   elt = new char[nat];
   for( int i(0); i < nat; i++ ) elt[i] = alphab[ ityp[i] ];
@@ -223,8 +226,9 @@ void FixARTn::post_force( int /*vflag*/ ){
   lat[1][0] = 0.0 ;   lat[1][1] = dy            ; lat[1][2] = domain->yz ;
   lat[2][0] = 0.0 ;   lat[2][1] = 0.0           ; lat[2][2] = dz ;
 
-  //double alat = see the units of the simulation real metal SI : UPDATE->unit_style
-  //int istep = maybe we don't need
+
+  /* 
+     Array to fix the atom - could find a fix for that */
   int *if_pos;
   if_pos = new int[nat];
   for( int i(0); i < nat; i++ ) if_pos[ i ] = 1;
@@ -241,47 +245,26 @@ void FixARTn::post_force( int /*vflag*/ ){
   //bool lconv = boolian variable - take care of the Fortran/C++ interface
   bool lconv;
   int disp;
-  //char *move;
-  //char* prefix = prefix for scratch files of engine
-  //char* prefix;
-  //char* tmp_dir = scratch directory of engine 
-  //char* tmp_dir;
 
 
   // PRE ARTn
   cout<< " * PRE_ARTn:: "<< nat <<endl;
 
-  //artn( force, etot, forc_conv_thr_qe, nat, ityp, atm, tau, at, alat, istep, if_pos, vel, dt, fire_alpha_init, lconv, prefix, tmp_dir )
-  //artn_( force, etot, nat, ityp, elt, tau, lat, if_pos, move, lconv );
-  //artn_( force, &etot, &nat, ityp, elt, tau, lat, if_pos, &disp, &lconv );
-  artn_( force, &etot, nat, ityp, elt, tau, lat, if_pos, &disp, &lconv );
 
+  artn_( &force[0][0], &etot, nat, ityp, elt, &tau[0][0], &lat[0][0], if_pos, &disp, &lconv );
+
+
+  // Maybe should be a global variable
   delete [] if_pos;
 
-  //return;
 
   // POST ARTn/PRE MOVE_MODE
   cout<< " * POST_ARTn/PRE_MOVE_MODE::"<<endl;
-  for( int i(0); i<10; i++){
-    cout<< " * pos: "<< i<< " | "<< tau[i][0]<< " "<<tau[i][1]<< " "<<tau[i][2]<< " "<<endl;
-    cout<< " * frc: "<< i<< " | "<<force[i][0]<< " "<<force[i][1]<< " "<<force[i][2]<< " "<<endl;
-  }
 
-  //disp = 5; //RELX
-  //move_mode_( nat, force, vel, fire_alpha_init, dt );
-  //move_mode_( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_init, dt_init, move );
-  move_mode_( nat, force, vel, &etot, &nsteppos, &dt_curr, &alpha, &alpha_init, &dt_init, &disp );
 
-  if( !force )cout<<" * FORCE loose the address"<<endl;
+  move_mode_( nat, &force[0][0], &vel[0][0], &etot, &nsteppos, &dt_curr, &alpha, &alpha_init, &dt_init, &disp );
 
-  // POST MOVE_MODE
-  cout<< " * POST_MOVE_MODE::alpha "<< alpha <<" | "<< etot << " | "<< dt_curr<<" | "<<force[1][0]<<endl;
-  for( int i(0); i<10; i++){
-    cout<< " * pos: "<< i<< " | "<< tau[i][0]<< " "<<tau[i][1]<< " "<<tau[i][2]<< " "<<endl;
-    //cout<< " * frc: "<< i<< " | "<<force[i][0]<< " "<<force[i][1]<< " "<<force[i][2]<< " "<<endl;
-  }
 
-  return;
 
   // CHANGE FIRE PARAMETER
   int nword = 4;
@@ -297,11 +280,12 @@ void FixARTn::post_force( int /*vflag*/ ){
   //word[6]= "halfstepback" ;
   //word[7]= "no" ;
 
-  //minimize-> modify_params( nword, word );
+  minimize-> modify_params( nword, word );
 
   for( int i(0); i<nword; i++) word[i] = NULL;
   delete [] word;
 
+  exit(0);
   return;
 
 }

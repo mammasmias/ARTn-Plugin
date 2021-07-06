@@ -93,7 +93,7 @@ MODULE artn_params
   
 CONTAINS
   !
-  SUBROUTINE initialize_artn(nat,iunartin,iunartout,filnam,filout)
+  SUBROUTINE initialize_artn( nat, iunartin, iunartout, filnam, filout )
     !
     ! sets defaults, reads input and creates ARTn output file
     ! 
@@ -117,6 +117,8 @@ CONTAINS
 
 
     ELSE !%! FILE EXIST
+
+    Print*, " * INITIALIZE_ARTN:: ", nat, iunartin,iunartout,filnam,filout
 
     !
     ! set up defaults for flags and counters 

@@ -29,7 +29,7 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, disp, lconv )
 
   REAL(DP), INTENT(IN) ::    etot             ! total energy in current step
   REAL(DP), INTENT(IN) ::    at(3,3)          ! lattice parameters in alat units 
-  INTEGER,  INTENT(IN) ::    nat              ! number of atoms
+  INTEGER,  INTENT(IN), value ::    nat              ! number of atoms
   INTEGER,  INTENT(IN) ::    ityp(nat)        ! atom types
   INTEGER,  INTENT(IN) ::    if_pos(3,nat)    ! coordinates fixed by engine 
   CHARACTER(LEN=3),   INTENT(IN) :: atm(*)    ! name of atom corresponding to ityp
@@ -40,7 +40,7 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, disp, lconv )
   LOGICAL,          INTENT(OUT) :: lconv      ! flag for controlling convergence 
 
   ! --- LOCAL VARIABLE
-  CHARACTER(LEN=4)   :: move
+  !CHARACTER(LEN=4)   :: move
   REAL(DP), EXTERNAL :: ran3, dnrm2, ddot     ! lapack functions 
   INTEGER :: na, icoor, idum                  ! integers for loops 
   !
@@ -49,10 +49,11 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, disp, lconv )
   REAL(DP)  :: v_in(3,nat)                    ! input vector for lanczos 
   REAL(DP)  :: fpara_tot                      ! total force in parallel direction
   REAL(DP)  :: smoothing_factor               ! mixing factor for smooth transition between eigenvec and push
-  INTEGER   :: ios                            ! file IOSTAT  
+  INTEGER   :: ios ,i                         ! file IOSTAT  
   CHARACTER( LEN=255) :: filin, filout, sadfname, initpfname, eigenfname, restartfname
 
   integer, save :: istep = 0
+  integer :: natom
 
   !
   ! The ARTn algorithm proceeds as follows:
@@ -61,13 +62,23 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, disp, lconv )
   ! (3) a negative eigenvalue, update push direction otherwise push again
   ! (4) follow the lanczos direction twoard the saddle point
   ! (5) push twoards adjacent minimum & initial minimum  
+
+  natom = nat
+  print*, " * ARTn::", nat, natom
+  print*, " * ARTn::Format DP", DP
+  print*, " * force:: ", size(force_in,2), size(fpara,2)
+
+  print*, " * BOX::", at(:,:)
+
+!  do i = 1, 10
+!     print*, " * pos:", ityp(i), tau(:,i)
+!     print*, " * force:", if_pos(:,i),force(:,i)
+!  enddo
+
   ! 
   ! flag that controls convergence
   !
   lconv = .false.
-
-  write(*,'(x,a)') " * ARTn:: lrelax | lpush_init | lperp | leigen | llanczos | lsaddle | lpush_final "
-  write(*,'(x,a,*(2x,l4))') " * ", lrelax,lpush_init,lperp,leigen,llanczos, lsaddle, lpush_final
 
 
   ! store original force
@@ -88,11 +99,19 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, disp, lconv )
   !  
   IF( istep == 0 ) THEN
      ! read the input parameters 
-     CALL initialize_artn(nat,iunartin,iunartout,filin,filout)
+     print*, " * ARTn::", nat, natom
+     CALL initialize_artn( natom, iunartin, iunartout, filin, filout )
      if( .not.lartn )return
      ! store the total energy of the initial state
      etot_init = etot 
   ENDIF
+
+
+
+  write(*,'(x,a)') " * ARTn:: lrelax | lpush_init | lperp | leigen | llanczos | lsaddle | lpush_final "
+  write(*,'(x,a,*(2x,l4))') " * ", lrelax,lpush_init,lperp,leigen,llanczos, lsaddle, lpush_final
+
+
   ! 
   ! Open the output file for writing   
   ! 
@@ -116,7 +135,7 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, disp, lconv )
      ! modify the force to be equal to the push
      !
      !force(:,:) =  push(:,:) ! Use push in move mode
-     move = 'init'
+     !move = 'init'
      disp = INIT
      !CALL move_mode( nat, dlanc, force, &
      !     vel, fire_alpha_init, dt,  &
@@ -146,7 +165,7 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, disp, lconv )
         convcrit_init = convcrit_final  
      END IF
      !
-     move = 'perp'
+     !move = 'perp'
      disp = PERP
      !CALL move_mode( nat,  dlanc, force, &
      !     vel, fire_alpha_init, dt,  &
@@ -168,7 +187,7 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, disp, lconv )
         IF ( ipush < npush ) THEN
            ! continue pushing in the specified direction
            force(:,:) =  eigenvec(:,:)
-           move = 'eign'
+           !move = 'eign'
            disp = EIGN
            !CALL move_mode( nat, dlanc, force, &
            !     vel, fire_alpha_init, dt,  &
@@ -199,7 +218,7 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, disp, lconv )
      ! if we have a good lanczos eigenvector use it
      !  
      force(:,:) = eigenvec(:,:)
-     move = 'eign'
+     !move = 'eign'
      disp = EIGN
      !CALL move_mode( nat, dlanc, force, &
      !     vel, fire_alpha_init, dt,  &
@@ -228,7 +247,7 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, disp, lconv )
   !
   IF ( llanczos ) THEN 
      !
-     move = 'lanc'
+     !move = 'lanc'
      disp = LANC
      !CALL write_report(etot,force_in, lowest_eigval, 'lanc' , if_pos, istep, nat,  iunartout)
      !CALL write_report(etot,force_in, lowest_eigval, move , if_pos, istep, nat,  iunartout)
@@ -384,7 +403,7 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, disp, lconv )
            lrelax = .true.
         ELSE
            ! 
-           move = 'eign'
+           !move = 'eign'
            disp = EIGN
            !CALL move_mode( nat, dlanc, force, &
            !  vel, fire_alpha_init, dt,  &
@@ -405,7 +424,7 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, disp, lconv )
      !
      ! reset force  
      !
-     move = 'relx'
+     !move = 'relx'
      disp = RELX
      force(:,:) = force_in(:,:)
      ! 
@@ -418,7 +437,7 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, disp, lconv )
      IF ( MAXVAL(ABS(force_in(:,:)*if_pos(:,:))) <= convcrit_final  ) THEN
         IF ( fpush_factor == 1.0 ) THEN
            ! make sure QE doesn't converge
-           move = 'relx'
+           !move = 'relx'
            disp = RELX
            !forc_conv_thr_qe = 1.0D-8
            ! reverse direction of push 
@@ -455,45 +474,7 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, disp, lconv )
   istep = istep + 1      
 
 
-  ! ...FortanString convert to C_Char
-  !call equal_f_2_c( move, cmove )
-
-
   CLOSE (UNIT = iunartout, STATUS = 'KEEP') 
-
- contains
-
-
-  subroutine equal_f_2_c( f_in, c_out )
-    use iso_c_binding, only : c_null_char, c_char
-    implicit none
-    !
-    character(len=*), intent( in ) :: f_in
-    character(len=1, kind=c_char), allocatable, intent( out ) :: c_out(:)
-    !
-    integer :: l, i, idx, n
-    !
-    l = len_trim( f_in )
-    allocate( c_out(l+1) )
-    n = size( c_out )
-    !n = l + 1
-    !write(*,*) " in equal::", l, n
-    do i = 1,n
-       c_out(i) = ""
-    enddo
-    !
-    idx = 1
-    do i = 1,l
-       if( i > n )exit
-       !if( f_in(i:i) == " " )cycle
-       c_out(idx) = f_in(i:i)
-       idx = idx + 1
-    enddo
-    c_out( idx ) =  c_null_char
-    !write(*,*) 'Leave equal...'
-    !
-  end subroutine equal_f_2_c
-
 
 END SUBROUTINE artn 
 

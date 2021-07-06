@@ -19,7 +19,7 @@ SUBROUTINE displacement_validation( atom_id, atom_const, push, lvalid)
   !
   !
   !
-  write (*,*) "ARTn: Called displacement validation: with cone_dir:",atom_const(1:3), "current push:", push(:)
+  !write (*,*) "ARTn: Called displacement validation: with cone_dir:",atom_const(1:3), "current push:", push(:)
   cone_dir = atom_const(1:3)
   cone_angle = atom_const(4)
   !
@@ -31,7 +31,7 @@ SUBROUTINE displacement_validation( atom_id, atom_const, push, lvalid)
   dot_prod                = ddot( 3, cone_dir, 1, displacement, 1 ) / ( cone_dir_norm * displacement_norm )
   displacement_angle      = ACOS( dot_prod ) *180.0_DP / PI
   lvalid                  = ( displacement_angle < cone_angle )
-  write (*,*) "Finished displacement validation",lvalid
+  !write (*,*) "Finished displacement validation",lvalid
   !
   IF ( cone_angle == 0.0_DP) THEN
      lvalid = .TRUE.
