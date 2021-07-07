@@ -61,7 +61,7 @@ SUBROUTINE artn_QE( force, etot, epsf_qe, nat, ityp, atm, tau, at, alat, istep, 
 
       REAL(DP), INTENT(IN) ::    etot             ! total energy in current step
       REAL(DP), INTENT(IN) ::    at(3,3)          ! lattice parameters in alat units 
-      INTEGER,  INTENT(IN) ::    nat              ! number of atoms
+      INTEGER,  INTENT(IN), value ::    nat              ! number of atoms
       INTEGER,  INTENT(IN) ::    ityp(nat)        ! atom types
       INTEGER,  INTENT(IN) ::    if_pos(3,nat)    ! coordinates fixed by engine 
       CHARACTER(LEN=3),   INTENT(IN) :: atm(*)    ! name of atom corresponding to ityp
@@ -75,7 +75,7 @@ SUBROUTINE artn_QE( force, etot, epsf_qe, nat, ityp, atm, tau, at, alat, istep, 
       !use iso_c_binding, only : c_char
       USE artn_params, ONLY: DP, AMU_RY, iperp, push0 => push, push=>eigenvec, dlanc, move
       IMPLICIT NONE
-      INTEGER, INTENT(IN)                       :: nat
+      INTEGER, INTENT(IN), value                :: nat
       REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: force
       REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: vel
       REAL(DP), INTENT(IN)                      :: alpha_init, dt_init
@@ -92,7 +92,7 @@ SUBROUTINE artn_QE( force, etot, epsf_qe, nat, ityp, atm, tau, at, alat, istep, 
   if( .not.lartn )return
 
 
-  print*, " * IN ARTn_QE::"
+  print*, " * IN ARTn_QE::", nat
   print*, " * ARTn_QE::CONV:: ", epsf_qe
 
 
