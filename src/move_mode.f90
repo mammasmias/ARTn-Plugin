@@ -61,6 +61,8 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
      dt_curr = dt_init
      nsteppos = 0
      force(:,:) = push0(:,:)*amu_ry/dt_curr**2
+     print*, MOVE(disp), push0(:,28)
+     print*, amu_ry, dt_curr,  amu_ry/dt_curr**2
 
   CASE( 'perp' )
      !

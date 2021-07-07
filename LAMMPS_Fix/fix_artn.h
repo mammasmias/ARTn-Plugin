@@ -46,16 +46,27 @@ class FixARTn : public Fix {
   //double memory_usage();
 
  protected:
+  const double eV2Ry = 1.0/13.605691930242388 ;
+  const double Ry2eV = 13.605691930242388 ;
+  const double Bohr2Ang = 0.529177210903 ;
+  const double Ang2Bohr = 1./0.529177210903 ;
+  const double ps2aut = 41341.374575751 ;
+
   int istep;
-  double alpha_init, dt_init;
+  double alpha_init, alphashrink;
+  double dt_init, dtsk, dtgrow;
+
+  double tmax, tmin, dtmax, dtmin;
+
+  int fire_integrator, ntimestep_start;
+
 
   class Compute *pe_compute;        // compute for potential energy
   const char *alphab= "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-  constexpr unsigned int str2int(const char* str, int h = 0) {
-    return !str[h] ? 5381 : (str2int(str, h+1) * 33) ^ str[h];
-  }
-
+//  constexpr unsigned int str2int(const char* str, int h = 0) {
+//    return !str[h] ? 5381 : (str2int(str, h+1) * 33) ^ str[h];
+//  }
 
 };
 
