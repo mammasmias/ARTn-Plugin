@@ -33,7 +33,6 @@ class FixARTn : public Fix {
   void setup(int);
   void min_setup(int);
   virtual void post_force(int);
-  //void post_force_respa(int, int, int);
   void min_post_force(int);
 
 /*  extern "C"{
@@ -45,21 +44,27 @@ class FixARTn : public Fix {
   //double compute_vector(int);
   //double memory_usage();
 
+
  protected:
+
+
   const double eV2Ry = 1.0/13.605691930242388 ;
   const double Ry2eV = 13.605691930242388 ;
   const double Bohr2Ang = 0.529177210903 ;
   const double Ang2Bohr = 1./0.529177210903 ;
   const double ps2aut = 41341.374575751 ;
 
-  int istep;
+  int istep, nword;
+  char **word;
+
   double alpha_init, alphashrink;
   double dt_init, dtsk, dtgrow;
-
   double tmax, tmin, dtmax, dtmin;
-
   int fire_integrator, ntimestep_start;
 
+  int nsteppos;
+  double dt_curr;
+  double alpha;
 
   class Compute *pe_compute;        // compute for potential energy
   const char *alphab= "ABCDEFGHIJKLMNOPQRSTUVWXYZ";

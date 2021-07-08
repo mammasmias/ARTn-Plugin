@@ -4,9 +4,6 @@
 ! Main ARTn plugin subroutine:
 !        modifies the input force to perform the ARTn algorithm 
 !------------------------------------------------------------------------------
-!SUBROUTINE artn(force,etot,forc_conv_thr_qe,nat,ityp,atm,tau,at,alat,istep,if_pos,vel,dt,fire_alpha_init,lconv,prefix,tmp_dir)
-!SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, dlanc_ptr, eigvec_ptr, iperp_ptr, move, lconv )
-!SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, cmove, lconv )
 SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, disp, lconv )
   !----------------------------------------------------------------------------
   !
@@ -65,15 +62,15 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, disp, lconv )
 
   natom = nat
   print*, " * ARTn::", nat, natom
-  print*, " * ARTn::Format DP", DP
-  print*, " * force:: ", size(force_in,2), size(fpara,2)
+  print*, " * ARTn::Format DP", DP, npush
+ ! print*, " * force:: ", size(force_in,2), size(fpara,2)
 
-  print*, " * BOX::", at(:,:)
+!  print*, " * BOX::", at(:,:)
 
-!  do i = 1, 10
-!     print*, " * pos:", ityp(i), tau(:,i)
-!     print*, " * force:", if_pos(:,i),force(:,i)
-!  enddo
+! do i = 1, 10
+!    !print*, " * pos:", ityp(i), tau(:,i)
+!    print*, " * force:", if_pos(:,i),force(:,i)
+! enddo
 
   ! 
   ! flag that controls convergence
@@ -109,7 +106,7 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, disp, lconv )
 
 
   write(*,'(x,a)') " * ARTn:: lrelax | lpush_init | lperp | leigen | llanczos | lsaddle | lpush_final "
-  write(*,'(x,a,*(2x,l4))') " * ", lrelax,lpush_init,lperp,leigen,llanczos, lsaddle, lpush_final
+  write(*,'(x,a,*(2x,l4))') " *        ", lrelax,lpush_init,lperp,leigen,llanczos, lsaddle, lpush_final
 
 
   ! 
@@ -124,7 +121,6 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, disp, lconv )
      !
      ! initial push 
      !
-     !CALL push_init(nat, tau, at, alat, idum, push_ids, dist_thr, add_const, push_step_size, push ,push_mode)
      CALL push_init(nat, tau, at, idum, push_ids, dist_thr, add_const, push_step_size, push ,push_mode)
      ! set up the flags (we did an initial push, now we need to relax perpendiculary) 
      lpush_init = .false.
@@ -137,16 +133,9 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, disp, lconv )
      !force(:,:) =  push(:,:) ! Use push in move mode
      !move = 'init'
      disp = INIT
-     !CALL move_mode( nat, dlanc, force, &
-     !     vel, fire_alpha_init, dt,  &
-     !     iperp, push, 'eign', prefix, tmp_dir)
      !
-     !CALL write_report(etot,force_in, lowest_eigval, 'push' , if_pos, istep, nat,  iunartout)
-     !CALL write_report(etot,force_in, lowest_eigval, move , if_pos, istep, nat,  iunartout)
      CALL write_report(etot,force_in, lowest_eigval, disp, if_pos, istep, nat,  iunartout)
      !
-     !CALL write_struct(alat, at, nat, tau, atm, ityp, force, 1.0_DP, iunstruct, 'xsf', initpfname)
-     !CALL write_struct( at, nat, tau, atm, ityp, force, 1.0_DP, iunstruct, 'xsf', initpfname)
      CALL write_struct( at, nat, tau, atm, ityp, push, 1.0_DP, iunstruct, 'xsf', initpfname)
      ! 
   ELSE IF ( lperp ) THEN
@@ -167,9 +156,6 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, disp, lconv )
      !
      !move = 'perp'
      disp = PERP
-     !CALL move_mode( nat,  dlanc, force, &
-     !     vel, fire_alpha_init, dt,  &
-     !     iperp, eigenvec, 'perp', prefix, tmp_dir)
      ! 
      iperp = iperp + 1
 
@@ -189,16 +175,11 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, disp, lconv )
            force(:,:) =  eigenvec(:,:)
            !move = 'eign'
            disp = EIGN
-           !CALL move_mode( nat, dlanc, force, &
-           !     vel, fire_alpha_init, dt,  &
-           !     iperp, eigenvec, 'eign', prefix, tmp_dir)
            ! 
            ipush = ipush + 1
            ! 
            lperp = .true.
            ! 
-           !CALL write_report(etot,force_in, lowest_eigval, 'push' , if_pos, istep, nat,  iunartout)
-           !CALL write_report(etot,force_in, lowest_eigval, move , if_pos, istep, nat,  iunartout)
            CALL write_report(etot,force_in, lowest_eigval, disp, if_pos, istep, nat,  iunartout)
            ! 
         ELSE IF ( ipush >= npush  ) THEN
@@ -207,8 +188,6 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, disp, lconv )
            llanczos = .true.
         END IF
      ELSE
-        !CALL write_report(etot,force_in, lowest_eigval, 'perp' , if_pos, istep, nat,  iunartout)       
-        !CALL write_report(etot,force_in, lowest_eigval, move , if_pos, istep, nat,  iunartout)       
         CALL write_report(etot,force_in, lowest_eigval, disp, if_pos, istep, nat,  iunartout)       
      END IF
      ! leigen is always .true. after we obtain a good eigenvector
@@ -220,18 +199,11 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, disp, lconv )
      force(:,:) = eigenvec(:,:)
      !move = 'eign'
      disp = EIGN
-     !CALL move_mode( nat, dlanc, force, &
-     !     vel, fire_alpha_init, dt,  &
-     !     iperp, eigenvec, 'eign', prefix, tmp_dir)
-     ! update eigenstep counter 
      ieigen = ieigen + 1
      !      
-     !CALL write_report(etot,force_in, lowest_eigval, 'eign' , if_pos, istep, nat,  iunartout)
-     !CALL write_report(etot,force_in, lowest_eigval, move , if_pos, istep, nat,  iunartout)
      CALL write_report(etot,force_in, lowest_eigval, disp, if_pos, istep, nat,  iunartout)
 
      ! count the number of steps made with the eigenvector
-     !CALL write_struct(alat, at, nat, tau, atm, ityp, force, 1.0_DP, iunstruct, 'xsf', eigenfname)
      CALL write_struct( at, nat, tau, atm, ityp, force, 1.0_DP, iunstruct, 'xsf', eigenfname)
      ! 
      IF ( ieigen == neigen  ) THEN
@@ -249,8 +221,6 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, disp, lconv )
      !
      !move = 'lanc'
      disp = LANC
-     !CALL write_report(etot,force_in, lowest_eigval, 'lanc' , if_pos, istep, nat,  iunartout)
-     !CALL write_report(etot,force_in, lowest_eigval, move , if_pos, istep, nat,  iunartout)
      CALL write_report(etot,force_in, lowest_eigval, disp, if_pos, istep, nat,  iunartout)
      IF (ilanc == 0 ) THEN
         IF ( .not. leigen ) THEN

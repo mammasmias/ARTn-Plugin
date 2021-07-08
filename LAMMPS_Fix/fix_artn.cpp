@@ -42,6 +42,7 @@ extern "C"{
   void artn_( double *const force, double* etot, const int nat, const int *ityp, const char *elt, double *const tau, const double *lat, const int *if_pos, int* disp, bool* lconv );
   void move_mode_( const int nat, double *const force, double *const vel, double* etot, int* nsteppos, double* dt_curr, double* alpha, const double* alpha_init, const double* dt_init, int* disp );
 }
+extern int __artn_params_MOD_iperp;
 
 /* ---------------------------------------------------------------------- */
 
@@ -51,7 +52,23 @@ FixARTn::FixARTn( LAMMPS *lmp, int narg, char **arg ): Fix( lmp, narg, arg )
   if (narg < 3) error->all(FLERR,"Illegal fix ARTn command");
 
   istep = 0;
+  nword = 0;
+  word = nullptr;
 
+  alpha_init = 0.0;
+  alphashrink = 0.0;
+  dt_init = 0.0;
+  dtsk = 0.0; 
+  dtgrow = 0.0;
+  tmax = 0.0;
+  tmin = 0.0;
+  dtmax = 0.0;
+  dtmin = 0.0;
+
+  fire_integrator = 0.0; 
+  ntimestep_start = 0.0;
+
+  pe_compute = nullptr;
 
 }
 
@@ -61,6 +78,8 @@ FixARTn::FixARTn( LAMMPS *lmp, int narg, char **arg ): Fix( lmp, narg, arg )
 FixARTn::~FixARTn() {
 
   /* deallocate the array */
+  memory->destroy( word );
+  pe_compute = nullptr;
 
 }
 
@@ -88,6 +107,10 @@ void FixARTn::init() {
   if (id < 0) error->all(FLERR,"Minimization could not find thermo_pe compute");
   pe_compute = modify->compute[id];
 
+  istep = 0;
+
+  nword = 6;
+  //memory->create( word, nword, 20, "fix:word");
 
 }
 
@@ -121,21 +144,20 @@ void FixARTn::min_setup( int vflag ) {
      Exept: delaystep_start_flag = 1 (ALWAYS)
   */
 
-  int nword = 10;
-  //char word[6][50];
-  char **word;
-  word = new char*[nword];
+  nword = 10;
+  if( word )memory->destroy( word );
+  memory->create( word, nword, 20, "fix:word" );
 
-  word[0] = "alpha0";
-  word[1] = "0.0";   // at the begining
-  word[2]= "alphashrink" ;
-  word[3]= "0.99" ;
-  word[4]= "delaystep" ;
-  word[5]= "20" ;
-  word[6]= "halfstepback" ;
-  word[7]= "no" ;
-  word[8]= "integrator" ;
-  word[9]= "eulerimplicit" ;
+  strcpy( word[0], "alpha0" );
+  strcpy( word[1], "0.0");   // at the begining
+  strcpy( word[2], "alphashrink") ;
+  strcpy( word[3], "0.99") ;
+  strcpy( word[4], "delaystep") ;
+  strcpy( word[5], "20") ;
+  strcpy( word[6], "halfstepback") ;
+  strcpy( word[7], "no") ;
+  strcpy( word[8], "integrator") ;
+  strcpy( word[9], "eulerimplicit") ;
 
   minimize-> modify_params( nword, word );
 
@@ -160,11 +182,16 @@ void FixARTn::min_setup( int vflag ) {
   // ...Print the new Parameters
   minimize-> setup_style();
 
+  // ...Print the Initial Fire Parameters
+  cout<< " * Alpha_init->"<< alpha_init<< endl;
+  cout<< " * dt_init->"<< dt_init<< endl;
+  cout<< " * dtmin->"<< dtmin<< endl;
+  cout<< " * dtmax->"<< dtmax<< endl;
 
   // ...Deallocate char**
-  for( int i(0); i<nword; i++)
-    word[i] = NULL;
-  delete [] word;
+  //for( int i(0); i<nword; i++)
+  //  word[i] = NULL;
+  //delete [] word;
 
 
   // Fuck! Protected : Accessible only by derived class 
@@ -205,12 +232,25 @@ void FixARTn::post_force( int /*vflag*/ ){
   //cout<<" * FIRE Param::"<< minimize->dt<<" | "<< minimize->alpha << endl;
   cout<< " * MINIMIZE CONV:"<< update-> etol<< " | "<< update->max_eval<< endl;
 
-  cout<< " * Param dt is accessible by update-> dt "<< update->dt << endl;
-  cout<< " * FIRE Params can be change through update->minimize->modify_params( int narg, char **args )"<<endl;
-
-
+  //cout<< " * Param dt is accessible by update-> dt "<< update->dt << endl;
+  //cout<< " * FIRE Params can be change through update->minimize->modify_params( int narg, char **args )"<<endl;
 
   double **force = atom->f;
+  double **vel = atom->v ;
+
+  // ...Comput V.F to know which call it is
+  int nlocal = atom->nlocal;
+  double vdotf = 0.0, vdotfall;
+  for (int i = 0; i < nlocal; i++)
+    vdotf += vel[i][0]*force[i][0] + vel[i][1]*force[i][1] + vel[i][2]*force[i][2];
+  MPI_Allreduce(&vdotf,&vdotfall,1,MPI_DOUBLE,MPI_SUM,world);
+
+  if( !(vdotfall > 0) ){
+    cout<< " * RETURN WITHOUT COMPUTE ARTn"<<endl;
+    return;
+  }
+
+
   double etot = pe_compute->compute_scalar();
 
   // Conv. Criterium
@@ -242,10 +282,16 @@ void FixARTn::post_force( int /*vflag*/ ){
 
   /* 
      Array to fix the atom - could find a fix for that */
-  int *if_pos;
-  if_pos = new int[nat];
-  for( int i(0); i < nat; i++ ) if_pos[ i ] = 1;
-  double **vel = atom->v ;
+  int **if_pos;
+  memory->create(if_pos,nat,3,"fix:if_pos");
+  //if_pos = new int*[nat];
+  for( int i(0); i < nat; i++ ){
+     //if_pos[ i ] = new int[3] ;
+     if_pos[ i ][0] = 1;
+     if_pos[ i ][1] = 1;
+     if_pos[ i ][2] = 1;
+     //cout<< " if_pos "<< if_pos[i][0]<< " | "<< if_pos[i][2]<< " | "<< if_pos[i][2] <<endl;
+  }
   
 
 
@@ -264,25 +310,25 @@ void FixARTn::post_force( int /*vflag*/ ){
     force[i][2] *= EA2RB; 
   }
 
-  artn_( &force[0][0], &etot, nat, ityp, elt, &tau[0][0], &lat[0][0], if_pos, &disp, &lconv );
+  artn_( &force[0][0], &etot, nat, ityp, elt, &tau[0][0], &lat[0][0], &if_pos[0][0], &disp, &lconv );
 
 
   // Maybe should be a global variable
-  delete [] if_pos;
+  memory->destroy(if_pos);
 
 
   // POST ARTn/PRE MOVE_MODE
   cout<< " * POST_ARTn/PRE_MOVE_MODE::"<<endl;
 
-  int nsteppos;
-  double dt_curr = 1.;// = update->dt;
-  double alpha = 1.;// = update->minimize->alpha0;
   double dt0 = dt_init*ps2aut ;
   
-  cout<< " * alpa_0 "<< alpha_init<< " | dt "<< dt_init<< endl;
+  cout<< " * fixArtn:alpha_0 "<< alpha_init<< " | dt "<< dt_init<< endl;
 
-  //move_mode_( nat, &force[0][0], &vel[0][0], &etot, &nsteppos, &dt_curr, &alpha, &alpha_init, &dt_init, &disp );
   move_mode_( nat, &force[0][0], &vel[0][0], &etot, &nsteppos, &dt_curr, &alpha, &alpha_init, &dt0, &disp );
+
+  dt_curr /= ps2aut ;
+
+  cout<< " * fixArtn:alpa "<< alpha<< " | dt "<< dt_curr<< endl;
 
   double RB2EA = 1./EA2RB;
   for( int i(0); i<nat; i++){
@@ -290,64 +336,60 @@ void FixARTn::post_force( int /*vflag*/ ){
     force[i][1] *= RB2EA; 
     force[i][2] *= RB2EA; 
   }
-  dt_curr /= ps2aut ;
 
-  for( int i(0); i<30; i++)
-    cout<< " * After move::f "<< i<< " | "<<force[i][0]<<" "<< force[i][1]<<" "<< force[i][2]<<endl;
+  //for( int i(0); i<30; i++)
+  //  cout<< " * After move::f "<< i<< " | "<<force[i][0]<<" "<< force[i][1]<<" "<< force[i][2]<<endl;
   
 
 
   // CHANGE FIRE PARAMETER as function of the value of 
   char **word;
   int nword = 6, n ;
-  word = new char*[nword];
   string str;
 
   update->dt = dt_curr;
 
-  word[0] = "alpha0";
-  //strncpy(word[0],  "alpha0", sizeof("alpha0"));
-  str = to_string(alpha); n = str.length();
-  cout<<" str: "<< str<< " | "<< alpha<< " | "<< n<<endl;
-  //strncpy(word[1], str.c_str(), n*sizeof(char));
-  //strncpy(word[1], str.c_str(), sizeof(str.c_str()));
-  word[1] = "0.0";
 
-  //exit(0);
+  if( word )memory->destroy( word );
+  memory->create( word, nword, 20, "fix:word" );
 
-  //word[2] = "alphashrink" ;
-  //word[3] = "1.0" ;
+  strcpy( word[0], "alpha0" );
+  str = to_string(alpha); 
+  strcpy( word[1], str.c_str() );
 
-  word[2]= "delaystep" ;
+  //strcpy( word[2], "alphashrink") ;
+  //strcpy( word[3], "1.0" ) ;
+
+  strcpy( word[2], "delaystep" );
   str = to_string(nsteppos);
-  n = str.length();
-  //strncpy( word[3], str.c_str(), n*sizeof(char) );
-  word[3]= "5" ;
+  strcpy( word[3], str.c_str() );
 
   // ...RELAX step -> halfstepback = yes
   if( disp == 5 ){
     //nword = nword + 2; 
-    word[4] = "halfstepback" ;
-    word[5] = "yes" ;
+    strcpy( word[4], "halfstepback" );
+    strcpy( word[5], "yes" );
   } else {
-    word[4] = "halfstepback" ;
-    word[5] = "no" ;
+    strcpy( word[4], "halfstepback" );
+    strcpy( word[5], "no" );
   }
 
   for( int i(0); i < nword; i = i+2 )
     cout<< word[i] << ": "<< word[i+1] <<endl;
 
-  minimize-> modify_params( nword, word );
 
-  minimize-> init();
+  if( (disp == 2 && __artn_params_MOD_iperp == 1) || disp != 2 ){
+    cout<< " FIX_ARTN::Actuallization"<<endl;
+    minimize-> modify_params( nword, word );
+    minimize-> init();
+  }
 
   // ...Print the new Parameters
   minimize-> setup_style();
 
-  for( int i(0); i<nword; i++) word[i] = NULL;
-  delete [] word;
+  if( istep == 10 )exit(0);
 
-  exit(0);
+  istep++;
   return;
 
 }

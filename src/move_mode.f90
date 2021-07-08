@@ -40,8 +40,8 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
   !mode = ctrim( cmode )
 
 
-  print*, " * ARTn::MOVE_MODE::mode ", MOVE(disp), len_trim(MOVE(disp))
-  print*, " * ARTn::MOVE_MODE::iperp ", iperp
+  print*, " * ARTn::MOVE_MODE::mode->", MOVE(disp)
+  print*, " * ARTn::MOVE_MODE::iperp->", iperp
   print*, " * ARTn::MOVE_MODE::arg: ", nat, etot, amu_ry, dt_curr, dt_init
 
 !  do i = 1,10
@@ -61,8 +61,6 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
      dt_curr = dt_init
      nsteppos = 0
      force(:,:) = push0(:,:)*amu_ry/dt_curr**2
-     print*, MOVE(disp), push0(:,28)
-     print*, amu_ry, dt_curr,  amu_ry/dt_curr**2
 
   CASE( 'perp' )
      !
@@ -113,7 +111,7 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
   END SELECT
 
 
-  print*, " MOVE_MODE::END"
+  print*, " MOVE_MODE::END ", alpha, dt_curr, nsteppos
 !  do i = 1,10
 !     print*, " * force", i,force(:,i)
 !  enddo
