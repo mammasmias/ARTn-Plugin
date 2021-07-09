@@ -57,9 +57,13 @@ class FixARTn : public Fix {
   int istep, nword;
   char **word;
 
+  int *order;
+
+  double etol, ftol;
+
   double alpha_init, alphashrink;
   double dt_init, dtsk, dtgrow;
-  double tmax, tmin, dtmax, dtmin;
+  double tmax, tmin, dtmax, dtmin, dmax;
   int fire_integrator, ntimestep_start;
 
   int nsteppos;

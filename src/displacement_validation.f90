@@ -19,7 +19,7 @@ SUBROUTINE displacement_validation( atom_id, atom_const, push, lvalid)
   !
   !
   !
-  !write (*,*) "ARTn: Called displacement validation: with cone_dir:",atom_const(1:3), "current push:", push(:)
+  write (*,*) " * ARTn: Called displacement validation: with cone_dir:",atom_const(1:3), "current push:", push(:)
   cone_dir = atom_const(1:3)
   cone_angle = atom_const(4)
   !

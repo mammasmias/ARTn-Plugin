@@ -1,7 +1,13 @@
 
 SUBROUTINE perpforce(force,if_pos,push,fpara,nat)
   !
-  ! subroutine that subtracts parallel components to push from force
+  !> @brief subroutine that subtracts parallel components to push from force
+  !
+  !> @param[inout]  force	Force field and become Fperp field following Push field
+  !! @param[in]	    if_pos	Constrain field
+  !! @param[in]	    push	Parallel field reference
+  !! @param[out]    fpara	Parallel force field following Push field
+  !! @param[in]	    nat		number of point in the field 
   !
   USE artn_params, ONLY : DP
   IMPLICIT NONE

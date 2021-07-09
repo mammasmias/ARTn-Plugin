@@ -39,7 +39,7 @@ using namespace LAMMPS_NS;
 using namespace FixConst;
 
 extern "C"{
-  void artn_( double *const force, double* etot, const int nat, const int *ityp, const char *elt, double *const tau, const double *lat, const int *if_pos, int* disp, bool* lconv );
+  void artn_( double *const force, double* etot, const int nat, const int *ityp, const char *elt, double *const tau, const int *order, const double *lat, const int *if_pos, int* disp, bool* lconv );
   void move_mode_( const int nat, double *const force, double *const vel, double* etot, int* nsteppos, double* dt_curr, double* alpha, const double* alpha_init, const double* dt_init, int* disp );
 }
 extern int __artn_params_MOD_iperp;
@@ -79,6 +79,7 @@ FixARTn::~FixARTn() {
 
   /* deallocate the array */
   memory->destroy( word );
+  memory->destroy( order );
   pe_compute = nullptr;
 
 }
@@ -144,7 +145,7 @@ void FixARTn::min_setup( int vflag ) {
      Exept: delaystep_start_flag = 1 (ALWAYS)
   */
 
-  nword = 10;
+  nword = 12;
   if( word )memory->destroy( word );
   memory->create( word, nword, 20, "fix:word" );
 
@@ -158,6 +159,8 @@ void FixARTn::min_setup( int vflag ) {
   strcpy( word[7], "no") ;
   strcpy( word[8], "integrator") ;
   strcpy( word[9], "eulerimplicit") ;
+  strcpy( word[10], "dmax") ;
+  strcpy( word[11], "0.5") ;
 
   minimize-> modify_params( nword, word );
 
@@ -166,9 +169,11 @@ void FixARTn::min_setup( int vflag ) {
   alpha_init = 0.25;
   alphashrink = 0.99;
 
-  dt_init = update->dt;
+  dt_init = 0.1; //update->dt;
   dtsk = 0.5;
   dtgrow = 1.1;
+
+  dmax = 0.1;
 
   tmax = 20.;
   tmin = 0.02;
@@ -192,6 +197,14 @@ void FixARTn::min_setup( int vflag ) {
   //for( int i(0); i<nword; i++)
   //  word[i] = NULL;
   //delete [] word;
+
+
+  // Copy the order of atom
+  int nat = atom-> natoms;
+  tagint *itag = atom->tag;
+  memory->create( order, nat, "Fix_artn::order" );
+  for( int i(0); i < nat; i++ )
+    order[i] = itag[i];
 
 
   // Fuck! Protected : Accessible only by derived class 
@@ -230,26 +243,53 @@ void FixARTn::post_force( int /*vflag*/ ){
   if( minimize )cout<<" * Min_vector is linked"<<endl;
 
   //cout<<" * FIRE Param::"<< minimize->dt<<" | "<< minimize->alpha << endl;
-  cout<< " * MINIMIZE CONV:"<< update-> etol<< " | "<< update->max_eval<< endl;
+  cout<< " * FIX_ARTn::MINIMIZE CONV:"<< update-> etol<< " | "<< update->ftol<< endl;
+
+  etol = update->etol;
+  ftol = update->ftol;
+  update->etol = 1e-12;
+  update->etol = 1e-12;
+  cout<< " * FIX_ARTn::MINIMIZE CONV:"<< update-> etol<< " | "<< update->ftol<< endl;
 
   //cout<< " * Param dt is accessible by update-> dt "<< update->dt << endl;
   //cout<< " * FIRE Params can be change through update->minimize->modify_params( int narg, char **args )"<<endl;
 
+
+  double **tau = atom->x;
   double **force = atom->f;
   double **vel = atom->v ;
+  //tagint *itag = atom->tag;
+  const int *ityp = atom->type;
+
 
   // ...Comput V.F to know which call it is
+  
   int nlocal = atom->nlocal;
   double vdotf = 0.0, vdotfall;
-  for (int i = 0; i < nlocal; i++)
+
+  cout<<" * FIX_ARTN::Compute"<<endl;
+/*  double maxv=0.0, maxf=0.0;
+  for( int i = 0; i < nlocal; i++ ){
+    maxv = max( maxv, vel[i][0] );
+    maxv = max( vel[i][1], vel[i][2] );
+    maxf = max( maxf, force[i][0] );
+    maxf = max( force[i][1], force[i][2] );
+  }
+  cout<<" * FIX_ARTN:: maxV : maxF "<< maxv<<" : "<< maxf<<endl;
+*/
+
+  for (int i = 0; i < nlocal; i++){
+    //cout<< " * FIX_ARTn::position: "<< i<< "|"<< order[i]<< " | "<< ityp[i]<<" "<< tau[i][0]<< " "<< tau[i][1]<<" "<< tau[i][2]<<endl;
     vdotf += vel[i][0]*force[i][0] + vel[i][1]*force[i][1] + vel[i][2]*force[i][2];
+  }
   MPI_Allreduce(&vdotf,&vdotfall,1,MPI_DOUBLE,MPI_SUM,world);
 
   if( !(vdotfall > 0) ){
-    cout<< " * RETURN WITHOUT COMPUTE ARTn"<<endl;
+    cout<< " ********* RETURN WITHOUT COMPUTE ARTn"<<endl;
     return;
   }
 
+  /******************************************************************/
 
   double etot = pe_compute->compute_scalar();
 
@@ -258,7 +298,6 @@ void FixARTn::post_force( int /*vflag*/ ){
   double epsf = update-> ftol;
 
   const int nat = atom-> natoms;
-  const int *ityp = atom->type;
 
   /*
      Array of element */
@@ -266,7 +305,6 @@ void FixARTn::post_force( int /*vflag*/ ){
   elt = new char[nat];
   for( int i(0); i < nat; i++ ) elt[i] = alphab[ ityp[i] ];
 
-  double **tau = atom->x;
 
   /*
      Build it with : domain-> boxlo[3], boxhi[3] and xy, xz, yz  */
@@ -281,12 +319,10 @@ void FixARTn::post_force( int /*vflag*/ ){
 
 
   /* 
-     Array to fix the atom - could find a fix for that */
+    ...Array to fix the atom - could find a fix for that */
   int **if_pos;
   memory->create(if_pos,nat,3,"fix:if_pos");
-  //if_pos = new int*[nat];
   for( int i(0); i < nat; i++ ){
-     //if_pos[ i ] = new int[3] ;
      if_pos[ i ][0] = 1;
      if_pos[ i ][1] = 1;
      if_pos[ i ][2] = 1;
@@ -294,9 +330,7 @@ void FixARTn::post_force( int /*vflag*/ ){
   }
   
 
-
-
-  //bool lconv = boolian variable - take care of the Fortran/C++ interface
+  /* ...Convergence and displacement */
   bool lconv;
   int disp;
 
@@ -310,7 +344,7 @@ void FixARTn::post_force( int /*vflag*/ ){
     force[i][2] *= EA2RB; 
   }
 
-  artn_( &force[0][0], &etot, nat, ityp, elt, &tau[0][0], &lat[0][0], &if_pos[0][0], &disp, &lconv );
+  artn_( &force[0][0], &etot, nat, ityp, elt, &tau[0][0], order, &lat[0][0], &if_pos[0][0], &disp, &lconv );
 
 
   // Maybe should be a global variable
@@ -321,6 +355,7 @@ void FixARTn::post_force( int /*vflag*/ ){
   cout<< " * POST_ARTn/PRE_MOVE_MODE::"<<endl;
 
   double dt0 = dt_init*ps2aut ;
+  dt_curr *= ps2aut;
   
   cout<< " * fixArtn:alpha_0 "<< alpha_init<< " | dt "<< dt_init<< endl;
 
@@ -330,6 +365,7 @@ void FixARTn::post_force( int /*vflag*/ ){
 
   cout<< " * fixArtn:alpa "<< alpha<< " | dt "<< dt_curr<< endl;
 
+
   double RB2EA = 1./EA2RB;
   for( int i(0); i<nat; i++){
     force[i][0] *= RB2EA; 
@@ -337,57 +373,79 @@ void FixARTn::post_force( int /*vflag*/ ){
     force[i][2] *= RB2EA; 
   }
 
+  // ...Compute V.F
+  vdotf = 0.0;
+  for (int i = 0; i < nlocal; i++)
+    vdotf += vel[i][0]*force[i][0] + vel[i][1]*force[i][1] + vel[i][2]*force[i][2];
+  MPI_Allreduce(&vdotf,&vdotfall,1,MPI_DOUBLE,MPI_SUM,world);
+  cout<< " FIX_ARTN::VdotF:: "<< vdotfall<<endl;
+
+  cout<< " FIX_ARTN::Convert:: "<< EA2RB << "|"<< RB2EA <<endl;
+
   //for( int i(0); i<30; i++)
   //  cout<< " * After move::f "<< i<< " | "<<force[i][0]<<" "<< force[i][1]<<" "<< force[i][2]<<endl;
   
 
 
   // CHANGE FIRE PARAMETER as function of the value of 
-  char **word;
-  int nword = 6, n ;
-  string str;
-
-  update->dt = dt_curr;
-
-
-  if( word )memory->destroy( word );
-  memory->create( word, nword, 20, "fix:word" );
-
-  strcpy( word[0], "alpha0" );
-  str = to_string(alpha); 
-  strcpy( word[1], str.c_str() );
-
-  //strcpy( word[2], "alphashrink") ;
-  //strcpy( word[3], "1.0" ) ;
-
-  strcpy( word[2], "delaystep" );
-  str = to_string(nsteppos);
-  strcpy( word[3], str.c_str() );
-
-  // ...RELAX step -> halfstepback = yes
-  if( disp == 5 ){
-    //nword = nword + 2; 
-    strcpy( word[4], "halfstepback" );
-    strcpy( word[5], "yes" );
-  } else {
-    strcpy( word[4], "halfstepback" );
-    strcpy( word[5], "no" );
-  }
-
-  for( int i(0); i < nword; i = i+2 )
-    cout<< word[i] << ": "<< word[i+1] <<endl;
-
 
   if( (disp == 2 && __artn_params_MOD_iperp == 1) || disp != 2 ){
-    cout<< " FIX_ARTN::Actuallization"<<endl;
+
+    // ...Update the time
+    update->dt = dt_curr;
+
+    string str;
+
+    // ...Allocate/Deallocate word
+    nword = 6;
+    if( word )memory->destroy( word );
+    memory->create( word, nword, 20, "fix:word" );
+
+    strcpy( word[0], "alpha0" );
+    str = to_string(alpha); 
+    strcpy( word[1], str.c_str() );
+
+    //strcpy( word[2], "alphashrink") ;
+    //strcpy( word[3], "1.0" ) ;
+
+    strcpy( word[2], "delaystep" );
+    str = to_string(nsteppos);
+    strcpy( word[3], str.c_str() );
+
+    // ...RELAX step -> halfstepback = yes
+    if( disp == 5 ){
+      //nword = nword + 2; 
+      strcpy( word[4], "halfstepback" );
+      strcpy( word[5], "yes" );
+    } else {
+      strcpy( word[4], "halfstepback" );
+      strcpy( word[5], "no" );
+    }
+
+    // ...Print the command
+    for( int i(0); i < nword; i = i+2 )
+      cout<< word[i] << ": "<< word[i+1] << " "<< disp<<endl;
+
+
+    cout<< " FIX_ARTN::Params Actuallization"<<endl;
     minimize-> modify_params( nword, word );
     minimize-> init();
   }
 
   // ...Print the new Parameters
-  minimize-> setup_style();
+  //minimize-> setup_style();
 
-  if( istep == 10 )exit(0);
+
+  // ...Compute V.F
+  vdotf = 0.0;
+  for (int i = 0; i < nlocal; i++)
+    vdotf += vel[i][0]*force[i][0] + vel[i][1]*force[i][1] + vel[i][2]*force[i][2];
+  MPI_Allreduce(&vdotf,&vdotfall,1,MPI_DOUBLE,MPI_SUM,world);
+  cout<< " FIX_ARTN::VdotF:: "<< vdotfall<<endl;
+
+
+
+  //if( istep == 10 )exit(0);
 
   istep++;
   return;

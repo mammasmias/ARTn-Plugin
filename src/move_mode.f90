@@ -29,6 +29,7 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
   !CHARACTER(LEN=:), allocatable, external    :: ctrim
   REAL(DP), EXTERNAL               :: ddot,dnrm2
 
+  real(DP) :: vdtf
   integer :: i;
   !
   ! do things depending on mode of the move
@@ -47,7 +48,7 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
 !  do i = 1,10
 !     print*, " * force", i,force(:,i)
 !  enddo
-     print*, " * force", 28,force(:,28)
+     print*, " * force", 60,force(:,60)
 
 
   !SELECT CASE( TRIM(mode) )
@@ -65,7 +66,7 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
   CASE( 'perp' )
      !
      !IF( iperp .eq. 0 ) THEN
-     IF( iperp - 1 .eq. 0 ) THEN  !%! Because I invrement iperp before to enter in move_mode
+     IF( iperp - 1 .eq. 0 ) THEN  !%! Because I increment iperp before to enter in move_mode
         ! for the first step forget previous velocity (prevent P < 0)
         etot = 0.D0
         vel(:,:) = 0.D0
@@ -73,7 +74,7 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
         dt_curr = dt_init
      ELSE
         ! subtract the components that are parallel
-        vel(:,:) = vel(:,:) - ddot(3*nat,vel, 1, push, 1 )*push(:,:)/ddot(3*nat,push(:,:),1, push(:,:),1)
+        vel(:,:) = vel(:,:) - ddot( 3*nat, vel, 1, push, 1 )*push(:,:) / ddot( 3*nat, push(:,:), 1, push(:,:), 1 )
      ENDIF
         !
   CASE( 'lanc' )
@@ -112,10 +113,19 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
 
 
   print*, " MOVE_MODE::END ", alpha, dt_curr, nsteppos
-!  do i = 1,10
-!     print*, " * force", i,force(:,i)
-!  enddo
-     print*, " * force", 28,force(:,28)
+  print*, " * force", 60,force(:,60)
+  print*, " * push", 60,push0(:,60)
+  print*, " * dx", 60,force(:,60)*dt_curr**2/amu_ry
+
+  ! ... Print some value
+  print*, " * MOVE_MODE::END::Force", MAXVAL(force)
+  print*, " * MOVE_MODE::END::Veloc", MAXVAL(vel)
+  vdtf = 0.0
+  do i = 1,nat
+     vdtf = vdtf + dot_product( vel(:,i), force(:,i) )
+  enddo
+  print*, " * MOVE_MODE::END::VdotF", vdtf
+
 
 
 

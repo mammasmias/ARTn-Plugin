@@ -22,5 +22,5 @@ SUBROUTINE write_report(etot, force, lowest_eigval, step, if_pos, istep, nat,iun
   fpara_tot = ddot(3*nat,force,1,push,1)
   !  write report 
   WRITE (iunartout,'(5X,I4,7X,A4,9X, F12.6, *(5X, F10.4))')  & !,5X, F7.4, 5X, F7.4, 5X, F7.4)') &
-       & istep, MOVE(step), etot, force_tot,fperp_tot,fpara_tot, lowest_eigval
+       & istep, MOVE(step), etot, force_tot,fperp_tot,fpara_tot, lowest_eigval, MAXVAL(fperp)
 END SUBROUTINE write_report

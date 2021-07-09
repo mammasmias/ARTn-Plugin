@@ -1,6 +1,7 @@
 
 !SUBROUTINE push_init (nat, tau, at, alat, idum, push_ids, dist_thr, add_const, init_step_size, push, mode)
-SUBROUTINE push_init (nat, tau, at, idum, push_ids, dist_thr, add_const, init_step_size, push, mode)
+!SUBROUTINE push_init (nat, tau, at, idum, push_ids, dist_thr, add_const, init_step_size, push, mode)
+SUBROUTINE push_init (nat, tau, order, at, idum, push_ids, dist_thr, add_const, init_step_size, push, mode)
   !
   ! subroutine that generates the initial push; options are specified by mode: 
   !           (1) 'all' generates a push on all atoms 
@@ -8,53 +9,69 @@ SUBROUTINE push_init (nat, tau, at, idum, push_ids, dist_thr, add_const, init_st
   !           (3) 'rad' generates a push on a list of atoms and all atoms within dist_thr 
   ! the user should supply: number and list of atoms to push; and add_constraints on these atoms
   !
-  USE artn_params, ONLY : DP, ran3
+  USE artn_params, ONLY : DP, ran3, istep
   IMPLICIT none
-  INTEGER, INTENT(IN) :: nat,idum
-  INTEGER :: na, ia 
-  INTEGER, INTENT(IN) :: push_ids(nat)
-  !REAL(DP), INTENT(IN) :: alat, dist_thr, init_step_size
-  REAL(DP), INTENT(IN) :: dist_thr, init_step_size
-  REAL(DP), INTENT(IN) :: tau(3,nat), at(3,3), add_const(4,nat)
-  CHARACTER(LEN=4), INTENT(IN) :: mode
-  REAL(DP), INTENT(OUT) :: push(3,nat)
-  !REAL(DP), EXTERNAL :: ran3, dnrm2 
-  REAL(DP), EXTERNAL :: dnrm2 
+  ! -- ARGUMENTS
+  INTEGER,          INTENT(IN)  :: nat,idum
+  INTEGER,          INTENT(IN)  :: push_ids(nat)
+  INTEGER,          INTENT(IN)  :: order(nat)           !%! f: i --> id
+  REAL(DP),         INTENT(IN)  :: dist_thr,    &
+                                   init_step_size
+  REAL(DP),         INTENT(IN)  :: tau(3,nat),  &
+                                   at(3,3)
+  REAL(DP),         INTENT(INOUT) ::  add_const(4,nat)
+  CHARACTER(LEN=4), INTENT(IN)  :: mode
+  REAL(DP),         INTENT(OUT) :: push(3,nat)
+  !
+  ! -- LOCAL VARIABLE
+  INTEGER :: na, ia , iglob
   REAL(DP) :: dr2, pushat(3)
   REAL(DP) :: dist(3), tau0(3) 
   LOGICAL :: lvalid
   INTEGER :: atom_displaced(nat)
+  !REAL(DP), EXTERNAL :: ran3, dnrm2 
+  REAL(DP), EXTERNAL :: dnrm2, fpbc
   !
   push(:,:) = 0.d0
   atom_displaced(:) = 0
   lvalid = .false.
+
+  print*, " * PUSH_INIT::ARGU::", mode
+  
+
   !
   !  read the list of pushed atoms
   !
   IF ( mode == 'all' ) THEN
      ! displace all atoms 
      atom_displaced(:) = 1
+
   ELSE IF ( mode == 'list' ) THEN 
      ! displace only atoms in list 
      DO na=1,nat
-        IF (ANY(push_ids == na)) THEN
+        iglob = order(na)
+        IF( ANY(push_ids == iglob) )THEN
            atom_displaced(na) = 1
+           print*, " * PUSH_INIT::Atom_displeced", na, atom_displaced(na), order(na)
         ENDIF
      ENDDO
+     !WHERE( ANY(push_ids /= order) ) !%! Allows to convert the input index in local index
+     !  atom_displaced = 1
+     !ENDWHERE
+
   ELSE IF ( mode == 'rad' ) THEN 
      ! displace only atoms in list and all atoms within chosen a cutoff radius ...
      DO na=1,nat
-        IF (ANY(push_ids == na)) THEN
-           atom_displaced(na) = 1           
+        !IF (ANY(push_ids == na)) THEN
+        iglob = order(na)
+        IF( ANY(push_ids == iglob) )THEN
+           atom_displaced(na) = 1   !%! Array based on local index i           
            !
-           !tau0 = tau(:,na)*alat
            tau0 = tau(:,na)
            DO ia = 1,nat
-              IF (ia /= na) THEN 
-                 !dist(:) = tau(:,ia)*alat - tau0(:)
+              IF( ia /= na ) THEN 
                  dist(:) = tau(:,ia) - tau0(:)
                  
-                 !CALL pbc( dist, at, alat)
                  CALL pbc( dist, at)
                  IF ( dnrm2(3,dist,1) <= dist_thr ) THEN
                     ! found an atom within dist_thr 
@@ -64,10 +81,32 @@ SUBROUTINE push_init (nat, tau, at, idum, push_ids, dist_thr, add_const, init_st
            ENDDO
         ENDIF
      ENDDO
-              
+
+   ! where( push_ids(tag(:)) /= 0 )
+   !   atom_displaced = 1    !%! Array based on local index i
+   !   tau0(1:3) = tau(1:3,:)
+   !   !do ia = 1,nat
+   !   where( push_ids(tag(:)) == 0 )
+   !      dist = tau(1:3,:) - tau0
+   !      !call pbc( dist, at )
+   !      dist = fpbc( dist, at )
+   !      !if( dnrm2(3,dist,1) <= dist_thr ) atom_displaced = 1
+   !      !atom_displaced = (dnrm2(3,dist,1) <= dist_thr)
+   !      atom_displaced = transfer( (dnrm2(3,dist,1) <= dist_thr), 1 )
+   !   endwhere
+   !   !enddo
+   ! endwhere 
+
   ENDIF
+
+  !%! Convert ADD_CONST
+  !if( istep == 0 )
+  add_const(:,:) = add_const(:,order(:))
+
+
+
   !
-  !
+  !%! Now All the information are converted in local index
   DO na=1,nat
      IF (atom_displaced(na) == 1 ) THEN
         DO
@@ -92,5 +131,10 @@ SUBROUTINE push_init (nat, tau, at, idum, push_ids, dist_thr, add_const, init_st
   push(:,:) = push(:,:)/MAXVAL(ABS(push(:,:)))
   ! scale initial push vector according to step size 
   push(:,:) = init_step_size*push(:,:)
+
+
+  do na =1,nat
+     print*, "PUSH_INIT:", na, order(na), push(:,na)
+  enddo
 
 END SUBROUTINE push_init

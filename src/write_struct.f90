@@ -1,5 +1,5 @@
 !SUBROUTINE write_struct(alat, at, nat, tau, atm, ityp, force, fscale, ounit, form, fname)
-SUBROUTINE write_struct( at, nat, tau, atm, ityp, force, fscale, ounit, form, fname)
+SUBROUTINE write_struct( at, nat, tau, order, atm, ityp, force, fscale, ounit, form, fname)
   !
   ! A subroutine that writes the structure to a file (based on xsf_struct of QE)  
   !
@@ -7,6 +7,7 @@ SUBROUTINE write_struct( at, nat, tau, atm, ityp, force, fscale, ounit, form, fn
   IMPLICIT NONE 
   INTEGER, INTENT(IN) :: nat             ! number of atoms 
   INTEGER, INTENT(IN) :: ityp(nat)       ! atom type
+  INTEGER, INTENT(IN) :: order(nat)       ! atom type
   CHARACTER(LEN=3), INTENT(IN) :: atm(*) ! contains information on atomic types 
   INTEGER, INTENT(IN) :: ounit           ! output fortran unit 
   !REAL(DP), INTENT(IN) :: alat           ! alat of QE   
@@ -18,7 +19,7 @@ SUBROUTINE write_struct( at, nat, tau, atm, ityp, force, fscale, ounit, form, fn
   CHARACTER(LEN=255), INTENT(IN) :: fname  ! file name 
   ! 
   !
-  INTEGER :: i, j, na, ios 
+  INTEGER :: i, j, na, ios, iloc 
   REAL(DP) :: at_angs (3,3)
   OPEN ( UNIT = ounit, FILE = fname, FORM = 'formatted',  STATUS = 'unknown', IOSTAT = ios )
   IF ( form == 'xsf' ) THEN 
@@ -45,7 +46,8 @@ SUBROUTINE write_struct( at, nat, tau, atm, ityp, force, fscale, ounit, form, fn
         !     force(1,na)*fscale, &
         !     force(2,na)*fscale, &
         !     force(3,na)*fscale
-        WRITE(ounit,'(a3,3x,6f15.9)') atm(ityp(na)), tau(:,na)*B2A, force(:,na)*fscale
+        iloc = order(na)
+        WRITE(ounit,'(a3,3x,6f15.9)') atm(ityp(iloc)), tau(:,iloc)*B2A, force(:,iloc)*fscale
 
      ENDDO
   ELSE

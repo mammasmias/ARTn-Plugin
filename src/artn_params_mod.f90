@@ -27,6 +27,7 @@ MODULE artn_params
   LOGICAL :: llanczos   ! lanczos algorithm
   LOGICAL :: lsaddle    ! saddle point obtained 
   ! counters
+  integer :: istep
   INTEGER, target :: iperp      ! number of steps in perpendicular relaxation
   INTEGER :: ieigen     ! number of steps made with eigenvector
   INTEGER :: ipush      ! number of pushes made
@@ -131,7 +132,7 @@ CONTAINS
     lsaddle = .false. 
     lpush_final = .false. 
     !
-    !istep = 0
+    istep = 0
     ipush = 0 
     iperp = 0
     ilanc = 0
