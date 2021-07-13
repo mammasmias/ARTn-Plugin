@@ -19,7 +19,7 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, order, at, if_pos, disp, lcon
        npush, neigen, nlanc_init, nsmooth, push_mode, dist_thr, convcrit_init, convcrit_final, &
        fpara_convcrit, eigval_thr, relax_thr, push_step_size, current_step_size, dlanc, eigen_step_size, fpush_factor, &
        push_ids,add_const, push, eigenvec, tau_saddle, initialize_artn,  &
-       INIT, PERP, EIGN, LANC, RELX
+       VOID, INIT, PERP, EIGN, LANC, RELX
   ! 
   IMPLICIT NONE
   REAL(DP), INTENT(INOUT) :: force(3,nat)     ! force calculated by the engine
@@ -62,8 +62,7 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, order, at, if_pos, disp, lcon
   ! (4) follow the lanczos direction twoard the saddle point
   ! (5) push twoards adjacent minimum & initial minimum  
 
-  natom = nat
-  print*, " * ARTn::", nat, natom
+  print*, " * ARTn::", nat
   print*, " * ARTn::Format DP", DP, npush
 
 !  do i = 1,nat
@@ -101,8 +100,8 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, order, at, if_pos, disp, lcon
   !  
   IF( istep == 0 ) THEN
      ! read the input parameters 
-     print*, " * ARTn::", nat, natom
-     CALL initialize_artn( natom, iunartin, iunartout, filin, filout )
+     print*, " * ARTn::", nat
+     CALL initialize_artn( nat, iunartin, iunartout, filin, filout )
      if( .not.lartn )return
      ! store the total energy of the initial state
      etot_init = etot 
@@ -112,6 +111,10 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, order, at, if_pos, disp, lcon
 
   write(*,'(x,a)') " * ARTn:: lrelax | lpush_init | lperp | leigen | llanczos | lsaddle | lpush_final "
   write(*,'(x,a,*(2x,l4))') " *        ", lrelax,lpush_init,lperp,leigen,llanczos, lsaddle, lpush_final
+
+
+  ! ...Initialize the displacement
+  disp = VOID
 
 
   ! 
@@ -260,15 +263,11 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, order, at, if_pos, disp, lcon
         force(:,:) = force(:,:)*if_pos(:,:)
      ENDIF
      !
-     !CALL lanczos( nat, force, vel, fire_alpha_init, dt, &
-     !     v_in, dlanc, nlanc, ilanc, lowest_eigval,  eigenvec, push)
+     !
      CALL lanczos( nat, force, v_in, dlanc, nlanc, ilanc, lowest_eigval,  eigenvec, push)
 
      !move = 'lanc'  !! Declared higher
      iperp = 0
-     !CALL move_mode( nat, dlanc, force, &
-     !   vel, fire_alpha_init, dt, &
-     !   0, push, 'lanc', prefix, tmp_dir)
 
 
      !
@@ -334,7 +333,7 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, order, at, if_pos, disp, lcon
         tau_saddle = tau
         ! 
         lsaddle = .true.
-        !CALL write_struct(alat, at, nat, tau, atm, ityp, force, 1.0_DP, iunstruct, 'xsf', sadfname)
+        !
         CALL write_struct( at, nat, tau, order, atm, ityp, force, 1.0_DP, iunstruct, 'xsf', sadfname)
         !
         WRITE (iunartout,'(5X, "--------------------------------------------------")')
@@ -381,12 +380,7 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, order, at, if_pos, disp, lcon
            ! 
            !move = 'eign'
            disp = EIGN
-           !CALL move_mode( nat, dlanc, force, &
-           !  vel, fire_alpha_init, dt,  &
-           !  iperp, eigenvec, 'eign', prefix, tmp_dir)
            !
-           !CALL write_report(etot,force_in, lowest_eigval, 'eign' , if_pos, istep, nat,  iunartout)
-           !CALL write_report(etot,force_in, lowest_eigval, move , if_pos, istep, nat,  iunartout)
            CALL write_report(etot,force_in, lowest_eigval, disp, if_pos, istep, nat,  iunartout)
         END IF
      ELSE
@@ -404,8 +398,6 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, order, at, if_pos, disp, lcon
      disp = RELX
      force(:,:) = force_in(:,:)
      ! 
-     !CALL write_report(etot, force_in, lowest_eigval, 'relx', if_pos, istep, nat, iunartout)
-     !CALL write_report(etot, force_in, lowest_eigval, move, if_pos, istep, nat, iunartout)
      CALL write_report(etot, force_in, lowest_eigval, disp, if_pos, istep, nat, iunartout)
      !
      ! check for convergence 
