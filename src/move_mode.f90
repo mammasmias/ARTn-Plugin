@@ -113,10 +113,11 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
   END SELECT
 
 
-  print*, " MOVE_MODE::END ", alpha, dt_curr, nsteppos
+  print*, " MOVE_MODE::END ", alpha, dt_curr, nsteppos, dt_curr, amu_ry, amu_ry/dt_curr**2
   print*, " * force", atmov, force(:,atmov)
   print*, " * push", atmov, push0(:,atmov)
   print*, " * dx", atmov, force(:,atmov)*dt_curr**2/amu_ry
+  print*, " * dx", atmov, force(:,atmov)*dt_curr**2/amu_ry * 0.529
 
   ! ... Print some value
   !print*, " * MOVE_MODE::END::Force", MAXVAL(force)

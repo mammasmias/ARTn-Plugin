@@ -17,6 +17,7 @@
 #include "compute.h"
 #include "domain.h"
 #include "error.h"
+#include "force.h"
 #include "input.h"
 #include "memory.h"
 #include "modify.h"
@@ -39,11 +40,12 @@ using namespace LAMMPS_NS;
 using namespace FixConst;
 
 extern "C"{
-  void artn_( double *const force, double* etot, const int nat, const int *ityp, const char *elt, double *const tau, const int *order, const double *lat, const int *if_pos, int* disp, bool* lconv );
-  void move_mode_( const int nat, double *const force, double *const vel, double* etot, int* nsteppos, double* dt_curr, double* alpha, const double* alpha_init, const double* dt_init, int* disp );
+  void artn_( double *const f, double* etot, const int nat, const int *ityp, const char *elt, double *const tau, const int *order, const double *lat, const int *if_pos, int* disp, bool* lconv );
+  void move_mode_( const int nat, double *const f, double *const vel, double* etot, int* nsteppos, double* dt_curr, double* alpha, const double* alpha_init, const double* dt_init, int* disp );
 }
 extern int __artn_params_MOD_iperp;
 extern int __artn_params_MOD_perp;
+extern int __artn_params_MOD_relx;
 
 /* ---------------------------------------------------------------------- */
 
@@ -257,7 +259,7 @@ void FixARTn::post_force( int /*vflag*/ ){
 
 
   double **tau = atom->x;
-  double **force = atom->f;
+  double **f = atom->f;
   double **vel = atom->v ;
   //tagint *itag = atom->tag;
   const int *ityp = atom->type;
@@ -270,7 +272,7 @@ void FixARTn::post_force( int /*vflag*/ ){
 
   for (int i = 0; i < nlocal; i++){
     //cout<< " * FIX_ARTn::position: "<< i<< "|"<< order[i]<< " | "<< ityp[i]<<" "<< tau[i][0]<< " "<< tau[i][1]<<" "<< tau[i][2]<<endl;
-    vdotf += vel[i][0]*force[i][0] + vel[i][1]*force[i][1] + vel[i][2]*force[i][2];
+    vdotf += vel[i][0]*f[i][0] + vel[i][1]*f[i][1] + vel[i][2]*f[i][2];
   }
   MPI_Allreduce(&vdotf,&vdotfall,1,MPI_DOUBLE,MPI_SUM,world);
   cout<<" * FIX_ARTN::Computed v.f = "<< vdotfall<<endl;
@@ -335,13 +337,13 @@ void FixARTn::post_force( int /*vflag*/ ){
   // PRE ARTn
   double EA2RB = eV2Ry / Ang2Bohr;
   for( int i(0); i<nat; i++){
-    force[i][0] *= EA2RB; 
-    force[i][1] *= EA2RB; 
-    force[i][2] *= EA2RB; 
+    f[i][0] *= EA2RB; 
+    f[i][1] *= EA2RB; 
+    f[i][2] *= EA2RB; 
   }
   cout<< " * PRE_ARTn::Force convertion::"<< nat<< " | F *= "<< EA2RB <<endl;
 
-  artn_( &force[0][0], &etot, nat, ityp, elt, &tau[0][0], order, &lat[0][0], &if_pos[0][0], &disp, &lconv );
+  artn_( &f[0][0], &etot, nat, ityp, elt, &tau[0][0], order, &lat[0][0], &if_pos[0][0], &disp, &lconv );
 
 
   // Maybe should be a global variable
@@ -356,20 +358,34 @@ void FixARTn::post_force( int /*vflag*/ ){
   
   cout<< " * fixArtn:alpha_0 "<< alpha_init<< " | dt "<< dt_init<< endl;
 
-  move_mode_( nat, &force[0][0], &vel[0][0], &etot, &nsteppos, &dt_curr, &alpha, &alpha_init, &dt0, &disp );
+  move_mode_( nat, &f[0][0], &vel[0][0], &etot, &nsteppos, &dt_curr, &alpha, &alpha_init, &dt0, &disp );
 
   dt_curr /= ps2aut ;
 
   cout<< " * fixArtn:alpha "<< alpha<< " | dt "<< dt_curr<< endl;
 
 
-  double RB2EA = 1./EA2RB;
-  for( int i(0); i<nat; i++){
-    force[i][0] *= RB2EA; 
-    force[i][1] *= RB2EA; 
-    force[i][2] *= RB2EA; 
+  // Comvert the force Ry to LAMMPS units
+  double *rmass = atom->rmass;
+  double *mass = atom->mass;
+  double RB2EA = 1. / EA2RB ;// / force->ftm2v;
+  if( rmass ){
+    for( int i(0); i<nat; i++){
+      f[i][0] *= RB2EA*rmass[i]; 
+      f[i][1] *= RB2EA*rmass[i]; 
+      f[i][2] *= RB2EA*rmass[i]; 
+    }
+  }else{
+    for( int i(0); i<nat; i++){
+      f[i][0] *= RB2EA*mass[ityp[i]];      
+      f[i][1] *= RB2EA*mass[ityp[i]];      
+      f[i][2] *= RB2EA*mass[ityp[i]];
+    }
   }
-  cout<< " FIX_ARTN::Convert:: "<< EA2RB << "|"<< RB2EA <<endl;
+  cout<< " FIX_ARTN::Convert:: "<< EA2RB << " | "<< RB2EA <<endl;
+  cout<< " Force(241):: "<< f[241][0]<< " "<< f[241][1]<< " "<< f[241][2]<< endl; 
+  double dt2 = dt_curr*dt_curr/mass[ityp[241]]*force->ftm2v;
+  cout<< " dx(241):: "<< f[241][0]*dt2<< " "<< f[241][1]*dt2<< " "<< f[241][2]*dt2<< std::endl; 
 
 
   // ...Compute V.F
@@ -386,7 +402,7 @@ void FixARTn::post_force( int /*vflag*/ ){
 
   //if( (disp == 2 && __artn_params_MOD_iperp == 1) || disp != 2 ){
   if( (disp == __artn_params_MOD_perp && __artn_params_MOD_iperp == 1) 
-    || disp != __artn_params_MOD_iperp ){
+    || disp != __artn_params_MOD_perp && disp != __artn_params_MOD_relx ){
 
     cout<< " FIX_ARTN::Params Actuallization"<<endl;
 
@@ -437,7 +453,7 @@ void FixARTn::post_force( int /*vflag*/ ){
   // ...Compute V.F
   vdotf = 0.0;
   for (int i = 0; i < nlocal; i++)
-    vdotf += vel[i][0]*force[i][0] + vel[i][1]*force[i][1] + vel[i][2]*force[i][2];
+    vdotf += vel[i][0]*f[i][0] + vel[i][1]*f[i][1] + vel[i][2]*f[i][2];
   MPI_Allreduce(&vdotf,&vdotfall,1,MPI_DOUBLE,MPI_SUM,world);
   cout<< " FIX_ARTN::END::VdotF:: "<< vdotfall<<endl;
 

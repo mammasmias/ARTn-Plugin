@@ -52,7 +52,7 @@ class FixARTn : public Fix {
   const double Ry2eV = 13.605691930242388 ;
   const double Bohr2Ang = 0.529177210903 ;
   const double Ang2Bohr = 1./0.529177210903 ;
-  const double ps2aut = 41341.374575751 ;
+  const double ps2aut = 41341.374575751 / 2.;
 
   int istep, nword;
   char **word;
