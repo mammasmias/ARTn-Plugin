@@ -62,14 +62,9 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, order, at, if_pos, disp, lcon
   ! (4) follow the lanczos direction twoard the saddle point
   ! (5) push twoards adjacent minimum & initial minimum  
 
-  print*, " * ARTn::", nat
+  print*, " * ARTn::", nat, istep
   print*, " * ARTn::Format DP", DP, npush
 
-!  do i = 1,nat
-!     print*, " * Position:: ", i, order(i),"|", ityp(i), tau(:,i)
-!  enddo
-
-!  print*, " * BOX::", at(:,:)
 
 ! do i = 1, 10
 !    !print*, " * pos:", ityp(i), tau(:,i)
@@ -102,7 +97,7 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, order, at, if_pos, disp, lcon
      ! read the input parameters 
      print*, " * ARTn::", nat
      CALL initialize_artn( nat, iunartin, iunartout, filin, filout )
-     if( .not.lartn )return
+     !if( .not.lartn )return
      ! store the total energy of the initial state
      etot_init = etot 
   ENDIF

@@ -55,9 +55,6 @@ SUBROUTINE push_init (nat, tau, order, at, idum, push_ids, dist_thr, add_const, 
            print*, " * PUSH_INIT::Atom_displeced", na, atom_displaced(na), order(na)
         ENDIF
      ENDDO
-     !WHERE( ANY(push_ids /= order) ) !%! Allows to convert the input index in local index
-     !  atom_displaced = 1
-     !ENDWHERE
 
   ELSE IF ( mode == 'rad' ) THEN 
      ! displace only atoms in list and all atoms within chosen a cutoff radius ...
@@ -81,21 +78,6 @@ SUBROUTINE push_init (nat, tau, order, at, idum, push_ids, dist_thr, add_const, 
            ENDDO
         ENDIF
      ENDDO
-
-   ! where( push_ids(tag(:)) /= 0 )
-   !   atom_displaced = 1    !%! Array based on local index i
-   !   tau0(1:3) = tau(1:3,:)
-   !   !do ia = 1,nat
-   !   where( push_ids(tag(:)) == 0 )
-   !      dist = tau(1:3,:) - tau0
-   !      !call pbc( dist, at )
-   !      dist = fpbc( dist, at )
-   !      !if( dnrm2(3,dist,1) <= dist_thr ) atom_displaced = 1
-   !      !atom_displaced = (dnrm2(3,dist,1) <= dist_thr)
-   !      atom_displaced = transfer( (dnrm2(3,dist,1) <= dist_thr), 1 )
-   !   endwhere
-   !   !enddo
-   ! endwhere 
 
   ENDIF
 

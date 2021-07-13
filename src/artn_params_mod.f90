@@ -15,8 +15,9 @@ MODULE artn_params
   INTEGER, PARAMETER :: iunstruct = 556 ! fortran file unit for writing the structure
   INTEGER, PARAMETER :: iunrestart = 557 ! fortran file unit for writing the structure
   ! Constante move
-  INTEGER :: VOID, INIT, PERP, EIGN, LANC, RELX
-  PARAMETER( VOID = 1, INIT = 2, PERP = 3, EIGN = 4, LANC = 5, RELX = 6 )
+  !INTEGER :: VOID, INIT, PERP, EIGN, LANC, RELX
+  INTEGER :: VOID = 1, INIT = 2, PERP = 3, EIGN = 4, LANC = 5, RELX = 6
+  !PARAMETER( VOID = 1, INIT = 2, PERP = 3, EIGN = 4, LANC = 5, RELX = 6 )
   CHARACTER(LEN=4) :: MOVE(6)
   PARAMETER( MOVE = [ 'void', 'init', 'perp', 'eign', 'lanc', 'relx' ])
   ! control flags

@@ -73,10 +73,6 @@ class FixARTn : public Fix {
   class Compute *pe_compute;        // compute for potential energy
   const char *alphab= "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-//  constexpr unsigned int str2int(const char* str, int h = 0) {
-//    return !str[h] ? 5381 : (str2int(str, h+1) * 33) ^ str[h];
-//  }
-
 };
 
 }

@@ -30,7 +30,7 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
   REAL(DP), EXTERNAL               :: ddot,dnrm2
 
   real(DP) :: vdtf
-  integer :: i;
+  integer :: i, atmov;
   !
   ! do things depending on mode of the move
   ! NOTE force units of Ry/a.u. are assumed ... 
@@ -48,7 +48,8 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
 !  do i = 1,10
 !     print*, " * force", i,force(:,i)
 !  enddo
-     print*, " * force", 60,force(:,60)
+     atmov = 242
+     print*, " * force", atmov,force(:,atmov)
 
 
   !SELECT CASE( TRIM(mode) )
@@ -113,18 +114,18 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
 
 
   print*, " MOVE_MODE::END ", alpha, dt_curr, nsteppos
-  print*, " * force", 60,force(:,60)
-  print*, " * push", 60,push0(:,60)
-  print*, " * dx", 60,force(:,60)*dt_curr**2/amu_ry
+  print*, " * force", atmov, force(:,atmov)
+  print*, " * push", atmov, push0(:,atmov)
+  print*, " * dx", atmov, force(:,atmov)*dt_curr**2/amu_ry
 
   ! ... Print some value
-  print*, " * MOVE_MODE::END::Force", MAXVAL(force)
-  print*, " * MOVE_MODE::END::Veloc", MAXVAL(vel)
-  vdtf = 0.0
-  do i = 1,nat
-     vdtf = vdtf + dot_product( vel(:,i), force(:,i) )
-  enddo
-  print*, " * MOVE_MODE::END::VdotF", vdtf
+  !print*, " * MOVE_MODE::END::Force", MAXVAL(force)
+  !print*, " * MOVE_MODE::END::Veloc", MAXVAL(vel)
+  !vdtf = 0.0
+  !do i = 1,nat
+  !   vdtf = vdtf + dot_product( vel(:,i), force(:,i) )
+  !enddo
+  !print*, " * MOVE_MODE::END::VdotF", vdtf
 
 
 

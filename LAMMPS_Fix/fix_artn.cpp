@@ -43,6 +43,7 @@ extern "C"{
   void move_mode_( const int nat, double *const force, double *const vel, double* etot, int* nsteppos, double* dt_curr, double* alpha, const double* alpha_init, const double* dt_init, int* disp );
 }
 extern int __artn_params_MOD_iperp;
+extern int __artn_params_MOD_perp;
 
 /* ---------------------------------------------------------------------- */
 
@@ -183,6 +184,8 @@ void FixARTn::min_setup( int vflag ) {
   fire_integrator = 0;
   ntimestep_start = update->ntimestep;
   
+  etol = update->etol;
+  ftol = update->ftol;
 
   // ...Print the new Parameters
   minimize-> setup_style();
@@ -236,17 +239,15 @@ void FixARTn::post_force( int /*vflag*/ ){
   // call pARTn library...
 
   cout<<" * IN_POST_FORCES..." << endl;
-  cout<<" * MIN::"<< update-> minimize_style<< endl;
+  cout<<" * MIN::"<< update-> minimize_style<< " NTIMESTEP:: "<< update-> ntimestep << endl;
 
   class Min *minimize = update-> minimize; 
 
-  if( minimize )cout<<" * Min_vector is linked"<<endl;
+  if( !minimize )cout<<" * Min_vector is not linked"<<endl;
 
   //cout<<" * FIRE Param::"<< minimize->dt<<" | "<< minimize->alpha << endl;
-  cout<< " * FIX_ARTn::MINIMIZE CONV:"<< update-> etol<< " | "<< update->ftol<< endl;
+  //cout<< " * FIX_ARTn::MINIMIZE CONV:"<< update-> etol<< " | "<< update->ftol<< endl;
 
-  etol = update->etol;
-  ftol = update->ftol;
   update->etol = 1e-12;
   update->etol = 1e-12;
   cout<< " * FIX_ARTn::MINIMIZE CONV:"<< update-> etol<< " | "<< update->ftol<< endl;
@@ -267,47 +268,43 @@ void FixARTn::post_force( int /*vflag*/ ){
   int nlocal = atom->nlocal;
   double vdotf = 0.0, vdotfall;
 
-  cout<<" * FIX_ARTN::Compute"<<endl;
-/*  double maxv=0.0, maxf=0.0;
-  for( int i = 0; i < nlocal; i++ ){
-    maxv = max( maxv, vel[i][0] );
-    maxv = max( vel[i][1], vel[i][2] );
-    maxf = max( maxf, force[i][0] );
-    maxf = max( force[i][1], force[i][2] );
-  }
-  cout<<" * FIX_ARTN:: maxV : maxF "<< maxv<<" : "<< maxf<<endl;
-*/
-
   for (int i = 0; i < nlocal; i++){
     //cout<< " * FIX_ARTn::position: "<< i<< "|"<< order[i]<< " | "<< ityp[i]<<" "<< tau[i][0]<< " "<< tau[i][1]<<" "<< tau[i][2]<<endl;
     vdotf += vel[i][0]*force[i][0] + vel[i][1]*force[i][1] + vel[i][2]*force[i][2];
   }
   MPI_Allreduce(&vdotf,&vdotfall,1,MPI_DOUBLE,MPI_SUM,world);
+  cout<<" * FIX_ARTN::Computed v.f = "<< vdotfall<<endl;
 
-  if( !(vdotfall > 0) ){
-    cout<< " ********* RETURN WITHOUT COMPUTE ARTn"<<endl;
+  // ...If v.f is 0 or under min_fire call the force to ajust 
+  // the integrator step parameter dtv
+  if( !(vdotfall > 0) && update-> ntimestep > 1 ){
+    cout<< " ********* RETURN WITHOUT COMPUTE ARTn | v.f = "<< vdotfall<<endl;
     return;
   }
 
   /******************************************************************/
 
+
+
+
+
   double etot = pe_compute->compute_scalar();
-
-  // Conv. Criterium
-  double epse = update-> etol;
-  double epsf = update-> ftol;
-
   const int nat = atom-> natoms;
 
+  // Conv. Criterium
+  //double epse = update-> etol;
+  //double epsf = update-> ftol;
+
+
   /*
-     Array of element */
+     ...Array of element */
   char *elt ;
   elt = new char[nat];
   for( int i(0); i < nat; i++ ) elt[i] = alphab[ ityp[i] ];
 
 
   /*
-     Build it with : domain-> boxlo[3], boxhi[3] and xy, xz, yz  */
+    ...Build it with : domain-> boxlo[3], boxhi[3] and xy, xz, yz  */
   double lat[3][3];
   double dx = domain->boxhi[0] - domain->boxlo[0], 
          dy = domain->boxhi[1] - domain->boxlo[1], 
@@ -336,13 +333,13 @@ void FixARTn::post_force( int /*vflag*/ ){
 
 
   // PRE ARTn
-  cout<< " * PRE_ARTn:: "<< nat <<endl;
   double EA2RB = eV2Ry / Ang2Bohr;
   for( int i(0); i<nat; i++){
     force[i][0] *= EA2RB; 
     force[i][1] *= EA2RB; 
     force[i][2] *= EA2RB; 
   }
+  cout<< " * PRE_ARTn::Force convertion::"<< nat<< " | F *= "<< EA2RB <<endl;
 
   artn_( &force[0][0], &etot, nat, ityp, elt, &tau[0][0], order, &lat[0][0], &if_pos[0][0], &disp, &lconv );
 
@@ -363,7 +360,7 @@ void FixARTn::post_force( int /*vflag*/ ){
 
   dt_curr /= ps2aut ;
 
-  cout<< " * fixArtn:alpa "<< alpha<< " | dt "<< dt_curr<< endl;
+  cout<< " * fixArtn:alpha "<< alpha<< " | dt "<< dt_curr<< endl;
 
 
   double RB2EA = 1./EA2RB;
@@ -372,24 +369,26 @@ void FixARTn::post_force( int /*vflag*/ ){
     force[i][1] *= RB2EA; 
     force[i][2] *= RB2EA; 
   }
+  cout<< " FIX_ARTN::Convert:: "<< EA2RB << "|"<< RB2EA <<endl;
+
 
   // ...Compute V.F
-  vdotf = 0.0;
+/*  vdotf = 0.0;
   for (int i = 0; i < nlocal; i++)
     vdotf += vel[i][0]*force[i][0] + vel[i][1]*force[i][1] + vel[i][2]*force[i][2];
   MPI_Allreduce(&vdotf,&vdotfall,1,MPI_DOUBLE,MPI_SUM,world);
   cout<< " FIX_ARTN::VdotF:: "<< vdotfall<<endl;
+*/
 
-  cout<< " FIX_ARTN::Convert:: "<< EA2RB << "|"<< RB2EA <<endl;
-
-  //for( int i(0); i<30; i++)
-  //  cout<< " * After move::f "<< i<< " | "<<force[i][0]<<" "<< force[i][1]<<" "<< force[i][2]<<endl;
-  
 
 
   // CHANGE FIRE PARAMETER as function of the value of 
 
-  if( (disp == 2 && __artn_params_MOD_iperp == 1) || disp != 2 ){
+  //if( (disp == 2 && __artn_params_MOD_iperp == 1) || disp != 2 ){
+  if( (disp == __artn_params_MOD_perp && __artn_params_MOD_iperp == 1) 
+    || disp != __artn_params_MOD_iperp ){
+
+    cout<< " FIX_ARTN::Params Actuallization"<<endl;
 
     // ...Update the time
     update->dt = dt_curr;
@@ -424,10 +423,9 @@ void FixARTn::post_force( int /*vflag*/ ){
 
     // ...Print the command
     for( int i(0); i < nword; i = i+2 )
-      cout<< word[i] << ": "<< word[i+1] << " "<< disp<<endl;
+      cout<<" * -> "<< word[i] << ": "<< word[i+1] << " "<< disp<<endl;
 
 
-    cout<< " FIX_ARTN::Params Actuallization"<<endl;
     minimize-> modify_params( nword, word );
     minimize-> init();
   }
@@ -441,7 +439,7 @@ void FixARTn::post_force( int /*vflag*/ ){
   for (int i = 0; i < nlocal; i++)
     vdotf += vel[i][0]*force[i][0] + vel[i][1]*force[i][1] + vel[i][2]*force[i][2];
   MPI_Allreduce(&vdotf,&vdotfall,1,MPI_DOUBLE,MPI_SUM,world);
-  cout<< " FIX_ARTN::VdotF:: "<< vdotfall<<endl;
+  cout<< " FIX_ARTN::END::VdotF:: "<< vdotfall<<endl;
 
 
 
