@@ -58,6 +58,9 @@ FixARTn::FixARTn( LAMMPS *lmp, int narg, char **arg ): Fix( lmp, narg, arg )
   nword = 0;
   word = nullptr;
 
+  nextblank = 0;
+  f_prev = nullptr;
+
   alpha_init = 0.0;
   alphashrink = 0.0;
   dt_init = 0.0;
@@ -83,6 +86,8 @@ FixARTn::~FixARTn() {
   /* deallocate the array */
   memory->destroy( word );
   memory->destroy( order );
+  memory->destroy( f_prev );
+  
   pe_compute = nullptr;
 
 }
@@ -198,24 +203,19 @@ void FixARTn::min_setup( int vflag ) {
   cout<< " * dtmin->"<< dtmin<< endl;
   cout<< " * dtmax->"<< dtmax<< endl;
 
-  // ...Deallocate char**
-  //for( int i(0); i<nword; i++)
-  //  word[i] = NULL;
-  //delete [] word;
-
 
   // Copy the order of atom
   int nat = atom-> natoms;
   tagint *itag = atom->tag;
   memory->create( order, nat, "Fix_artn::order" );
-  for( int i(0); i < nat; i++ )
-    order[i] = itag[i];
+  for( int i(0); i < nat; i++ ) order[i] = itag[i];
 
 
-  // Fuck! Protected : Accessible only by derived class 
-  // We have to define our fire parameters.
-  //dt_init = update-> minimize-> dt ;
-  //alpha_init = update-> minimize-> alpha0;
+  // Allocate the previous force table
+  memory->create( f_prev, nat, 3, "fix_artn:f_prev");
+  nextblank = 0;
+
+
   
 
 }
@@ -261,7 +261,6 @@ void FixARTn::post_force( int /*vflag*/ ){
   double **tau = atom->x;
   double **f = atom->f;
   double **vel = atom->v ;
-  //tagint *itag = atom->tag;
   const int *ityp = atom->type;
 
 
@@ -277,14 +276,32 @@ void FixARTn::post_force( int /*vflag*/ ){
   MPI_Allreduce(&vdotf,&vdotfall,1,MPI_DOUBLE,MPI_SUM,world);
   cout<<" * FIX_ARTN::Computed v.f = "<< vdotfall<<endl;
 
+
+
   // ...If v.f is 0 or under min_fire call the force to ajust 
   // the integrator step parameter dtv
-  if( !(vdotfall > 0) && update-> ntimestep > 1 ){
-    cout<< " ********* RETURN WITHOUT COMPUTE ARTn | v.f = "<< vdotfall<<endl;
+  if( !(vdotfall > 0) && update-> ntimestep > 1 && nextblank ){
+
+
+    // ...Rescale the force if the dt has been change 
+    double rescale = dt_curr / update->dt;
+
+    // ...Reload the previous ARTn-force 
+    for( int i(0); i < nlocal; i++){
+      f[i][0] = f_prev[i][0] * rescale*rescale ;
+      f[i][1] = f_prev[i][1] * rescale*rescale ;
+      f[i][2] = f_prev[i][0] * rescale*rescale ;
+    }
+
+    cout<< " ********* RETURN WITHOUT COMPUTE ARTn | v.f = "<< vdotfall<< " | Rescale "<< rescale<<endl;
+
+    // ...Next call should be after the integration
+    nextblank = 0;
     return;
+
   }
 
-  /******************************************************************/
+  /*...............................................................................*/
 
 
 
@@ -450,13 +467,29 @@ void FixARTn::post_force( int /*vflag*/ ){
   //minimize-> setup_style();
 
 
-  // ...Compute V.F
+
+  // ...Compute V.F: Allow to know if the next call come from the vdotf < 0 condition
+  // or as normally after the integration step
   vdotf = 0.0;
   for (int i = 0; i < nlocal; i++)
     vdotf += vel[i][0]*f[i][0] + vel[i][1]*f[i][1] + vel[i][2]*f[i][2];
   MPI_Allreduce(&vdotf,&vdotfall,1,MPI_DOUBLE,MPI_SUM,world);
-  cout<< " FIX_ARTN::END::VdotF:: "<< vdotfall<<endl;
 
+  if( !(vdotfall > 0) )nextblank = 1;
+  if( istep == 0 )nextblank = 0;
+
+  cout<< " FIX_ARTN::END::VdotF:: "<< vdotfall<< " | NextBlank:: "<< nextblank <<endl;
+
+
+  // ...Store the actual force
+  for( int i(0); i < nat; i++ ){
+    f_prev[i][0] = f[i][0];
+    f_prev[i][1] = f[i][1];
+    f_prev[i][2] = f[i][2];
+  }
+
+  // ...Store actual dt
+  //dt_prev = 
 
 
   //if( istep == 10 )exit(0);

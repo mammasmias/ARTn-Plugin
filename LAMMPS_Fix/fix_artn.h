@@ -47,20 +47,28 @@ class FixARTn : public Fix {
 
  protected:
 
-
+  // Constant for atomic unit
   const double eV2Ry = 1.0/13.605691930242388 ;
   const double Ry2eV = 13.605691930242388 ;
   const double Bohr2Ang = 0.529177210903 ;
   const double Ang2Bohr = 1./0.529177210903 ;
   const double ps2aut = 41341.374575751 / 2.;
 
+  // Following and interaction with lammps
   int istep, nword;
   char **word;
 
+  // Engine atomic order
   int *order;
 
+  // Store the previous force
+  int nextblank;
+  double **f_prev;
+
+  // energy/force tolerance
   double etol, ftol;
 
+  // Fire parameters
   double alpha_init, alphashrink;
   double dt_init, dtsk, dtgrow;
   double tmax, tmin, dtmax, dtmin, dmax;
@@ -71,7 +79,7 @@ class FixARTn : public Fix {
   double alpha;
 
   class Compute *pe_compute;        // compute for potential energy
-  const char *alphab= "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const char *alphab= "ABCDEFGHIJKLMNOPQRSTUVWXYZ";  // Should disappear
 
 };
 
