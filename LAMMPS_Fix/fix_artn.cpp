@@ -174,7 +174,7 @@ void FixARTn::min_setup( int vflag ) {
 
 
   // ...Save the Fire Parameter - Init:
-  alpha_init = 0.25;
+  alpha_init = 0.1;
   alphashrink = 0.99;
 
   dt_init = 0.1; //update->dt;
@@ -290,10 +290,10 @@ void FixARTn::post_force( int /*vflag*/ ){
     for( int i(0); i < nlocal; i++){
       f[i][0] = f_prev[i][0] * rescale*rescale ;
       f[i][1] = f_prev[i][1] * rescale*rescale ;
-      f[i][2] = f_prev[i][0] * rescale*rescale ;
+      f[i][2] = f_prev[i][2] * rescale*rescale ;
     }
 
-    cout<< " ********* RETURN WITHOUT COMPUTE ARTn | v.f = "<< vdotfall<< " | Rescale "<< rescale<<endl;
+    cout<< " ********* RETURN WITHOUT COMPUTE ARTn | v.f = "<< vdotfall<< " | Rescale "<< rescale<<" "<< dt_curr<< " " <<update->dt<<endl;
 
     // ...Next call should be after the integration
     nextblank = 0;
@@ -350,14 +350,39 @@ void FixARTn::post_force( int /*vflag*/ ){
   bool lconv;
   int disp;
 
+  
+  // ...Store the actual force
+  for( int i(0); i < nat; i++ ){
+    f_prev[i][0] = f[i][0];
+    f_prev[i][1] = f[i][1];
+    f_prev[i][2] = f[i][2];
+  }
 
   // PRE ARTn
+  double *rmass = atom->rmass;
+  double *mass = atom->mass;
+
   double EA2RB = eV2Ry / Ang2Bohr;
   for( int i(0); i<nat; i++){
-    f[i][0] *= EA2RB; 
-    f[i][1] *= EA2RB; 
-    f[i][2] *= EA2RB; 
+    f[i][0] *= EA2RB;  
+    f[i][1] *= EA2RB;  
+    f[i][2] *= EA2RB;
+    if( i == 243 )cout<< " Force("<<i<<"):: "<< f[i][0]<< " "<< f[i][1]<< " "<< f[i][2]<< endl;  
   }
+/*  if( rmass ){
+    for( int i(0); i<nat; i++){
+      f[i][0] *= EA2RB / rmass[i]; 
+      f[i][1] *= EA2RB / rmass[i]; 
+      f[i][2] *= EA2RB / rmass[i]; 
+    }
+  }else{
+    for( int i(0); i<nat; i++){
+      f[i][0] *= EA2RB / mass[ityp[i]]; 
+      f[i][1] *= EA2RB / mass[ityp[i]]; 
+      f[i][2] *= EA2RB / mass[ityp[i]]; 
+    }
+  }
+*/
   cout<< " * PRE_ARTn::Force convertion::"<< nat<< " | F *= "<< EA2RB <<endl;
 
   artn_( &f[0][0], &etot, nat, ityp, elt, &tau[0][0], order, &lat[0][0], &if_pos[0][0], &disp, &lconv );
@@ -366,9 +391,8 @@ void FixARTn::post_force( int /*vflag*/ ){
   // Maybe should be a global variable
   memory->destroy(if_pos);
 
-
   // POST ARTn/PRE MOVE_MODE
-  cout<< " * POST_ARTn/PRE_MOVE_MODE::"<<endl;
+  cout<< " * POST_ARTn/PRE_MOVE_MODE::DISP::"<< disp<<endl;
 
   double dt0 = dt_init*ps2aut ;
   dt_curr *= ps2aut;
@@ -379,30 +403,54 @@ void FixARTn::post_force( int /*vflag*/ ){
 
   dt_curr /= ps2aut ;
 
-  cout<< " * fixArtn:alpha "<< alpha<< " | dt "<< dt_curr<< endl;
+  cout<< " * fixArtn:alpha "<< alpha<< " | dt "<< dt_curr<< " | "<< disp << endl;
 
 
-  // Comvert the force Ry to LAMMPS units
-  double *rmass = atom->rmass;
-  double *mass = atom->mass;
   double RB2EA = 1. / EA2RB ;// / force->ftm2v;
-  if( rmass ){
+  if( disp == __artn_params_MOD_perp || disp == __artn_params_MOD_relx ){
+
     for( int i(0); i<nat; i++){
-      f[i][0] *= RB2EA*rmass[i]; 
-      f[i][1] *= RB2EA*rmass[i]; 
-      f[i][2] *= RB2EA*rmass[i]; 
+        if( i == 243 )cout<< " Force("<<i<<"):: "<< f[i][0]<< " "<< f[i][1]<< " "<< f[i][2]<< endl;  
+        f[i][0] *= RB2EA;
+        f[i][1] *= RB2EA;
+        f[i][2] *= RB2EA;
+        if( i == 243 )cout<< " Force("<<i<<"):: "<< f[i][0]<< " "<< f[i][1]<< " "<< f[i][2]<< endl;  
     }
+
   }else{
-    for( int i(0); i<nat; i++){
-      f[i][0] *= RB2EA*mass[ityp[i]];      
-      f[i][1] *= RB2EA*mass[ityp[i]];      
-      f[i][2] *= RB2EA*mass[ityp[i]];
+
+    // Comvert the force Ry to LAMMPS units
+    if( rmass ){
+      for( int i(0); i<nat; i++){
+        f[i][0] *= RB2EA*rmass[i]; 
+        f[i][1] *= RB2EA*rmass[i]; 
+        f[i][2] *= RB2EA*rmass[i]; 
+      }
+    }else{
+      for( int i(0); i<nat; i++){
+	f[i][0] *= RB2EA*mass[ityp[i]];      
+	f[i][1] *= RB2EA*mass[ityp[i]];      
+	f[i][2] *= RB2EA*mass[ityp[i]];
+      }
     }
+
   }
+
+
+
   cout<< " FIX_ARTN::Convert:: "<< EA2RB << " | "<< RB2EA <<endl;
-  cout<< " Force(241):: "<< f[241][0]<< " "<< f[241][1]<< " "<< f[241][2]<< endl; 
-  double dt2 = dt_curr*dt_curr/mass[ityp[241]]*force->ftm2v;
-  cout<< " dx(241):: "<< f[241][0]*dt2<< " "<< f[241][1]*dt2<< " "<< f[241][2]*dt2<< std::endl; 
+  int iat = 243;
+  cout<< " Force("<<iat<<"):: "<< f[iat][0]<< " "<< f[iat][1]<< " "<< f[iat][2]<< endl; 
+  double dt2 = dt_curr*dt_curr/mass[ityp[iat]]*force->ftm2v;
+  cout<< " v("<<iat<<"):: "<< vel[iat][0]<< " "<< vel[iat][1]<< " "<< vel[iat][2]<< std::endl; 
+  cout<< " dx("<<iat<<"):: "<< f[iat][0]*dt2<< " "<< f[iat][1]*dt2<< " "<< f[iat][2]*dt2<< std::endl; 
+
+
+  // ...Store the actual force
+  for( int i(0); i < nat; i++ ){
+    cout<< " ** DIFF_FORCE::"<<i<<" :: "<<f_prev[i][0] - f[i][0]<< " | "<<f_prev[i][1] - f[i][1]<< " | "<<f_prev[i][2] -f[i][2]<<endl;
+  }
+
 
 
   // ...Compute V.F
@@ -419,7 +467,7 @@ void FixARTn::post_force( int /*vflag*/ ){
 
   //if( (disp == 2 && __artn_params_MOD_iperp == 1) || disp != 2 ){
   if( (disp == __artn_params_MOD_perp && __artn_params_MOD_iperp == 1) 
-    || disp != __artn_params_MOD_perp && disp != __artn_params_MOD_relx ){
+    || (disp != __artn_params_MOD_perp && disp != __artn_params_MOD_relx) ){
 
     cout<< " FIX_ARTN::Params Actuallization"<<endl;
 
@@ -445,7 +493,7 @@ void FixARTn::post_force( int /*vflag*/ ){
     strcpy( word[3], str.c_str() );
 
     // ...RELAX step -> halfstepback = yes
-    if( disp == 5 ){
+    if( disp == __artn_params_MOD_relx || disp == __artn_params_MOD_perp ){
       //nword = nword + 2; 
       strcpy( word[4], "halfstepback" );
       strcpy( word[5], "yes" );
@@ -455,8 +503,10 @@ void FixARTn::post_force( int /*vflag*/ ){
     }
 
     // ...Print the command
+    cout<<" * -> Displacement: "<< disp <<endl;
+    cout<<" * -> dt_curr: "<< update->dt <<endl;
     for( int i(0); i < nword; i = i+2 )
-      cout<<" * -> "<< word[i] << ": "<< word[i+1] << " "<< disp<<endl;
+      cout<<" * -> "<< word[i] << ": "<< word[i+1] <<endl;
 
 
     minimize-> modify_params( nword, word );

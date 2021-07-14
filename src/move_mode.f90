@@ -1,7 +1,6 @@
 
 
 
-!SUBROUTINE move_mode(nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_init, dt_init, cmode )
 SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_init, dt_init, disp )
   !
   ! translate specified move to appropriate force and set FIRE parameters accordingly  
@@ -22,34 +21,25 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
   INTEGER,  INTENT(INOUT)                   :: nsteppos
   
   INTEGER, INTENT(IN)                       :: disp
-  !CHARACTER(LEN=1,KIND=c_har), INTENT(IN)  :: cmode(:)
   ! 
   ! -- Local Variable
-  !CHARACTER(LEN=:), allocatable             :: mode
-  !CHARACTER(LEN=:), allocatable, external    :: ctrim
   REAL(DP), EXTERNAL               :: ddot,dnrm2
 
-  real(DP) :: vdtf
+  real(DP) :: vdtf, dx(3), dt
   integer :: i, atmov;
   !
   ! do things depending on mode of the move
   ! NOTE force units of Ry/a.u. are assumed ... 
   !
 
-  ! .. Convert C_Char to Fortran String
-  !print*, " * ARTn::MOVE_MODE::", cmode
-  !mode = ctrim( cmode )
-
 
   print*, " * ARTn::MOVE_MODE::mode->", MOVE(disp)
   print*, " * ARTn::MOVE_MODE::iperp->", iperp
   print*, " * ARTn::MOVE_MODE::arg: ", nat, etot, amu_ry, dt_curr, dt_init
 
-!  do i = 1,10
-!     print*, " * force", i,force(:,i)
-!  enddo
-     atmov = 242
-     print*, " * force", atmov,force(:,atmov)
+  atmov = 244
+  dt = dt_curr
+  !print*, " * force", atmov,force(:,atmov)
 
 
   !SELECT CASE( TRIM(mode) )
@@ -73,9 +63,12 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
         vel(:,:) = 0.D0
         alpha = alpha_init
         dt_curr = dt_init
+        nsteppos = 5
      ELSE
         ! subtract the components that are parallel
         vel(:,:) = vel(:,:) - ddot( 3*nat, vel, 1, push, 1 )*push(:,:) / ddot( 3*nat, push(:,:), 1, push(:,:), 1 )
+        !%! vel = 0.D0
+        
      ENDIF
         !
   CASE( 'lanc' )
@@ -106,6 +99,7 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
      !forc_thr = 10D-8    !! QE dependent
      alpha = alpha_init
      dt_curr = dt_init
+     !%! vel = 0.D0
 
   CASE default
      write(*,*) 'Problem with move_mode!'
@@ -113,11 +107,20 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
   END SELECT
 
 
-  print*, " MOVE_MODE::END ", alpha, dt_curr, nsteppos, dt_curr, amu_ry, amu_ry/dt_curr**2
-  print*, " * force", atmov, force(:,atmov)
-  print*, " * push", atmov, push0(:,atmov)
-  print*, " * dx", atmov, force(:,atmov)*dt_curr**2/amu_ry
-  print*, " * dx", atmov, force(:,atmov)*dt_curr**2/amu_ry * 0.529
+! print*, " MOVE_MODE::END ", alpha, dt_curr, nsteppos, dt_curr, amu_ry, amu_ry/dt_curr**2
+! print*, " * force", atmov, force(:,atmov)
+! print*, " * push", atmov, push0(:,atmov)
+! print*, " * dx", atmov, force(:,atmov)*dt_curr**2/amu_ry
+! print*, " * dx", atmov, force(:,atmov)*dt_curr**2/amu_ry * 0.529
+
+! do i = 1,nat
+!    !dx = force(:,i)*dt_curr**2/amu_ry * 0.529
+!    dx = force(:,i)*dt**2/amu_ry * 0.529
+!    if( MAXVAL(dx) > 100.5 )then
+!      print*, " * force", i,force(:,i)
+!      print*, " * mvt  ", i,dx
+!    endif
+! enddo
 
   ! ... Print some value
   !print*, " * MOVE_MODE::END::Force", MAXVAL(force)

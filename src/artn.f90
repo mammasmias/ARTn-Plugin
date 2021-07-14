@@ -62,8 +62,8 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, order, at, if_pos, disp, lcon
   ! (4) follow the lanczos direction twoard the saddle point
   ! (5) push twoards adjacent minimum & initial minimum  
 
-  print*, " * ARTn::", nat, istep
-  print*, " * ARTn::Format DP", DP, npush
+  !print*, " * ARTn::", nat, istep
+  !print*, " * ARTn::Format DP", DP, npush
 
 
 ! do i = 1, 10
@@ -104,8 +104,8 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, order, at, if_pos, disp, lcon
 
 
 
-  write(*,'(x,a)') " * ARTn:: lrelax | lpush_init | lperp | leigen | llanczos | lsaddle | lpush_final "
-  write(*,'(x,a,*(2x,l4))') " *        ", lrelax,lpush_init,lperp,leigen,llanczos, lsaddle, lpush_final
+  !write(*,'(x,a)') " * ARTn:: lrelax | lpush_init | lperp | leigen | llanczos | lsaddle | lpush_final "
+  !write(*,'(x,a,*(2x,l4))') " *        ", lrelax,lpush_init,lperp,leigen,llanczos, lsaddle, lpush_final
 
 
   ! ...Initialize the displacement
@@ -150,8 +150,10 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, order, at, if_pos, disp, lcon
         eigenvec(:,:) = push(:,:) 
      ENDIF
      ! 
+     print*, " * ARTn::v.ftot", ddot(3*nat,force, 1, eigenvec, 1), sum(force), MAXVAL(force)
      ! ...Here force become fperp: It is not clear!!
      CALL perpforce(force,if_pos,eigenvec,fpara,nat)
+     print*, " * ARTn::v.fperp", ddot(3*nat,force, 1, eigenvec, 1), sum(force), MAXVAL(force)
      ! 
      IF (MAXVAL(ABS(fpara)) <= fpara_convcrit) THEN
         ! tighten perpendicular convergence criterion
@@ -164,10 +166,10 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, order, at, if_pos, disp, lcon
      iperp = iperp + 1
 
      !
-     !! * If the forces component are small we continue 
+     !! * If the forces perp component are small we continue 
      !! * to push 
      !
-     IF (( MAXVAL( ABS(force) )) < convcrit_init ) THEN
+     IF (( MAXVAL( ABS(force) )) < convcrit_init ) THEN  ! Here force = force_perp
         !
         ! we reached convergence in the perpendicular direction of push
         !
