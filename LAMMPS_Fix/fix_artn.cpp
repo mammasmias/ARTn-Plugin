@@ -177,7 +177,7 @@ void FixARTn::min_setup( int vflag ) {
   alpha_init = 0.1;
   alphashrink = 0.99;
 
-  dt_init = 0.1; //update->dt;
+  dt_init = 0.001; //update->dt;
   dtsk = 0.5;
   dtgrow = 1.1;
 
@@ -307,7 +307,7 @@ void FixARTn::post_force( int /*vflag*/ ){
 
 
 
-  double etot = pe_compute->compute_scalar();
+  double etot = pe_compute->compute_scalar() * eV2Ry;
   const int nat = atom-> natoms;
 
   // Conv. Criterium
@@ -386,6 +386,22 @@ void FixARTn::post_force( int /*vflag*/ ){
   cout<< " * PRE_ARTn::Force convertion::"<< nat<< " | F *= "<< EA2RB <<endl;
 
   artn_( &f[0][0], &etot, nat, ityp, elt, &tau[0][0], order, &lat[0][0], &if_pos[0][0], &disp, &lconv );
+
+
+  if( lconv ){
+    update-> etol = etol;
+    update-> ftol = ftol;
+
+    double RB2EA = 1. / EA2RB ;// / force->ftm2v;
+    for( int i(0); i<nat; i++){
+        f[i][0] *= RB2EA;
+        f[i][1] *= RB2EA;
+        f[i][2] *= RB2EA;
+    }
+
+    cout<< " ************************** ARTn HAS CONVERGED"<<endl;
+    return;
+  }
 
 
   // Maybe should be a global variable
