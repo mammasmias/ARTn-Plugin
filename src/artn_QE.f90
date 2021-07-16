@@ -40,7 +40,7 @@ SUBROUTINE artn_QE( force, etot, epsf_qe, nat, ityp, atm, tau, at, alat, istep, 
   real(dp)                  :: box(3,3)
   real(dp)                  :: pos(3,nat)
   real(dp)                  :: etot_fire, dt_curr, alpha
-  INTEGER                   :: nsteppos
+  INTEGER                   :: nsteppos, order(nat)
 
   LOGICAL                   :: file_exists
   CHARACTER(len=256)        :: filnam
@@ -51,28 +51,22 @@ SUBROUTINE artn_QE( force, etot, epsf_qe, nat, ityp, atm, tau, at, alat, istep, 
 
   !------------------------------------------------------------------------------------------------------------
   interface
-    !SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, cmove, lconv )
-    SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, disp, lconv )
-      !use iso_c_binding, only : c_char
+    SUBROUTINE artn( force, etot, nat, ityp, atm, tau, order, at, if_pos, disp, lconv )
       USE artn_params, ONLY: DP
       IMPLICIT NONE
       REAL(DP), INTENT(INOUT) :: force(3,nat)     ! force calculated by the engine
       REAL(DP), INTENT(INOUT) :: tau(3,nat)       ! atomic positions (needed for output only)
-
       REAL(DP), INTENT(IN) ::    etot             ! total energy in current step
       REAL(DP), INTENT(IN) ::    at(3,3)          ! lattice parameters in alat units 
-      INTEGER,  INTENT(IN), value ::    nat              ! number of atoms
+      INTEGER,  INTENT(IN), value ::    nat       ! number of atoms
+      INTEGER,  INTENT(IN) ::    order(nat)       ! Engine order of atom
       INTEGER,  INTENT(IN) ::    ityp(nat)        ! atom types
       INTEGER,  INTENT(IN) ::    if_pos(3,nat)    ! coordinates fixed by engine 
       CHARACTER(LEN=3),   INTENT(IN) :: atm(*)    ! name of atom corresponding to ityp
-
-      !CHARACTER(LEN=1,kind=c_char), allocatable, INTENT(OUT) :: cmove(:)       ! Stage for move_mode
       INTEGER,          INTENT(OUT) :: disp
       LOGICAL,          INTENT(OUT) :: lconv  
     END SUBROUTINE artn
-    !SUBROUTINE move_mode(nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_init, dt_init, cmode )
     SUBROUTINE move_mode(nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_init, dt_init, disp )
-      !use iso_c_binding, only : c_char
       USE artn_params, ONLY: DP, AMU_RY, iperp, push0 => push, push=>eigenvec, dlanc, move
       IMPLICIT NONE
       INTEGER, INTENT(IN), value                :: nat
@@ -81,7 +75,6 @@ SUBROUTINE artn_QE( force, etot, epsf_qe, nat, ityp, atm, tau, at, alat, istep, 
       REAL(DP), INTENT(IN)                      :: alpha_init, dt_init
       REAL(DP), INTENT(INOUT)                   :: etot, alpha, dt_curr
       INTEGER,  INTENT(INOUT)                   :: nsteppos
-      !CHARACTER(LEN=1,KIND=c_char), INTENT(IN)  :: cmode(:)
       INTEGER, INTENT(IN)                       :: disp
     END SUBROUTINE move_mode 
   end interface
@@ -89,7 +82,7 @@ SUBROUTINE artn_QE( force, etot, epsf_qe, nat, ityp, atm, tau, at, alat, istep, 
 
 
   !%! Return if artn.in does not exist
-  if( .not.lartn )return
+  !if( .not.lartn )return
 
 
   print*, " * IN ARTn_QE::", nat
@@ -105,12 +98,13 @@ SUBROUTINE artn_QE( force, etot, epsf_qe, nat, ityp, atm, tau, at, alat, istep, 
      print*, box(:,i)
   enddo
 
-
+  do i = 1,nat
+     order(i) = i
+  enddo
 
 
   ! ...Launch ARTn
-  !call artn( force, etot, nat, ityp, atm, pos, box, if_pos, cmove, lconv )
-  call artn( force, etot, nat, ityp, atm, pos, box, if_pos, disp, lconv )
+  call artn( force, etot, nat, ityp, atm, pos, order, box, if_pos, disp, lconv )
 
 
   ! ...Compare the Threshold
@@ -138,10 +132,9 @@ SUBROUTINE artn_QE( force, etot, epsf_qe, nat, ityp, atm, tau, at, alat, istep, 
   ENDIF
 
 
-  !print*, " * ARTn_QE::cmove ", cmove, size(cmove), (cmove(5)==c_null_char)
+  print*, " * ARTn_QE::PRE_MOVEMODE "
 
   ! ...Convert the dR given by ARTn to forces
-  !call move_mode( nat, force, vel, etot_fire, nsteppos, dt_curr, alpha, fire_alpha_init, dt_init, cmove )
   call move_mode( nat, force, vel, etot_fire, nsteppos, dt_curr, alpha, fire_alpha_init, dt_init, disp )
 
 
