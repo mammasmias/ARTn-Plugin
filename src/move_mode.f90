@@ -25,24 +25,13 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
   ! -- Local Variable
   REAL(DP), EXTERNAL               :: ddot,dnrm2
 
-  real(DP) :: vdtf, dx(3), dt
-  integer :: i, atmov;
   !
   ! do things depending on mode of the move
   ! NOTE force units of Ry/a.u. are assumed ... 
   !
 
 
-  print*, " * ARTn::MOVE_MODE::mode->", MOVE(disp)
-  print*, " * ARTn::MOVE_MODE::iperp->", iperp
-  print*, " * ARTn::MOVE_MODE::arg: ", nat, etot, amu_ry, dt_curr, dt_init
 
-  atmov = 244
-  dt = dt_curr
-  !print*, " * force", atmov,force(:,atmov)
-
-
-  !SELECT CASE( TRIM(mode) )
   SELECT CASE( MOVE(disp) )
 
   CASE( 'init' )
@@ -99,38 +88,11 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
      !forc_thr = 10D-8    !! QE dependent
      alpha = alpha_init
      dt_curr = dt_init
-     !%! vel = 0.D0
 
   CASE default
      write(*,*) 'Problem with move_mode!'
 
   END SELECT
-
-
-! print*, " MOVE_MODE::END ", alpha, dt_curr, nsteppos, dt_curr, amu_ry, amu_ry/dt_curr**2
-! print*, " * force", atmov, force(:,atmov)
-! print*, " * push", atmov, push0(:,atmov)
-! print*, " * dx", atmov, force(:,atmov)*dt_curr**2/amu_ry
-! print*, " * dx", atmov, force(:,atmov)*dt_curr**2/amu_ry * 0.529
-
-! do i = 1,nat
-!    !dx = force(:,i)*dt_curr**2/amu_ry * 0.529
-!    dx = force(:,i)*dt**2/amu_ry * 0.529
-!    if( MAXVAL(dx) > 100.5 )then
-!      print*, " * force", i,force(:,i)
-!      print*, " * mvt  ", i,dx
-!    endif
-! enddo
-
-  ! ... Print some value
-  !print*, " * MOVE_MODE::END::Force", MAXVAL(force)
-  !print*, " * MOVE_MODE::END::Veloc", MAXVAL(vel)
-  !vdtf = 0.0
-  !do i = 1,nat
-  !   vdtf = vdtf + dot_product( vel(:,i), force(:,i) )
-  !enddo
-  !print*, " * MOVE_MODE::END::VdotF", vdtf
-
 
 
 

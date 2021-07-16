@@ -220,7 +220,7 @@ void FixARTn::setup( int /*vflag*/ ) {
   // Depending of the module environment we can change the move interface
   // and other thing
 
-  cout<<" * IN SETUP..." << endl;
+  //cout<<" * IN SETUP..." << endl;
 
 
 }
@@ -230,12 +230,12 @@ void FixARTn::setup( int /*vflag*/ ) {
 void FixARTn::min_setup( int vflag ) {
 
   // Call here if it is needed - To confirm
-  cout<<" * IN MIN_SETUP..." << endl;
+  //cout<<" * IN MIN_SETUP..." << endl;
   //post_force( vflag );
 
   class Min *minimize = update-> minimize;
 
-  cout<< " * CHANGE PARAM..."<<endl;
+  cout<< " * FIX/ARTn::CHANGE PARAM..."<<endl;
 
   /*
   -- Change & Save the initial Fire Parameter 
@@ -277,8 +277,8 @@ void FixARTn::min_setup( int vflag ) {
   minimize-> setup_style();
 
   // ...Print the Initial Fire Parameters
-  cout<< " * Alpha_init->"<< alpha_init<< endl;
-  cout<< " * dt_init->"<< dt_init<< endl;
+  cout<< " * Alpha0->"<< alpha_init<< endl;
+  cout<< " * dt0->"<< dt_init<< endl;
   cout<< " * dtmin->"<< dtmin<< endl;
   cout<< " * dtmax->"<< dtmax<< endl;
 
@@ -303,9 +303,9 @@ void FixARTn::min_setup( int vflag ) {
 
 void FixARTn::min_post_force( int vflag ) {
 
-  cout<<" * IN MIN_POST_FORCES..." << endl;
+  //cout<<" * IN MIN_POST_FORCES..." << endl;
   post_force( vflag );
-  cout<<" * OUT MIN_POST_FORCES..." << endl;
+  //cout<<" * OUT MIN_POST_FORCES..." << endl;
 
 }
 
@@ -406,12 +406,12 @@ void FixARTn::post_force( int /*vflag*/ ){
   // IDEA::We should interact with fix/freeze  
   int **if_pos;
   memory->create(if_pos,nat,3,"fix:if_pos");
-  memset( if_pos, 1, 3*nat ); 
-  /*for( int i(0); i < nat; i++ ){
+  //memset( if_pos, 1, 3*nat ); 
+  for( int i(0); i < nat; i++ ){
      if_pos[ i ][0] = 1;
      if_pos[ i ][1] = 1;
      if_pos[ i ][2] = 1;
-  }*/
+  }
   
 
   /* ...Convergence and displacement */
@@ -435,9 +435,8 @@ void FixARTn::post_force( int /*vflag*/ ){
     f[i][0] *= EA2RB;  
     f[i][1] *= EA2RB;  
     f[i][2] *= EA2RB;
-    if( i == 243 )cout<< " Force("<<i<<"):: "<< f[i][0]<< " "<< f[i][1]<< " "<< f[i][2]<< endl;  
   }
-  cout<< " * PRE_ARTn::Force convertion::"<< nat<< " | F *= "<< EA2RB <<endl;
+  //cout<< " * PRE_ARTn::Force convertion::"<< nat<< " | F *= "<< EA2RB <<endl;
 
 
   // ...ARTn
@@ -484,6 +483,7 @@ void FixARTn::post_force( int /*vflag*/ ){
   move_mode_( nat, &f[0][0], &vel[0][0], &etot, &nsteppos, &dt_curr, &alpha, &alpha_init, &dt0, &disp );
 
 
+  //cout<<" * POST_MOVE_MODE::"<<endl;
   // ...Convert to the LAMMPS units
   dt_curr /= ps2aut ;
   double RB2EA = 1. / EA2RB;

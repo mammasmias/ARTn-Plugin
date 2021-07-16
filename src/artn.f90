@@ -51,7 +51,6 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, order, at, if_pos, disp, lcon
   INTEGER   :: ios ,i                         ! file IOSTAT  
   CHARACTER( LEN=255) :: filin, filout, sadfname, initpfname, eigenfname, restartfname
 
-  !integer, save :: istep = 0
   integer :: natom
 
   !
@@ -62,14 +61,6 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, order, at, if_pos, disp, lcon
   ! (4) follow the lanczos direction twoard the saddle point
   ! (5) push twoards adjacent minimum & initial minimum  
 
-  !print*, " * ARTn::", nat, istep
-  !print*, " * ARTn::Format DP", DP, npush
-
-
-! do i = 1, 10
-!    !print*, " * pos:", ityp(i), tau(:,i)
-!    print*, " * force:", if_pos(:,i),force(:,i)
-! enddo
 
   ! 
   ! flag that controls convergence
@@ -95,17 +86,13 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, order, at, if_pos, disp, lcon
   !  
   IF( istep == 0 ) THEN
      ! read the input parameters 
-     print*, " * ARTn::", nat
      CALL initialize_artn( nat, iunartin, iunartout, filin, filout )
-     !if( .not.lartn )return
      ! store the total energy of the initial state
      etot_init = etot 
   ENDIF
 
 
 
-  !write(*,'(x,a)') " * ARTn:: lrelax | lpush_init | lperp | leigen | llanczos | lsaddle | lpush_final "
-  !write(*,'(x,a,*(2x,l4))') " *        ", lrelax,lpush_init,lperp,leigen,llanczos, lsaddle, lpush_final
 
 
   ! ...Initialize the displacement
@@ -134,7 +121,6 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, order, at, if_pos, disp, lcon
      ! modify the force to be equal to the push
      !
      !force(:,:) =  push(:,:) ! Use push in move mode
-     !move = 'init'
      disp = INIT
      !
      CALL write_report(etot,force_in, lowest_eigval, disp, if_pos, istep, nat,  iunartout)
@@ -150,17 +136,14 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, order, at, if_pos, disp, lcon
         eigenvec(:,:) = push(:,:) 
      ENDIF
      ! 
-     print*, " * ARTn::v.ftot", ddot(3*nat,force, 1, eigenvec, 1), sum(force), MAXVAL(force)
      ! ...Here force become fperp: It is not clear!!
      CALL perpforce(force,if_pos,eigenvec,fpara,nat)
-     print*, " * ARTn::v.fperp", ddot(3*nat,force, 1, eigenvec, 1), sum(force), MAXVAL(force)
      ! 
      IF (MAXVAL(ABS(fpara)) <= fpara_convcrit) THEN
         ! tighten perpendicular convergence criterion
         convcrit_init = convcrit_final  
      END IF
      !
-     !move = 'perp'
      disp = PERP
      ! 
      iperp = iperp + 1
@@ -179,7 +162,6 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, order, at, if_pos, disp, lcon
         IF ( ipush < npush ) THEN
            ! continue pushing in the specified direction
            force(:,:) =  eigenvec(:,:)
-           !move = 'eign'
            disp = EIGN
            ! 
            ipush = ipush + 1
@@ -203,7 +185,6 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, order, at, if_pos, disp, lcon
      ! if we have a good lanczos eigenvector use it
      !  
      force(:,:) = eigenvec(:,:)
-     !move = 'eign'
      disp = EIGN
      ieigen = ieigen + 1
      !      
@@ -225,7 +206,6 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, order, at, if_pos, disp, lcon
   !
   IF ( llanczos ) THEN 
      !
-     !move = 'lanc'
      disp = LANC
      CALL write_report(etot,force_in, lowest_eigval, disp, if_pos, istep, nat,  iunartout)
      IF (ilanc == 0 ) THEN
@@ -263,7 +243,6 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, order, at, if_pos, disp, lcon
      !
      CALL lanczos( nat, force, v_in, dlanc, nlanc, ilanc, lowest_eigval,  eigenvec, push)
 
-     !move = 'lanc'  !! Declared higher
      iperp = 0
 
 
@@ -375,7 +354,6 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, order, at, if_pos, disp, lcon
            lrelax = .true.
         ELSE
            ! 
-           !move = 'eign'
            disp = EIGN
            !
            CALL write_report(etot,force_in, lowest_eigval, disp, if_pos, istep, nat,  iunartout)
@@ -391,7 +369,6 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, order, at, if_pos, disp, lcon
      !
      ! reset force  
      !
-     !move = 'relx'
      disp = RELX
      force(:,:) = force_in(:,:)
      ! 
@@ -402,7 +379,6 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, order, at, if_pos, disp, lcon
      IF ( MAXVAL(ABS(force_in(:,:)*if_pos(:,:))) <= convcrit_final  ) THEN
         IF ( fpush_factor == 1.0 ) THEN
            ! make sure QE doesn't converge
-           !move = 'relx'
            disp = RELX
            !forc_conv_thr_qe = 1.0D-8
            ! reverse direction of push 

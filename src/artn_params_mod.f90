@@ -120,7 +120,6 @@ CONTAINS
 
     ELSE !%! FILE EXIST
 
-    Print*, " * INITIALIZE_ARTN:: ", nat, iunartin,iunartout,filnam,filout
 
     !
     ! set up defaults for flags and counters 
