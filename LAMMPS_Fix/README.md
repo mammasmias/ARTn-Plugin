@@ -1,6 +1,8 @@
 
 # ARTn/LAMMPS interface
 
+## INSTALL
+
 ARTn in LAMMPS is defined as a FIX, fix\_artn.h and fix\_artn.cpp.
 In the Makefile, i.e. MAKE/Makefile.serial, you need to had the library PATH.
 An example:
@@ -20,4 +22,13 @@ $(EXE): main.o $(LMPLIB) $(EXTRA_LINK_DEPENDS)
         $(SIZE) $@
 ```
 
+
+## TODO
+
+- nsteppos in ARTn has not the same meaning for QE and LAMMPS
+- Work on the parallelization:
+  - one ARTn run with many proc
+  - many ARTn run with one proc
+  - many ARTn run with many proc
+- Generalize the unit conversion
 

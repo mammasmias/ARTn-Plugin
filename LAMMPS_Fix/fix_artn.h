@@ -73,6 +73,7 @@ class FixARTn : public Fix {
   double dt_init, dtsk, dtgrow;
   double tmax, tmin, dtmax, dtmin, dmax;
   int fire_integrator, ntimestep_start;
+  int delaystep_start_flag;
 
   int nsteppos;
   double dt_curr;

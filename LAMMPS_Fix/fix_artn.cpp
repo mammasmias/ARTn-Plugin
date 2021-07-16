@@ -54,6 +54,7 @@ FixARTn::FixARTn( LAMMPS *lmp, int narg, char **arg ): Fix( lmp, narg, arg )
 
   if (narg < 3) error->all(FLERR,"Illegal fix ARTn command");
 
+  // ...Set to null/0 all the variable of the class
   istep = 0;
   nword = 0;
   word = nullptr;
@@ -74,7 +75,95 @@ FixARTn::FixARTn( LAMMPS *lmp, int narg, char **arg ): Fix( lmp, narg, arg )
   fire_integrator = 0.0; 
   ntimestep_start = 0.0;
 
+  delaystep_start_flag = 1;
+
   pe_compute = nullptr;
+
+  etol = 0.0;
+  ftol = 0.0;
+
+
+
+  // ...Save the Fire Parameter - Init:
+  alpha_init = 0.1;
+  alphashrink = 0.99;
+
+  //dt_init = 0.001; //update->dt;
+  dtsk = 0.5;
+  dtgrow = 1.1;
+
+  dmax = 0.5;
+
+  tmax = 20.;
+  tmin = 0.02;
+
+  fire_integrator = 0;
+
+  //if( narg == 3 )return;
+
+  int iarg(3);
+  while( iarg < narg ){
+    
+    if( strcmp(arg[iarg], "alpha0") == 0 ){
+      if (iarg+2 > narg) error->all(FLERR,"Illegal min_modify command");
+      alpha_init = utils::numeric(FLERR,arg[iarg+1],false,lmp);
+      iarg += 2;
+    } else if (strcmp(arg[iarg],"alphashrink") == 0) {
+      if (iarg+2 > narg) error->all(FLERR,"Illegal min_modify command");
+      alphashrink = utils::numeric(FLERR,arg[iarg+1],false,lmp);
+      iarg += 2;
+    } else if (strcmp(arg[iarg],"dtgrow") == 0) {
+      if (iarg+2 > narg) error->all(FLERR,"Illegal min_modify command");
+      dtgrow = utils::numeric(FLERR,arg[iarg+1],false,lmp);
+      iarg += 2;
+    } else if (strcmp(arg[iarg],"dtshrink") == 0) {
+      if (iarg+2 > narg) error->all(FLERR,"Illegal min_modify command");
+      dtsk = utils::numeric(FLERR,arg[iarg+1],false,lmp);
+      iarg += 2;
+    } else if (strcmp(arg[iarg],"tmax") == 0) {
+      if (iarg+2 > narg) error->all(FLERR,"Illegal min_modify command");
+      tmax = utils::numeric(FLERR,arg[iarg+1],false,lmp);
+      iarg += 2;
+    } else if (strcmp(arg[iarg],"tmin") == 0) {
+      if (iarg+2 > narg) error->all(FLERR,"Illegal min_modify command");
+      tmin = utils::numeric(FLERR,arg[iarg+1],false,lmp);
+      iarg += 2;
+    //} else if (strcmp(arg[iarg],"halfstepback") == 0) {
+    //  if (iarg+2 > narg) error->all(FLERR,"Illegal min_modify command");
+    //  if (strcmp(arg[iarg+1],"yes") == 0) halfstepback_flag = 1;
+    //  else if (strcmp(arg[iarg+1],"no") == 0) halfstepback_flag = 0;
+    //  else error->all(FLERR,"Illegal min_modify command");
+    //  iarg += 2;
+    } else if (strcmp(arg[iarg],"initialdelay") == 0) {
+      if (iarg+2 > narg) error->all(FLERR,"Illegal min_modify command");
+      if (strcmp(arg[iarg+1],"yes") == 0) delaystep_start_flag = 1;
+      else if (strcmp(arg[iarg+1],"no") == 0) delaystep_start_flag = 0;
+      else error->all(FLERR,"Illegal min_modify command");
+      iarg += 2;
+    //} else if (strcmp(arg[iarg],"vdfmax") == 0) {
+    //  if (iarg+2 > narg) error->all(FLERR,"Illegal min_modify command");
+    //  max_vdotf_negatif = utils::numeric(FLERR,arg[iarg+1],false,lmp);
+    //  iarg += 2;
+    } else if (strcmp(arg[iarg],"integrator") == 0) {
+      if (iarg+2 > narg) error->all(FLERR,"Illegal min_modify command");
+      if (strcmp(arg[iarg+1],"eulerimplicit") == 0) fire_integrator = 0;
+      else error->all(FLERR,"Illegal min_modify command");
+      iarg += 2;
+    //} else if (strcmp(arg[iarg],"norm") == 0) {
+    //  if (iarg+2 > narg) error->all(FLERR,"Illegal min_modify command");
+    //  if (strcmp(arg[iarg+1],"two") == 0) normstyle = TWO;
+    //  else if (strcmp(arg[iarg+1],"max") == 0) normstyle = MAX;
+    //  else if (strcmp(arg[iarg+1],"inf") == 0) normstyle = INF;
+    //  else error->all(FLERR,"Illegal min_modify command");
+    //  iarg += 2;
+    } else {
+      int n = modify_param(narg-iarg,&arg[iarg]);
+      if (n == 0) error->all(FLERR,"Illegal fix_modify command");
+      iarg += n;
+    }
+
+  }
+  
 
 }
 
@@ -173,22 +262,12 @@ void FixARTn::min_setup( int vflag ) {
   minimize-> modify_params( nword, word );
 
 
-  // ...Save the Fire Parameter - Init:
-  alpha_init = 0.1;
-  alphashrink = 0.99;
+  dt_init = update->dt;
 
-  dt_init = 0.001; //update->dt;
-  dtsk = 0.5;
-  dtgrow = 1.1;
-
-  dmax = 0.1;
-
-  tmax = 20.;
-  tmin = 0.02;
   dtmax = tmax*dt_init;
   dtmin = tmin*dt_init;
 
-  fire_integrator = 0;
+  //fire_integrator = 0;
   ntimestep_start = update->ntimestep;
   
   etol = update->etol;
@@ -204,7 +283,7 @@ void FixARTn::min_setup( int vflag ) {
   cout<< " * dtmax->"<< dtmax<< endl;
 
 
-  // Copy the order of atom
+  // ...Copy the order of atom
   int nat = atom-> natoms;
   tagint *itag = atom->tag;
   memory->create( order, nat, "Fix_artn::order" );
@@ -215,10 +294,9 @@ void FixARTn::min_setup( int vflag ) {
   memory->create( f_prev, nat, 3, "fix_artn:f_prev");
   nextblank = 0;
 
-
-  
-
 }
+
+
 
 
 /* ---------------------------------------------------------------------- */
@@ -227,7 +305,6 @@ void FixARTn::min_post_force( int vflag ) {
 
   cout<<" * IN MIN_POST_FORCES..." << endl;
   post_force( vflag );
-
   cout<<" * OUT MIN_POST_FORCES..." << endl;
 
 }
@@ -240,44 +317,36 @@ void FixARTn::post_force( int /*vflag*/ ){
 
   // call pARTn library...
 
-  cout<<" * IN_POST_FORCES..." << endl;
-  cout<<" * MIN::"<< update-> minimize_style<< " NTIMESTEP:: "<< update-> ntimestep << endl;
 
+  // ...Link the minimizer
   class Min *minimize = update-> minimize; 
+  if( !minimize )error->all(FLERR,"fix/ARTn::Min_vector is not linked");
 
-  if( !minimize )cout<<" * Min_vector is not linked"<<endl;
 
-  //cout<<" * FIRE Param::"<< minimize->dt<<" | "<< minimize->alpha << endl;
+  // ...We Change the convergence criterium to control it
+  update->etol = 1e-18;
+  update->ftol = 1e-18;
   //cout<< " * FIX_ARTn::MINIMIZE CONV:"<< update-> etol<< " | "<< update->ftol<< endl;
 
-  update->etol = 1e-12;
-  update->etol = 1e-12;
-  cout<< " * FIX_ARTn::MINIMIZE CONV:"<< update-> etol<< " | "<< update->ftol<< endl;
 
-  //cout<< " * Param dt is accessible by update-> dt "<< update->dt << endl;
-  //cout<< " * FIRE Params can be change through update->minimize->modify_params( int narg, char **args )"<<endl;
-
-
+  // ...Basic Array to work
+  int nlocal = atom->nlocal;
   double **tau = atom->x;
   double **f = atom->f;
   double **vel = atom->v ;
   const int *ityp = atom->type;
 
 
-  // ...Comput V.F to know which call it is
-  
-  int nlocal = atom->nlocal;
+  // ...Comput V.F to know in which part of alogrithm energy_force() is called
   double vdotf = 0.0, vdotfall;
-
-  for (int i = 0; i < nlocal; i++){
-    //cout<< " * FIX_ARTn::position: "<< i<< "|"<< order[i]<< " | "<< ityp[i]<<" "<< tau[i][0]<< " "<< tau[i][1]<<" "<< tau[i][2]<<endl;
+  for( int i = 0; i < nlocal; i++ )
     vdotf += vel[i][0]*f[i][0] + vel[i][1]*f[i][1] + vel[i][2]*f[i][2];
-  }
   MPI_Allreduce(&vdotf,&vdotfall,1,MPI_DOUBLE,MPI_SUM,world);
-  cout<<" * FIX_ARTN::Computed v.f = "<< vdotfall<<endl;
+  //cout<<" * FIX_ARTN::Computed v.f = "<< vdotfall<<endl;
 
 
 
+  // ---------------------------------------------------------------------  
   // ...If v.f is 0 or under min_fire call the force to ajust 
   // the integrator step parameter dtv
   if( !(vdotfall > 0) && update-> ntimestep > 1 && nextblank ){
@@ -293,37 +362,36 @@ void FixARTn::post_force( int /*vflag*/ ){
       f[i][2] = f_prev[i][2] * rescale*rescale ;
     }
 
-    cout<< " ********* RETURN WITHOUT COMPUTE ARTn | v.f = "<< vdotfall<< " | Rescale "<< rescale<<" "<< dt_curr<< " " <<update->dt<<endl;
+    //cout<< " ********* RETURN WITHOUT COMPUTE ARTn | v.f = "<< vdotfall<< " | Rescale "<< rescale<<" "<< dt_curr<< " " <<update->dt<<endl;
 
     // ...Next call should be after the integration
     nextblank = 0;
     return;
 
-  }
-
-  /*...............................................................................*/
+  } // ---------------------------------------------------------------------------------------- RETURN
 
 
 
 
+  /*****************************************
+   *  Now we enter in the ARTn Algorithm
+   *****************************************/
 
+
+
+  // ...Extract the energy in Ry for ARTn  
   double etot = pe_compute->compute_scalar() * eV2Ry;
   const int nat = atom-> natoms;
 
-  // Conv. Criterium
-  //double epse = update-> etol;
-  //double epsf = update-> ftol;
 
 
-  /*
-     ...Array of element */
+  // ...Array of element 
   char *elt ;
   elt = new char[nat];
-  for( int i(0); i < nat; i++ ) elt[i] = alphab[ ityp[i] ];
+  for( int i(0); i < nat; i++ )elt[i] = alphab[ ityp[i] ];
 
 
-  /*
-    ...Build it with : domain-> boxlo[3], boxhi[3] and xy, xz, yz  */
+  // ...Build it with : domain-> boxlo[3], boxhi[3] and xy, xz, yz  
   double lat[3][3];
   double dx = domain->boxhi[0] - domain->boxlo[0], 
          dy = domain->boxhi[1] - domain->boxlo[1], 
@@ -334,16 +402,16 @@ void FixARTn::post_force( int /*vflag*/ ){
   lat[2][0] = 0.0 ;   lat[2][1] = 0.0           ; lat[2][2] = dz ;
 
 
-  /* 
-    ...Array to fix the atom - could find a fix for that */
+  // ...Array to fix the atom - 
+  // IDEA::We should interact with fix/freeze  
   int **if_pos;
   memory->create(if_pos,nat,3,"fix:if_pos");
-  for( int i(0); i < nat; i++ ){
+  memset( if_pos, 1, 3*nat ); 
+  /*for( int i(0); i < nat; i++ ){
      if_pos[ i ][0] = 1;
      if_pos[ i ][1] = 1;
      if_pos[ i ][2] = 1;
-     //cout<< " if_pos "<< if_pos[i][0]<< " | "<< if_pos[i][2]<< " | "<< if_pos[i][2] <<endl;
-  }
+  }*/
   
 
   /* ...Convergence and displacement */
@@ -369,30 +437,27 @@ void FixARTn::post_force( int /*vflag*/ ){
     f[i][2] *= EA2RB;
     if( i == 243 )cout<< " Force("<<i<<"):: "<< f[i][0]<< " "<< f[i][1]<< " "<< f[i][2]<< endl;  
   }
-/*  if( rmass ){
-    for( int i(0); i<nat; i++){
-      f[i][0] *= EA2RB / rmass[i]; 
-      f[i][1] *= EA2RB / rmass[i]; 
-      f[i][2] *= EA2RB / rmass[i]; 
-    }
-  }else{
-    for( int i(0); i<nat; i++){
-      f[i][0] *= EA2RB / mass[ityp[i]]; 
-      f[i][1] *= EA2RB / mass[ityp[i]]; 
-      f[i][2] *= EA2RB / mass[ityp[i]]; 
-    }
-  }
-*/
   cout<< " * PRE_ARTn::Force convertion::"<< nat<< " | F *= "<< EA2RB <<endl;
 
+
+  // ...ARTn
   artn_( &f[0][0], &etot, nat, ityp, elt, &tau[0][0], order, &lat[0][0], &if_pos[0][0], &disp, &lconv );
 
 
+  // Maybe should be a global variable
+  memory->destroy(if_pos);
+
+
+
+  // ----------------------------------------------------------------------COMVERGENCE 
   if( lconv ){
+
+    // ...Reset the energy force tolerence
     update-> etol = etol;
     update-> ftol = ftol;
 
-    double RB2EA = 1. / EA2RB ;// / force->ftm2v;
+    // ...Convert the force
+    double RB2EA = 1. / EA2RB;
     for( int i(0); i<nat; i++){
         f[i][0] *= RB2EA;
         f[i][1] *= RB2EA;
@@ -401,36 +466,33 @@ void FixARTn::post_force( int /*vflag*/ ){
 
     cout<< " ************************** ARTn HAS CONVERGED"<<endl;
     return;
-  }
+  } // --------------------------------------------------------------------------------
 
 
-  // Maybe should be a global variable
-  memory->destroy(if_pos);
 
   // POST ARTn/PRE MOVE_MODE
-  cout<< " * POST_ARTn/PRE_MOVE_MODE::DISP::"<< disp<<endl;
+  //cout<< " * POST_ARTn/PRE_MOVE_MODE::DISP::"<< disp<<endl;
 
+
+  // ...Convert the time in atomic unit of time
   double dt0 = dt_init*ps2aut ;
   dt_curr *= ps2aut;
   
-  cout<< " * fixArtn:alpha_0 "<< alpha_init<< " | dt "<< dt_init<< endl;
 
+
+  // ...Convert the movement to the force
   move_mode_( nat, &f[0][0], &vel[0][0], &etot, &nsteppos, &dt_curr, &alpha, &alpha_init, &dt0, &disp );
 
+
+  // ...Convert to the LAMMPS units
   dt_curr /= ps2aut ;
-
-  cout<< " * fixArtn:alpha "<< alpha<< " | dt "<< dt_curr<< " | "<< disp << endl;
-
-
-  double RB2EA = 1. / EA2RB ;// / force->ftm2v;
+  double RB2EA = 1. / EA2RB;
   if( disp == __artn_params_MOD_perp || disp == __artn_params_MOD_relx ){
 
-    for( int i(0); i<nat; i++){
-        if( i == 243 )cout<< " Force("<<i<<"):: "<< f[i][0]<< " "<< f[i][1]<< " "<< f[i][2]<< endl;  
+    for( int i(0); i < nat; i++){
         f[i][0] *= RB2EA;
         f[i][1] *= RB2EA;
         f[i][2] *= RB2EA;
-        if( i == 243 )cout<< " Force("<<i<<"):: "<< f[i][0]<< " "<< f[i][1]<< " "<< f[i][2]<< endl;  
     }
 
   }else{
@@ -454,43 +516,18 @@ void FixARTn::post_force( int /*vflag*/ ){
 
 
 
-  cout<< " FIX_ARTN::Convert:: "<< EA2RB << " | "<< RB2EA <<endl;
-  int iat = 243;
-  cout<< " Force("<<iat<<"):: "<< f[iat][0]<< " "<< f[iat][1]<< " "<< f[iat][2]<< endl; 
-  double dt2 = dt_curr*dt_curr/mass[ityp[iat]]*force->ftm2v;
-  cout<< " v("<<iat<<"):: "<< vel[iat][0]<< " "<< vel[iat][1]<< " "<< vel[iat][2]<< std::endl; 
-  cout<< " dx("<<iat<<"):: "<< f[iat][0]*dt2<< " "<< f[iat][1]*dt2<< " "<< f[iat][2]*dt2<< std::endl; 
-
-
-  // ...Store the actual force
-  for( int i(0); i < nat; i++ ){
-    cout<< " ** DIFF_FORCE::"<<i<<" :: "<<f_prev[i][0] - f[i][0]<< " | "<<f_prev[i][1] - f[i][1]<< " | "<<f_prev[i][2] -f[i][2]<<endl;
-  }
-
-
-
-  // ...Compute V.F
-/*  vdotf = 0.0;
-  for (int i = 0; i < nlocal; i++)
-    vdotf += vel[i][0]*force[i][0] + vel[i][1]*force[i][1] + vel[i][2]*force[i][2];
-  MPI_Allreduce(&vdotf,&vdotfall,1,MPI_DOUBLE,MPI_SUM,world);
-  cout<< " FIX_ARTN::VdotF:: "<< vdotfall<<endl;
-*/
-
-
 
   // CHANGE FIRE PARAMETER as function of the value of 
 
-  //if( (disp == 2 && __artn_params_MOD_iperp == 1) || disp != 2 ){
   if( (disp == __artn_params_MOD_perp && __artn_params_MOD_iperp == 1) 
     || (disp != __artn_params_MOD_perp && disp != __artn_params_MOD_relx) ){
 
-    cout<< " FIX_ARTN::Params Actuallization"<<endl;
+    //cout<< " FIX_ARTN::Params Actuallization"<<endl;
 
     // ...Update the time
     update->dt = dt_curr;
-
     string str;
+
 
     // ...Allocate/Deallocate word
     nword = 6;
@@ -510,7 +547,6 @@ void FixARTn::post_force( int /*vflag*/ ){
 
     // ...RELAX step -> halfstepback = yes
     if( disp == __artn_params_MOD_relx || disp == __artn_params_MOD_perp ){
-      //nword = nword + 2; 
       strcpy( word[4], "halfstepback" );
       strcpy( word[5], "yes" );
     } else {
@@ -519,18 +555,16 @@ void FixARTn::post_force( int /*vflag*/ ){
     }
 
     // ...Print the command
-    cout<<" * -> Displacement: "<< disp <<endl;
-    cout<<" * -> dt_curr: "<< update->dt <<endl;
-    for( int i(0); i < nword; i = i+2 )
-      cout<<" * -> "<< word[i] << ": "<< word[i+1] <<endl;
+    //cout<<" * -> Displacement: "<< disp <<endl;
+    //cout<<" * -> dt_curr: "<< update->dt <<endl;
+    //for( int i(0); i < nword; i = i+2 )
+    //  cout<<" * -> "<< word[i] << ": "<< word[i+1] <<endl;
 
 
+    // ...Send the new parameter to minmize
     minimize-> modify_params( nword, word );
     minimize-> init();
   }
-
-  // ...Print the new Parameters
-  //minimize-> setup_style();
 
 
 
@@ -544,7 +578,6 @@ void FixARTn::post_force( int /*vflag*/ ){
   if( !(vdotfall > 0) )nextblank = 1;
   if( istep == 0 )nextblank = 0;
 
-  cout<< " FIX_ARTN::END::VdotF:: "<< vdotfall<< " | NextBlank:: "<< nextblank <<endl;
 
 
   // ...Store the actual force
@@ -554,12 +587,9 @@ void FixARTn::post_force( int /*vflag*/ ){
     f_prev[i][2] = f[i][2];
   }
 
-  // ...Store actual dt
-  //dt_prev = 
 
 
-  //if( istep == 10 )exit(0);
-
+  // ...Increment & return
   istep++;
   return;
 
