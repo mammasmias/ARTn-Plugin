@@ -18,7 +18,7 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, order, at, if_pos, disp, lcon
        npush, neigen, nlanc_init, nsmooth, push_mode, dist_thr, convcrit_init, convcrit_final, &
        fpara_convcrit, eigval_thr, relax_thr, push_step_size, current_step_size, dlanc, eigen_step_size, fpush_factor, &
        push_ids,add_const, push, eigenvec, tau_saddle, initialize_artn,  &
-       VOID, INIT, PERP, EIGN, LANC, RELX
+       VOID, INIT, PERP, EIGN, LANC, RELX, zseed
   ! 
   IMPLICIT NONE
   REAL(DP), INTENT(INOUT) :: force(3,nat)     ! force calculated by the engine
@@ -90,6 +90,8 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, order, at, if_pos, disp, lcon
      etot_init = etot 
   ENDIF
 
+  ! set initial random seed
+  IF( zseed .ne. 0 ) idum = zseed
 
 
 

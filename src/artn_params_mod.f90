@@ -36,6 +36,7 @@ MODULE artn_params
   INTEGER :: nlanc      ! max number of lanczos iterations
   INTEGER :: ismooth    ! number of smoothing steps
   INTEGER :: if_pos_ct  ! counter used to determine the number of fixed coordinates 
+  INTEGER :: zseed      ! random number generator seed
   ! lanczos variables
   REAL(DP) :: lowest_eigval
   !                                           ! 
@@ -66,7 +67,7 @@ MODULE artn_params
   NAMELIST/artn_parameters/ lrelax, lpush_final, npush, neigen, nlanc_init, nsmooth, push_mode, dist_thr,  &
        convcrit_init,convcrit_final,fpara_convcrit, eigval_thr, relax_thr, &
        push_step_size, dlanc, eigen_step_size, &
-       push_ids,add_const
+       push_ids,add_const,zseed
   ! 
   LOGICAL :: lrelax     ! do we want to relax to adjacent minima from the saddle point 
   LOGICAL :: lpush_final ! push to adjacent minimum along eigenvector 
