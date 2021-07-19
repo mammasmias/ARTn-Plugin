@@ -51,4 +51,47 @@ lines to the QE input file `pwscf.in`:
 ```
 
 
+## How to use plugin-ARTn
+
+Plugin-ARTn enter in FIRE algorithm minimization loop.
+The parameters specific to ARTn algorithm must be specify in `art.in` file where you launch the simulation.
+The list of parameters are:
+
+###### General feature:
+
+- `lrelax`: Values `.true./.false`, by default is `false.`. 
+Flag if do we want to relax to adjacent minima from the saddle point.
+- `lpush_final`: Values `.true./.false.`, by default is `true.`.
+Flag to push to adjacent minimum along eigenvector.
+- `npush`: Value integer, by default is `3`. Number of initial pushes before lanczos start.
+- `neigen`: Value integer, by default is `1`. Number of steps made with eigenvector before perpendicular relax.
+- `nlanc_init`: Value integer, by default is `16`. Maximum number of lanczos iterations
+- `nsmooth`: Value integer, by default is `1`. Number of smoothing steps from push to eigenvector.
+
+###### The push mode:
+
+- `push_mode`: Value character, by default is `all`. Type of initial push (`all` , `list` or `rad`)
+
+  - `all`: The initial push is on all the atom in the box with random direction.
+  - `list`: The initial push is only on atoms define in the list define by the parameter `push_ids`
+  - `rad`: The initial push is onthe atoms define by the parameter `push_ids` and the atoms arounds separated by the distance define by `dist_thr` parameters.
+
+- `push_ids`: Value integer, by default is empty. Define the list of atom's id on which we define an initial push for `push_mode = list or rad`. Each atom's id are separated by a coma:
+
+  `push_ids = 23, 201, 35`
+
+- `dist_thr`: Value is real, by default is `0`. The unit is in Angstrom. Distance Threshold between the atoms in `push_ids` parameters and the environment.
+
+- `add_const`: Is an array of real, by default is empty. Contains the constrain on the initial push if the user want to push in specific region of the space. The constrain contains 4 real value, 3 for the direction and 1 for the solid angle around this direction. 
+
+###### The saddle point convergence:
+
+- `convcrit_init`: Value is real, by default is `1e-2`. The unit is eV/Angstrom. Initial force convergence criteria. Used for the perpendicular relax before the saddle point convergence
+- `convcrit_final`: Value is real, by default is `1e-3`. The unit is eV/Angstrom. Initial force convergence criteria. Used for the perpendicular relax close to the saddle point.
+- `fpara_convcrit`: Value is real, by default is `5e-3`. The unit is eV/Angstrom. Initial force convergence criteria. Used for the parallel relaxation.
+- `eigval_thr`: Is a real value, by default is `-0.01` Ry/Angs^2. Threshold for the Hessian eigen value obtain by Lanczos algorithm to start to converge to. The eigen value relative to the saddle point should be negative.
+- `relax_thr`: Is a real value, by default is `0.01`. Energy Threshold at the saddle point to start relaxation to adjacent minima.
+- `push_step_size`: Is a real value, by default is `3.0`. The unit is in Angstrom. Step size of inital push. 
+- `dlanc`: Is a real value, by default is `1e-2`. The unit is in Angstrom. Step size in the lanczos algorithm.
+- `eigen_step_size`:  Is a real value, by default is `0.2`. The unit is in Angstrom. Step size for a step with the lanczos eigenvector.
 

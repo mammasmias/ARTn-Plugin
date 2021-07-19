@@ -4,7 +4,6 @@
 ! Main ARTn plugin subroutine:
 !        modifies the input force to perform the ARTn algorithm 
 !------------------------------------------------------------------------------
-!SUBROUTINE artn( force, etot, nat, ityp, atm, tau, at, if_pos, disp, lconv )
 SUBROUTINE artn( force, etot, nat, ityp, atm, tau, order, at, if_pos, disp, lconv )
   !----------------------------------------------------------------------------
   !
