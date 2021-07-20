@@ -18,7 +18,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
        npush, neigen, nlanc_init, nsmooth, push_mode, dist_thr, convcrit_init, convcrit_final, &
        fpara_convcrit, eigval_thr, relax_thr, push_step_size, current_step_size, dlanc, eigen_step_size, fpush_factor, &
        push_ids,add_const, push, eigenvec, tau_saddle, initialize_artn,  &
-       VOID, INIT, PERP, EIGN, LANC, RELX, zseed &
+       VOID, INIT, PERP, EIGN, LANC, RELX, zseed, &
        engine_units
   USE units !, only : make_units
   ! 
@@ -87,8 +87,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      ! read the input parameters 
      CALL initialize_artn( nat, iunartin, iunartout, filin, filout )
      ! store the total energy of the initial state
-     !etot_init = etot 
      etot_init = convert_energy( etot_eng )
+     !if( engine_units == "qe" ) etot_init = etot_eng 
      ! 
   ENDIF
 
@@ -106,6 +106,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
   ! ...Convert the Eneergy
   etot = convert_energy( etot_eng )
+  !if( engine_units == "qe" ) etot = etot_eng 
 
   ! ...Initialize the displacement
   disp = VOID
@@ -331,7 +332,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         WRITE (iunartout,'(5X, "--------------------------------------------------")')
         WRITE (iunartout,'(5X, "    *** ARTn found a potential saddle point ***   ")')
         WRITE (iunartout,'(5X, "--------------------------------------------------")')
-        WRITE (iunartout,'(15X,"E_final - E_initial =", F12.5," eV")') (etot - etot_init)*RY2EV
+        !WRITE (iunartout,'(15X,"E_final - E_initial =", F12.5," eV")') (etot - etot_init)*RY2EV
+        WRITE (iunartout,'(15X,"E_final - E_initial =", F12.5," eV")') unconvert_energy((etot - etot_init)) !*RY2EV
         WRITE (iunartout,'(5X, "--------------------------------------------------")')
 
         !write( iunartout, * ) " ARTn::", MAXVAL(ABS(force_in*if_pos)), convcrit_final, leigen, lsaddle
@@ -407,7 +409,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            WRITE (iunartout,'(5X, "--------------------------------------------------")')
            WRITE (iunartout,'(5X, "    *** ARTn found adjacent minimum ***   ")')
            WRITE (iunartout,'(5X, "--------------------------------------------------")')
-           WRITE (iunartout,'(15X,"backward E_act =", F12.5," eV")') de_back*RY2EV
+           !WRITE (iunartout,'(15X,"backward E_act =", F12.5," eV")') de_back*RY2EV
+           WRITE (iunartout,'(15X,"backward E_act =", F12.5," eV")') unconvert_energy(de_back) !*RY2EV
            WRITE (iunartout,'(5X, "--------------------------------------------------")')
         ELSE
            lconv = .true.
@@ -415,10 +418,14 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            WRITE (iunartout,'(5X, "--------------------------------------------------")')
            WRITE (iunartout,'(5X, "    *** ARTn converged to initial minimum ***   ")')
            WRITE (iunartout,'(5X, "--------------------------------------------------")')
-           WRITE (iunartout,'(15X,"forward  E_act =", F12.5," eV")') de_fwd*RY2EV
-           WRITE (iunartout,'(15X,"backward E_act =", F12.5," eV")') de_back*RY2EV
-           WRITE (iunartout,'(15X,"reaction dE    =", F12.5," eV")') (etot-etot_final) *RY2EV
-           WRITE (iunartout,'(15X,"dEinit - dEfinal    =", F12.5," eV")') (etot_init-etot) *RY2EV
+           !WRITE (iunartout,'(15X,"forward  E_act =", F12.5," eV")') de_fwd*RY2EV
+           !WRITE (iunartout,'(15X,"backward E_act =", F12.5," eV")') de_back*RY2EV
+           !WRITE (iunartout,'(15X,"reaction dE    =", F12.5," eV")') (etot-etot_final) *RY2EV
+           !WRITE (iunartout,'(15X,"dEinit - dEfinal    =", F12.5," eV")') (etot_init-etot) *RY2EV
+           WRITE (iunartout,'(15X,"forward  E_act =", F12.5," eV")') unconvert_energy(de_fwd) !*RY2EV
+           WRITE (iunartout,'(15X,"backward E_act =", F12.5," eV")') unconvert_energy(de_back) !*RY2EV
+           WRITE (iunartout,'(15X,"reaction dE    =", F12.5," eV")') unconvert_energy((etot-etot_final)) ! *RY2EV
+           WRITE (iunartout,'(15X,"dEinit - dEfinal    =", F12.5," eV")') unconvert_energy((etot_init-etot)) ! *RY2EV
            WRITE (iunartout,'(5X, "--------------------------------------------------")')
         END IF
         ! 

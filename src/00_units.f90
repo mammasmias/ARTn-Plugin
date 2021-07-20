@@ -53,7 +53,7 @@ module units
   subroutine make_units( txt )
     !> @brief Receive the keyword of Engine which contains the engine name and 
     !! type of unit. Maybe we can also define the units for the output
-    character(*), intent( in ) :: txt
+    character(*), intent( inout ) :: txt
 
     character(:), allocatable :: engine, mode
     integer :: i, n 
@@ -73,6 +73,7 @@ module units
       engine = lower(trim(txt))
       mode = ""
     endif
+    txt = engine
 
    !print*, " * ARTn::UNITS::engine :", engine
    !print*, " * ARTn::UNITS::mode   :", mode
@@ -101,7 +102,7 @@ module units
       case( 'qe', 'quantum_espresso' )
 
         !! Energy: Rydberg
-        E2au = 1. / Ry2eV
+        E2au = 1. !/ Ry2eV
         au2E = Ry2eV
 
         !! Length: Bohr
@@ -112,6 +113,8 @@ module units
         T2au = 1.
         au2T = 1.
 
+        F2au = 1. !/ au2E / L2au
+        au2F = 1. !/ F2au
 
       ! ---------------------------------------------- LAMMPS
       case( 'lammps' )
@@ -131,6 +134,9 @@ module units
             !! Time: picosecond
             T2au = 1. / AU_PS
             au2T = AU_PS
+
+            F2au = E2au / L2au
+            au2F = 1. / F2au
 
           !case( 'real' )
             !! Energy: Kcal/mol
@@ -170,8 +176,6 @@ module units
     end select   
 
 
-    F2au = E2au / L2au
-    au2F = 1. / F2au
 
 
     !! if( verbose )

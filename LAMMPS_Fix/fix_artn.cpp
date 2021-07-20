@@ -444,14 +444,6 @@ void FixARTn::post_force( int /*vflag*/ ){
   double *rmass = atom->rmass;
   double *mass = atom->mass;
 
-/*  double EA2RB = eV2Ry / Ang2Bohr;
-  for( int i(0); i < nlocal; i++){
-    f[i][0] *= EA2RB;  
-    f[i][1] *= EA2RB;  
-    f[i][2] *= EA2RB;
-  }*/
-  //cout<< " * PRE_ARTn::Force convertion::"<< nat<< " | F *= "<< EA2RB <<endl;
-
 
 
   // ...Verification of the local size
@@ -534,16 +526,6 @@ void FixARTn::post_force( int /*vflag*/ ){
     //}
 
 
-
-    // ...Convert the force
-/*    double RB2EA = 1. / EA2RB;
-    for( int i(0); i<nlocal; i++){
-        f[i][0] *= RB2EA;
-        f[i][1] *= RB2EA;
-        f[i][2] *= RB2EA;
-    }
-*/
-
     cout<< " ************************** ARTn CONVERGED"<<endl;
     return;
   } // --------------------------------------------------------------------------------
@@ -554,14 +536,7 @@ void FixARTn::post_force( int /*vflag*/ ){
   //cout<< " * POST_ARTn/PRE_MOVE_MODE::DISP::"<< disp<<endl;
 
 
-  // ...Convert the time in atomic unit of time
-  //double dt0 = dt_init*ps2aut ;
-  //dt_curr *= ps2aut;
-  
-
-
   // ...Convert the movement to the force
-  //move_mode_( nat, &f[0][0], &vel[0][0], &etot, &nsteppos, &dt_curr, &alpha, &alpha_init, &dt0, &disp );
   move_mode_( nat, &f[0][0], &vel[0][0], &etot, &nsteppos, &dt_curr, &alpha, &alpha_init, &dt_init, &disp );
 
 
@@ -569,30 +544,20 @@ void FixARTn::post_force( int /*vflag*/ ){
 
   //cout<<" * POST_MOVE_MODE::"<<endl;
   // ...Convert to the LAMMPS units
-  //dt_curr /= ps2aut ;
-  double RB2EA = 1.; // / EA2RB;
-  if( disp == __artn_params_MOD_perp || disp == __artn_params_MOD_relx ){
-
-    for( int i(0); i < nat; i++){
-        f[i][0] *= RB2EA;
-        f[i][1] *= RB2EA;
-        f[i][2] *= RB2EA;
-    }
-
-  }else{
+  if( !(disp == __artn_params_MOD_perp || disp == __artn_params_MOD_relx) ){
 
     // Comvert the force Ry to LAMMPS units
     if( rmass ){
       for( int i(0); i<nat; i++){
-        f[i][0] *= RB2EA*rmass[i]; 
-        f[i][1] *= RB2EA*rmass[i]; 
-        f[i][2] *= RB2EA*rmass[i]; 
+        f[i][0] *= rmass[i]; 
+        f[i][1] *= rmass[i]; 
+        f[i][2] *= rmass[i]; 
       }
     }else{
       for( int i(0); i<nat; i++){
-	f[i][0] *= RB2EA*mass[ityp[i]];      
-	f[i][1] *= RB2EA*mass[ityp[i]];      
-	f[i][2] *= RB2EA*mass[ityp[i]];
+	f[i][0] *= mass[ityp[i]];      
+	f[i][1] *= mass[ityp[i]];      
+	f[i][2] *= mass[ityp[i]];
       }
     }
 
