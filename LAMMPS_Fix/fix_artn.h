@@ -55,15 +55,21 @@ class FixARTn : public Fix {
   const double ps2aut = 41341.374575751 / 2.;
 
   // Following and interaction with lammps
-  int istep, nword;
+  int istep, nword, natoms;
   char **word;
 
   // Engine atomic order
   int *order;
 
+  // Constrains on atomic movement
+  int **if_pos;
+
+  // Element of type
+  char *elt;
+
   // Store the previous force
   int nextblank;
-  double **f_prev;
+  double **f_prev, **ftot;
 
   // energy/force tolerance
   double etol, ftol;

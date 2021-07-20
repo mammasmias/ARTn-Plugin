@@ -61,6 +61,9 @@ FixARTn::FixARTn( LAMMPS *lmp, int narg, char **arg ): Fix( lmp, narg, arg )
 
   nextblank = 0;
   f_prev = nullptr;
+  order = nullptr;
+  elt = nullptr;
+  if_pos = nullptr;
 
   alpha_init = 0.0;
   alphashrink = 0.0;
@@ -175,7 +178,9 @@ FixARTn::~FixARTn() {
   /* deallocate the array */
   memory->destroy( word );
   memory->destroy( order );
+  memory->destroy( elt );
   memory->destroy( f_prev );
+  memory->destroy( if_pos );
   
   pe_compute = nullptr;
 
@@ -285,14 +290,37 @@ void FixARTn::min_setup( int vflag ) {
 
   // ...Copy the order of atom
   int nat = atom-> natoms;
+  natoms = nat; // Save for the rescale step
+  int nlocal = atom->nlocal;
   tagint *itag = atom->tag;
-  memory->create( order, nat, "Fix_artn::order" );
+  memory->create( order, nat, "Fix/artn::order" );
   for( int i(0); i < nat; i++ ) order[i] = itag[i];
 
 
-  // Allocate the previous force table
-  memory->create( f_prev, nat, 3, "fix_artn:f_prev");
+  // ...Allocate the previous force table :: IS LOCAL
+  memory->create( f_prev, nlocal, 3, "fix/artn:f_prev");
   nextblank = 0;
+
+  // Allocate memory for global force array
+  memory->create( ftot, natoms, 3, "fix/artn:ftot");
+
+
+  // ...Define the Element array for each type
+  memory->create( elt, nat, "fix/artn:");
+  const int *ityp = atom->type;
+  for( int i(0); i < nat; i++ ) elt[i] = alphab[ ityp[i] ];
+
+
+  // ...Define the constrains on the atomic movement
+  memory->create(if_pos,nat,3,"fixi/artn:if_pos");
+  //memset( if_pos, 1, 3*nat ); 
+  for( int i(0); i < nat; i++ ){
+     if_pos[ i ][0] = 1;
+     if_pos[ i ][1] = 1;
+     if_pos[ i ][2] = 1;
+  }
+
+
 
 }
 
@@ -330,11 +358,18 @@ void FixARTn::post_force( int /*vflag*/ ){
 
 
   // ...Basic Array to work
-  int nlocal = atom->nlocal;
+  const int nlocal = atom->nlocal;
+  const int nat = atom->natoms;
   double **tau = atom->x;
   double **f = atom->f;
   double **vel = atom->v ;
   const int *ityp = atom->type;
+
+  //const int me = universe-> me;
+  //const int nprocs = universe->nprocs;
+  //MPI_Comm uworld = universe->uwords;
+
+
 
 
   // ...Comput V.F to know in which part of alogrithm energy_force() is called
@@ -353,16 +388,17 @@ void FixARTn::post_force( int /*vflag*/ ){
 
 
     // ...Rescale the force if the dt has been change 
-    double rescale = dt_curr / update->dt;
+    double rcl = dt_curr / update->dt;
 
     // ...Reload the previous ARTn-force 
     for( int i(0); i < nlocal; i++){
-      f[i][0] = f_prev[i][0] * rescale*rescale ;
-      f[i][1] = f_prev[i][1] * rescale*rescale ;
-      f[i][2] = f_prev[i][2] * rescale*rescale ;
+      f[i][0] = f_prev[i][0] * rcl*rcl ;
+      f[i][1] = f_prev[i][1] * rcl*rcl ;
+      f[i][2] = f_prev[i][2] * rcl*rcl ;
     }
 
     //cout<< " ********* RETURN WITHOUT COMPUTE ARTn | v.f = "<< vdotfall<< " | Rescale "<< rescale<<" "<< dt_curr<< " " <<update->dt<<endl;
+
 
     // ...Next call should be after the integration
     nextblank = 0;
@@ -380,15 +416,15 @@ void FixARTn::post_force( int /*vflag*/ ){
 
 
   // ...Extract the energy in Ry for ARTn  
-  double etot = pe_compute->compute_scalar() * eV2Ry;
-  const int nat = atom-> natoms;
+  //double etot = pe_compute->compute_scalar() * eV2Ry;
+  double etot = pe_compute->compute_scalar();
+  //const int nat = atom-> natoms;
 
 
+  /* ...Convergence and displacement */
+  bool lconv;
+  int disp;
 
-  // ...Array of element 
-  char *elt ;
-  elt = new char[nat];
-  for( int i(0); i < nat; i++ )elt[i] = alphab[ ityp[i] ];
 
 
   // ...Build it with : domain-> boxlo[3], boxhi[3] and xy, xz, yz  
@@ -402,49 +438,83 @@ void FixARTn::post_force( int /*vflag*/ ){
   lat[2][0] = 0.0 ;   lat[2][1] = 0.0           ; lat[2][2] = dz ;
 
 
-  // ...Array to fix the atom - 
-  // IDEA::We should interact with fix/freeze  
-  int **if_pos;
-  memory->create(if_pos,nat,3,"fix:if_pos");
-  //memset( if_pos, 1, 3*nat ); 
-  for( int i(0); i < nat; i++ ){
-     if_pos[ i ][0] = 1;
-     if_pos[ i ][1] = 1;
-     if_pos[ i ][2] = 1;
-  }
-  
-
-  /* ...Convergence and displacement */
-  bool lconv;
-  int disp;
 
   
-  // ...Store the actual force
-  for( int i(0); i < nat; i++ ){
-    f_prev[i][0] = f[i][0];
-    f_prev[i][1] = f[i][1];
-    f_prev[i][2] = f[i][2];
-  }
-
   // PRE ARTn
   double *rmass = atom->rmass;
   double *mass = atom->mass;
 
-  double EA2RB = eV2Ry / Ang2Bohr;
-  for( int i(0); i<nat; i++){
+/*  double EA2RB = eV2Ry / Ang2Bohr;
+  for( int i(0); i < nlocal; i++){
     f[i][0] *= EA2RB;  
     f[i][1] *= EA2RB;  
     f[i][2] *= EA2RB;
-  }
+  }*/
   //cout<< " * PRE_ARTn::Force convertion::"<< nat<< " | F *= "<< EA2RB <<endl;
 
+
+
+  // ...Verification of the local size
+/*  MPI_Allgather( &nlocal, 1, MPI_INT, nloc, nprocs, MPI_INT, uworlds);
+  for( int ipc(0); ipc < nprocs; ipc++ ) ntot += nloc[ipc];
+  if( natoms != ntot )lresize = 1
+
+  if( lresize ){
+   // Resize FTOT
+   memory->destroy( ftot );
+   natoms = atoms->natoms;
+   nat = natoms;
+   memory->create( ftot, natoms, 3, "fix/artn:ftot");
+   lresize = 0 ;
+  }
+
+
+
+  // ...Collect the position and force
+  if( !me ){
+
+    int n0(0);
+
+    for( int i(0); i < n; i++){
+         int idx = n0 + i
+         ftot[idx][0] = fbuff[i][0];
+         ftot[idx][1] = fbuff[i][1];
+         ftot[idx][2] = fbuff[i][2];
+
+         order[idx] = ibuff[i];
+    }
+    n0 += nlocal;
+
+    for( int iproc(1); iproc < nprocs; iproc++ ){
+      int n = nloc[iproc];
+      MPI_Recv( fbuff, 3*n, MPI_DOUBLE, iproc, 0, uworlds, MPI_STATUS_IGNORE );
+      MPI_Recv( ibuff, n, MPI_INT, iproc, 0, uworlds, MPI_STATUS_IGNORE );
+
+      // collect in desorder
+      for( int i(0); i < n; i++){
+         int idx = n0 + i
+         ftot[idx][0] = fbuff[i][0];
+         ftot[idx][1] = fbuff[i][1];
+         ftot[idx][2] = fbuff[i][2];
+
+         order[idx] = ibuff[i];
+      }
+      n0 += n;
+
+    }
+      
+
+  }else{
+
+    MPI_Send( &f[0][0], nlocal, MPI_DOUBLE, 0, 0, uwords );
+    MPI_Send( atom->tag, nlocal, MPI_INT, 0, 0, uwords );
+
+  }
+*/
 
   // ...ARTn
   artn_( &f[0][0], &etot, nat, ityp, elt, &tau[0][0], order, &lat[0][0], &if_pos[0][0], &disp, &lconv );
 
-
-  // Maybe should be a global variable
-  memory->destroy(if_pos);
 
 
 
@@ -455,15 +525,26 @@ void FixARTn::post_force( int /*vflag*/ ){
     update-> etol = etol;
     update-> ftol = ftol;
 
+    // ...Spread the force 
+    //spread_force( nlocal, &f[0][0], nat, &ftot[0][0] );
+    //if( me == 0 ){
+
+    //}else{
+
+    //}
+
+
+
     // ...Convert the force
-    double RB2EA = 1. / EA2RB;
-    for( int i(0); i<nat; i++){
+/*    double RB2EA = 1. / EA2RB;
+    for( int i(0); i<nlocal; i++){
         f[i][0] *= RB2EA;
         f[i][1] *= RB2EA;
         f[i][2] *= RB2EA;
     }
+*/
 
-    cout<< " ************************** ARTn HAS CONVERGED"<<endl;
+    cout<< " ************************** ARTn CONVERGED"<<endl;
     return;
   } // --------------------------------------------------------------------------------
 
@@ -474,19 +555,22 @@ void FixARTn::post_force( int /*vflag*/ ){
 
 
   // ...Convert the time in atomic unit of time
-  double dt0 = dt_init*ps2aut ;
-  dt_curr *= ps2aut;
+  //double dt0 = dt_init*ps2aut ;
+  //dt_curr *= ps2aut;
   
 
 
   // ...Convert the movement to the force
-  move_mode_( nat, &f[0][0], &vel[0][0], &etot, &nsteppos, &dt_curr, &alpha, &alpha_init, &dt0, &disp );
+  //move_mode_( nat, &f[0][0], &vel[0][0], &etot, &nsteppos, &dt_curr, &alpha, &alpha_init, &dt0, &disp );
+  move_mode_( nat, &f[0][0], &vel[0][0], &etot, &nsteppos, &dt_curr, &alpha, &alpha_init, &dt_init, &disp );
+
+
 
 
   //cout<<" * POST_MOVE_MODE::"<<endl;
   // ...Convert to the LAMMPS units
-  dt_curr /= ps2aut ;
-  double RB2EA = 1. / EA2RB;
+  //dt_curr /= ps2aut ;
+  double RB2EA = 1.; // / EA2RB;
   if( disp == __artn_params_MOD_perp || disp == __artn_params_MOD_relx ){
 
     for( int i(0); i < nat; i++){
@@ -581,11 +665,16 @@ void FixARTn::post_force( int /*vflag*/ ){
 
 
   // ...Store the actual force
-  for( int i(0); i < nat; i++ ){
+  for( int i(0); i < nlocal; i++ ){
     f_prev[i][0] = f[i][0];
     f_prev[i][1] = f[i][1];
     f_prev[i][2] = f[i][2];
   }
+
+
+
+  // ...Spread the force
+
 
 
 

@@ -66,7 +66,7 @@ MODULE artn_params
   NAMELIST/artn_parameters/ lrelax, lpush_final, npush, neigen, nlanc_init, nsmooth, push_mode, dist_thr,  &
        convcrit_init,convcrit_final,fpara_convcrit, eigval_thr, relax_thr, &
        push_step_size, dlanc, eigen_step_size, &
-       push_ids,add_const
+       push_ids,add_const, engine_units
   ! 
   LOGICAL :: lrelax     ! do we want to relax to adjacent minima from the saddle point 
   LOGICAL :: lpush_final ! push to adjacent minimum along eigenvector 
@@ -92,6 +92,9 @@ MODULE artn_params
   ! arrays related to constraints 
   INTEGER,  ALLOCATABLE :: push_ids(:)    ! IDs of atoms to be pushed 
   REAL(DP), ALLOCATABLE :: add_const(:,:) ! constraints on initial push
+  !
+  CHARACTER(LEN=256) :: engine_units
+  !CHARACTER(LEN=:), ALLOCATABLE :: engine_units
   
 CONTAINS
   !
@@ -99,6 +102,7 @@ CONTAINS
     !
     ! sets defaults, reads input and creates ARTn output file
     ! 
+    USE units
     IMPLICIT none
     INTEGER, INTENT(IN) :: nat,iunartin,iunartout
     CHARACTER (LEN=255), INTENT(IN) :: filnam,filout
@@ -219,11 +223,20 @@ CONTAINS
     IF ( .not. ALLOCATED(H)) ALLOCATE( H(1:nlanc,1:nlanc), source = 0.D0 )
     IF ( .not. ALLOCATED(Vmat)) ALLOCATE( Vmat(3,nat,1:nlanc), source = 0.D0 )
     IF ( .not. ALLOCATED(force_old) ) ALLOCATE( force_old(3,nat), source = 0.D0 )
-    ! convert push/lanczos/eigenvec step size to bohr (because force units are in Ry/bohr) 
-    eigen_step_size = eigen_step_size/B2A
-    push_step_size = push_step_size/B2A
-    dlanc = dlanc/B2A
-    dist_thr = dist_thr/B2A
+
+
+    ! Define the UNits convertion
+    call make_units( engine_units )
+
+    ! ...Convert push/lanczos/eigenvec step size to bohr (because force units are in Ry/bohr) 
+    !eigen_step_size = eigen_step_size/B2A
+    !push_step_size = push_step_size/B2A
+    !dlanc = dlanc/B2A
+    !dist_thr = dist_thr/B2A
+    eigen_step_size = convert_length( eigen_step_size )
+    push_step_size = convert_length( push_step_size )
+    dlanc = convert_length( dlanc )
+    dist_thr = convert_length( dist_thr )
     ! 
   END SUBROUTINE initialize_artn
   !

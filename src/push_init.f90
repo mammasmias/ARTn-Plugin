@@ -1,6 +1,4 @@
 
-!SUBROUTINE push_init (nat, tau, at, alat, idum, push_ids, dist_thr, add_const, init_step_size, push, mode)
-!SUBROUTINE push_init (nat, tau, at, idum, push_ids, dist_thr, add_const, init_step_size, push, mode)
 SUBROUTINE push_init (nat, tau, order, at, idum, push_ids, dist_thr, add_const, init_step_size, push, mode)
   !
   ! subroutine that generates the initial push; options are specified by mode: 

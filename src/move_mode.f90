@@ -5,8 +5,9 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
   !
   ! translate specified move to appropriate force and set FIRE parameters accordingly  
   !
-  use iso_c_binding, only : c_char
+  !use iso_c_binding, only : c_char
   USE artn_params, ONLY: DP, AMU_RY, iperp, push0 => push, push=>eigenvec, dlanc, MOVE
+  USE UNITS
   !
   IMPLICIT NONE
 
@@ -23,6 +24,7 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
   INTEGER, INTENT(IN)                       :: disp
   ! 
   ! -- Local Variable
+  REAL(DP) :: dt0, dt
   REAL(DP), EXTERNAL               :: ddot,dnrm2
 
   !
@@ -30,6 +32,11 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
   ! NOTE force units of Ry/a.u. are assumed ... 
   !
 
+
+  ! .. Convert the force & time
+  force = convert_force( force )
+  dt = convert_time( dt_curr )
+  dt0 = convert_time( dt_init )   !%! Finally we don't touch di_init
 
 
   SELECT CASE( MOVE(disp) )
@@ -39,9 +46,11 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
      etot = 1.D0
      vel(:,:) = 0.D0
      alpha = 0.0_DP
-     dt_curr = dt_init
+     !dt_curr = dt_init
+     dt = dt0
      nsteppos = 0
-     force(:,:) = push0(:,:)*amu_ry/dt_curr**2
+     !force(:,:) = push0(:,:)*amu_ry/dt_curr**2
+     force(:,:) = push0(:,:)*amu_ry/dt**2
 
   CASE( 'perp' )
      !
@@ -51,7 +60,8 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
         etot = 0.D0
         vel(:,:) = 0.D0
         alpha = alpha_init
-        dt_curr = dt_init
+        !dt_curr = dt_init
+        dt = dt0
         nsteppos = 5
      ELSE
         ! subtract the components that are parallel
@@ -66,34 +76,43 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
      !
      etot = 0.D0
      vel(:,:) = 0.D0
-     dt_curr = dt_init
+     !dt_curr = dt_init
+     dt = dt0
      alpha = 0.D0
      nsteppos = 0
      ! the step performed should be like this now translate it into the correct force
-     force(:,:) = force(:,:)*dlanc*amu_ry/dt_curr**2
-     !force(:,:) = eigenvec(:,:)*dlanc*amu_ry/dt_curr**2   ! Should be like that
+     !force(:,:) = force(:,:)*dlanc*amu_ry/dt_curr**2
+     force(:,:) = force(:,:)*dlanc*amu_ry/dt**2
+     !force(:,:) = eigenvec(:,:)*dlanc*amu_ry/dt**2   ! Should be like that
      !
   CASE( 'eign' )
      !
      etot = 0.D0
      vel(:,:) = 0.D0
      alpha = 0.0_DP
-     dt_curr = dt_init
+     !dt_curr = dt_init
+     dt = dt0
      nsteppos = 0
-     force(:,:) = force(:,:)*amu_ry/dt_curr**2
-     !force(:,:) = eigenvec(:,:)*amu_ry/dt_curr**2   ! Should be like that
+     !force(:,:) = force(:,:)*amu_ry/dt_curr**2
+     force(:,:) = force(:,:)*amu_ry/dt**2
+     !force(:,:) = eigenvec(:,:)*amu_ry/dt**2   ! Should be like that
      !
 
   CASE( 'relx' )
      !forc_thr = 10D-8    !! QE dependent
      alpha = alpha_init
-     dt_curr = dt_init
+     !dt_curr = dt_init
+     dt = dt0
 
   CASE default
      write(*,*) 'Problem with move_mode!'
 
   END SELECT
 
+
+  ! ...Unconvert the force & time
+  dt_curr = unconvert_time( dt )
+  force = unconvert_force( force )
 
 
 END SUBROUTINE move_mode

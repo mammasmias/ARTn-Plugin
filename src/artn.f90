@@ -4,13 +4,13 @@
 ! Main ARTn plugin subroutine:
 !        modifies the input force to perform the ARTn algorithm 
 !------------------------------------------------------------------------------
-SUBROUTINE artn( force, etot, nat, ityp, atm, tau, order, at, if_pos, disp, lconv )
+SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, lconv )
   !----------------------------------------------------------------------------
   !
   ! artn_params for variables and counters that need to be stored in each step   
   ! DEFINED IN: artn_params_mod.f90
   ! 
-  use iso_c_binding, only : c_char
+  !use iso_c_binding, only : c_char
   USE artn_params, ONLY: DP, RY2EV,B2A, iunartin, iunartout, iunstruct, &
        lartn, lrelax,lpush_init,lperp,leigen,llanczos, lsaddle, lpush_final, &
        istep, iperp, ieigen, ipush, ilanc, ismooth, nlanc, if_pos_ct, &
@@ -18,13 +18,15 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, order, at, if_pos, disp, lcon
        npush, neigen, nlanc_init, nsmooth, push_mode, dist_thr, convcrit_init, convcrit_final, &
        fpara_convcrit, eigval_thr, relax_thr, push_step_size, current_step_size, dlanc, eigen_step_size, fpush_factor, &
        push_ids,add_const, push, eigenvec, tau_saddle, initialize_artn,  &
-       VOID, INIT, PERP, EIGN, LANC, RELX
+       VOID, INIT, PERP, EIGN, LANC, RELX, &
+       engine_units
+  USE units !, only : make_units
   ! 
   IMPLICIT NONE
   REAL(DP), INTENT(INOUT) :: force(3,nat)     ! force calculated by the engine
   REAL(DP), INTENT(INOUT) :: tau(3,nat)       ! atomic positions (needed for output only)
 
-  REAL(DP), INTENT(IN) ::    etot             ! total energy in current step
+  REAL(DP), INTENT(IN) ::    etot_eng             ! total energy in current step
   INTEGER,  INTENT(IN) ::    order(nat)       ! Engine order of atom
   REAL(DP), INTENT(IN) ::    at(3,3)          ! lattice parameters in alat units 
   INTEGER,  INTENT(IN), value ::    nat              ! number of atoms
@@ -47,6 +49,7 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, order, at, if_pos, disp, lcon
   REAL(DP)  :: v_in(3,nat)                    ! input vector for lanczos 
   REAL(DP)  :: fpara_tot                      ! total force in parallel direction
   REAL(DP)  :: smoothing_factor               ! mixing factor for smooth transition between eigenvec and push
+  REAL(DP)  :: lat(3,3), etot
   INTEGER   :: ios ,i                         ! file IOSTAT  
   CHARACTER( LEN=255) :: filin, filout, sadfname, initpfname, eigenfname, restartfname
 
@@ -67,9 +70,6 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, order, at, if_pos, disp, lcon
   lconv = .false.
 
 
-  ! store original force
-  force_in(:,:) = force(:,:)
-
   !
   ! fpara_tot is used to scale the magnitude of the eigenvector 
   ! 
@@ -87,12 +87,23 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, order, at, if_pos, disp, lcon
      ! read the input parameters 
      CALL initialize_artn( nat, iunartin, iunartout, filin, filout )
      ! store the total energy of the initial state
-     etot_init = etot 
+     !etot_init = etot 
+     etot_init = convert_energy( etot_eng )
+     ! 
   ENDIF
 
 
+  ! ...Store & convert original force in a.u.
+  !force_in(:,:) = force(:,:)
+  force_in = convert_force( force )
+  force = force_in !convert_force( force )
 
+  ! ...Convert the LENGTH
+  !tau = convert_length( tau )
+  !lat = convert_length( at )
 
+  ! ...Convert the Eneergy
+  etot = convert_energy( etot_eng )
 
   ! ...Initialize the displacement
   disp = VOID
@@ -111,6 +122,7 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, order, at, if_pos, disp, lcon
      ! initial push 
      !
      CALL push_init(nat, tau, order, at, idum, push_ids, dist_thr, add_const, push_step_size, push ,push_mode)
+     !CALL push_init(nat, tau, order, lat, idum, push_ids, dist_thr, add_const, push_step_size, push ,push_mode)
      ! set up the flags (we did an initial push, now we need to relax perpendiculary) 
      lpush_init = .false.
      lperp = .true.
@@ -125,6 +137,7 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, order, at, if_pos, disp, lcon
      CALL write_report(etot,force_in, lowest_eigval, disp, if_pos, istep, nat,  iunartout)
      !
      CALL write_struct( at, nat, tau, order, atm, ityp, push, 1.0_DP, iunstruct, 'xsf', initpfname)
+     !CALL write_struct( lat, nat, tau, order, atm, ityp, push, 1.0_DP, iunstruct, 'xsf', initpfname)
      ! 
   ELSE IF ( lperp ) THEN
      !
@@ -191,6 +204,7 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, order, at, if_pos, disp, lcon
 
      ! count the number of steps made with the eigenvector
      CALL write_struct( at, nat, tau, order, atm, ityp, force, 1.0_DP, iunstruct, 'xsf', eigenfname)
+     !CALL write_struct( lat, nat, tau, order, atm, ityp, force, 1.0_DP, iunstruct, 'xsf', eigenfname)
      ! 
      IF ( ieigen == neigen  ) THEN
         ! do a perpendicular relax
@@ -310,6 +324,7 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, order, at, if_pos, disp, lcon
         lsaddle = .true.
         !
         CALL write_struct( at, nat, tau, order, atm, ityp, force, 1.0_DP, iunstruct, 'xsf', sadfname)
+        !CALL write_struct( lat, nat, tau, order, atm, ityp, force, 1.0_DP, iunstruct, 'xsf', sadfname)
         !
         WRITE (iunartout,'(5X, "--------------------------------------------------")')
         WRITE (iunartout,'(5X, "    *** ARTn found a potential saddle point ***   ")')
@@ -414,8 +429,15 @@ SUBROUTINE artn( force, etot, nat, ityp, atm, tau, order, at, if_pos, disp, lcon
   istep = istep + 1      
 
 
+  ! ...Close the output file
   CLOSE (UNIT = iunartout, STATUS = 'KEEP') 
 
+
+
+  ! ...Unconvert the Force and position 
+  force = unconvert_force( force )
+  !tau = unconvert_length( tau )
+  !at = unconvert_length( at )
 
 
 END SUBROUTINE artn 
