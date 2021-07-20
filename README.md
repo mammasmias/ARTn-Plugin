@@ -1,6 +1,6 @@
-# ARTn-plugin-QE
+# plugin-ARTn
 
-This is a working repo for the current version of the ARTn plugin; currently it can only be used with Quantum ESPRESSO    
+This is a working repo for the current version of the plugin-ARTn; currently it can be used with Quantum ESPRESSO and LAMMPS   
 
 ## Contains:
 
@@ -10,25 +10,32 @@ This is a working repo for the current version of the ARTn plugin; currently it 
 
 
 - `examples/`: Contains `Al-vacancy.d` and `H2+H.d` 
-
 - `qe-6.6/`: Quantum ESPRESSO software
-
 - `src/`: ARTn plugin subroutines 
-
 - `patch-ARTn.sh`: Patch QE with the ARTn plugin 
-
 - `patch-FIRE.sh`: Patch QE with the FIRE minimization algorithm 
+- `README.md`: The file you are reading
+- `LAMMPS_Fix/`: Contains the fix of lammps to interface LAMMPS/ARTn
 
-- `README.md`: The file you are reading 
+## TODO
 
-## How to patch QE:
+- nsteppos in ARTn has not the same meaning for QE and LAMMPS
+- Work on the parallelization:
+  - one ARTn run with many proc
+  - many ARTn run with one proc
+  - many ARTn run with many proc
+- Generalize the unit conversion -> `MODULE units`
+
+## QE/pARTn Interface 
+
+### How to patch QE:
 
 **First installation:**  Execute  the `patch-FIRE.sh` script (adds the FIRE minimization option to QE) 
 
 **Install/update the ARTn-plugin**:
 First configure QE, then put correct paths of QE and ART in the environment variables file, then run "make" to compile the libartn.a, and then run "make patch" to patch QE and make pw.
 
-## How to run ARTn:
+### How to run ARTn with QE:
 
 For example calculations please see the `examples` directory. A brief
 description of the minimum requirements is provided here.
@@ -49,6 +56,38 @@ lines to the QE input file `pwscf.in`:
   ion_dynamics = 'fire' 
 /
 ```
+
+## LAMMPS/pARTn Interface
+
+### Installation/Compilation
+
+ARTn, in LAMMPS, is defined as a FIX, `fix\_artn.h` and `fix\_artn.cpp`. So  you copy and paste these two files in the `LAMMPS/src/`.
+
+In the Makefile, i.e. `LAMMPS/src/MAKE/Makefile.serial`, you need to had the library PATH. For pARTn it needs the openblas library with pthread library and the gfortran library for the C++/fortran interface. Of course the ARTn library built at the ARTn compilation and take place in the `src/` folder.
+An example:
+
+```makefile
+BLAS_LIB := /usr/lib/x86_64-linux-gnu/libopenblas.a -lpthread
+FORT_LIB := /usr/lib/x86_64-linux-gnu/libgfortran.so.5
+
+ART_PATH := /home/src/artn-plugin-qe
+ART_LIB := $(ART_PATH)/src/libartn.a  $(FORT_LIB) $(BLAS_LIB)
+```
+
+And the VARIABLE `ART_LIB` should be added at the moment of the executable creation:
+
+```makefile
+$(EXE): main.o $(LMPLIB) $(EXTRA_LINK_DEPENDS)
+        $(LINK) $(LINKFLAGS) main.o $(EXTRA_PATH) $(LMPLINK) $(EXTRA_LIB) $(LIB) -o $@ $(ART_LIB)
+        $(SIZE) $@
+```
+
+Now you can compile LAMMPS using the normal command with the good name of the Makefile (serial/mpi)
+
+```bash
+make serial
+```
+
 
 
 ## How to use plugin-ARTn
@@ -82,7 +121,9 @@ Flag to push to adjacent minimum along eigenvector.
 
 - `dist_thr`: Value is real, by default is `0`. The unit is in Angstrom. Distance Threshold between the atoms in `push_ids` parameters and the environment.
 
-- `add_const`: Is an array of real, by default is empty. Contains the constrain on the initial push if the user want to push in specific region of the space. The constrain contains 4 real value, 3 for the direction and 1 for the solid angle around this direction. 
+- `add_const`: Is an array of real, by default is empty. Contains the constrain on the initial push if the user want to push in specific region of the space. The constrain contains 4 real value, 3 for the direction and 1 for the solid angle around this direction. An example for the atom 23 on which ask to go in directon (-x,0,z) with solid angle of 30 degrees: 
+
+  `add_const(:,23)=-1.0, 0.0, 1.0, 30`
 
 ###### The saddle point convergence:
 
