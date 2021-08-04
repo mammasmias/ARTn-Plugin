@@ -57,6 +57,16 @@ lines to the QE input file `pwscf.in`:
 /
 ```
 
+Finally Quantum ESPRESSO must be launch with the flag -partn as follow:
+
+```bash
+./pw.x -partn -inp input_pw.txt
+```
+
+ 
+
+
+
 ## LAMMPS/pARTn Interface
 
 ### Installation/Compilation
