@@ -61,7 +61,7 @@ lines to the QE input file `pwscf.in`:
 
 ### Installation/Compilation
 
-ARTn, in LAMMPS, is defined as a FIX, `fix\_artn.h` and `fix\_artn.cpp`. So  you copy and paste these two files in the `LAMMPS/src/`.
+ARTn, in LAMMPS, is defined as a FIX, `fix_artn.h` and `fix_artn.cpp`. So  you copy and paste these two files in the `LAMMPS/src/`.
 
 In the Makefile, i.e. `LAMMPS/src/MAKE/Makefile.serial`, you need to had the library PATH. For pARTn it needs the openblas library with pthread library and the gfortran library for the C++/fortran interface. Of course the ARTn library built at the ARTn compilation and take place in the `src/` folder.
 An example:
@@ -78,8 +78,8 @@ And the VARIABLE `ART_LIB` should be added at the moment of the executable creat
 
 ```makefile
 $(EXE): main.o $(LMPLIB) $(EXTRA_LINK_DEPENDS)
-        $(LINK) $(LINKFLAGS) main.o $(EXTRA_PATH) $(LMPLINK) $(EXTRA_LIB) $(LIB) -o $@ $(ART_LIB)
-        $(SIZE) $@
+		$(LINK) $(LINKFLAGS) main.o $(EXTRA_PATH) $(LMPLINK) $(EXTRA_LIB) $(LIB) -o $@ $(ART_LIB)
+		$(SIZE) $@
 ```
 
 Now you can compile LAMMPS using the normal command with the good name of the Makefile (serial/mpi)
