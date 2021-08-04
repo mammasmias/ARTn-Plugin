@@ -78,8 +78,8 @@ And the VARIABLE `ART_LIB` should be added at the moment of the executable creat
 
 ```makefile
 $(EXE): main.o $(LMPLIB) $(EXTRA_LINK_DEPENDS)
-		$(LINK) $(LINKFLAGS) main.o $(EXTRA_PATH) $(LMPLINK) $(EXTRA_LIB) $(LIB) -o $@ $(ART_LIB)
-		$(SIZE) $@
+	$(LINK) $(LINKFLAGS) main.o $(EXTRA_PATH) $(LMPLINK) $(EXTRA_LIB) $(LIB) -o $@ $(ART_LIB)
+	$(SIZE) $@
 ```
 
 Now you can compile LAMMPS using the normal command with the good name of the Makefile (serial/mpi)
