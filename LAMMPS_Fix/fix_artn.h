@@ -87,7 +87,7 @@ class FixARTn : public Fix {
 
   // Parallelisation
   int me, nproc;
-  int *nloc;
+  int *nloc, oldnloc;
   //double **fbuff;
 
 };

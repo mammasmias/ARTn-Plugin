@@ -333,17 +333,16 @@ void FixARTn::min_setup( int vflag ) {
   int nat = atom-> natoms;
   natoms = nat; // Save for the rescale step
   int nlocal = atom->nlocal;
+  oldnloc = nlocal;
   tagint *itag = atom->tag;
-  memory->create( order, nat, "Fix/artn::order" );
-  for( int i(0); i < nat; i++ ) order[i] = itag[i];
+  memory->create( order, nlocal, "Fix/artn::order" );
+  for( int i(0); i < nlocal; i++ ) order[i] = itag[i];
 
 
   // ...Allocate the previous force table :: IS LOCAL
   memory->create( f_prev, nlocal, 3, "fix/artn:f_prev");
   nextblank = 0;
 
-  // Allocate memory for global force array
-  memory->create( ftot, natoms, 3, "fix/artn:ftot");
 
 
   // ...Define the Element array for each type
@@ -438,7 +437,7 @@ void FixARTn::post_force( int /*vflag*/ ){
   for( int i = 0; i < nlocal; i++ )
     vdotf += vel[i][0]*f[i][0] + vel[i][1]*f[i][1] + vel[i][2]*f[i][2];
   MPI_Allreduce( &vdotf, &vdotfall, 1, MPI_DOUBLE, MPI_SUM, world );
-  //cout<< me<<" * FIX_ARTN::Computed v.f = "<< vdotfall<<" | step "<< istep <<endl;
+  //if(istep == 48)cout<< me<<" * FIX_ARTN::Computed v.f = "<< vdotfall<<" | step "<< istep <<endl;
 
 
 
@@ -463,6 +462,7 @@ void FixARTn::post_force( int /*vflag*/ ){
       //cout<< me<<" * Rescale Force: "<< i<<" f:"<< f[i][0]<<endl;
     }
 
+
     //cout<< " ********* RETURN WITHOUT COMPUTE ARTn | v.f = "<< vdotfall<< " | Rescale "<< rscl<<" "<< dt_curr<< " " <<update->dt<<endl;
 
 
@@ -474,7 +474,6 @@ void FixARTn::post_force( int /*vflag*/ ){
 
 
 
- // if( istep == 2 )exit(0);
 
 
 
@@ -511,26 +510,22 @@ void FixARTn::post_force( int /*vflag*/ ){
 
 
   
-  // PRE ARTn
-  double *rmass = atom->rmass;
-  double *mass = atom->mass;
 
 
 
   // ...Verification of the local size
   MPI_Allgather( &nlocal, 1, MPI_INT, nloc, 1, MPI_INT, world );
   int ntot(0), lresize(0);
-  for( int ipc(0); ipc < nproc; ipc++ ){
-    ntot += nloc[ipc];
-    //if( !me )printf("[%d] nlocal %d | ", ipc, nloc[ipc] ); 
-  }
-
-  if( !me ){ 
-   for( int ipc(0); ipc < nproc; ipc++ )printf("[%d] nlocal %d | ", ipc, nloc[ipc] );
-   cout<<endl;
-  }
+  for( int ipc(0); ipc < nproc; ipc++ )ntot += nloc[ipc];
 
 
+  //if( !me ){ 
+  // for( int ipc(0); ipc < nproc; ipc++ )printf("[%d] nlocal %d | ", ipc, nloc[ipc] );
+  // cout<<endl;
+  //}
+
+
+  // ..
   if( natoms != ntot )lresize = 1;
   if( lresize ){
     // Resize FTOT
@@ -550,17 +545,22 @@ void FixARTn::post_force( int /*vflag*/ ){
 
   const int iat = 251;
 
+
   // ...Collect the position and force
   Collect_Arrays( nloc, tau, vel, f, nat, xtot, vtot, ftot, order_tot );
 
 
-  //cout<<" * BEFORE ARTN...."<<endl;
+
+
+  //if(istep == 48)cout<< me<<" * BEFORE ARTN...."<<endl;
   //for( int i(0); i < nloc[me]; i++)
   //  cout<< me<< " | "<< i<<"("<< order[i]<<") x: "<< tau[i][0]<<" v: "<< vel[i][0]<<" f: "<<f[i][0]<< endl;
 
 
-  lconv = false;
+
+
   // ...ARTn
+  lconv = false;
   //artn_( &f[0][0], &etot, nat, ityp, elt, &tau[0][0], order, &lat[0][0], &if_pos[0][0], &disp, &lconv );
   if( !me )artn_( &ftot[0][0], &etot, nat, ityp, elt, &xtot[0][0], order_tot, &lat[0][0], &if_pos[0][0], &disp, &lconv );
 
@@ -569,7 +569,6 @@ void FixARTn::post_force( int /*vflag*/ ){
   // ...Spread the ARTn_Step (DISP) & Convergence
   int iconv = int(lconv);
   MPI_Bcast( &iconv, 1, MPI_INT, 0, world );
-  //MPI_Bcast( &lconv, 1, MPI_C_BOOL, 0, world );
   MPI_Bcast( &disp, 1, MPI_INT, 0, world );
 
 
@@ -615,9 +614,12 @@ void FixARTn::post_force( int /*vflag*/ ){
   //  cout<< me<< " | "<< i<<"("<< order[i]<<") x: "<< tau[i][0]<<" v: "<< vel[i][0]<<" f: "<<f[i][0]<< endl;
 
 
-  //cout<<" * POST_MOVE_MODE::"<<endl;
+  //if(istep == 48)cout<< me<<" * POST_MOVE_MODE::"<<endl;
   // ...Convert to the LAMMPS units
   if( !(disp == __artn_params_MOD_perp || disp == __artn_params_MOD_relx) ){
+
+    double *rmass = atom->rmass;
+    double *mass = atom->mass;
 
     // Comvert the force Ry to LAMMPS units
     if( rmass ){
@@ -703,7 +705,7 @@ void FixARTn::post_force( int /*vflag*/ ){
 
 
   // ...Store the actual force
-  //cout<< " * Before to leave ["<< me<<"]"<< endl;
+  //if(istep == 48)cout<< me<<" * Before to leave "<< endl;
   for( int i(0); i < nloc[me]; i++ ){
     f_prev[i][0] = f[i][0];
     f_prev[i][1] = f[i][1];
@@ -712,6 +714,7 @@ void FixARTn::post_force( int /*vflag*/ ){
   }
 
 
+  //if(istep == 48)exit(0);
 
 
   // ...Increment & return
@@ -735,8 +738,14 @@ void FixARTn::Collect_Arrays( int* nloc, double **x, double **v, double **f, int
 
 
   tagint *itag = atom->tag;
-  for( int i(0); i < nloc[me]; i++ )
-    order[i] = itag[i];
+  if( oldnloc != nloc[me] ){
+    memory->destroy( order );
+    memory->destroy( f_prev );
+    oldnloc = nloc[me];
+    memory->create( order, oldnloc, "fix/artn:order" );
+    memory->create( f_prev, oldnloc, 3, "fix/artn:f_prev" );
+  }
+  for( int i(0); i < nloc[me]; i++ )order[i] = itag[i];
 
   if( !me ){
 
@@ -798,7 +807,7 @@ void FixARTn::Collect_Arrays( int* nloc, double **x, double **v, double **f, int
 
 }
 
-
+/* --------------------------------------------------------------------------------------------------------------------------------- */
 
 void FixARTn::Spread_Arrays( int *nloc, double **xtot, double **vtot, double **ftot, int nat, double **x, double **v, double **f ){
 
