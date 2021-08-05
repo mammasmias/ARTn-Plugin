@@ -48,18 +48,18 @@ class FixARTn : public Fix {
  protected:
 
   // Constant for atomic unit
-  const double eV2Ry = 1.0/13.605691930242388 ;
-  const double Ry2eV = 13.605691930242388 ;
-  const double Bohr2Ang = 0.529177210903 ;
-  const double Ang2Bohr = 1./0.529177210903 ;
-  const double ps2aut = 41341.374575751 / 2.;
+  //const double eV2Ry = 1.0/13.605691930242388 ;
+  //const double Ry2eV = 13.605691930242388 ;
+  //const double Bohr2Ang = 0.529177210903 ;
+  //const double Ang2Bohr = 1./0.529177210903 ;
+  //const double ps2aut = 41341.374575751 / 2.;
 
   // Following and interaction with lammps
   int istep, nword, natoms;
   char **word;
 
   // Engine atomic order
-  int *order;
+  int *order, *order_tot;
 
   // Constrains on atomic movement
   int **if_pos;
@@ -69,7 +69,7 @@ class FixARTn : public Fix {
 
   // Store the previous force
   int nextblank;
-  double **f_prev, **ftot;
+  double **f_prev, **ftot, **xtot, **vtot;
 
   // energy/force tolerance
   double etol, ftol;
@@ -86,7 +86,12 @@ class FixARTn : public Fix {
   double alpha;
 
   class Compute *pe_compute;        // compute for potential energy
-  const char *alphab= "ABCDEFGHIJKLMNOPQRSTUVWXYZ";  // Should disappear
+  const char *alphab = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";  // Should disappear
+
+  // Parallelisation
+  int me, nproc;
+  int *nloc;
+  //double **fbuff;
 
 };
 
