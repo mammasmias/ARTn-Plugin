@@ -88,7 +88,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      CALL initialize_artn( nat, iunartin, iunartout, filin, filout )
      ! store the total energy of the initial state
      etot_init = convert_energy( etot_eng )
-     !if( engine_units == "qe" ) etot_init = etot_eng 
      ! 
   ENDIF
 
@@ -98,15 +97,14 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   ! ...Store & convert original force in a.u.
   !force_in(:,:) = force(:,:)
   force_in = convert_force( force )
-  force = force_in !convert_force( force )
+  force = force_in 
 
-  ! ...Convert the LENGTH
-  !tau = convert_length( tau )
-  !lat = convert_length( at )
+  !do i = 1,nat
+  !  print*, i, order(i), force_in(:,i), "|", tau(:,i)
+  !enddo
 
   ! ...Convert the Eneergy
   etot = convert_energy( etot_eng )
-  !if( engine_units == "qe" ) etot = etot_eng 
 
   ! ...Initialize the displacement
   disp = VOID
@@ -125,7 +123,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      ! initial push 
      !
      CALL push_init(nat, tau, order, at, idum, push_ids, dist_thr, add_const, push_step_size, push ,push_mode)
-     !CALL push_init(nat, tau, order, lat, idum, push_ids, dist_thr, add_const, push_step_size, push ,push_mode)
+     !
      ! set up the flags (we did an initial push, now we need to relax perpendiculary) 
      lpush_init = .false.
      lperp = .true.
@@ -140,7 +138,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      CALL write_report(etot,force_in, lowest_eigval, disp, if_pos, istep, nat,  iunartout)
      !
      CALL write_struct( at, nat, tau, order, atm, ityp, push, 1.0_DP, iunstruct, 'xsf', initpfname)
-     !CALL write_struct( lat, nat, tau, order, atm, ityp, push, 1.0_DP, iunstruct, 'xsf', initpfname)
      ! 
   ELSE IF ( lperp ) THEN
      !
@@ -207,7 +204,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
      ! count the number of steps made with the eigenvector
      CALL write_struct( at, nat, tau, order, atm, ityp, force, 1.0_DP, iunstruct, 'xsf', eigenfname)
-     !CALL write_struct( lat, nat, tau, order, atm, ityp, force, 1.0_DP, iunstruct, 'xsf', eigenfname)
      ! 
      IF ( ieigen == neigen  ) THEN
         ! do a perpendicular relax

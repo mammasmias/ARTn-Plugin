@@ -179,10 +179,10 @@ module units
 
 
     !! if( verbose )
-    print*, " * ARTn::UNITS::E2au::", E2au, au2E
-    print*, " * ARTn::UNITS::L2au::", L2au, au2L
-    print*, " * ARTn::UNITS::T2au::", T2au, au2T
-    print*, " * ARTn::UNITS::F2au::", F2au, au2F
+    print*, " * ARTn::UNITS::E2au::", E2au, "au2E", au2E
+    print*, " * ARTn::UNITS::L2au::", L2au, "au2L", au2L
+    print*, " * ARTn::UNITS::T2au::", T2au, "au2T", au2T
+    print*, " * ARTn::UNITS::F2au::", F2au, "au2F", au2F
 
 
    contains

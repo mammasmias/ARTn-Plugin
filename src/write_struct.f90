@@ -4,6 +4,7 @@ SUBROUTINE write_struct( at, nat, tau, order, atm, ityp, force, fscale, ounit, f
   ! A subroutine that writes the structure to a file (based on xsf_struct of QE)  
   !
   USE artn_params, ONLY: DP,B2A 
+  USE UNITS
   IMPLICIT NONE 
   INTEGER, INTENT(IN) :: nat             ! number of atoms 
   INTEGER, INTENT(IN) :: ityp(nat)       ! atom type
@@ -24,12 +25,13 @@ SUBROUTINE write_struct( at, nat, tau, order, atm, ityp, force, fscale, ounit, f
   OPEN ( UNIT = ounit, FILE = fname, FORM = 'formatted',  STATUS = 'unknown', IOSTAT = ios )
   IF ( form == 'xsf' ) THEN 
      
-     DO i=1,3
-        DO j=1,3
-           !at_angs(j,i) = at(j,i)*alat*B2A
-           at_angs(j,i) = at(j,i)*B2A
-        ENDDO
-     ENDDO
+     !DO i=1,3
+     !   DO j=1,3
+     !      !at_angs(j,i) = at(j,i)*B2A
+     !      at_angs(j,i) = unconvert_length( at(j,i) )
+     !   ENDDO
+     !ENDDO
+     at_angs = unconvert_length( at )
 
      WRITE(ounit,*) 'CRYSTAL'
      WRITE(ounit,*) 'PRIMVEC'
@@ -39,15 +41,10 @@ SUBROUTINE write_struct( at, nat, tau, order, atm, ityp, force, fscale, ounit, f
      
      DO na=1,nat
         ! positions are in Angstroms
-        !WRITE(ounit,'(a3,3x,6f15.9)') atm(ityp(na)), &
-        !     tau(1,na)*alat*B2A, &
-        !     tau(2,na)*alat*B2A, &
-        !     tau(3,na)*alat*B2A, &
-        !     force(1,na)*fscale, &
-        !     force(2,na)*fscale, &
-        !     force(3,na)*fscale
+        ! -> And the force???
         iloc = order(na)
-        WRITE(ounit,'(a3,3x,6f15.9)') atm(ityp(iloc)), tau(:,iloc)*B2A, force(:,iloc)*fscale
+        !WRITE(ounit,'(a3,3x,6f15.9)') atm(ityp(iloc)), tau(:,iloc)*B2A, force(:,iloc)*fscale
+        WRITE(ounit,'(a3,3x,6f15.9)') atm(ityp(iloc)), unconvert_length( tau(:,iloc) ), force(:,iloc)*fscale
 
      ENDDO
   ELSE

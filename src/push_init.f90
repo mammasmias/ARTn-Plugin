@@ -49,7 +49,7 @@ SUBROUTINE push_init (nat, tau, order, at, idum, push_ids, dist_thr, add_const, 
         iglob = order(na)
         IF( ANY(push_ids == iglob) )THEN
            atom_displaced(na) = 1
-           !print*, " * PUSH_INIT::Atom_displeced", na, atom_displaced(na), order(na)
+           !print*, " * PUSH_INIT::Atom_displeced", na, atom_displaced(na), order(na), push_ids
         ENDIF
      ENDDO
 

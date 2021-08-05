@@ -26,7 +26,7 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
   ! -- Local Variable
   REAL(DP) :: dt0, dt
   REAL(DP), EXTERNAL               :: ddot,dnrm2
-
+  integer :: i
   !
   ! do things depending on mode of the move
   ! NOTE force units of Ry/a.u. are assumed ... 
@@ -51,6 +51,10 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
      nsteppos = 0
      !force(:,:) = push0(:,:)*amu_ry/dt_curr**2
      force(:,:) = push0(:,:)*amu_ry/dt**2
+
+     !do i = 1,nat
+     !print*, MOVE(disp), force(:,i)
+     !enddo
 
   CASE( 'perp' )
      !
@@ -84,6 +88,11 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
      !force(:,:) = force(:,:)*dlanc*amu_ry/dt_curr**2
      force(:,:) = force(:,:)*dlanc*amu_ry/dt**2
      !force(:,:) = eigenvec(:,:)*dlanc*amu_ry/dt**2   ! Should be like that
+
+     !do i = 1,nat
+     !print*, MOVE(disp), push(:,i)
+     !enddo
+
      !
   CASE( 'eign' )
      !

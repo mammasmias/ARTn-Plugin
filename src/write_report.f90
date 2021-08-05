@@ -5,6 +5,7 @@ SUBROUTINE write_report(etot, force, lowest_eigval, step, if_pos, istep, nat,iun
   ! a subroutine that writes a report of the current step to the output file  
   !
   USE artn_params, ONLY: DP, push, MOVE 
+  USE UNITS
   IMPLICIT NONE
   INTEGER, INTENT(IN) :: nat, istep, iunartout
   INTEGER, INTENT(IN) :: if_pos(3,nat)
@@ -23,4 +24,5 @@ SUBROUTINE write_report(etot, force, lowest_eigval, step, if_pos, istep, nat,iun
   !  write report 
   WRITE (iunartout,'(5X,I4,7X,A4,9X, F12.6, *(5X, F10.4))')  & !,5X, F7.4, 5X, F7.4, 5X, F7.4)') &
        & istep, MOVE(step), etot, force_tot,fperp_tot,fpara_tot, lowest_eigval, MAXVAL(fperp)
+       !& istep, MOVE(step), unconvert_energy(etot), force_tot, fperp_tot, fpara_tot, lowest_eigval, MAXVAL(fperp)
 END SUBROUTINE write_report
