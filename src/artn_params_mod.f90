@@ -209,8 +209,8 @@ CONTAINS
        WRITE (iunartout,'(5X, "--------------------------------------------------")')
        WRITE (iunartout,*) " "
        WRITE (iunartout,*) " "
-       WRITE (iunartout,'(5X,"istep",4X,"ART_step",12X,"Etot",9X," Ftot ",5X," Fperp ",5X," Fpara ",6X,"eigval")') 
-       WRITE (iunartout,'(34X, "[Ry]",9X,"-----------[Ry/a.u.]----------",6X,"Ry/a.u.^2")')
+       WRITE (iunartout,'(5X,"istep",4X,"ART_step",12X,"Etot",12X," Ftot ",9X," Fperp ",8X," Fpara ",8X,"eigval")') 
+       WRITE (iunartout,'(34X, "[Ry]",15X,"-----------[Ry/a.u.]----------",10X,"Ry/a.u.^2")')
        CLOSE ( UNIT = iunartout, STATUS = 'KEEP')
     !ELSE
     !   WRITE(*,*) "ARTn: Input file does not exist!"

@@ -99,9 +99,12 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   force_in = convert_force( force )
   force = force_in 
 
-  !do i = 1,nat
-  !  print*, i, order(i), force_in(:,i), "|", tau(:,i)
-  !enddo
+  if( istep == 0)then
+  do i = 1,nat
+    print*, i, order(i), tau(:,i)
+  enddo
+  endif
+  !STOP 'ARTn'
 
   ! ...Convert the Eneergy
   etot = convert_energy( etot_eng )
@@ -318,7 +321,13 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      IF ( etot > etot_init ) THEN
         ! store the saddle point energy  
         etot_saddle = etot
-        tau_saddle = tau
+        !tau_saddle = tau
+        do i = 1, nat
+        tau_saddle(:,order(i)) = tau(:,i) !> The list follow the atomic order
+        enddo
+        do i = 1, nat
+           print*, i, tau_saddle(:,i)
+        enddo
         ! 
         lsaddle = .true.
         !
@@ -392,16 +401,28 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      ! 
      IF ( MAXVAL(ABS(force_in(:,:)*if_pos(:,:))) <= convcrit_final  ) THEN
         IF ( fpush_factor == 1.0 ) THEN
+
            ! make sure QE doesn't converge
            disp = RELX
            !forc_conv_thr_qe = 1.0D-8
+
            ! reverse direction of push 
            fpush_factor = -1.0
+
            ! restart from saddle point
-           tau(:,:) = tau_saddle(:,:)
+           !tau(:,:) = tau_saddle(:,:)
+           do i = 1,nat
+           tau(:,i) = tau_saddle(:,order(i))
+           enddo
+
+           do i = 1,nat
+            print*, i, order(i), tau(:,i)
+           enddo
+
            lrelax = .false.
            etot_final = etot 
            de_back = etot_saddle - etot_final 
+
            WRITE (iunartout,'(5X, "--------------------------------------------------")')
            WRITE (iunartout,'(5X, "    *** ARTn found adjacent minimum ***   ")')
            WRITE (iunartout,'(5X, "--------------------------------------------------")')
