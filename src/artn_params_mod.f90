@@ -45,6 +45,7 @@ MODULE artn_params
   REAL(DP), ALLOCATABLE :: push(:,:)     ! initial push vector
   REAL(DP), ALLOCATABLE, target :: eigenvec(:,:) ! lanczos eigenvector
   REAL(DP), ALLOCATABLE :: tau_saddle(:,:) ! coordinates of saddle point  
+  REAL(DP), ALLOCATABLE :: eigen_saddle(:,:) ! coordinates of saddle point  
   !
   ! stored total energies and energy differences 
   ! 
@@ -176,6 +177,7 @@ CONTAINS
     IF ( .not. ALLOCATED(push_ids)) ALLOCATE(push_ids(nat), source = 0)
     IF ( .not. ALLOCATED(push)) ALLOCATE(push(3,nat), source = 0.D0)
     IF ( .not. ALLOCATED(eigenvec)) ALLOCATE(eigenvec(3,nat), source = 0.D0)
+    IF ( .not. ALLOCATED(eigen_saddle)) ALLOCATE(eigen_saddle(3,nat), source = 0.D0)
     IF ( .not. ALLOCATED(tau_saddle)) ALLOCATE(tau_saddle(3,nat), source = 0.D0)
     ! 
     !IF ( file_exists ) THEN

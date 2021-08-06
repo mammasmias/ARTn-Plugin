@@ -17,7 +17,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
        lowest_eigval, etot_init, etot_saddle, etot_final, de_saddle, de_back, de_fwd, &
        npush, neigen, nlanc_init, nsmooth, push_mode, dist_thr, convcrit_init, convcrit_final, &
        fpara_convcrit, eigval_thr, relax_thr, push_step_size, current_step_size, dlanc, eigen_step_size, fpush_factor, &
-       push_ids,add_const, push, eigenvec, tau_saddle, initialize_artn,  &
+       push_ids,add_const, push, eigenvec, tau_saddle, eigen_saddle, initialize_artn,  &
        VOID, INIT, PERP, EIGN, LANC, RELX, zseed, &
        engine_units
   USE units !, only : make_units
@@ -99,11 +99,11 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   force_in = convert_force( force )
   force = force_in 
 
-  if( istep == 0)then
-  do i = 1,nat
-    print*, i, order(i), tau(:,i)
-  enddo
-  endif
+  !if( istep == 0)then
+  !do i = 1,nat
+  !  print*, i, order(i), tau(:,i)
+  !enddo
+  !endif
   !STOP 'ARTn'
 
   ! ...Convert the Eneergy
@@ -323,11 +323,12 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         etot_saddle = etot
         !tau_saddle = tau
         do i = 1, nat
-        tau_saddle(:,order(i)) = tau(:,i) !> The list follow the atomic order
+           tau_saddle(:,order(i)) = tau(:,i) !> The list follow the atomic order
+           eigen_saddle(:,order(i)) = eigenvec(:,i)
         enddo
-        do i = 1, nat
-           print*, i, tau_saddle(:,i)
-        enddo
+        !do i = 1, nat
+        !   print*, i, tau_saddle(:,i)
+        !enddo
         ! 
         lsaddle = .true.
         !
@@ -413,11 +414,12 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            !tau(:,:) = tau_saddle(:,:)
            do i = 1,nat
            tau(:,i) = tau_saddle(:,order(i))
+           eigenvec(:,i) = eigen_saddle(:,order(i))
            enddo
 
-           do i = 1,nat
-            print*, i, order(i), tau(:,i)
-           enddo
+           !do i = 1,nat
+           ! print*, i, order(i), tau(:,i)
+           !enddo
 
            lrelax = .false.
            etot_final = etot 
