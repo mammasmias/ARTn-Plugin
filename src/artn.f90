@@ -19,7 +19,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
        fpara_convcrit, eigval_thr, relax_thr, push_step_size, current_step_size, dlanc, eigen_step_size, fpush_factor, &
        push_ids,add_const, push, eigenvec, tau_saddle, eigen_saddle, initialize_artn,  &
        VOID, INIT, PERP, EIGN, LANC, RELX, zseed, &
-       engine_units
+       engine_units, struc_format_out
   USE units !, only : make_units
   ! 
   IMPLICIT NONE
@@ -77,9 +77,12 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   !
   filin = 'artn.in'
   filout = 'artn.out'
-  sadfname = 'saddle.xsf'
-  initpfname = 'initp.xsf'
-  eigenfname = 'latest_eigenvec.xsf'
+  !sadfname = 'saddle.xsf'
+  !initpfname = 'initp.xsf'
+  !eigenfname = 'latest_eigenvec.xsf'
+  sadfname = 'saddle'
+  initpfname = 'initp'
+  eigenfname = 'latest_eigenvec'
   !
   ! initialize artn 
   !  
@@ -94,17 +97,11 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   ! set initial random seed
   IF( zseed .ne. 0 ) idum = zseed
 
+
   ! ...Store & convert original force in a.u.
-  !force_in(:,:) = force(:,:)
   force_in = convert_force( force )
   force = force_in 
 
-  !if( istep == 0)then
-  !do i = 1,nat
-  !  print*, i, order(i), tau(:,i)
-  !enddo
-  !endif
-  !STOP 'ARTn'
 
   ! ...Convert the Eneergy
   etot = convert_energy( etot_eng )
@@ -120,7 +117,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   
   ! 
   ! start initial push
-  !
+  ! 
   IF ( lpush_init ) THEN
      !
      ! initial push 
@@ -138,9 +135,9 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !force(:,:) =  push(:,:) ! Use push in move mode
      disp = INIT
      !
-     CALL write_report(etot,force_in, lowest_eigval, disp, if_pos, istep, nat,  iunartout)
+     CALL write_report( etot, force_in, lowest_eigval, disp, if_pos, istep, nat, iunartout )
      !
-     CALL write_struct( at, nat, tau, order, atm, ityp, push, 1.0_DP, iunstruct, 'xsf', initpfname)
+     CALL write_struct( at, nat, tau, order, atm, ityp, push, 1.0_DP, iunstruct, struc_format_out, initpfname )
      ! 
   ELSE IF ( lperp ) THEN
      !
@@ -206,7 +203,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      CALL write_report(etot,force_in, lowest_eigval, disp, if_pos, istep, nat,  iunartout)
 
      ! count the number of steps made with the eigenvector
-     CALL write_struct( at, nat, tau, order, atm, ityp, force, 1.0_DP, iunstruct, 'xsf', eigenfname)
+     CALL write_struct( at, nat, tau, order, atm, ityp, force, 1.0_DP, iunstruct, struc_format_out, eigenfname)
      ! 
      IF ( ieigen == neigen  ) THEN
         ! do a perpendicular relax
@@ -332,8 +329,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         ! 
         lsaddle = .true.
         !
-        CALL write_struct( at, nat, tau, order, atm, ityp, force, 1.0_DP, iunstruct, 'xsf', sadfname)
-        !CALL write_struct( lat, nat, tau, order, atm, ityp, force, 1.0_DP, iunstruct, 'xsf', sadfname)
+        CALL write_struct( at, nat, tau, order, atm, ityp, force, 1.0_DP, iunstruct, struc_format_out, sadfname)
         !
         WRITE (iunartout,'(5X, "--------------------------------------------------")')
         WRITE (iunartout,'(5X, "    *** ARTn found a potential saddle point ***   ")')

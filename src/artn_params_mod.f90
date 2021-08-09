@@ -68,7 +68,7 @@ MODULE artn_params
   NAMELIST/artn_parameters/ lrelax, lpush_final, npush, neigen, nlanc_init, nsmooth, push_mode, dist_thr,  &
        convcrit_init,convcrit_final,fpara_convcrit, eigval_thr, relax_thr, &
        push_step_size, dlanc, eigen_step_size, &
-       push_ids,add_const, engine_units, zseed
+       push_ids,add_const, engine_units, zseed, struc_format_out
   ! 
   LOGICAL :: lrelax     ! do we want to relax to adjacent minima from the saddle point 
   LOGICAL :: lpush_final ! push to adjacent minimum along eigenvector 
@@ -96,6 +96,7 @@ MODULE artn_params
   REAL(DP), ALLOCATABLE :: add_const(:,:) ! constraints on initial push
   !
   CHARACTER(LEN=256) :: engine_units
+  CHARACTER(LEN=10) :: struc_format_out
   !CHARACTER(LEN=:), ALLOCATABLE :: engine_units
   
 CONTAINS
@@ -167,6 +168,7 @@ CONTAINS
     fpush_factor = 1.0
     !
     push_mode = 'all' 
+    struc_format_out = 'xsf'
     !
     dlanc = 1.D-2 
     nlanc_init = 16
