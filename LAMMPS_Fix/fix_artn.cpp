@@ -42,8 +42,12 @@ using namespace FixConst;
 extern "C"{
   void artn_( double *const f, double* etot, const int nat, const int *ityp, const char *elt, double *const tau, const int *order, const double *lat, const int *if_pos, int* disp, bool* lconv );
   void move_mode_( const int nat, double *const f, double *const vel, double* etot, int* nsteppos, double* dt_curr, double* alpha, const double* alpha_init, const double* dt_init, int* disp );
+  int get_iperp_();
+  int get_perp_();
+  int get_relx_();
 }
 
+/*
 #ifdef INTEL 
 extern int __artn_params_mp_iperp;
 extern int __artn_params_mp_perp;
@@ -53,6 +57,7 @@ extern int __artn_params_MOD_iperp;
 extern int __artn_params_MOD_perp;
 extern int __artn_params_MOD_relx;
 #endif
+*/
 
 /* ---------------------------------------------------------------------- */
 
@@ -72,9 +77,12 @@ FixARTn::FixARTn( LAMMPS *lmp, int narg, char **arg ): Fix( lmp, narg, arg )
   vtot = nullptr;
   order_tot = nullptr;
 
+  tab_comm = NULL;
+
   // ...Set to null/0 all the variable of the class
   istep = 0;
   nword = 0;
+  nmax = 0;
   word = nullptr;
 
   nextblank = 0;
@@ -206,6 +214,8 @@ FixARTn::~FixARTn() {
   memory->destroy( vtot );
   memory->destroy( order_tot );
   
+  memory->destroy(tab_comm);
+
   pe_compute = nullptr;
 
 }
@@ -244,6 +254,11 @@ void FixARTn::init() {
 
   istep = 0;
   nword = 6;
+
+
+  // Communication
+  nmax = atom->nmax;
+  memory->create(tab_comm,nmax,"pair:tab_comm");
 
 }
 
@@ -477,7 +492,11 @@ void FixARTn::post_force( int /*vflag*/ ){
 
 
 
-
+  if( atom->nmax > nmax ){
+    memory->destroy(tab_comm);
+    nmax = atom->nmax;
+    memory->create(tab_comm,nmax,"pair:tab_comm");
+  }
 
 
 
@@ -543,25 +562,14 @@ void FixARTn::post_force( int /*vflag*/ ){
   }
 
 
-  const int iat = 251;
-
 
   // ...Collect the position and force
   Collect_Arrays( nloc, tau, vel, f, nat, xtot, vtot, ftot, order_tot );
 
 
 
-
-  //if(istep == 48)cout<< me<<" * BEFORE ARTN...."<<endl;
-  //for( int i(0); i < nloc[me]; i++)
-  //  cout<< me<< " | "<< i<<"("<< order[i]<<") x: "<< tau[i][0]<<" v: "<< vel[i][0]<<" f: "<<f[i][0]<< endl;
-
-
-
-
   // ...ARTn
   lconv = false;
-  //artn_( &f[0][0], &etot, nat, ityp, elt, &tau[0][0], order, &lat[0][0], &if_pos[0][0], &disp, &lconv );
   if( !me )artn_( &ftot[0][0], &etot, nat, ityp, elt, &xtot[0][0], order_tot, &lat[0][0], &if_pos[0][0], &disp, &lconv );
 
 
@@ -573,7 +581,7 @@ void FixARTn::post_force( int /*vflag*/ ){
 
 
 
-  // ----------------------------------------------------------------------COMVERGENCE 
+  // ---------------------------------------------------------------------- COMVERGENCE 
   if( iconv ){
 
     // ...Reset the energy force tolerence
@@ -584,18 +592,14 @@ void FixARTn::post_force( int /*vflag*/ ){
     Spread_Arrays( nloc, xtot, vtot, ftot, nat, tau, vel, f );
 
 
+    MPI_Barrier( world );
     cout<< " ************************** ARTn CONVERGED"<<endl;
     return;
   } // --------------------------------------------------------------------------------
 
 
 
-  // POST ARTn/PRE MOVE_MODE
-  //cout<< " * POST_ARTn/PRE_MOVE_MODE::DISP::"<< disp<<endl;
-
-
   // ...Convert the movement to the force
-  //move_mode_( nat, &f[0][0], &vel[0][0], &etot, &nsteppos, &dt_curr, &alpha, &alpha_init, &dt_init, &disp );
   if( !me )move_mode_( nat, &ftot[0][0], &vtot[0][0], &etot, &nsteppos, &dt_curr, &alpha, &alpha_init, &dt_init, &disp );
 
 
@@ -609,14 +613,9 @@ void FixARTn::post_force( int /*vflag*/ ){
   Spread_Arrays( nloc, xtot, vtot, ftot, nat, tau, vel, f );
 
 
-  //if( me == 1 )
-  //for( int i(0); i < nloc[me]; i++)
-  //  cout<< me<< " | "<< i<<"("<< order[i]<<") x: "<< tau[i][0]<<" v: "<< vel[i][0]<<" f: "<<f[i][0]<< endl;
-
-
-  //if(istep == 48)cout<< me<<" * POST_MOVE_MODE::"<<endl;
   // ...Convert to the LAMMPS units
-  if( !(disp == __artn_params_MOD_perp || disp == __artn_params_MOD_relx) ){
+  //if( !(disp == __artn_params_MOD_perp || disp == __artn_params_MOD_relx) ){
+  if( !(disp == get_perp_() || disp == get_relx_()) ){
 
     double *rmass = atom->rmass;
     double *mass = atom->mass;
@@ -641,12 +640,13 @@ void FixARTn::post_force( int /*vflag*/ ){
 
 
 
-  // CHANGE FIRE PARAMETER as function of the value of 
+  // ...CHANGE FIRE PARAMETER as function of the value of 
 
-  if( (disp == __artn_params_MOD_perp && __artn_params_MOD_iperp == 1) 
-    || (disp != __artn_params_MOD_perp && disp != __artn_params_MOD_relx) ){
+  //if( (disp == __artn_params_MOD_perp && __artn_params_MOD_iperp == 1) 
+  //  || (disp != __artn_params_MOD_perp && disp != __artn_params_MOD_relx) ){
+  if( (disp == get_perp_() && get_iperp_() == 1) 
+    || (disp != get_perp_() && disp != get_relx_()) ){
 
-    //cout<< " FIX_ARTN::Params Actuallization"<<endl;
 
     // ...Update the time
     update->dt = dt_curr;
@@ -662,27 +662,19 @@ void FixARTn::post_force( int /*vflag*/ ){
     str = to_string(alpha); 
     strcpy( word[1], str.c_str() );
 
-    //strcpy( word[2], "alphashrink") ;
-    //strcpy( word[3], "1.0" ) ;
-
     strcpy( word[2], "delaystep" );
     str = to_string(nsteppos);
     strcpy( word[3], str.c_str() );
 
     // ...RELAX step -> halfstepback = yes
-    if( disp == __artn_params_MOD_relx || disp == __artn_params_MOD_perp ){
+    //if( disp == __artn_params_MOD_relx || disp == __artn_params_MOD_perp ){
+    if( disp == get_relx_() || disp == get_perp_() ){
       strcpy( word[4], "halfstepback" );
       strcpy( word[5], "yes" );
     } else {
       strcpy( word[4], "halfstepback" );
       strcpy( word[5], "no" );
     }
-
-    // ...Print the command
-    //cout<<" * -> Displacement: "<< disp <<endl;
-    //cout<<" * -> dt_curr: "<< update->dt <<endl;
-    //for( int i(0); i < nword; i = i+2 )
-    //  cout<<" * -> "<< word[i] << ": "<< word[i+1] <<endl;
 
 
     // ...Send the new parameter to minmize
@@ -705,16 +697,12 @@ void FixARTn::post_force( int /*vflag*/ ){
 
 
   // ...Store the actual force
-  //if(istep == 48)cout<< me<<" * Before to leave "<< endl;
   for( int i(0); i < nloc[me]; i++ ){
     f_prev[i][0] = f[i][0];
     f_prev[i][1] = f[i][1];
     f_prev[i][2] = f[i][2];
-    //if( order[i] == iat )cout<< " * "<<me<<" | "<<order[i] <<" x: "<< tau[i][0] <<" v: "<< vel[i][0] <<" f: "<< f[i][0]<<endl;
   }
 
-
-  //if(istep == 48)exit(0);
 
 
   // ...Increment & return
@@ -739,13 +727,14 @@ void FixARTn::Collect_Arrays( int* nloc, double **x, double **v, double **f, int
 
   tagint *itag = atom->tag;
   if( oldnloc != nloc[me] ){
+    //cout<< me<< " *** RESIZE ORDER: "<< oldnloc<< " | "<< nloc[me]<<endl;
     memory->destroy( order );
     memory->destroy( f_prev );
     oldnloc = nloc[me];
     memory->create( order, oldnloc, "fix/artn:order" );
     memory->create( f_prev, oldnloc, 3, "fix/artn:f_prev" );
   }
-  for( int i(0); i < nloc[me]; i++ )order[i] = itag[i];
+  for( int i(0); i < nloc[me]; i++ ) order[i] = itag[i];
 
   if( !me ){
 
@@ -783,9 +772,9 @@ void FixARTn::Collect_Arrays( int* nloc, double **x, double **v, double **f, int
     for( int iproc(1); iproc < nproc; iproc++ ){
       //cout<<" * ENDTER IN IPROC LOOP 0"<<endl;
       int n = nloc[iproc];
-      MPI_Recv( &ftot[n0][0], 3*n, MPI_DOUBLE, iproc, 0, world, MPI_STATUS_IGNORE );
       MPI_Recv( &xtot[n0][0], 3*n, MPI_DOUBLE, iproc, 10, world, MPI_STATUS_IGNORE );
       MPI_Recv( &vtot[n0][0], 3*n, MPI_DOUBLE, iproc, 20, world, MPI_STATUS_IGNORE );
+      MPI_Recv( &ftot[n0][0], 3*n, MPI_DOUBLE, iproc, 0, world, MPI_STATUS_IGNORE );
 
       MPI_Recv( &order_tot[n0], n, MPI_INT, iproc, 1, world, MPI_STATUS_IGNORE );
       n0 += n;
@@ -795,9 +784,9 @@ void FixARTn::Collect_Arrays( int* nloc, double **x, double **v, double **f, int
   }else{
 
     // ...All the proc send own array to proc = 0
-    MPI_Send( &f[0][0], 3*nloc[me], MPI_DOUBLE, 0, 0, world );
     MPI_Send( &x[0][0], 3*nloc[me], MPI_DOUBLE, 0, 10, world );
     MPI_Send( &v[0][0], 3*nloc[me], MPI_DOUBLE, 0, 20, world );
+    MPI_Send( &f[0][0], 3*nloc[me], MPI_DOUBLE, 0, 0, world );
 
     MPI_Send( order, nloc[me], MPI_INT, 0, 1, world );
 
@@ -814,7 +803,6 @@ void FixARTn::Spread_Arrays( int *nloc, double **xtot, double **vtot, double **f
   if( !me ){
 
     // ...We fill with me = 0
-    //cout<< " * Comm After move_mode ["<< me<<"]"<<endl;
     for( int i(0); i < nloc[me]; i++){
       f[i][0] = ftot[i][0];
       f[i][1] = ftot[i][1];
@@ -828,8 +816,6 @@ void FixARTn::Spread_Arrays( int *nloc, double **xtot, double **vtot, double **f
       v[i][1] = vtot[i][1];
       v[i][2] = vtot[i][2];
 
-      //if( order[i] == iat )cout<< disp << " * "<<order[i] <<" x: "<< xtot[i][0] <<" v: "<< vtot[i][0] <<" f: "<< ftot[i][0]<<endl;
-      //if( order[i] == iat )cout<< disp << " * "<<order[i] <<" x: "<< tau[i][0] <<" v: "<< vel[i][0] <<" f: "<< f[i][0]<<endl;
     }
 
 
@@ -858,10 +844,6 @@ void FixARTn::Spread_Arrays( int *nloc, double **xtot, double **vtot, double **f
   }
 
 }
-
-
-
-
 
 
 

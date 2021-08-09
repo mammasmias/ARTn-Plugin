@@ -71,6 +71,8 @@ Finally Quantum ESPRESSO must be launch with the flag -partn as follow:
 
 ### Installation/Compilation
 
+For the moment the pARTn library has to be compiled with **gfortran** only.
+
 ARTn, in LAMMPS, is defined as a FIX, `fix_artn.h` and `fix_artn.cpp`. So  you copy and paste these two files in the `LAMMPS/src/`.
 
 In the Makefile, i.e. `LAMMPS/src/MAKE/Makefile.serial`, you need to had the library PATH. For pARTn it needs the openblas library with pthread library and the gfortran library for the C++/fortran interface. Of course the ARTn library built at the ARTn compilation and take place in the `src/` folder.
@@ -116,6 +118,7 @@ Flag to push to adjacent minimum along eigenvector.
 - `neigen`: Value integer, by default is `1`. Number of steps made with eigenvector before perpendicular relax.
 - `nlanc_init`: Value integer, by default is `16`. Maximum number of lanczos iterations
 - `nsmooth`: Value integer, by default is `1`. Number of smoothing steps from push to eigenvector.
+- `struc_format_out`: Value character, by default is `"xsf"`. Output structure format. Value accepted `"xyz"` .
 
 ###### The push mode:
 
@@ -123,7 +126,7 @@ Flag to push to adjacent minimum along eigenvector.
 
   - `all`: The initial push is on all the atom in the box with random direction.
   - `list`: The initial push is only on atoms define in the list define by the parameter `push_ids`
-  - `rad`: The initial push is onthe atoms define by the parameter `push_ids` and the atoms arounds separated by the distance define by `dist_thr` parameters.
+  - `rad`: The initial push is on the atoms define by the parameter `push_ids` and the atoms arounds separated by the distance define by `dist_thr` parameters.
 
 - `push_ids`: Value integer, by default is empty. Define the list of atom's id on which we define an initial push for `push_mode = list or rad`. Each atom's id are separated by a coma:
 

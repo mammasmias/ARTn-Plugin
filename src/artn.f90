@@ -12,14 +12,14 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   ! 
   !use iso_c_binding, only : c_char
   USE artn_params, ONLY: DP, RY2EV,B2A, iunartin, iunartout, iunstruct, &
-       lartn, lrelax,lpush_init,lperp,leigen,llanczos, lsaddle, lpush_final, &
+       lartn, lrelax,lpush_init,lperp,leigen,llanczos, lsaddle, lpush_final, lbackward, &
        istep, iperp, ieigen, ipush, ilanc, ismooth, nlanc, if_pos_ct, &
        lowest_eigval, etot_init, etot_saddle, etot_final, de_saddle, de_back, de_fwd, &
        npush, neigen, nlanc_init, nsmooth, push_mode, dist_thr, convcrit_init, convcrit_final, &
        fpara_convcrit, eigval_thr, relax_thr, push_step_size, current_step_size, dlanc, eigen_step_size, fpush_factor, &
        push_ids,add_const, push, eigenvec, tau_saddle, eigen_saddle, initialize_artn,  &
        VOID, INIT, PERP, EIGN, LANC, RELX, zseed, &
-       engine_units, struc_format_out
+       engine_units, struc_format_out, elements
   USE units !, only : make_units
   ! 
   IMPLICIT NONE
@@ -137,7 +137,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !
      CALL write_report( etot, force_in, lowest_eigval, disp, if_pos, istep, nat, iunartout )
      !
-     CALL write_struct( at, nat, tau, order, atm, ityp, push, 1.0_DP, iunstruct, struc_format_out, initpfname )
+     !CALL write_struct( at, nat, tau, order, atm, ityp, push, 1.0_DP, iunstruct, struc_format_out, initpfname )
+     CALL write_struct( at, nat, tau, order, elements, ityp, push, 1.0_DP, iunstruct, struc_format_out, initpfname )
      ! 
   ELSE IF ( lperp ) THEN
      !
@@ -203,7 +204,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      CALL write_report(etot,force_in, lowest_eigval, disp, if_pos, istep, nat,  iunartout)
 
      ! count the number of steps made with the eigenvector
-     CALL write_struct( at, nat, tau, order, atm, ityp, force, 1.0_DP, iunstruct, struc_format_out, eigenfname)
+     !CALL write_struct( at, nat, tau, order, atm, ityp, force, 1.0_DP, iunstruct, struc_format_out, eigenfname)
+     CALL write_struct( at, nat, tau, order, elements, ityp, force, 1.0_DP, iunstruct, struc_format_out, eigenfname)
      ! 
      IF ( ieigen == neigen  ) THEN
         ! do a perpendicular relax
@@ -329,7 +331,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         ! 
         lsaddle = .true.
         !
-        CALL write_struct( at, nat, tau, order, atm, ityp, force, 1.0_DP, iunstruct, struc_format_out, sadfname)
+        !CALL write_struct( at, nat, tau, order, atm, ityp, force, 1.0_DP, iunstruct, struc_format_out, sadfname)
+        CALL write_struct( at, nat, tau, order, elements, ityp, force, 1.0_DP, iunstruct, struc_format_out, sadfname)
         !
         WRITE (iunartout,'(5X, "--------------------------------------------------")')
         WRITE (iunartout,'(5X, "    *** ARTn found a potential saddle point ***   ")')
@@ -364,7 +367,12 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         leigen = .false. 
         ! 
         ! normalize eigenvector 
-        eigenvec(:,:) = eigenvec(:,:)/dnrm2(3*nat,eigenvec,1)
+        if( lbackward )then
+          eigenvec(:,:) = eigen_saddle(:,order(:))
+          lbackward = .false.
+        else
+          eigenvec(:,:) = eigenvec(:,:)/dnrm2(3*nat,eigenvec,1)
+        endif
         !
         force(:,:) = fpush_factor*eigenvec(:,:)*eigen_step_size
         !
@@ -410,8 +418,9 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            !tau(:,:) = tau_saddle(:,:)
            do i = 1,nat
            tau(:,i) = tau_saddle(:,order(i))
-           eigenvec(:,i) = eigen_saddle(:,order(i))
+           !eigenvec(:,i) = eigen_saddle(:,order(i))
            enddo
+           lbackward = .true.
 
            !do i = 1,nat
            ! print*, i, order(i), tau(:,i)

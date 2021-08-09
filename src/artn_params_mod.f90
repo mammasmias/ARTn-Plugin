@@ -27,6 +27,7 @@ MODULE artn_params
   LOGICAL :: leigen     ! push with lanczos eigenvector
   LOGICAL :: llanczos   ! lanczos algorithm
   LOGICAL :: lsaddle    ! saddle point obtained 
+  LOGICAL :: lbackward  ! backward saddle point obtained 
   ! counters
   integer :: istep
   INTEGER, target :: iperp      ! number of steps in perpendicular relaxation
@@ -68,7 +69,7 @@ MODULE artn_params
   NAMELIST/artn_parameters/ lrelax, lpush_final, npush, neigen, nlanc_init, nsmooth, push_mode, dist_thr,  &
        convcrit_init,convcrit_final,fpara_convcrit, eigval_thr, relax_thr, &
        push_step_size, dlanc, eigen_step_size, &
-       push_ids,add_const, engine_units, zseed, struc_format_out
+       push_ids,add_const, engine_units, zseed, struc_format_out, elements
   ! 
   LOGICAL :: lrelax     ! do we want to relax to adjacent minima from the saddle point 
   LOGICAL :: lpush_final ! push to adjacent minimum along eigenvector 
@@ -97,6 +98,7 @@ MODULE artn_params
   !
   CHARACTER(LEN=256) :: engine_units
   CHARACTER(LEN=10) :: struc_format_out
+  CHARACTER(LEN=3), ALLOCATABLE :: elements(:)
   !CHARACTER(LEN=:), ALLOCATABLE :: engine_units
   
 CONTAINS
@@ -138,6 +140,7 @@ CONTAINS
     leigen = .false.
     lsaddle = .false. 
     lpush_final = .false. 
+    lbackward = .true.
     !
     istep = 0
     ipush = 0 
@@ -175,12 +178,13 @@ CONTAINS
     !
     ! Allocate the arrays
     !
-    IF ( .not. ALLOCATED(add_const)) ALLOCATE(add_const(4,nat), source = 0.D0)
-    IF ( .not. ALLOCATED(push_ids)) ALLOCATE(push_ids(nat), source = 0)
-    IF ( .not. ALLOCATED(push)) ALLOCATE(push(3,nat), source = 0.D0)
-    IF ( .not. ALLOCATED(eigenvec)) ALLOCATE(eigenvec(3,nat), source = 0.D0)
-    IF ( .not. ALLOCATED(eigen_saddle)) ALLOCATE(eigen_saddle(3,nat), source = 0.D0)
-    IF ( .not. ALLOCATED(tau_saddle)) ALLOCATE(tau_saddle(3,nat), source = 0.D0)
+    IF ( .not. ALLOCATED(add_const) )    ALLOCATE(add_const(4,nat), source = 0.D0)
+    IF ( .not. ALLOCATED(push_ids) )     ALLOCATE(push_ids(nat), source = 0)
+    IF ( .not. ALLOCATED(push) )         ALLOCATE(push(3,nat), source = 0.D0)
+    IF ( .not. ALLOCATED(eigenvec) )     ALLOCATE(eigenvec(3,nat), source = 0.D0)
+    IF ( .not. ALLOCATED(eigen_saddle) ) ALLOCATE(eigen_saddle(3,nat), source = 0.D0)
+    IF ( .not. ALLOCATED(tau_saddle) )   ALLOCATE(tau_saddle(3,nat), source = 0.D0)
+    IF ( .not. ALLOCATED(elements) )     ALLOCATE(elements(300), source = "XXX")
     ! 
     !IF ( file_exists ) THEN
        ! read the ARTn input file  
@@ -234,10 +238,6 @@ CONTAINS
     call make_units( engine_units )
 
     ! ...Convert push/lanczos/eigenvec step size to bohr (because force units are in Ry/bohr) 
-    !eigen_step_size = eigen_step_size/B2A
-    !push_step_size = push_step_size/B2A
-    !dlanc = dlanc/B2A
-    !dist_thr = dist_thr/B2A
     eigen_step_size = convert_length( eigen_step_size )
     push_step_size = convert_length( push_step_size )
     dlanc = convert_length( dlanc )
@@ -301,3 +301,39 @@ END FUNCTION ran3
 
 
 END MODULE artn_params
+
+!......................................................................... FUNCTION
+
+integer function get_iperp()
+  USE artn_params, only : iperp
+  get_iperp = iperp
+end function get_iperp
+
+
+integer function get_perp()
+  USE artn_params, only : perp
+  get_perp = perp
+end function get_perp
+
+
+integer function get_relx()
+  USE artn_params, only : relx
+  get_relx = relx
+end function get_relx
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

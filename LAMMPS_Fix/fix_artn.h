@@ -35,24 +35,16 @@ class FixARTn : public Fix {
   virtual void post_force(int);
   void min_post_force(int);
 
-/*  extern "C"{
-    void artn_( double **force, double etot, int nat, int *ityp, char *elt, double **tau, double lat[3][3], int *if_pos, char *move, bool lconv );
-    void move_mode_( int nat, double **force, double **vel, double etot, int nsteppos, double dt_curr, double alpha, double alpha_init, double dt_init, char *cmode );
-  }
-*/
 
   // Communication
   void Collect_Arrays( int*, double**, double**, double**, int, double**, double**, double**, int* );
   void Spread_Arrays( int*, double**, double**, double**, int, double**, double**, double** );
 
-  //double compute_vector(int);
-  //double memory_usage();
-
 
  protected:
 
   // Following and interaction with lammps
-  int istep, nword, natoms;
+  int istep, nword, natoms, nmax;
   char **word;
 
   // Engine atomic order
@@ -88,7 +80,7 @@ class FixARTn : public Fix {
   // Parallelisation
   int me, nproc;
   int *nloc, oldnloc;
-  //double **fbuff;
+  double *tab_comm;
 
 };
 
