@@ -110,11 +110,11 @@ CONTAINS
     !> @breif 
     !!   Sets defaults, reads input and creates ARTn output file
     !
-    !> @param [in] nat	      Number of Atoms
-    !> @param [in] iunartin   Channel of input
-    !> @param [in] iunartout  Channel of Output
-    !> @param [in] filnam     Input file name
-    !> @param [in] filout     Ouput file name
+    !> @param[in] nat Number of Atoms
+    !> @param[in] iunartin Channel of input
+    !> @param[in] iunartout Channel of Output
+    !> @param[in] filnam Input file name
+    !> @param[in] filout Ouput file name
     ! 
     USE units
     IMPLICIT none
@@ -260,9 +260,12 @@ CONTAINS
 !---------------------------------------------------------------------------
 REAL(8) FUNCTION ran3( idum )
   !-------------------------------------------------------------------------
-  !! Random number generator.
+  !> @brief
+  !!   Random number generator.
   !
-  !USE kinds, ONLY : DP
+  !> @param [in] idum   dummy integer
+  !> @return a real(8) ramdom number
+  !
   !
   IMPLICIT NONE
   !
@@ -313,20 +316,26 @@ END FUNCTION ran3
 
 END MODULE artn_params
 
-!......................................................................... FUNCTION
 
+!......................................................................... FUNCTION
+!> @brief give the parameters IPERP
+!> @return the value of iperp
 integer function get_iperp()
   USE artn_params, only : iperp
   get_iperp = iperp
 end function get_iperp
 
 
+!> @brief give the parameters PERP
+!> @return the value of perp
 integer function get_perp()
   USE artn_params, only : perp
   get_perp = perp
 end function get_perp
 
 
+!> @brief give the parameters RELX
+!> @return the value of RELX
 integer function get_relx()
   USE artn_params, only : relx
   get_relx = relx
