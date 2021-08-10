@@ -1,9 +1,20 @@
 
+!> @author
+!!  Matic Poberjnik,
+!!  Miha Gunde
+!
 SUBROUTINE displacement_validation( atom_id, atom_const, push, lvalid)
   !
-  ! subroutine that checks if the initial_displacement is within given parameters
+  !> @brief
+  !!   subroutine that checks if the initial_displacement is within given parameters
   !
-  USE artn_params, ONLY : DP, PI 
+  !> @param [in]      atom_id     id of atoms
+  !> @param [in]      atom_const  Constrain Applied on the atom
+  !> @param [inout]   push	  Direction of the push applied on the atoms
+  !> @param [inout]   lvalid	  Flag to know if the random displacement correspond to the constrain
+  !
+  USE units, only : DP, PI
+  !USE artn_params, ONLY : DP, PI 
   !
   IMPLICIT NONE
   INTEGER, INTENT(IN) :: atom_id

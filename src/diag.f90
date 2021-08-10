@@ -1,13 +1,18 @@
+!> @author
+!!  Matic Poberjnik,
+!!  Miha Gunde
+!
 SUBROUTINE diag(n, A, eigvals, vec)
   USE artn_params,            ONLY : DP
+  !> @brief
   !! assuming a general square matrix (can be nonsymmetric).
   !! On output A is overwritten by eigenvectors in rows, if vec=0, then
   !! A is just 0.0 on output.
   !!
-  !! n       : dimension of matrix A
-  !! A       : matrix to be diagonalised, overwritten by eigenvectors on output
-  !! eigvals : output vector of eigenvalues, not sorted!
-  !! vec     : 0 if don't want to compute eigenvectors, 1 otherwise
+  !! @param [in]    n	      dimension of matrix A
+  !! @param [inout] A	      matrix to be diagonalised, overwritten by eigenvectors on output
+  !! @param [out]   eigvals   output vector of eigenvalues, not sorted!
+  !! @param [in]    vec	      0 if don't want to compute eigenvectors, 1 otherwise
   !!
   IMPLICIT NONE
   INTEGER,              intent(in) :: n
@@ -30,16 +35,12 @@ SUBROUTINE diag(n, A, eigvals, vec)
 
   !! test workspace
   lwork = -1
-  !call sgeev('N',getvec, n, A, lda, eigvals, eigvals_i, &
-  !     dummy, 1, eigvec, n, dummy, lwork, info)
   call dgeev('N',getvec, n, A, lda, eigvals, eigvals_i, &
              dummy, 1, eigvec, n, dummy, lwork, info)
 
   !! choose optimal size of workspace (as in example from intel website)
   lwork = min( 1000, nint(dummy(1)) )
   !! compute stuffs
-  !call sgeev('N',getvec, n, A, lda, eigvals, eigvals_i, &
-  !     dummy, 1, eigvec, n, dummy, lwork, info)
   call dgeev('N',getvec, n, A, lda, eigvals, eigvals_i, &
               dummy, 1, eigvec, n, dummy, lwork, info)
 

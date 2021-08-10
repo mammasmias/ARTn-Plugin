@@ -1,32 +1,45 @@
 
+!> @author
+!!  Matic Poberjnik,
+!!  Miha Gunde
+
+
 SUBROUTINE lanczos( nat, force,  v_in, dlanc, nlanc, ilanc, lowest_eigval, lowest_eigvec, pushdir)
   USE artn_params,            ONLY: DP, Vmat, H, force_old 
   !
-  ! Lanczos subroutine for the ARTn algorithm; based on the lanczos subroutine as written by M. Gunde
+  !> @brief
+  !!   Lanczos subroutine for the ARTn algorithm; based on the lanczos subroutine as written by M. Gunde
+  !
+  !> @param [in]      nat	      Size of the Array/matrix : number of atoms
+  !> @param [in]      v_in	      ??	  
+  !> @param [in]      pushdir	      List of Direction of push on atoms
+  !> @param [in]      dlanc	      derivative step of the lanczos
+  !> @param [inout]   force	      List of Force on the atons
+  !> @param [inout]   lowest_eigvec   Lowest eigenvector obtained by lanczos algo
+  !> @param [inout]   lowest_eigval   Lowest eigenvalues obtained by lanczos algo
+  !> @param [inout]   nlanc	      Number of lanczos step : Size of matrix
+  !> @param [inout]   ilanc	      step of lanczos
   !
   IMPLICIT NONE
-  INTEGER,                INTENT(IN) :: nat
+  ! -- ARGUMENTS
+  INTEGER,                    INTENT(IN) :: nat
   REAL(DP), DIMENSION(3,nat), INTENT(IN) :: v_in
   REAL(DP), DIMENSION(3,nat), INTENT(IN) :: pushdir
-  REAL(DP), INTENT(IN) :: dlanc
-  !REAL(DP), INTENT(IN) :: alpha_init, dt
-  !REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: vel 
+  REAL(DP),                   INTENT(IN) :: dlanc
   REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: force
   REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: lowest_eigvec
-  REAL(DP), INTENT(INOUT) :: lowest_eigval
-  INTEGER, INTENT(INOUT) :: nlanc
-  INTEGER, INTENT(INOUT) :: ilanc
-  ! 
+  REAL(DP),                   INTENT(INOUT) :: lowest_eigval
+  INTEGER,                    INTENT(INOUT) :: nlanc
+  INTEGER,                    INTENT(INOUT) :: ilanc
+  ! -- LOCAL VARIABLES
   INTEGER :: i, j, io, id_min
   REAL(DP), PARAMETER :: eigval_thr = 1.0D-2
   REAL(DP), ALLOCATABLE :: v1(:,:), q(:,:), eigvals(:)
-  !REAL(DP), ALLOCATABLE, target ::  Hstep(:,:)
   REAL(DP) :: dir
   REAL(DP), EXTERNAL :: ran3,dnrm2,ddot
   REAL(DP) :: alpha, beta, lowest_eigval_old, eigvec_diff, largest_eigvec_diff, eigval_diff
 
   ! Try to remove a temporary array when call diag
-  !real(dp), pointer :: rptr(:,:)
   real(dp) :: Htmp(ilanc,ilanc), Hstep(nlanc,nlanc)
 
   ! allocate vectors and put to zero
@@ -216,8 +229,6 @@ SUBROUTINE lanczos( nat, force,  v_in, dlanc, nlanc, ilanc, lowest_eigval, lowes
     v1(:,:) = v1(:,:) - Vmat(:,:,ilanc-1)
     !    
  ENDIF
-  ! store the force
-  ! force_old(:,:) = force(:,:)
   !
   ! write data for next lanczos step
   !
@@ -226,19 +237,9 @@ SUBROUTINE lanczos( nat, force,  v_in, dlanc, nlanc, ilanc, lowest_eigval, lowes
     v1(:,:) = 0.D0
     v1(:,:) = v1(:,:) - Vmat(:,:,nlanc)  
  ENDIF
- !
- ! write data for move
- !
-! CALL move_mode( nat, dlanc, v1, force, &
-!      vel, alpha_init, dt, &
-!      0, pushdir, 'lanc', prfx, tmpdir)
- !
- ! deallocate the matrices used only in the iteration 
- !
 
  force(:,:) = v1(:,:)
  
  DEALLOCATE( q, v1 )
- !DEALLOCATE(Hstep)
 
 END SUBROUTINE lanczos

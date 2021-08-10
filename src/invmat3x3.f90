@@ -1,8 +1,18 @@
+
+!> @author
+!!  Matic Poberjnik,
+!!  Miha Gunde
+
+
 SUBROUTINE invmat3x3(mat,inv)
   USE artn_params, ONLY : DP 
   IMPLICIT none
   !
-  ! Subroutine that calculates the inverse of a 3x3 matrix 
+  !> @brief
+  !!   Subroutine that calculates the inverse of a 3x3 matrix 
+  !
+  !> @param [in]  mat	Matrix to inverse
+  !> @param [out] inv	Inverse of the Matrix
   !
   REAL(DP), INTENT(IN) :: mat(3,3)
   REAL(DP), INTENT(OUT) :: inv(3,3)

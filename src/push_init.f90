@@ -1,11 +1,29 @@
 
-SUBROUTINE push_init (nat, tau, order, at, idum, push_ids, dist_thr, add_const, init_step_size, push, mode)
+!> @author
+!!   Matic Poberznik,
+!!   Miha Gunde
+
+
+SUBROUTINE push_init(nat, tau, order, at, idum, push_ids, dist_thr, add_const, init_step_size, push, mode)
   !
-  ! subroutine that generates the initial push; options are specified by mode: 
-  !           (1) 'all' generates a push on all atoms 
-  !           (2) 'list' generates a push on a list of atoms
-  !           (3) 'rad' generates a push on a list of atoms and all atoms within dist_thr 
-  ! the user should supply: number and list of atoms to push; and add_constraints on these atoms
+  !> @brief
+  !!   subroutine that generates the initial push; options are specified by mode: 
+  !!           (1) 'all' generates a push on all atoms 
+  !!           (2) 'list' generates a push on a list of atoms
+  !!           (3) 'rad' generates a push on a list of atoms and all atoms within dist_thr 
+  !!   the user should supply: number and list of atoms to push; and add_constraints on these atoms
+  !
+  !> @param [in]    nat		    Size of list: number of atoms 
+  !> @param [in]    idum	    ??
+  !> @param [in]    push_ids	    List of atoms on which apply a push
+  !> @param [in]    order	    order of atom in the list
+  !> @param [in]    dist_thr	    Threshold on the distance interatomic
+  !> @param [in]    init_step_size  length of initial step
+  !> @param [in]    tau		    atomic position
+  !> @param [in]    at		    Box length
+  !> @param [inout] add_const	    list of atomic constrain
+  !> @param [in]    mode	    Actual kind displacement 
+  !> @param [out]   push	    list of push applied on the atoms
   !
   USE artn_params, ONLY : DP, ran3, istep
   IMPLICIT none
@@ -27,7 +45,6 @@ SUBROUTINE push_init (nat, tau, order, at, idum, push_ids, dist_thr, add_const, 
   REAL(DP) :: dist(3), tau0(3) 
   LOGICAL :: lvalid
   INTEGER :: atom_displaced(nat)
-  !REAL(DP), EXTERNAL :: ran3, dnrm2 
   REAL(DP), EXTERNAL :: dnrm2, fpbc
   !
   push(:,:) = 0.d0
@@ -108,6 +125,7 @@ SUBROUTINE push_init (nat, tau, order, at, idum, push_ids, dist_thr, add_const, 
   ! normalize so that maxval of the vector is 1.0
   !
   push(:,:) = push(:,:)/MAXVAL(ABS(push(:,:)))
+
   ! scale initial push vector according to step size 
   push(:,:) = init_step_size*push(:,:)
 

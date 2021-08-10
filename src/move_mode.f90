@@ -1,12 +1,27 @@
 
+!> @author
+!!  Matic Poberjnik,
+!!  Miha Gunde
+!!  Nicolas Salles
 
 
 SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_init, dt_init, disp )
   !
-  ! translate specified move to appropriate force and set FIRE parameters accordingly  
+  !> @breif
+  !!   translate specified move to appropriate force and set FIRE parameters accordingly  
   !
-  !use iso_c_binding, only : c_char
-  USE artn_params, ONLY: DP, AMU_RY, iperp, push0 => push, push=>eigenvec, dlanc, MOVE
+  !> @param [in]    nat		Size of list: Number of atoms
+  !> @param [inout] force	List of force on atoms
+  !> @param [inout] vel		List of atomic velicity 
+  !> @param [in]    alpha_init	Initial Value of alpha parameter of FIRE algorithm
+  !> @param [in]    dt_init     Initial Value of dt parameter of FIRE algorithm
+  !> @param [inout] etot	Actual energy total of the system
+  !> @param [inout] alpha	Value of alpha paramter of FIRE algorithm
+  !> @param [inout] dt_curr	Value of dt paramter of FIRE algorithm
+  !> @param [inout] nsteppos	??
+  !> @param [in]    disp	Kind of actual displacement 
+  !
+  USE artn_params, ONLY:  iperp, push0 => push, push=>eigenvec, dlanc, MOVE
   USE UNITS
   !
   IMPLICIT NONE

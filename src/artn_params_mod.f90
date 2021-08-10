@@ -1,67 +1,70 @@
+!
+!> @author 
+!!   Matic Poberznik
+!!   Miha Gounde
+!!   Nicolas Salles
+!
+!> @brief
+!!   This module contains all global variables that are used in the ARTn plugin 
+!
 MODULE artn_params
   !
-  ! This module contains all global variables that are used in the ARTn plugin 
   !
+  USE units, ONLY : DP
   IMPLICIT none
   SAVE
   ! constants 
-  INTEGER, PARAMETER ::  DP = selected_real_kind(14,200) ! double precision
-  REAL(DP), PARAMETER :: PI     = 3.14159265358979323846_DP ! pi 
-  REAL(DP), PARAMETER :: RY2EV =  13.605691930242388_DP ! Ry to eV conversion 
-  REAL(DP), PARAMETER :: B2A =  0.529177210903_DP ! bohr to angstrom conversion
-  REAL(DP), PARAMETER :: AMU_RY = 911.44424310865645_DP ! calculated from QE using DP 
-  INTEGER, PARAMETER :: iunartin = 52  ! fortran file unit for ARTn input file  
-  INTEGER, PARAMETER :: iunartout = 53 ! fortran file unit for ARTn output file
-  INTEGER, PARAMETER :: iunstruct = 556 ! fortran file unit for writing the structure
-  INTEGER, PARAMETER :: iunrestart = 557 ! fortran file unit for writing the structure
+  !INTEGER, PARAMETER ::  DP = selected_real_kind(14,200) ! double precision
+  INTEGER, PARAMETER :: iunartin = 52    !> fortran file unit for ARTn input file  
+  INTEGER, PARAMETER :: iunartout = 53   !> fortran file unit for ARTn output file
+  INTEGER, PARAMETER :: iunstruct = 556  !> fortran file unit for writing the structure
+  INTEGER, PARAMETER :: iunrestart = 557 !> fortran file unit for writing the structure
   ! Constante move
-  !INTEGER :: VOID, INIT, PERP, EIGN, LANC, RELX
   INTEGER :: VOID = 1, INIT = 2, PERP = 3, EIGN = 4, LANC = 5, RELX = 6
-  !PARAMETER( VOID = 1, INIT = 2, PERP = 3, EIGN = 4, LANC = 5, RELX = 6 )
   CHARACTER(LEN=4) :: MOVE(6)
   PARAMETER( MOVE = [ 'void', 'init', 'perp', 'eign', 'lanc', 'relx' ])
   ! control flags
-  LOGICAL :: lartn = .true. ! We use ARTn or not
-  LOGICAL :: lpush_init ! initial push 
-  LOGICAL :: lperp      ! perpendicular relax 
-  LOGICAL :: leigen     ! push with lanczos eigenvector
-  LOGICAL :: llanczos   ! lanczos algorithm
-  LOGICAL :: lsaddle    ! saddle point obtained 
-  LOGICAL :: lbackward  ! backward saddle point obtained 
+  LOGICAL :: lartn = .true. !> We use ARTn or not
+  LOGICAL :: lpush_init !> initial push 
+  LOGICAL :: lperp      !> perpendicular relax 
+  LOGICAL :: leigen     !> push with lanczos eigenvector
+  LOGICAL :: llanczos   !> lanczos algorithm
+  LOGICAL :: lsaddle    !> saddle point obtained 
+  LOGICAL :: lbackward  !> backward saddle point obtained 
   ! counters
   integer :: istep
-  INTEGER, target :: iperp      ! number of steps in perpendicular relaxation
-  INTEGER :: ieigen     ! number of steps made with eigenvector
-  INTEGER :: ipush      ! number of pushes made
-  INTEGER :: ilanc      ! current lanczos iteration
-  INTEGER :: nlanc      ! max number of lanczos iterations
-  INTEGER :: ismooth    ! number of smoothing steps
-  INTEGER :: if_pos_ct  ! counter used to determine the number of fixed coordinates 
-  INTEGER :: zseed      ! random number generator seed
+  INTEGER, target :: iperp      !> number of steps in perpendicular relaxation
+  INTEGER :: ieigen     !> number of steps made with eigenvector
+  INTEGER :: ipush      !> number of pushes made
+  INTEGER :: ilanc      !> current lanczos iteration
+  INTEGER :: nlanc      !> max number of lanczos iterations
+  INTEGER :: ismooth    !> number of smoothing steps
+  INTEGER :: if_pos_ct  !> counter used to determine the number of fixed coordinates 
+  INTEGER :: zseed      !> random number generator seed
   ! lanczos variables
-  REAL(DP) :: lowest_eigval
+  REAL(DP) :: lowest_eigval !> Lowest eigenvalues obtained by lanczos algorithm
   !                                           ! 
   ! arrays that are needed by ARTn internally ! 
   !                                           ! 
-  REAL(DP), ALLOCATABLE :: push(:,:)     ! initial push vector
-  REAL(DP), ALLOCATABLE, target :: eigenvec(:,:) ! lanczos eigenvector
-  REAL(DP), ALLOCATABLE :: tau_saddle(:,:) ! coordinates of saddle point  
-  REAL(DP), ALLOCATABLE :: eigen_saddle(:,:) ! coordinates of saddle point  
+  REAL(DP), ALLOCATABLE :: push(:,:)             !> initial push vector
+  REAL(DP), ALLOCATABLE, target :: eigenvec(:,:) !> lanczos eigenvector
+  REAL(DP), ALLOCATABLE :: tau_saddle(:,:)       !> coordinates of saddle point  
+  REAL(DP), ALLOCATABLE :: eigen_saddle(:,:)     !> coordinates of saddle point  
   !
   ! stored total energies and energy differences 
   ! 
-  REAL(DP) :: etot_init   !  the total energy of the initial state
-  REAL(DP) :: etot_saddle !  the total energy of the saddle point
-  REAL(DP) :: etot_final  !  the total energy of the next minimum along eigenvector 
-  REAL(DP) :: de_saddle ! change in E from starting point  
-  REAL(DP) :: de_back   ! backward barrier  
-  REAL(DP) :: de_fwd    ! forward barrier 
+  REAL(DP) :: etot_init   !>  the total energy of the initial state
+  REAL(DP) :: etot_saddle !>  the total energy of the saddle point
+  REAL(DP) :: etot_final  !>  the total energy of the next minimum along eigenvector 
+  REAL(DP) :: de_saddle !> change in E from starting point  
+  REAL(DP) :: de_back   !> backward barrier  
+  REAL(DP) :: de_fwd    !> forward barrier 
   !                                               !
   ! arrays that are used by the Lanczos algorithm ! 
   !                                               ! 
-  REAL(DP), ALLOCATABLE :: H(:,:) ! tridiagonal matrix
-  REAL(DP), ALLOCATABLE :: Vmat(:,:,:) ! matrix containing the laczos vectors
-  REAL(DP), ALLOCATABLE :: force_old(:,:) ! force in the previous step 
+  REAL(DP), ALLOCATABLE :: H(:,:)         !> tridiagonal matrix
+  REAL(DP), ALLOCATABLE :: Vmat(:,:,:)    !> matrix containing the laczos vectors
+  REAL(DP), ALLOCATABLE :: force_old(:,:) !> force in the previous step 
   !------------------------------------------------------------! 
   ! variables that are read from the input  start here   
   !------------------------------------------------------------!  
@@ -71,46 +74,54 @@ MODULE artn_params
        push_step_size, dlanc, eigen_step_size, &
        push_ids,add_const, engine_units, zseed, struc_format_out, elements
   ! 
-  LOGICAL :: lrelax     ! do we want to relax to adjacent minima from the saddle point 
-  LOGICAL :: lpush_final ! push to adjacent minimum along eigenvector 
+  LOGICAL :: lrelax      !> do we want to relax to adjacent minima from the saddle point 
+  LOGICAL :: lpush_final !> push to adjacent minimum along eigenvector 
   ! 
-  INTEGER :: npush              ! number of initial pushes before lanczos start
-  INTEGER :: neigen            ! number of steps made with eigenvector before perp relax 
-  INTEGER :: nlanc_init        ! maximum number of lanczos iterations
-  INTEGER :: nsmooth           ! number of smoothing steps from push to eigenvec 
-  CHARACTER (LEN = 4) :: push_mode ! type of initial push (all , list or rad) 
+  INTEGER :: npush                !> number of initial pushes before lanczos start
+  INTEGER :: neigen               !> number of steps made with eigenvector before perp relax 
+  INTEGER :: nlanc_init           !> maximum number of lanczos iterations
+  INTEGER :: nsmooth              !> number of smoothing steps from push to eigenvec 
+  CHARACTER(LEN = 4) :: push_mode !> type of initial push (all , list or rad) 
   ! convergence criteria
-  REAL(DP) :: dist_thr       ! distance threshold for push mode "rad" 
-  REAL(DP) :: convcrit_init  ! initial perp force convergence criterion for perp relax
-  REAL(DP) :: convcrit_final ! tightened force convergence criterion when near the saddle point
-  REAL(DP) :: fpara_convcrit ! parallel force convergence criterion, used to determine when to tighten convcrit_final
-  REAL(DP) :: eigval_thr     ! threshold for eigenvalue
-  REAL(DP) :: relax_thr      ! threshold to start relaxation to adjacent minima
+  REAL(DP) :: dist_thr       !> distance threshold for push mode "rad" 
+  REAL(DP) :: convcrit_init  !> initial perp force convergence criterion for perp relax
+  REAL(DP) :: convcrit_final !> tightened force convergence criterion when near the saddle point
+  REAL(DP) :: fpara_convcrit !> parallel force convergence criterion, used to determine when to tighten convcrit_final
+  REAL(DP) :: eigval_thr     !> threshold for eigenvalue
+  REAL(DP) :: relax_thr      !> threshold to start relaxation to adjacent minima
   ! step sizes
-  REAL(DP) :: push_step_size ! step size of inital push in angstrom 
-  REAL(DP) :: eigen_step_size      ! step size for a step with the lanczos eigenvector
-  REAL(DP) :: current_step_size ! controls the current size of eigenvector step
-  REAL(DP) :: fpush_factor     ! factor for the final push 
-  REAL(DP), target :: dlanc         ! step size in the lanczos algorithm 
+  REAL(DP) :: push_step_size        !> step size of inital push in angstrom 
+  REAL(DP) :: eigen_step_size       !> step size for a step with the lanczos eigenvector
+  REAL(DP) :: current_step_size     !> controls the current size of eigenvector step
+  REAL(DP) :: fpush_factor          !> factor for the final push 
+  REAL(DP), target :: dlanc         !> step size in the lanczos algorithm 
   ! arrays related to constraints 
-  INTEGER,  ALLOCATABLE :: push_ids(:)    ! IDs of atoms to be pushed 
-  REAL(DP), ALLOCATABLE :: add_const(:,:) ! constraints on initial push
+  INTEGER,  ALLOCATABLE :: push_ids(:)    !> IDs of atoms to be pushed 
+  REAL(DP), ALLOCATABLE :: add_const(:,:) !> constraints on initial push
   !
   CHARACTER(LEN=256) :: engine_units
   CHARACTER(LEN=10) :: struc_format_out
   CHARACTER(LEN=3), ALLOCATABLE :: elements(:)
-  !CHARACTER(LEN=:), ALLOCATABLE :: engine_units
   
 CONTAINS
   !
   SUBROUTINE initialize_artn( nat, iunartin, iunartout, filnam, filout )
     !
-    ! sets defaults, reads input and creates ARTn output file
+    !> @breif 
+    !!   Sets defaults, reads input and creates ARTn output file
+    !
+    !> @param [in] nat	      Number of Atoms
+    !> @param [in] iunartin   Channel of input
+    !> @param [in] iunartout  Channel of Output
+    !> @param [in] filnam     Input file name
+    !> @param [in] filout     Ouput file name
     ! 
     USE units
     IMPLICIT none
-    INTEGER, INTENT(IN) :: nat,iunartin,iunartout
+    ! -- Arguments
+    INTEGER,             INTENT(IN) :: nat,iunartin,iunartout
     CHARACTER (LEN=255), INTENT(IN) :: filnam,filout
+    ! -- Local Variables
     LOGICAL :: file_exists
     INTEGER :: ios
 

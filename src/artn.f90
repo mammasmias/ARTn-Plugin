@@ -1,8 +1,14 @@
-
+!
+!> @author 
+!!   Matic Poberznik
+!!   Miha Gounde
+!!   Nicolas Salles 
 ! 
-! 
-! Main ARTn plugin subroutine:
-!        modifies the input force to perform the ARTn algorithm 
+!> @brief 
+!!   Main ARTn plugin subroutine:
+!
+!> @details
+!!   modifies the input force to perform the ARTn algorithm 
 !------------------------------------------------------------------------------
 SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, lconv )
   !----------------------------------------------------------------------------
@@ -10,8 +16,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   ! artn_params for variables and counters that need to be stored in each step   
   ! DEFINED IN: artn_params_mod.f90
   ! 
-  !use iso_c_binding, only : c_char
-  USE artn_params, ONLY: DP, RY2EV,B2A, iunartin, iunartout, iunstruct, &
+  USE units 
+  USE artn_params, ONLY: iunartin, iunartout, iunstruct, &
        lartn, lrelax,lpush_init,lperp,leigen,llanczos, lsaddle, lpush_final, lbackward, &
        istep, iperp, ieigen, ipush, ilanc, ismooth, nlanc, if_pos_ct, &
        lowest_eigval, etot_init, etot_saddle, etot_final, de_saddle, de_back, de_fwd, &
@@ -20,27 +26,24 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
        push_ids,add_const, push, eigenvec, tau_saddle, eigen_saddle, initialize_artn,  &
        VOID, INIT, PERP, EIGN, LANC, RELX, zseed, &
        engine_units, struc_format_out, elements
-  USE units !, only : make_units
   ! 
   IMPLICIT NONE
-  REAL(DP), INTENT(INOUT) :: force(3,nat)     ! force calculated by the engine
-  REAL(DP), INTENT(INOUT) :: tau(3,nat)       ! atomic positions (needed for output only)
+  ! -- ARGUMENTS
+  REAL(DP), INTENT(INOUT) :: force(3,nat)     !> force calculated by the engine
+  REAL(DP), INTENT(INOUT) :: tau(3,nat)       !> atomic positions (needed for output only)
 
-  REAL(DP), INTENT(IN) ::    etot_eng             ! total energy in current step
-  INTEGER,  INTENT(IN) ::    order(nat)       ! Engine order of atom
-  REAL(DP), INTENT(IN) ::    at(3,3)          ! lattice parameters in alat units 
-  INTEGER,  INTENT(IN), value ::    nat              ! number of atoms
-  INTEGER,  INTENT(IN) ::    ityp(nat)        ! atom types
-  INTEGER,  INTENT(IN) ::    if_pos(3,nat)    ! coordinates fixed by engine 
-  CHARACTER(LEN=3),   INTENT(IN) :: atm(*)    ! name of atom corresponding to ityp
+  REAL(DP), INTENT(IN) ::    etot_eng         !> total energy in current step
+  INTEGER,  INTENT(IN) ::    order(nat)       !> Engine order of atom
+  REAL(DP), INTENT(IN) ::    at(3,3)          !> lattice parameters in alat units 
+  INTEGER,  INTENT(IN), value ::    nat       !> number of atoms
+  INTEGER,  INTENT(IN) ::    ityp(nat)        !> atom types
+  INTEGER,  INTENT(IN) ::    if_pos(3,nat)    !> coordinates fixed by engine 
+  CHARACTER(LEN=3),   INTENT(IN) :: atm(*)    !> name of atom corresponding to ityp
 
-  !CHARACTER(LEN=1,kind=c_char), allocatable, INTENT(OUT) :: cmove(:)       ! Stage for move_mode
-  !CHARACTER(LEN=4), INTENT(OUT) :: move       ! Stage for move_mode
-  INTEGER,          INTENT(OUT) :: disp
-  LOGICAL,          INTENT(OUT) :: lconv      ! flag for controlling convergence 
+  INTEGER,          INTENT(OUT) :: disp       !> Stage for move_mode
+  LOGICAL,          INTENT(OUT) :: lconv      !> flag for controlling convergence 
 
-  ! --- LOCAL VARIABLE
-  !CHARACTER(LEN=4)   :: move
+  ! -- LOCAL VARIABLES
   REAL(DP), EXTERNAL :: ran3, dnrm2, ddot     ! lapack functions 
   INTEGER :: na, icoor, idum                  ! integers for loops 
   !
@@ -77,9 +80,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   !
   filin = 'artn.in'
   filout = 'artn.out'
-  !sadfname = 'saddle.xsf'
-  !initpfname = 'initp.xsf'
-  !eigenfname = 'latest_eigenvec.xsf'
   sadfname = 'saddle'
   initpfname = 'initp'
   eigenfname = 'latest_eigenvec'
@@ -137,7 +137,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !
      CALL write_report( etot, force_in, lowest_eigval, disp, if_pos, istep, nat, iunartout )
      !
-     !CALL write_struct( at, nat, tau, order, atm, ityp, push, 1.0_DP, iunstruct, struc_format_out, initpfname )
      CALL write_struct( at, nat, tau, order, elements, ityp, push, 1.0_DP, iunstruct, struc_format_out, initpfname )
      ! 
   ELSE IF ( lperp ) THEN
@@ -204,7 +203,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      CALL write_report(etot,force_in, lowest_eigval, disp, if_pos, istep, nat,  iunartout)
 
      ! count the number of steps made with the eigenvector
-     !CALL write_struct( at, nat, tau, order, atm, ityp, force, 1.0_DP, iunstruct, struc_format_out, eigenfname)
      CALL write_struct( at, nat, tau, order, elements, ityp, force, 1.0_DP, iunstruct, struc_format_out, eigenfname)
      ! 
      IF ( ieigen == neigen  ) THEN
