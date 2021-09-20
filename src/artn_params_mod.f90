@@ -1,7 +1,7 @@
 !
 !> @author 
 !!   Matic Poberznik
-!!   Miha Gounde
+!!   Miha Gunde
 !!   Nicolas Salles
 !
 !> @brief
@@ -139,8 +139,6 @@ CONTAINS
 
 
     ELSE !%! FILE EXIST
-
-
     !
     ! set up defaults for flags and counters 
     !
@@ -197,55 +195,48 @@ CONTAINS
     IF ( .not. ALLOCATED(tau_saddle) )   ALLOCATE(tau_saddle(3,nat), source = 0.D0)
     IF ( .not. ALLOCATED(elements) )     ALLOCATE(elements(300), source = "XXX")
     ! 
-    !IF ( file_exists ) THEN
-       ! read the ARTn input file  
-       OPEN( UNIT = iunartin, FILE = filnam, FORM = 'formatted', STATUS = 'unknown', IOSTAT = ios)
-       READ( NML = artn_parameters, UNIT = iunartin)
-       CLOSE ( UNIT = iunartin, STATUS = 'KEEP')
-       ! open the ARTn output file 
-       OPEN ( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'unknown', IOSTAT = ios )
-       WRITE (iunartout,'(5X, "--------------------------------------------------")')
-       WRITE (iunartout,'(5X, "                ARTn plugin                       ")')
-       WRITE (iunartout,'(5X, "--------------------------------------------------")')
-       WRITE (iunartout,'(5X, " "                                                 )')
-       WRITE (iunartout,'(5X, "               INPUT PARAMETERS                   ")')
-       WRITE (iunartout,'(5X, "--------------------------------------------------")')
-       WRITE (iunartout,'(5X, "Push and perpendicular relax:")')
-       WRITE (iunartout,'(5X, "--------------------------------------------------")') 
-       WRITE (iunartout,'(15X,"npush           = ", I6)') npush 
-       WRITE (iunartout,'(15X,"convcrit_init   = ", F6.3)') convcrit_init 
-       WRITE (iunartout,'(15X,"convcrit_final  = ", F6.3)') convcrit_final
-       WRITE (iunartout,'(15X,"fpara_convcrit  = ", F6.3)') fpara_convcrit 
-       WRITE (iunartout,'(15X,"eigval_thr      = ", F6.3)') eigval_thr  
-       WRITE (iunartout,'(15X,"push_step_size  = ", F6.1)') push_step_size 
-       WRITE (iunartout,'(15X,"eigen_step_size = ", F6.1)') eigen_step_size
-       WRITE (iunartout,'(15X,"push_mode       = ", A6)') push_mode
-       WRITE (iunartout,'(5X, "--------------------------------------------------")')
-       WRITE (iunartout,'(5X, "Lanczos algorithm:")' )
-       WRITE (iunartout,'(5X, "--------------------------------------------------")')
-       WRITE (iunartout,'(15X, "nlanc_init     = ", I6)') nlanc_init
-       WRITE (iunartout,'(15X, "dlanc          = ", F6.3)') dlanc
-       WRITE (iunartout,'(5X, "--------------------------------------------------")')
-       WRITE (iunartout,*) " "
-       WRITE (iunartout,*) " "
-       WRITE (iunartout,'(5X,"istep",4X,"ART_step",12X,"Etot",12X," Ftot ",9X," Fperp ",8X," Fpara ",8X,"eigval")') 
-       WRITE (iunartout,'(34X, "[Ry]",15X,"-----------[Ry/a.u.]----------",10X,"Ry/a.u.^2")')
-       CLOSE ( UNIT = iunartout, STATUS = 'KEEP')
-    !ELSE
-    !   WRITE(*,*) "ARTn: Input file does not exist!"
-    !   lpush_init = .false.
-    !   lrelax = .true.
-    !   RETURN 
-    ENDIF
+    ! read the ARTn input file  
+    OPEN( UNIT = iunartin, FILE = filnam, FORM = 'formatted', STATUS = 'unknown', IOSTAT = ios)
+    READ( NML = artn_parameters, UNIT = iunartin)
+    CLOSE ( UNIT = iunartin, STATUS = 'KEEP')
+    ! open the ARTn output file 
+    OPEN ( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'unknown', IOSTAT = ios )
+    WRITE (iunartout,'(5X, "--------------------------------------------------")')
+    WRITE (iunartout,'(5X, "                ARTn plugin                       ")')
+    WRITE (iunartout,'(5X, "--------------------------------------------------")')
+    WRITE (iunartout,'(5X, " "                                                 )')
+    WRITE (iunartout,'(5X, "               INPUT PARAMETERS                   ")')
+    WRITE (iunartout,'(5X, "--------------------------------------------------")')
+    WRITE (iunartout,'(5X, "Push and perpendicular relax:")')
+    WRITE (iunartout,'(5X, "--------------------------------------------------")') 
+    WRITE (iunartout,'(15X,"npush           = ", I6)') npush 
+    WRITE (iunartout,'(15X,"convcrit_init   = ", F6.3)') convcrit_init 
+    WRITE (iunartout,'(15X,"convcrit_final  = ", F6.3)') convcrit_final
+    WRITE (iunartout,'(15X,"fpara_convcrit  = ", F6.3)') fpara_convcrit 
+    WRITE (iunartout,'(15X,"eigval_thr      = ", F6.3)') eigval_thr  
+    WRITE (iunartout,'(15X,"push_step_size  = ", F6.1)') push_step_size 
+    WRITE (iunartout,'(15X,"eigen_step_size = ", F6.1)') eigen_step_size
+    WRITE (iunartout,'(15X,"push_mode       = ", A6)') push_mode
+    WRITE (iunartout,'(5X, "--------------------------------------------------")')
+    WRITE (iunartout,'(5X, "Lanczos algorithm:")' )
+    WRITE (iunartout,'(5X, "--------------------------------------------------")')
+    WRITE (iunartout,'(15X, "nlanc_init     = ", I6)') nlanc_init
+    WRITE (iunartout,'(15X, "dlanc          = ", F6.3)') dlanc
+    WRITE (iunartout,'(5X, "--------------------------------------------------")')
+    WRITE (iunartout,*) " "
+    WRITE (iunartout,*) " "
+    WRITE (iunartout,'(5X,"istep",4X,"ART_step",12X,"Etot",12X," Ftot ",9X," Fperp ",8X," Fpara ",8X,"eigval")') 
+    WRITE (iunartout,'(34X, "[Ry]",15X,"-----------[Ry/a.u.]----------",10X,"Ry/a.u.^2")')
+    CLOSE ( UNIT = iunartout, STATUS = 'KEEP')
     ! set initial number of lanczos iterations 
     nlanc = nlanc_init
     ! initialize lanczos specific variables
     IF ( .not. ALLOCATED(H)) ALLOCATE( H(1:nlanc,1:nlanc), source = 0.D0 )
     IF ( .not. ALLOCATED(Vmat)) ALLOCATE( Vmat(3,nat,1:nlanc), source = 0.D0 )
     IF ( .not. ALLOCATED(force_old) ) ALLOCATE( force_old(3,nat), source = 0.D0 )
+ ENDIF
 
-
-    ! Define the UNits convertion
+    ! Define the Units conversion
     call make_units( engine_units )
 
     ! ...Convert push/lanczos/eigenvec step size to bohr (because force units are in Ry/bohr) 

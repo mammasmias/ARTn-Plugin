@@ -1,12 +1,13 @@
 
-include ${QE_PATH}/make.inc
+#include ${QE_PATH}/make.inc
 
 OBJ  := Obj
 SRC  := .
-#F90 := gfortran
+F90 := gfortran
 #AR := ar
 
 LIB_OBJECTS := \
+	    $(OBJ)/units.o \
             $(OBJ)/artn_params_mod.o \
             $(OBJ)/center.o \
             $(OBJ)/diag.o \
@@ -18,13 +19,13 @@ LIB_OBJECTS := \
 	    $(OBJ)/sum_force.o \
             $(OBJ)/perpforce.o \
 	    $(OBJ)/move_mode.o \
-      	    $(OBJ)/write_report.o \
+	    $(OBJ)/write_report.o \
 	    $(OBJ)/write_struct.o \
             $(OBJ)/artn.o \
             $(OBJ)/artn_QE.o
 
 
-FDEBUG := -check all  #-fcheck=all
+#FDEBUG := -check all  #-fcheck=all
 
 ifeq ($(F90),ifort)
   MOD   := -module $(OBJ)

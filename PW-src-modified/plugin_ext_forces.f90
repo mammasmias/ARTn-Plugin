@@ -46,7 +46,8 @@ SUBROUTINE plugin_ext_forces()
   endif
 
   IF ( ionode .and. use_partn ) THEN
-     CALL artn_QE( force, etot, eps(2), nat, ityp, atm, tau, at, alat, istep, if_pos, vel, dt, fire_alpha_init, lconv, prefix, tmp_dir ) 
+     CALL artn_QE( force, etot, eps(2), nat, ityp, atm, tau, at, alat, istep, if_pos, vel, dt, fire_alpha_init, &
+          lconv, prefix, tmp_dir ) 
   ENDIF
   IF ( ionode .and. lconv .and. use_partn ) THEN
      WRITE (*,*) "ARTn calculation converged, stopping" 
