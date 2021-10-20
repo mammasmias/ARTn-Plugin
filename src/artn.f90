@@ -29,16 +29,16 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   ! 
   IMPLICIT NONE
   ! -- ARGUMENTS
-  REAL(DP), INTENT(INOUT) :: force(3,nat)     !> force calculated by the engine
-  REAL(DP), INTENT(INOUT) :: tau(3,nat)       !> atomic positions (needed for output only)
-
+  INTEGER,  INTENT(IN), value ::    nat       !> number of atoms
   REAL(DP), INTENT(IN) ::    etot_eng         !> total energy in current step
   INTEGER,  INTENT(IN) ::    order(nat)       !> Engine order of atom
   REAL(DP), INTENT(IN) ::    at(3,3)          !> lattice parameters in alat units 
-  INTEGER,  INTENT(IN), value ::    nat       !> number of atoms
   INTEGER,  INTENT(IN) ::    ityp(nat)        !> atom types
   INTEGER,  INTENT(IN) ::    if_pos(3,nat)    !> coordinates fixed by engine 
   CHARACTER(LEN=3),   INTENT(IN) :: atm(*)    !> name of atom corresponding to ityp
+
+  REAL(DP), INTENT(INOUT) :: force(3,nat)     !> force calculated by the engine
+  REAL(DP), INTENT(INOUT) :: tau(3,nat)       !> atomic positions (needed for output only)
 
   INTEGER,          INTENT(OUT) :: disp       !> Stage for move_mode
   LOGICAL,          INTENT(OUT) :: lconv      !> flag for controlling convergence 
