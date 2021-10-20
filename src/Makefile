@@ -7,7 +7,7 @@ F90 := gfortran
 #AR := ar
 
 LIB_OBJECTS := \
-            $(OBJ)/units.o \
+	    $(OBJ)/units.o \
             $(OBJ)/artn_params_mod.o \
             $(OBJ)/center.o \
             $(OBJ)/diag.o \
@@ -19,7 +19,7 @@ LIB_OBJECTS := \
 	    $(OBJ)/sum_force.o \
             $(OBJ)/perpforce.o \
 	    $(OBJ)/move_mode.o \
-      	    $(OBJ)/write_report.o \
+	    $(OBJ)/write_report.o \
 	    $(OBJ)/write_struct.o \
             $(OBJ)/artn.o \
             $(OBJ)/artn_QE.o
