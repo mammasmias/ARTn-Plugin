@@ -355,6 +355,8 @@ REAL(8) FUNCTION ran3( idum )
   parameter (mbig = 1000000000, mseed = 161803398, mz = 0, fac = 1.d-9)
 
   integer :: ma (55), iff, k, inext, inextp, ii, mj, idum, i, mk
+  !inext = 0
+  !inextp = 0
   !     common /ranz/ ma,inext,inextp
   data iff / 0 /
   if (idum.lt.0.or.iff.eq.0) then

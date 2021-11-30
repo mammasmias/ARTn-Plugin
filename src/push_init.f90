@@ -14,7 +14,7 @@ SUBROUTINE push_init(nat, tau, order, at, idum, push_ids, dist_thr, add_const, i
   !!   the user should supply: number and list of atoms to push; and add_constraints on these atoms
   !
   !> @param [in]    nat		    Size of list: number of atoms 
-  !> @param [in]    idum	    ??
+  !> @param [in]    idum	    looks like it is the seed for random gen
   !> @param [in]    push_ids	    List of atoms on which apply a push
   !> @param [in]    order	    order of atom in the list
   !> @param [in]    dist_thr	    Threshold on the distance interatomic

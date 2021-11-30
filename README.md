@@ -151,3 +151,11 @@ Engine specific flag:
 - `push_step_size`: Is a real value, by default is `0.3`. The unit is in Angstrom. Step size of the inital push (note: the step size is limited by the engine) 
 - `dlanc`: Is a real value, by default is `1e-2`. The unit is in Angstrom. Step size in the lanczos algorithm.
 - `eigen_step_size`:  Is a real value, by default is `0.2`. The unit is in Angstrom. Step size for a step with the lanczos eigenvector (note: the step size is limited by the engine).
+
+
+
+## The output
+
+- explain the output file... More precisely explain the behavior by default tat pARTn does. 
+
+  I mean the saddle point research first, after the minimization to the first minimum and after the minimization to the second minimum. 
