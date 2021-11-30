@@ -104,24 +104,25 @@ make serial
 
 ## How to use plugin-ARTn
 
-Plugin-ARTn enter in FIRE algorithm minimization loop.
-The parameters specific to ARTn algorithm must be specify in `art.in` file where you launch the simulation.
+Plugin-ARTn enters in the FIRE algorithm minimization loop.
+The parameters specific to ARTn algorithm must be specified in the `artn.in` file, located in the working directory of the calculation.
 The list of parameters are:
 
 ###### General features:
 
-- `lrelax`: Values `.true./.false`, default is `false.`. 
-Flag if do we want to relax to adjacent minima from the saddle point.
-- `lpush_final`: Values `.true./.false.`, default is `.true.`.
-Flag for restarting a ARTn calculation
-- `lrestart`: Values `.true./.false.`, default is `.false.`.
+- `lrelax`: Values `.true./.false`, default is `false.`.
+Flag if we want to relax to adjacent minima from the saddle point.  
+- `lpush_final`: Values `.true./.false.`, default is `.true.`.  
 Flag to push to adjacent minimum along eigenvector.
+- `lrestart`: Values `.true./.false.`, default is `.false.`.
+Flag for restarting a ARTn calculation.  
 - `npush`: Value integer, by default is `3`. Number of initial pushes before lanczos start.
 - `neigen`: Value integer, by default is `1`. Number of steps made with eigenvector before perpendicular relax.
 - `nlanc_init`: Value integer, by default is `16`. Maximum number of lanczos iterations
 - `nsmooth`: Value integer, by default is `1`. Number of smoothing steps from push to eigenvector.
-- `struc_format_out`: Value character, by default is `"xsf"`. Output structure format. Value accepted `"xyz"` .
-
+- `struc_format_out`: Value character, default is `"xsf"`. Output structure format. Value accepted `"xyz"` .
+Engine specific flag:
+- `engine_units`: Value character, default is `qe`. Accepted values for now are 
 ###### The push mode:
 
 - `push_mode`: Value character, by default is `all`. Type of initial push (`all` , `list` or `rad`)

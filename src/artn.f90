@@ -188,7 +188,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         IF ( ipush < npush ) THEN
            ! continue pushing in the specified direction
            force(:,:) =  eigenvec(:,:)
-           disp = EIGN
+           disp = INIT 
            ! 
            ipush = ipush + 1
            ! 

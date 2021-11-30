@@ -276,7 +276,7 @@ CONTAINS
     CLOSE ( UNIT = iunartout, STATUS = 'KEEP')
 
   END SUBROUTINE write_initial_report
-
+  ! 
   SUBROUTINE write_restart(filnres,nat)
     !
     ! Subroutine that writes the minimum parameters required for restart of a calculation
@@ -300,7 +300,8 @@ CONTAINS
     CLOSE ( UNIT = iunartres, STATUS = 'KEEP')
     
   END SUBROUTINE write_restart
-    SUBROUTINE read_restart(filnres,nat)
+  !
+  SUBROUTINE read_restart(filnres,nat)
     !
     ! Subroutine that reads the restart file, if a restart is requested  
     ! 
@@ -320,7 +321,6 @@ CONTAINS
             etot_init, etot_step, lowest_eigval, etot_saddle, etot_final, de_back, &
             current_step_size, fpush_factor,  & 
             tau_step, force_step, push, eigenvec, H, Vmat, force_old, tau_saddle, eigen_saddle
-       
        CLOSE ( UNIT = iunartres, STATUS = 'KEEP')
        
     ELSE
