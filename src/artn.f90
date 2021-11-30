@@ -305,6 +305,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         lconv = .false.
         lperp = .false.
         leigen = .false.
+        llanczos = .false.
         !
         ! normalize eigenvector
         if( lbackward )then
