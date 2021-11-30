@@ -31,8 +31,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   IMPLICIT NONE
   ! -- ARGUMENTS
   INTEGER,  INTENT(IN), value ::    nat       !> number of atoms
-  REAL(DP), INTENT(INOUT) :: force(3,nat)     !> force calculated by the engine
-  REAL(DP), INTENT(INOUT) :: tau(3,nat)       !> atomic positions (needed for output only)
 
   REAL(DP), INTENT(INOUT) ::    etot_eng         !> total energy in current step
   INTEGER,  INTENT(IN) ::    order(nat)       !> Engine order of atom
