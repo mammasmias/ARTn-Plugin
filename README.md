@@ -122,7 +122,7 @@ Flag for restarting a ARTn calculation.
 - `nsmooth`: Value integer, by default is `1`. Number of smoothing steps from push to eigenvector.
 - `struc_format_out`: Value character, default is `"xsf"`. Output structure format. Value accepted `"xyz"` .
 Engine specific flag:
-- `engine_units`: Value character, default is `qe`. Accepted values for now are 
+- `engine_units`: Value character, default is `qe`. For LAMMPS it is needed to specify `lammps/<units>` where `<units>` correspond to the units keywords in LAMMPS input: (`metal`, `charge`, ...)
 ###### The push mode:
 
 - `push_mode`: Value character, by default is `all`. Type of initial push (`all` , `list` or `rad`)
