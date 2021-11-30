@@ -342,6 +342,8 @@ REAL(8) FUNCTION ran3( idum )
   !> @param [in] idum   dummy integer
   !> @return a real(8) ramdom number
   !
+  !#! WE HAVE TO INITIALIZE THE VARIABLE
+  !
   !
   IMPLICIT NONE
   !
