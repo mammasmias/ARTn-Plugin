@@ -322,7 +322,7 @@ CONTAINS
             current_step_size, fpush_factor,  & 
             tau_step, force_step, push, eigenvec, H, Vmat, force_old, tau_saddle, eigen_saddle
        CLOSE ( UNIT = iunartres, STATUS = 'KEEP')
-       
+
     ELSE
 
        WRITE(iunartout,*) "ARTn: restart file does not exist, exiting ..."

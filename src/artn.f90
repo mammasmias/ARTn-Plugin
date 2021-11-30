@@ -98,9 +98,10 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         CLOSE ( UNIT = iunartout, STATUS = 'KEEP')
         CALL read_restart(restartfname,nat)
         !
+        ! ...Unconvert Energy/Forces because it will be convert just after
         tau = tau_step
-        force = force_step
-        etot_eng = etot_step
+        force = unconvert_force( force_step )
+        etot_eng = unconvert_energy( etot_step )
      ELSE
         CALL write_initial_report(iunartout, filout)
         ! store energy of initial state
