@@ -18,19 +18,23 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   ! 
   USE units 
   USE artn_params, ONLY: iunartin, iunartout, iunstruct, &
-       lartn, lrelax,lpush_init,lperp,leigen,llanczos, lsaddle, lpush_final, lbackward, &
+       lartn, lrelax,lpush_init,lperp,leigen,llanczos, lrestart, lsaddle, lpush_final, lbackward, &
        istep, iperp, ieigen, ipush, ilanc, ismooth, nlanc, if_pos_ct, &
-       lowest_eigval, etot_init, etot_saddle, etot_final, de_saddle, de_back, de_fwd, &
+       lowest_eigval, etot_init, etot_step, etot_saddle, etot_final, de_saddle, de_back, de_fwd, &
        npush, neigen, nlanc_init, nsmooth, push_mode, dist_thr, convcrit_init, convcrit_final, &
        fpara_convcrit, eigval_thr, relax_thr, push_step_size, current_step_size, dlanc, eigen_step_size, fpush_factor, &
-       push_ids,add_const, push, eigenvec, tau_saddle, eigen_saddle, initialize_artn,  &
+       push_ids,add_const, push, eigenvec, tau_step, force_step, tau_saddle, eigen_saddle, v_in, &
        VOID, INIT, PERP, EIGN, LANC, RELX, zseed, &
-       engine_units, struc_format_out, elements
+       engine_units, struc_format_out, elements, &
+       initialize_artn, write_initial_report, read_restart, write_restart
   ! 
   IMPLICIT NONE
   ! -- ARGUMENTS
   INTEGER,  INTENT(IN), value ::    nat       !> number of atoms
-  REAL(DP), INTENT(IN) ::    etot_eng         !> total energy in current step
+  REAL(DP), INTENT(INOUT) :: force(3,nat)     !> force calculated by the engine
+  REAL(DP), INTENT(INOUT) :: tau(3,nat)       !> atomic positions (needed for output only)
+
+  REAL(DP), INTENT(INOUT) ::    etot_eng         !> total energy in current step
   INTEGER,  INTENT(IN) ::    order(nat)       !> Engine order of atom
   REAL(DP), INTENT(IN) ::    at(3,3)          !> lattice parameters in alat units 
   INTEGER,  INTENT(IN) ::    ityp(nat)        !> atom types
@@ -49,7 +53,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   !
   REAL(DP)  :: force_in(3,nat)                ! stores non-modified force 
   REAL(DP)  :: fpara(3,nat)                   ! force parallel to push/eigenvec   
-  REAL(DP)  :: v_in(3,nat)                    ! input vector for lanczos 
   REAL(DP)  :: fpara_tot                      ! total force in parallel direction
   REAL(DP)  :: smoothing_factor               ! mixing factor for smooth transition between eigenvec and push
   REAL(DP)  :: lat(3,3), etot
@@ -71,8 +74,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   ! flag that controls convergence
   !
   lconv = .false.
-
-
   !
   ! fpara_tot is used to scale the magnitude of the eigenvector 
   ! 
@@ -83,15 +84,30 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   sadfname = 'saddle'
   initpfname = 'initp'
   eigenfname = 'latest_eigenvec'
+  restartfname = 'artn.restart'
   !
   ! initialize artn 
   !  
   IF( istep == 0 ) THEN
      ! read the input parameters 
-     CALL initialize_artn( nat, iunartin, iunartout, filin, filout )
-     ! store the total energy of the initial state
-     etot_init = convert_energy( etot_eng )
+     CALL initialize_artn( nat, iunartin, filin )
+     !
+     ! check if a restart was requested
      ! 
+     IF ( lrestart ) THEN
+        OPEN ( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'old', POSITION = 'append', IOSTAT = ios )
+        WRITE (iunartout, *) "Restarted previous ARTn calculation"
+        CLOSE ( UNIT = iunartout, STATUS = 'KEEP')
+        CALL read_restart(restartfname,nat)
+        !
+        tau = tau_step
+        force = force_step
+        etot_eng = etot_step
+     ELSE
+        CALL write_initial_report(iunartout, filout)
+        ! store energy of initial state
+        etot_init = convert_energy( etot_eng )
+     ENDIF
   ENDIF
 
   ! set initial random seed
@@ -100,15 +116,16 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
   ! ...Store & convert original force in a.u.
   force_in = convert_force( force )
-  force = force_in 
+  force = force_in
+  force_step = force
 
-
-  ! ...Convert the Eneergy
+  ! ...Convert the Energy
   etot = convert_energy( etot_eng )
-
+  etot_step = etot
   ! ...Initialize the displacement
   disp = VOID
-
+  ! store positions of current step 
+  tau_step = tau 
 
   ! 
   ! Open the output file for writing   
@@ -122,7 +139,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !
      ! initial push 
      !
-     CALL push_init(nat, tau, order, at, idum, push_ids, dist_thr, add_const, push_step_size, push ,push_mode)
+     CALL push_init(nat, tau, order, at, idum, push_ids, dist_thr, add_const, push_step_size, push , push_mode)
      !
      ! set up the flags (we did an initial push, now we need to relax perpendiculary) 
      lpush_init = .false.
@@ -148,7 +165,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         eigenvec(:,:) = push(:,:) 
      ENDIF
      ! 
-     ! ...Here force become fperp: It is not clear!!
+     ! ...Here force becomes fperp: It is not clear!!
      CALL perpforce(force,if_pos,eigenvec,fpara,nat)
      ! 
      IF (MAXVAL(ABS(fpara)) <= fpara_convcrit) THEN
@@ -174,7 +191,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         IF ( ipush < npush ) THEN
            ! continue pushing in the specified direction
            force(:,:) =  eigenvec(:,:)
-           disp = EIGN
+           disp = INIT 
            ! 
            ipush = ipush + 1
            ! 
@@ -233,7 +250,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            ! input a different vector for testing purposes
         ELSE
            ! rescale the lanczos eigenvec back to original size
-           v_in(:,:) = eigenvec(:,:)/current_step_size 
+           v_in(:,:) = eigenvec(:,:)/current_step_size
            ! reset the eigenvalue flag to continue lanczos
            leigen = .false.
         ENDIF
@@ -256,7 +273,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      CALL lanczos( nat, force, v_in, dlanc, nlanc, ilanc, lowest_eigval,  eigenvec, push)
 
      iperp = 0
-
 
      !
      ! when lanczos converges, nlanc = number of steps it took to converge,
@@ -299,7 +315,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            ieigen = 0
            lperp = .false.
            iperp = 0
-             
+           ! 
         ELSE
            ! make an initial push 
            leigen = .false.
@@ -320,7 +336,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         etot_saddle = etot
         !tau_saddle = tau
         do i = 1, nat
-           tau_saddle(:,order(i)) = tau(:,i) !> The list follow the atomic order
+           tau_saddle(:,order(i)) = tau(:,i) !> The list follows the atomic order
            eigen_saddle(:,order(i)) = eigenvec(:,i)
         enddo
         !do i = 1, nat
@@ -359,7 +375,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      ! do we do a final push ?
      ! 
      IF ( lpush_final ) THEN   
-        ! set convergence and other flags to false ...
+        ! set convergence and other flags to false 
         lconv = .false.
         lperp = .false.
         leigen = .false. 
@@ -405,18 +421,14 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      IF ( MAXVAL(ABS(force_in(:,:)*if_pos(:,:))) <= convcrit_final  ) THEN
         IF ( fpush_factor == 1.0 ) THEN
 
-           ! make sure QE doesn't converge
            disp = RELX
-           !forc_conv_thr_qe = 1.0D-8
-
            ! reverse direction of push 
            fpush_factor = -1.0
 
            ! restart from saddle point
-           !tau(:,:) = tau_saddle(:,:)
            do i = 1,nat
            tau(:,i) = tau_saddle(:,order(i))
-           !eigenvec(:,i) = eigen_saddle(:,order(i))
+           eigenvec(:,i) = eigen_saddle(:,order(i))
            enddo
            lbackward = .true.
 
@@ -455,11 +467,9 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      ! 
   END IF
 
-
   ! ...Increment the ARTn-step
-  istep = istep + 1      
-
-
+  istep = istep + 1
+  CALL write_restart(restartfname,nat) 
   ! ...Close the output file
   CLOSE (UNIT = iunartout, STATUS = 'KEEP') 
 

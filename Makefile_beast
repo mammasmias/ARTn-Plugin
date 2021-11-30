@@ -10,6 +10,7 @@ clean :
 	( cd src; $(MAKE) clean; cd - )
 
 patch :
+	@if [ ! -e ${QE_PATH}/make.inc ]; then cd ${QE_PATH}; ./configure ; cd -; fi
 	echo "LIBOBJS += ${ART_PATH}/src/libartn.a" >> ${QE_PATH}/make.inc
 #	sh patch-ARTn.sh
 	cp ${QE_PATH}/PW/src/plugin_ext_forces.f90 .

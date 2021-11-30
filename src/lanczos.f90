@@ -1,6 +1,6 @@
 
 !> @author
-!!  Matic Poberjnik,
+!!  Matic Poberznik,
 !!  Miha Gunde
 
 
@@ -11,7 +11,7 @@ SUBROUTINE lanczos( nat, force,  v_in, dlanc, nlanc, ilanc, lowest_eigval, lowes
   !!   Lanczos subroutine for the ARTn algorithm; based on the lanczos subroutine as written by M. Gunde
   !
   !> @param [in]      nat	      Size of the Array/matrix : number of atoms
-  !> @param [in]      v_in	      ??	  
+  !> @param [in]      v_in	      First lanczos vector 	  
   !> @param [in]      pushdir	      List of Direction of push on atoms
   !> @param [in]      dlanc	      derivative step of the lanczos
   !> @param [inout]   force	      List of Force on the atons
@@ -40,7 +40,7 @@ SUBROUTINE lanczos( nat, force,  v_in, dlanc, nlanc, ilanc, lowest_eigval, lowes
   REAL(DP) :: alpha, beta, lowest_eigval_old, eigvec_diff, largest_eigvec_diff, eigval_diff
 
   ! Try to remove a temporary array when call diag
-  real(dp) :: Htmp(ilanc,ilanc), Hstep(nlanc,nlanc)
+  REAL(DP) :: Htmp(ilanc,ilanc), Hstep(nlanc,nlanc)
 
   ! allocate vectors and put to zero
   ALLOCATE( q(3,nat), source=0.D0 )
@@ -94,6 +94,21 @@ SUBROUTINE lanczos( nat, force,  v_in, dlanc, nlanc, ilanc, lowest_eigval, lowes
      H(1,2) = beta
      ! 
      lowest_eigval = alpha
+     !
+     IF ( abs(lowest_eigval_old) > 0.0_DP ) THEN
+        eigval_diff = (lowest_eigval - lowest_eigval_old)/lowest_eigval_old
+        write (*,*) "DEBUG", ilanc, eigval_diff, eigval_thr 
+        IF ( ABS(eigval_diff) <= eigval_thr ) THEN
+           !
+           ! lanczos has converged
+           ! set max number of iternations to current iteration  
+           !
+           write (*,*) "DEBUG: converged at first step" 
+           nlanc = ilanc
+           ! increase lanczos counter for last step 
+           !
+        ENDIF
+     ENDIF
      ilanc = ilanc + 1
      !
      ! correct v1 so that the move is made from the initial position 
@@ -201,9 +216,6 @@ SUBROUTINE lanczos( nat, force,  v_in, dlanc, nlanc, ilanc, lowest_eigval, lowes
            ! new lanczos vector very small, stop (converge)
            !
            nlanc = ilanc
-           !
-           ! Backtrack to initial position (sum all lanczos vectors generated)
-           !
            ilanc = ilanc + 1
            !
         ELSE

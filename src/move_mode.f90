@@ -51,7 +51,7 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
   ! .. Convert the force & time
   force = convert_force( force )
   dt = convert_time( dt_curr )
-  dt0 = convert_time( dt_init )   !%! Finally we don't touch di_init
+  dt0 = convert_time( dt_init )   !%! Finally we don't touch dt_init
 
 
   SELECT CASE( MOVE(disp) )

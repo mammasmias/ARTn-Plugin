@@ -60,7 +60,7 @@ SUBROUTINE iosys()
                               fire_f_dec_ => fire_f_dec,  &
                               fire_alpha_init_ => fire_alpha_init, &  
                               fire_falpha_ => fire_falpha, &
-                              fire_dtmax_ => fire_dtmax 
+                              fire_dtmax_ => fire_dtmax
   !
   USE fcp_variables, ONLY : lfcpopt_ => lfcpopt, &
                             lfcpdyn_ => lfcpdyn, &

@@ -1040,7 +1040,7 @@ CONTAINS
      !!   dt = 20.0  (the default time step in PW ==  20.0 a.u. or 0.9674 fs )
      !!   fire_f_inc = 1.1 
      !!   fire_f_dec = 0.5
-     !!   fire_f_alpha_init = 0.1
+     !!   fire_alpha_init = 0.2
      !!   fire_falpha = 0.99
      !!----------------------------------------------------------------------- 
      USE ions_base,          ONLY : nat, ityp, tau, if_pos
