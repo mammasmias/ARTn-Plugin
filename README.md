@@ -19,7 +19,7 @@ This is a working repo for the current version of the plugin-ARTn; currently it 
 
 ## TODO
 
-- nsteppos in ARTn has not the same meaning for QE and LAMMPS
+- nsteppos in ARTn doesn't have the same meaning for QE and LAMMPS
 - Work on the parallelization:
   - one ARTn run with many proc
   - many ARTn run with one proc
@@ -57,7 +57,7 @@ lines to the QE input file `pwscf.in`:
 /
 ```
 
-Finally Quantum ESPRESSO must be launch with the flag -partn as follow:
+Finally Quantum ESPRESSO must be launched with the flag -partn as follow:
 
 ```bash
 ./pw.x -partn -inp input_pw.txt
@@ -75,7 +75,7 @@ For the moment the pARTn library has to be compiled with **gfortran** only.
 
 ARTn, in LAMMPS, is defined as a FIX, `fix_artn.h` and `fix_artn.cpp`. So  you copy and paste these two files in the `LAMMPS/src/`.
 
-In the Makefile, i.e. `LAMMPS/src/MAKE/Makefile.serial`, you need to had the library PATH. For pARTn it needs the openblas library with pthread library and the gfortran library for the C++/fortran interface. Of course the ARTn library built at the ARTn compilation and take place in the `src/` folder.
+In the Makefile, i.e. `LAMMPS/src/MAKE/Makefile.serial`, you need to had the library PATH. For pARTn it needs the openblas library with pthread library and the gfortran library for the C++/fortran interface. Of course the ARTn library is built at ARTn compilation and placed in the `src/` folder.
 An example:
 
 ```makefile
@@ -108,11 +108,13 @@ Plugin-ARTn enter in FIRE algorithm minimization loop.
 The parameters specific to ARTn algorithm must be specify in `art.in` file where you launch the simulation.
 The list of parameters are:
 
-###### General feature:
+###### General features:
 
-- `lrelax`: Values `.true./.false`, by default is `false.`. 
+- `lrelax`: Values `.true./.false`, default is `false.`. 
 Flag if do we want to relax to adjacent minima from the saddle point.
-- `lpush_final`: Values `.true./.false.`, by default is `true.`.
+- `lpush_final`: Values `.true./.false.`, default is `.true.`.
+Flag for restarting a ARTn calculation
+- `lrestart`: Values `.true./.false.`, default is `.false.`.
 Flag to push to adjacent minimum along eigenvector.
 - `npush`: Value integer, by default is `3`. Number of initial pushes before lanczos start.
 - `neigen`: Value integer, by default is `1`. Number of steps made with eigenvector before perpendicular relax.
@@ -134,7 +136,7 @@ Flag to push to adjacent minimum along eigenvector.
 
 - `dist_thr`: Value is real, by default is `0`. The unit is in Angstrom. Distance Threshold between the atoms in `push_ids` parameters and the environment.
 
-- `add_const`: Is an array of real, by default is empty. Contains the constrain on the initial push if the user want to push in specific region of the space. The constrain contains 4 real value, 3 for the direction and 1 for the solid angle around this direction. An example for the atom 23 on which ask to go in directon (-x,0,z) with solid angle of 30 degrees: 
+- `add_const`: Is an array of real, by default empty. Contains the constrain on the initial push if the user want to push in specific region of the space. The constrain contains 4 real value, 3 for the direction and 1 for the solid angle around this direction. An example for the atom 23 on which ask to go in directon (-x,0,z) with solid angle of 30 degrees: 
 
   `add_const(:,23)=-1.0, 0.0, 1.0, 30`
 
@@ -145,7 +147,6 @@ Flag to push to adjacent minimum along eigenvector.
 - `fpara_convcrit`: Value is real, by default is `5e-3`. The unit is eV/Angstrom. Initial force convergence criteria. Used for the parallel relaxation.
 - `eigval_thr`: Is a real value, by default is `-0.01` Ry/Angs^2. Threshold for the Hessian eigen value obtain by Lanczos algorithm to start to converge to. The eigen value relative to the saddle point should be negative.
 - `relax_thr`: Is a real value, by default is `0.01`. Energy Threshold at the saddle point to start relaxation to adjacent minima.
-- `push_step_size`: Is a real value, by default is `3.0`. The unit is in Angstrom. Step size of inital push. 
+- `push_step_size`: Is a real value, by default is `0.3`. The unit is in Angstrom. Step size of the inital push (note: the step size is limited by the engine) 
 - `dlanc`: Is a real value, by default is `1e-2`. The unit is in Angstrom. Step size in the lanczos algorithm.
-- `eigen_step_size`:  Is a real value, by default is `0.2`. The unit is in Angstrom. Step size for a step with the lanczos eigenvector.
-
+- `eigen_step_size`:  Is a real value, by default is `0.2`. The unit is in Angstrom. Step size for a step with the lanczos eigenvector (note: the step size is limited by the engine).
