@@ -253,6 +253,8 @@ CONTAINS
     WRITE (iunartout,'(5X, " "                                                 )')
     WRITE (iunartout,'(5X, "               INPUT PARAMETERS                   ")')
     WRITE (iunartout,'(5X, "--------------------------------------------------")')
+    WRITE (iunartout,'(5x, "engine_units:", *(x,A))') TRIM(engine_units)
+    WRITE (iunartout,'(5X, "--------------------------------------------------")')
     WRITE (iunartout,'(5X, "Push and perpendicular relax:")')
     WRITE (iunartout,'(5X, "--------------------------------------------------")') 
     WRITE (iunartout,'(15X,"npush           = ", I6)') npush 
@@ -322,7 +324,7 @@ CONTAINS
             current_step_size, fpush_factor,  & 
             tau_step, force_step, push, eigenvec, H, Vmat, force_old, tau_saddle, eigen_saddle
        CLOSE ( UNIT = iunartres, STATUS = 'KEEP')
-       
+
     ELSE
 
        WRITE(iunartout,*) "ARTn: restart file does not exist, exiting ..."
@@ -339,6 +341,8 @@ REAL(8) FUNCTION ran3( idum )
   !
   !> @param [in] idum   dummy integer
   !> @return a real(8) ramdom number
+  !
+  !#! WE HAVE TO INITIALIZE THE VARIABLE
   !
   !
   IMPLICIT NONE

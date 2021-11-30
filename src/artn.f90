@@ -30,16 +30,17 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   !
   IMPLICIT NONE
   ! -- ARGUMENTS
-  REAL(DP), INTENT(INOUT) :: force(3,nat)     !> force calculated by the engine
-  REAL(DP), INTENT(INOUT) :: tau(3,nat)       !> atomic positions (needed for output only)
+  INTEGER,  INTENT(IN), value ::    nat       !> number of atoms
 
   REAL(DP), INTENT(INOUT) ::    etot_eng         !> total energy in current step
   INTEGER,  INTENT(IN) ::    order(nat)       !> Engine order of atom
   REAL(DP), INTENT(IN) ::    at(3,3)          !> lattice parameters in alat units
-  INTEGER,  INTENT(IN), value ::    nat       !> number of atoms
   INTEGER,  INTENT(IN) ::    ityp(nat)        !> atom types
   INTEGER,  INTENT(IN) ::    if_pos(3,nat)    !> coordinates fixed by engine
   CHARACTER(LEN=3),   INTENT(IN) :: atm(*)    !> name of atom corresponding to ityp
+
+  REAL(DP), INTENT(INOUT) :: force(3,nat)     !> force calculated by the engine
+  REAL(DP), INTENT(INOUT) :: tau(3,nat)       !> atomic positions (needed for output only)
 
   INTEGER,          INTENT(OUT) :: disp       !> Stage for move_mode
   LOGICAL,          INTENT(OUT) :: lconv      !> flag for controlling convergence
@@ -98,9 +99,10 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         CALL read_restart(restartfname,nat)
         write(785,*) lpush_init, lperp, leigen, llanczos, lsaddle, lrelax, lowest_eigval, ilanc, nlanc
         !
+        ! ...Unconvert Energy/Forces because it will be convert just after
         tau = tau_step
-        force = force_step
-        etot_eng = etot_step
+        force = unconvert_force( force_step )
+        etot_eng = unconvert_energy( etot_step )
      ELSE
         CALL write_initial_report(iunartout, filout)
         ! store energy of initial state

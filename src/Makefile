@@ -25,7 +25,7 @@ LIB_OBJECTS := \
             $(OBJ)/artn_QE.o
 
 
-#FDEBUG := -check all  #-fcheck=all
+FDEBUG := #-check all  #-fcheck=all
 
 ifeq ($(F90),ifort)
   MOD   := -module $(OBJ)
