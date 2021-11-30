@@ -60,7 +60,7 @@ module units
     !!   Receive the keyword of Engine which contains the engine name and 
     !!   type of unit. Maybe we can also define the units for the output
     !
-    !> @param [inout]  txt   Engin Keyword 
+    !> @param [inout]  txt   Engine Keyword 
     !
     ! -- Arguments
     character(*), intent( inout ) :: txt

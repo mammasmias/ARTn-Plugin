@@ -1185,7 +1185,7 @@ MODULE input_parameters
         INTEGER  :: fire_nmin = 5 ! minimum number of steps for time step increase 
         REAL(DP) :: fire_f_inc = 1.1_DP ! factor for time step increase  
         REAL(DP) :: fire_f_dec = 0.5_DP ! factor for time step decrease
-        REAL(DP) :: fire_alpha_init = 0.1_DP ! initial value of mixing factor
+        REAL(DP) :: fire_alpha_init = 0.2_DP ! initial value of mixing factor
         REAL(DP) :: fire_falpha = 0.99_DP ! modify the mixing factor
         REAL(DP) :: fire_dtmax = 10.0_DP ! maximum time step; calculated as dtmax = fire_dtmax*dt 
         !
