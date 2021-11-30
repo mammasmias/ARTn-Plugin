@@ -5,13 +5,13 @@
 
 
 SUBROUTINE lanczos( nat, force,  v_in, dlanc, nlanc, ilanc, lowest_eigval, lowest_eigvec, pushdir)
-  USE artn_params,            ONLY: DP, Vmat, H, force_old 
+  USE artn_params,            ONLY: DP, Vmat, H, force_old
   !
   !> @brief
   !!   Lanczos subroutine for the ARTn algorithm; based on the lanczos subroutine as written by M. Gunde
   !
   !> @param [in]      nat	      Size of the Array/matrix : number of atoms
-  !> @param [in]      v_in	      First lanczos vector 	  
+  !> @param [in]      v_in	      First lanczos vector
   !> @param [in]      pushdir	      List of Direction of push on atoms
   !> @param [in]      dlanc	      derivative step of the lanczos
   !> @param [inout]   force	      List of Force on the atons
@@ -50,16 +50,16 @@ SUBROUTINE lanczos( nat, force,  v_in, dlanc, nlanc, ilanc, lowest_eigval, lowes
   !%! NS:Maybe it is not needed to dynamic allocate Hstep
   !%! We can directly declare a matrix Hstep(nlanc,nlanc)
   !ALLOCATE( Hstep(1:nlanc,1:nlanc), source=0.D0 )
-  ! 
+  !
   ! store the eigenvalue of the previous iteration
   lowest_eigval_old = lowest_eigval
   !
   IF ( ilanc  == 0 ) THEN
-     ! store the force of the initial position 
-     force_old = force(:,:) 
+     ! store the force of the initial position
+     force_old = force(:,:)
      !
      ! normalize initial vector
-     ! 
+     !
      v1(:,:) = v_in(:,:) / dnrm2( 3*nat, v_in, 1 )
      !
      ! store this vector
@@ -92,27 +92,29 @@ SUBROUTINE lanczos( nat, force,  v_in, dlanc, nlanc, ilanc, lowest_eigval, lowes
      H(1,1) = alpha
      H(2,1) = beta
      H(1,2) = beta
-     ! 
+     !
      lowest_eigval = alpha
      !
      IF ( abs(lowest_eigval_old) > 0.0_DP ) THEN
         eigval_diff = (lowest_eigval - lowest_eigval_old)/lowest_eigval_old
-        write (*,*) "DEBUG", ilanc, eigval_diff, eigval_thr 
+        ! write(785,*) 1, lowest_eigval_old, lowest_eigval, abs(eigval_diff)
+        write (*,*) "DEBUG", ilanc, eigval_diff, eigval_thr
         IF ( ABS(eigval_diff) <= eigval_thr ) THEN
            !
            ! lanczos has converged
-           ! set max number of iternations to current iteration  
+           ! set max number of iternations to current iteration
            !
-           write (*,*) "DEBUG: converged at first step" 
+           write (*,*) "DEBUG: converged at first step"
+           ! write(785,*) 'converged step1'
            nlanc = ilanc
-           ! increase lanczos counter for last step 
+           ! increase lanczos counter for last step
            !
         ENDIF
      ENDIF
      ilanc = ilanc + 1
      !
-     ! correct v1 so that the move is made from the initial position 
-     v1(:,:) = v1(:,:) - Vmat(:,:,ilanc -1) 
+     ! correct v1 so that the move is made from the initial position
+     v1(:,:) = v1(:,:) - Vmat(:,:,ilanc -1)
      !
   ELSEIF (ilanc > 1 .and. ilanc <= nlanc ) THEN
      !
@@ -152,8 +154,8 @@ SUBROUTINE lanczos( nat, force,  v_in, dlanc, nlanc, ilanc, lowest_eigval, lowes
      ! Hstep now stores eigvecs of H
      ! eigvecs in coordinate space are computed as matmul(V, lowest_eigvec_H )
      !
-     ! Multiply matrices (V_1 | ... | V_ilanc)*H(min)=eigen(min) using dgemm of lapack  
-     !  
+     ! Multiply matrices (V_1 | ... | V_ilanc)*H(min)=eigen(min) using dgemm of lapack
+     !
      !
      ! The call to dgemm contains:
      ! (see http://www.math.utah.edu/software/lapack/lapack-blas/dgemm.html)
@@ -165,12 +167,12 @@ SUBROUTINE lanczos( nat, force,  v_in, dlanc, nlanc, ilanc, lowest_eigval, lowes
      ! 1.0_DP ... alpha for dgemm
      ! Vmat(:,:,1:ilanc) ... Vmat of current step
      ! 3*nat             ... first dimension of Vmat
-     ! Hstep(:,id_min)   ... eigenvector with lowest eigenvalue of H 
-     ! ilanc             ... first dimension of Hstep 
+     ! Hstep(:,id_min)   ... eigenvector with lowest eigenvalue of H
+     ! ilanc             ... first dimension of Hstep
      ! 0.0_DP            ... beta of dgemm
      ! lowest_eigvec     ... resulting eigenvector dimensions (1:3,1:nat)
      ! 3*nat             ... first dimension of lowest_eigvec
-     ! 
+     !
      CALL dgemm('N','N',3*nat,1,ilanc,1.0_DP,Vmat(:,:,1:ilanc),3*nat,Hstep(:,id_min),ilanc,0.0_DP,lowest_eigvec,3*nat)
      !
      ! check if the obtained eigenvec points in the same direction as the input eigvec
@@ -185,14 +187,16 @@ SUBROUTINE lanczos( nat, force,  v_in, dlanc, nlanc, ilanc, lowest_eigval, lowes
      ! Check for the convergence of the lanczos eigenvalue
      !
      eigval_diff = (lowest_eigval - lowest_eigval_old)/lowest_eigval_old
-     ! 
+     ! write(785,*) ilanc, lowest_eigval_old, lowest_eigval, abs(eigval_diff)
+     !
      IF ( ABS(eigval_diff) <= eigval_thr ) THEN
+        ! write(785,*) 'converged! in:',ilanc
         !
         ! lanczos has converged
-        ! set max number of iternations to current iteration  
+        ! set max number of iternations to current iteration
         !
         nlanc = ilanc
-        ! increase lanczos counter for last step 
+        ! increase lanczos counter for last step
         ilanc = ilanc + 1
         !
      ENDIF
@@ -215,8 +219,9 @@ SUBROUTINE lanczos( nat, force,  v_in, dlanc, nlanc, ilanc, lowest_eigval, lowes
            !
            ! new lanczos vector very small, stop (converge)
            !
-           nlanc = ilanc
-           ilanc = ilanc + 1
+           ! write(785,*) 'new vector small!'
+           ! nlanc = ilanc
+           ! ilanc = ilanc + 1
            !
         ELSE
            !
@@ -236,22 +241,24 @@ SUBROUTINE lanczos( nat, force,  v_in, dlanc, nlanc, ilanc, lowest_eigval, lowes
         ! increas counter if lanczos is not converged in nlanciter
         ilanc = ilanc + 1
     END IF
-    
+
     ! correct v1 so that the move is made from the initial position
     v1(:,:) = v1(:,:) - Vmat(:,:,ilanc-1)
-    !    
+    !
  ENDIF
   !
   ! write data for next lanczos step
   !
  IF( ilanc > nlanc ) THEN
-    ! final move back to initial position 
+    ! final move back to initial position
     v1(:,:) = 0.D0
-    v1(:,:) = v1(:,:) - Vmat(:,:,nlanc)  
+    v1(:,:) = v1(:,:) - Vmat(:,:,nlanc)
  ENDIF
 
  force(:,:) = v1(:,:)
- 
+
  DEALLOCATE( q, v1 )
+
+ ! flush(785)
 
 END SUBROUTINE lanczos
