@@ -147,7 +147,7 @@ Engine specific flag:
 - `convcrit_final`: Value is real, by default is `1e-3`. The unit is eV/Angstrom. Initial force convergence criteria. Used for the perpendicular relax close to the saddle point.
 - `fpara_convcrit`: Value is real, by default is `5e-3`. The unit is eV/Angstrom. Initial force convergence criteria. Used for the parallel relaxation.
 - `eigval_thr`: Is a real value, by default is `-0.01` Ry/Angs^2. Threshold for the Hessian eigen value obtain by Lanczos algorithm to start to converge to. The eigen value relative to the saddle point should be negative.
-- `relax_thr`: Is a real value, by default is `0.01`. Energy Threshold at the saddle point to start relaxation to adjacent minima.
+- `relax_thr`: Is a real value, by default is `-0.01` Ry. Energy Threshold at the saddle point to start relaxation to adjacent minima.
 - `push_step_size`: Is a real value, by default is `0.3`. The unit is in Angstrom. Step size of the inital push (note: the step size is limited by the engine) 
 - `dlanc`: Is a real value, by default is `1e-2`. The unit is in Angstrom. Step size in the lanczos algorithm.
 - `eigen_step_size`:  Is a real value, by default is `0.2`. The unit is in Angstrom. Step size for a step with the lanczos eigenvector (note: the step size is limited by the engine).
