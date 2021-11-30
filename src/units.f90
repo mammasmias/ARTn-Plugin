@@ -87,7 +87,7 @@ module units
       engine = lower(trim(txt))
       mode = ""
     endif
-    txt = engine
+    !txt = engine
 
 
     ! ...Initialization

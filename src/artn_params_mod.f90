@@ -253,6 +253,8 @@ CONTAINS
     WRITE (iunartout,'(5X, " "                                                 )')
     WRITE (iunartout,'(5X, "               INPUT PARAMETERS                   ")')
     WRITE (iunartout,'(5X, "--------------------------------------------------")')
+    WRITE (iunartout,'(5x, "engine_units:", *(x,A))') TRIM(engine_units)
+    WRITE (iunartout,'(5X, "--------------------------------------------------")')
     WRITE (iunartout,'(5X, "Push and perpendicular relax:")')
     WRITE (iunartout,'(5X, "--------------------------------------------------")') 
     WRITE (iunartout,'(15X,"npush           = ", I6)') npush 
