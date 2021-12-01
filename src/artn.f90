@@ -158,6 +158,9 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !
      CALL write_struct( at, nat, tau, order, elements, ityp, push, 1.0_DP, iunstruct, struc_format_out, initpfname )
      !
+     ! Set eigenvec as push, this is for sure step one of ARTn algo.
+     eigenvec(:,:) = push(:,:)
+     !
   ELSE IF ( lperp .and. .not. llanczos) THEN
      !
      !=============================
@@ -165,15 +168,22 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !=============================
      !
      ! If we don't have eigenvector yet, overwrite it with push direction
-     IF ( .not. leigen) THEN
-        ! before lanczos relax perpendiculary with respect to the push
-        eigenvec(:,:) = push(:,:)
-     ENDIF
+     ! IF ( .not. leigen ) THEN
+     !    ! before lanczos relax perpendiculary with respect to the push
+     !    eigenvec(:,:) = push(:,:)
+     ! ENDIF
+     !
+     ! If eigenvalue is good, overwrite push with eigenvec
+     !
+     if( leigen ) then
+        push(:,:) = eigenvec(:,:)
+     endif
      !
      ! Subtract parrallel components to push from force.
      ! Modify and overwrite force such that force = force - fpara = fperp
      !
-     CALL perpforce(force,if_pos,eigenvec,fpara,nat)
+     ! CALL perpforce(force,if_pos,eigenvec,fpara,nat)
+     CALL perpforce( force, if_pos, push, fpara, nat )
      !
      IF (MAXVAL(ABS(fpara)) <= fpara_convcrit) THEN
         ! tighten perpendicular convergence criterion
