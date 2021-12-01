@@ -35,7 +35,7 @@
  /
 
 ATOMIC_SPECIES 
-  Al    1.0   Al.pz-n-kjpaw_psl.0.1.UPF 
+  Al    1.0   Al.pz-vbc.UPF 
 
 
 CELL_PARAMETERS (alat=
