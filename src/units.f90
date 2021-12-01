@@ -15,6 +15,7 @@ module units
   PUBLIC :: DP, PI, AMU_RY,  make_units,   &
             convert_length, unconvert_length,   &
             convert_force, unconvert_force,     &
+            convert_hessian, unconvert_hessian, &
             convert_energy, unconvert_energy,   &
             convert_time, unconvert_time
   
@@ -145,8 +146,13 @@ module units
             T2au = 1. / AU_PS
             au2T = AU_PS
 
+            !! Force
             F2au = E2au / L2au
             au2F = 1. / F2au
+
+            !! Hessian
+            H2au = F2au / L2au
+            au2H = 1. / H2au
 
           !case( 'real' )
             !! Energy: Kcal/mol
@@ -189,10 +195,11 @@ module units
 
 
     if( verbose )then
-      print*, " * ARTn::UNITS::E2au::", E2au, "au2E", au2E
-      print*, " * ARTn::UNITS::L2au::", L2au, "au2L", au2L
-      print*, " * ARTn::UNITS::T2au::", T2au, "au2T", au2T
-      print*, " * ARTn::UNITS::F2au::", F2au, "au2F", au2F
+      write(*,1) " * ARTn::UNITS::E2au::", E2au, "au2E", au2E
+      write(*,1) " * ARTn::UNITS::L2au::", L2au, "au2L", au2L
+      write(*,1) " * ARTn::UNITS::T2au::", T2au, "au2T", au2T
+      write(*,1) " * ARTn::UNITS::F2au::", F2au, "au2F", au2F
+      1 format(*(x,a,x,g15.5))
     endif
 
 
@@ -239,6 +246,29 @@ module units
     real(DP), intent( in ) :: fau
     real(DP) :: f
     f = fau * au2F
+  end function
+
+
+
+  !......................................................................................
+  ! HESSIAN
+
+  !> @brief Convert the engine hessian to a.u.
+  !> param [in] h   hessian in engine unit
+  !> @return a hessain in atomic units a.u.
+  elemental pure function convert_hessian( h )result( hau )
+    real(DP), intent( in ) :: h
+    real(DP) :: hau
+    hau = h * H2au
+  end function
+
+  !> @brief Convert the force in a.u. in engine units
+  !> param [in] f   force in a.u.
+  !> @return a force in engine units
+  elemental pure function unconvert_hessian( hau )result( h )
+    real(DP), intent( in ) :: hau
+    real(DP) :: h
+    h = hau * au2H
   end function
 
 
