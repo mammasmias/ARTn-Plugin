@@ -97,7 +97,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         WRITE (iunartout, *) "Restarted previous ARTn calculation"
         CLOSE ( UNIT = iunartout, STATUS = 'KEEP')
         CALL read_restart(restartfname,nat)
-        write(785,*) lpush_init, lperp, leigen, llanczos, lsaddle, lrelax, lowest_eigval, ilanc, nlanc
         !
         ! ...Unconvert Energy/Forces because it will be convert just after
         tau = tau_step
