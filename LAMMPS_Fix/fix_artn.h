@@ -41,6 +41,8 @@ class FixARTn : public Fix {
   void Spread_Arrays( int*, double**, double**, double**, int, double**, double**, double** );
 
 
+
+
  protected:
 
   // Following and interaction with lammps
@@ -83,6 +85,18 @@ class FixARTn : public Fix {
   double *tab_comm;
 
 };
+
+
+// Routines from the library pARTn
+
+extern "C"{
+  void artn_( double *const f, double* etot, const int nat, const int *ityp, const char *elt, double *const tau, const int *order, const double *lat, const int *if_pos, int* disp, bool* lconv );
+  void move_mode_( const int nat, double *const f, double *const vel, double* etot, int* nsteppos, double* dt_curr, double* alpha, const double* alpha_init, const double* dt_init, int* disp );
+  int get_iperp_();
+  int get_perp_();
+  int get_relx_();
+}
+
 
 }
 
