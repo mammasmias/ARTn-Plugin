@@ -116,6 +116,8 @@ Depending of the engine the works units changes and it is to the user to be cohe
 
 ###### General features:
 
+**The values gives by the user through the input file should be in engine units**
+
 - `lrelax`: Values `.true./.false`, default is `false.`.
 Flag if we want to relax to adjacent minima from the saddle point.  
 - `lpush_final`: Values `.true./.false.`, default is `.true.`.  
@@ -130,6 +132,8 @@ Flag for restarting a ARTn calculation.
 Engine specific flag:
 - `engine_units`: Value character, default is `qe`. For LAMMPS it is needed to specify `lammps/<units>` where `<units>` correspond to the units keywords in LAMMPS input: (`metal`, `charge`, ...)
 ###### The push mode:
+
+**The values gives by the user through the input file should be in engine units**
 
 - `push_mode`: Value character, by default is `all`. Type of initial push (`all` , `list` or `rad`)
 
@@ -148,6 +152,8 @@ Engine specific flag:
   `add_const(:,23)=-1.0, 0.0, 1.0, 30`
 
 ###### The saddle point convergence:
+
+**The values gives by the user through the input file should be in engine units**
 
 - `convcrit_init`: Value is real, by default is `1e-2 Ry/bohr` . Initial force convergence criteria. Used for the perpendicular relax before the saddle point convergence
 - `convcrit_final`: Value is real, by default is `1e-3 Ry/bohr`. Initial force convergence criteria. Used for the perpendicular relax close to the saddle point.
