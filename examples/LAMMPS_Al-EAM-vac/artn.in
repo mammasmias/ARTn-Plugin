@@ -1,18 +1,28 @@
 &ARTN_PARAMETERS
+  !! Units definition::(eV,Ang,ps)  
+  engine_units='lammps/metal'
+
+!  lrestart = .true.
   npush = 5
   lpush_final = .true. 
   nsmooth = 2
-  convcrit_init = 1.0d-1
-  convcrit_final = 0.1d-2
-  push_step_size = 0.15
-! parameters for the push
+  convcrit_init = 0.5
+  convcrit_final = 0.05
+  fpara_convcrit = 0.06
+
+  !! parameters for the push
+  push_step_size = 0.1
   push_mode = 'list'
-  ! define which atoms are to be pushed and the constraints ...
+
+  !! define which atoms are to be pushed and the constraints ...
   push_ids = 251
   add_const(:,251) = 1.0, 1.0, 0.0, 0.0 
-  ! lanczos parameters
-  dlanc = 0.1D-1 
+  
+  !! lanczos parameters
+  dlanc = 0.2D-1
   nlanc_init = 16
-  ! eigenpush parms
-  eigen_step_size = 0.3
+  
+  !! eigenpush parms
+  eigen_step_size = 0.15
+  relax_thr = -0.005
 /
