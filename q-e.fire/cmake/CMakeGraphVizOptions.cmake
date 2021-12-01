@@ -1,2 +1,0 @@
-set(GRAPHVIZ_IGNORE_TARGETS "QEGlobalCompileDefinitions;FoX_*;")
-set(GRAPHVIZ_EXECUTABLES OFF)
