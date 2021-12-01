@@ -104,9 +104,15 @@ make serial
 
 ## How to use plugin-ARTn
 
-Plugin-ARTn enters in the FIRE algorithm minimization loop.
-The parameters specific to ARTn algorithm must be specified in the `artn.in` file, located in the working directory of the calculation.
-The list of parameters are:
+### Philosophy
+
+Plugin-ARTn is linked with Energy/Forces calculation Engine through the minimization algorithm FIRE. The engine should have this algorithm.  The idea is to launch the engine for a FIRE minimization and the activation of plugin-ARTn bias the minimization to apply the ARTn method.
+
+### Input and Parameters
+
+Once the Engine is compiled with the pARTn library the ARTn input is automatically red at the first moment of the engine minimization step. The ARTn input calls `artn.in`  which allows to change all the  ARTn's parameters. It should be located in the working directory of the calculation. 
+
+Depending of the engine the works units changes and it is to the user to be coherent between the parameters he gives and the units of the engine he uses. This warning is mainly for the **the saddle point convergence**. The user has one keywords to specify the engine he uses (`engine_units`). The list of ARTn's parameters are:
 
 ###### General features:
 
@@ -135,7 +141,7 @@ Engine specific flag:
 
   `push_ids = 23, 201, 35`
 
-- `dist_thr`: Value is real, by default is `0`. The unit is in Angstrom. Distance Threshold between the atoms in `push_ids` parameters and the environment.
+- `dist_thr`: Value is real, by default is `0 bohr`. Distance Threshold between the atoms in `push_ids` parameters and the environment.
 
 - `add_const`: Is an array of real, by default empty. Contains the constrain on the initial push if the user want to push in specific region of the space. The constrain contains 4 real value, 3 for the direction and 1 for the solid angle around this direction. An example for the atom 23 on which ask to go in directon (-x,0,z) with solid angle of 30 degrees: 
 
@@ -143,14 +149,14 @@ Engine specific flag:
 
 ###### The saddle point convergence:
 
-- `convcrit_init`: Value is real, by default is `1e-2`. The unit is eV/Angstrom. Initial force convergence criteria. Used for the perpendicular relax before the saddle point convergence
-- `convcrit_final`: Value is real, by default is `1e-3`. The unit is eV/Angstrom. Initial force convergence criteria. Used for the perpendicular relax close to the saddle point.
-- `fpara_convcrit`: Value is real, by default is `5e-3`. The unit is eV/Angstrom. Initial force convergence criteria. Used for the parallel relaxation.
-- `eigval_thr`: Is a real value, by default is `-0.01` Ry/Angs^2. Threshold for the Hessian eigen value obtain by Lanczos algorithm to start to converge to. The eigen value relative to the saddle point should be negative.
-- `relax_thr`: Is a real value, by default is `-0.01` Ry. Energy Threshold at the saddle point to start relaxation to adjacent minima.
-- `push_step_size`: Is a real value, by default is `0.3`. The unit is in Angstrom. Step size of the inital push (note: the step size is limited by the engine) 
-- `dlanc`: Is a real value, by default is `1e-2`. The unit is in Angstrom. Step size in the lanczos algorithm.
-- `eigen_step_size`:  Is a real value, by default is `0.2`. The unit is in Angstrom. Step size for a step with the lanczos eigenvector (note: the step size is limited by the engine).
+- `convcrit_init`: Value is real, by default is `1e-2 Ry/bohr` . Initial force convergence criteria. Used for the perpendicular relax before the saddle point convergence
+- `convcrit_final`: Value is real, by default is `1e-3 Ry/bohr`. Initial force convergence criteria. Used for the perpendicular relax close to the saddle point.
+- `fpara_convcrit`: Value is real, by default is `5e-3 Ry/bohr`. Initial force convergence criteria. Used for the parallel relaxation.
+- `eigval_thr`: Is a real value, by default is `-0.01 Ry/bohr^2` . Threshold for the Hessian eigen value obtain by Lanczos algorithm to start to converge to. The eigen value relative to the saddle point should be negative.
+- `relax_thr`: Is a real value, by default is `-0.01 Ry`. Energy threshold at the saddle point to start relaxation to adjacent minima.
+- `push_step_size`: Is a real value, by default is `0.3 bohr`. Step size of the inital push (note: the step size is limited by the engine) 
+- `dlanc`: Is a real value, by default is `1e-2 bohr`. Step size in the lanczos algorithm.
+- `eigen_step_size`:  Is a real value, by default is `0.2 bohr`. Step size for a step with the lanczos eigenvector (note: the step size is limited by the engine).
 
 
 
