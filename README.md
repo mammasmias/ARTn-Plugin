@@ -4,27 +4,19 @@ This is a working repo for the current version of the plugin-ARTn; currently it 
 
 ## Contains:
 
-- `Modules-modified/`: Modification on QE's Modules (see Modules-modified/README.md for a description )  
+- `Modules-modified/`: Modification on QE's Modules (see Modules-modified/README.md for a description )  ***(Has to disappear)***
 
-- `PW-src-modified/`: Routines modified in PW/src/ of QE mainly to add  
+- `PW-src-modified/`: Routines modified in PW/src/ of QE mainly to add  ***(Has to disappear)***
 
 
 - `examples/`: Contains `Al-vacancy.d` and `H2+H.d` 
-- `qe-6.6/`: Quantum ESPRESSO software
 - `src/`: ARTn plugin subroutines 
 - `patch-ARTn.sh`: Patch QE with the ARTn plugin 
-- `patch-FIRE.sh`: Patch QE with the FIRE minimization algorithm 
+- `patch-FIRE.sh`: Patch QE with the FIRE minimization algorithm ***(Has to disappear)***
 - `README.md`: The file you are reading
 - `LAMMPS_Fix/`: Contains the fix of lammps to interface LAMMPS/ARTn
 
-## TODO
 
-- nsteppos in ARTn doesn't have the same meaning for QE and LAMMPS
-- Work on the parallelization:
-  - one ARTn run with many proc
-  - many ARTn run with one proc
-  - many ARTn run with many proc
-- Generalize the unit conversion -> `MODULE units`
 
 ## QE/pARTn Interface 
 
@@ -69,6 +61,8 @@ Finally Quantum ESPRESSO must be launched with the flag -partn as follow:
 
 ## LAMMPS/pARTn Interface
 
+
+
 ### Installation/Compilation
 
 For the moment the pARTn library has to be compiled with **gfortran** only.
@@ -99,6 +93,27 @@ Now you can compile LAMMPS using the normal command with the good name of the Ma
 ```bash
 make serial
 ```
+
+
+
+### Use fix_artn
+
+To activate fix ARTn is like all other fix in lammps:
+
+```bash
+fix ID group-ID style args value
+```
+
+with `style = artn`. For the moment we only test `group-ID = all`. It is possible to custom the FIRE parameters you want to use with the fix ARTn. For each parameter  you give the `name` following by the `value`. The parameters can be:
+
+-  `alpha `
+- `alphashrink` 
+- `dtshrink`  
+- `dmax `
+- `tmax `
+- `tmin` 
+
+To see the meaning of these parameters refere to the min_fire web page of LAMMPS.
 
 
 
@@ -171,3 +186,10 @@ Engine specific flag:
 - explain the output file... More precisely explain the behavior by default tat pARTn does. 
 
   I mean the saddle point research first, after the minimization to the first minimum and after the minimization to the second minimum. 
+
+## TODO
+
+- nsteppos in ARTn doesn't have the same meaning for QE and LAMMPS in FIRE algo
+- Work on verbose debug mode 
+- Work on the parallelization: The convergence change a bit with the number of proc. Maybe the convertion at each step create some numerical noise.
+- 
