@@ -593,7 +593,7 @@ void FixARTn::post_force( int /*vflag*/ ){
 
 
     MPI_Barrier( world );
-    cout<< " ************************** ARTn CONVERGED"<<endl;
+    if( !me )cout<< " ************************** ARTn CONVERGED"<<endl;
     return;
   } // --------------------------------------------------------------------------------
 
