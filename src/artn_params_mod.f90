@@ -101,6 +101,13 @@ MODULE artn_params
   REAL(DP) :: current_step_size     !> controls the current size of eigenvector step
   REAL(DP) :: fpush_factor          !> factor for the final push 
   REAL(DP), target :: dlanc         !> step size in the lanczos algorithm 
+  ! Default Values
+  REAL(DP), PARAMETER :: NAN = HUGE( dlanc )  !! Biggest number in DP representation
+  REAL(DP), PARAMETER :: def_dist_thr = 0.0_DP,       def_convcrit_init = 1.0d-2,   &
+                         def_convcrit_final = 1.0d-3, def_fpara_convcrit = 0.5d-2,  &
+                         def_eigval_thr = -0.01_DP,   def_relax_thr  = -0.01_DP,    &
+                         def_push_step_size = 0.3,    def_eigen_step_size = 0.2,    &
+                         def_dlanc = 1.D-2
   ! arrays related to constraints 
   INTEGER,  ALLOCATABLE :: push_ids(:)    !> IDs of atoms to be pushed 
   REAL(DP), ALLOCATABLE :: add_const(:,:) !> constraints on initial push
@@ -113,7 +120,7 @@ CONTAINS
   !
   !
   ! 
-  SUBROUTINE initialize_artn( nat, iunartin,filnam )
+  SUBROUTINE initialize_artn( nat, iunartin, filnam )
     !
     !> @breif 
     !!   Sets defaults, reads input and creates ARTn output file
@@ -130,9 +137,11 @@ CONTAINS
     INTEGER,             INTENT(IN) :: nat,iunartin 
     CHARACTER (LEN=255), INTENT(IN) :: filnam
     ! -- Local Variables
-    LOGICAL :: file_exists
+    LOGICAL :: file_exists, verbose
     INTEGER :: ios
 
+    verbose = .true.
+    !verbose = .false.
 
     lartn = .true.
     INQUIRE( file = filnam, exist = file_exists )
@@ -146,95 +155,173 @@ CONTAINS
        RETURN 
 
     ELSE !%! FILE EXIST
-    !
-    ! set up defaults for flags and counters 
-    !
-    lrelax = .false. 
-    lpush_init = .true.
-    lperp = .false.
-    llanczos = .false.
-    leigen = .false.
-    lsaddle = .false. 
-    lpush_final = .false. 
-    lbackward = .true.
-    lrestart = .false. 
-    !
-    istep = 0
-    ipush = 0 
-    iperp = 0
-    ilanc = 0
-    ieigen = 0
-    ismooth = 1
-    if_pos_ct = 0 
-    !
-    lowest_eigval = 0.D0
-    !
-    ! Defaults for input parameters
-    ! 
-    npush = 3    
-    neigen = 1
-    nsmooth = 1 
-    !
-    dist_thr = 0.0_DP 
-    ! 
-    convcrit_init = 1.0d-2
-    convcrit_final = 1.0d-3
-    fpara_convcrit = 0.5d-2
-    eigval_thr = -0.01_DP ! in Ry/bohr^2 corresponds to 0.5 eV/Angs^2
-    relax_thr  = -0.01_DP ! in Ry; ( etot - etot_saddle ) < relax_thr 
-    ! 
-    push_step_size = 0.3
-    eigen_step_size = 0.2
-    fpush_factor = 1.0
-    !
-    push_mode = 'all' 
-    struc_format_out = 'xsf'
-    !
-    dlanc = 1.D-2 
-    nlanc_init = 16
-    !
-    engine_units = 'qe'
-    !
-    ! Allocate the arrays
-    !
-    IF ( .not. ALLOCATED(add_const) )    ALLOCATE(add_const(4,nat), source = 0.D0)
-    IF ( .not. ALLOCATED(push_ids) )     ALLOCATE(push_ids(nat), source = 0)
-    IF ( .not. ALLOCATED(push) )         ALLOCATE(push(3,nat), source = 0.D0)
-    IF ( .not. ALLOCATED(eigenvec) )     ALLOCATE(eigenvec(3,nat), source = 0.D0)
-    IF ( .not. ALLOCATED(eigen_saddle) ) ALLOCATE(eigen_saddle(3,nat), source = 0.D0)
-    IF ( .not. ALLOCATED(tau_saddle) )   ALLOCATE(tau_saddle(3,nat), source = 0.D0)
-    IF ( .not. ALLOCATED(tau_step) )   ALLOCATE(tau_step(3,nat), source = 0.D0)
-    IF ( .not. ALLOCATED(force_step) )   ALLOCATE(force_step(3,nat), source = 0.D0)
-    IF ( .not. ALLOCATED(force_old) ) ALLOCATE( force_old(3,nat), source = 0.D0 )
-    IF ( .not. ALLOCATED(v_in) ) ALLOCATE( v_in(3,nat), source = 0.D0 )
-    IF ( .not. ALLOCATED(elements) )     ALLOCATE(elements(300), source = "XXX")
-    ! 
-    ! read the ARTn input file  
-    OPEN( UNIT = iunartin, FILE = filnam, FORM = 'formatted', STATUS = 'unknown', IOSTAT = ios)
-    READ( NML = artn_parameters, UNIT = iunartin)
-    CLOSE ( UNIT = iunartin, STATUS = 'KEEP')
-    !
-    ! inital number of lanczos iterations 
-    ! 
-    nlanc = nlanc_init
-    !
-    ! initialize lanczos matrices (user chooses wheter to change nlanc_init)
-    !
-    IF ( .not. ALLOCATED(H)) ALLOCATE( H(1:nlanc_init,1:nlanc_init), source = 0.D0 )
-    IF ( .not. ALLOCATED(Vmat)) ALLOCATE( Vmat(3,nat,1:nlanc_init), source = 0.D0 )
-    ! 
-    ! initialize lanczos specific variables
- ENDIF
+      !
+      ! set up defaults for flags and counters 
+      !
+      lrelax = .false. 
+      lpush_init = .true.
+      lperp = .false.
+      llanczos = .false.
+      leigen = .false.
+      lsaddle = .false. 
+      lpush_final = .false. 
+      lbackward = .true.
+      lrestart = .false. 
+      !
+      istep = 0
+      ipush = 0 
+      iperp = 0
+      ilanc = 0
+      ieigen = 0
+      ismooth = 1
+      if_pos_ct = 0 
+      !
+      lowest_eigval = 0.D0
+      fpush_factor = 1.0
+      !
+      ! Defaults for input parameters
+      ! 
+      npush = 3    
+      neigen = 1
+      nsmooth = 1 
+      !
+      dist_thr = NAN
+      ! 
+      convcrit_init = NAN
+      convcrit_final = NAN
+      fpara_convcrit = NAN
+      eigval_thr = NAN ! 0.1 Ry/bohr^2 corresponds to 0.5 eV/Angs^2
+      relax_thr  = NAN ! in Ry; ( etot - etot_saddle ) < relax_thr 
+      ! 
+      push_step_size = NAN
+      eigen_step_size = NAN
+      !
+      push_mode = 'all' 
+      struc_format_out = 'xsf'
+      !
+      dlanc = NAN
+      nlanc_init = 16
+      !
+      engine_units = 'qe'
+      !
+      ! Allocate the arrays
+      !
+      IF ( .not. ALLOCATED(add_const) )    ALLOCATE(add_const(4,nat), source = 0.D0)
+      IF ( .not. ALLOCATED(push_ids) )     ALLOCATE(push_ids(nat), source = 0)
+      IF ( .not. ALLOCATED(push) )         ALLOCATE(push(3,nat), source = 0.D0)
+      IF ( .not. ALLOCATED(eigenvec) )     ALLOCATE(eigenvec(3,nat), source = 0.D0)
+      IF ( .not. ALLOCATED(eigen_saddle) ) ALLOCATE(eigen_saddle(3,nat), source = 0.D0)
+      IF ( .not. ALLOCATED(tau_saddle) )   ALLOCATE(tau_saddle(3,nat), source = 0.D0)
+      IF ( .not. ALLOCATED(tau_step) )   ALLOCATE(tau_step(3,nat), source = 0.D0)
+      IF ( .not. ALLOCATED(force_step) )   ALLOCATE(force_step(3,nat), source = 0.D0)
+      IF ( .not. ALLOCATED(force_old) ) ALLOCATE( force_old(3,nat), source = 0.D0 )
+      IF ( .not. ALLOCATED(v_in) ) ALLOCATE( v_in(3,nat), source = 0.D0 )
+      IF ( .not. ALLOCATED(elements) )     ALLOCATE(elements(300), source = "XXX")
+      ! 
+      ! read the ARTn input file  
+      OPEN( UNIT = iunartin, FILE = filnam, FORM = 'formatted', STATUS = 'unknown', IOSTAT = ios)
+      READ( NML = artn_parameters, UNIT = iunartin)
+      CLOSE ( UNIT = iunartin, STATUS = 'KEEP')
+      !
+      ! inital number of lanczos iterations 
+      ! 
+      nlanc = nlanc_init
+      !
+      ! initialize lanczos matrices (user chooses wheter to change nlanc_init)
+      !
+      IF ( .not. ALLOCATED(H)) ALLOCATE( H(1:nlanc_init,1:nlanc_init), source = 0.D0 )
+      IF ( .not. ALLOCATED(Vmat)) ALLOCATE( Vmat(3,nat,1:nlanc_init), source = 0.D0 )
+      ! 
+      ! initialize lanczos specific variables
+    ENDIF
      
 
     ! Define the Units conversion
     call make_units( engine_units )
 
+
+    !#! OLD VERSION
     ! ...Convert push/lanczos/eigenvec step size to bohr (because force units are in Ry/bohr) 
-    eigen_step_size = convert_length( eigen_step_size )
-    push_step_size = convert_length( push_step_size )
-    dlanc = convert_length( dlanc )
-    dist_thr = convert_length( dist_thr )
+
+    !eigen_step_size = convert_length( eigen_step_size )
+    !push_step_size = convert_length( push_step_size )
+    !dlanc = convert_length( dlanc )
+    !dist_thr = convert_length( dist_thr )
+
+    if( verbose )then
+      write(*,2) repeat("*",50)
+      write(*,2) "* Units:          ", trim(engine_units)
+      write(*,1) "* dist_thr        = ", dist_thr
+      write(*,1) "* convcrit_init   = ", convcrit_init
+      write(*,1) "* convcrit_final  = ", convcrit_final
+      write(*,1) "* fpara_convcrit  = ", fpara_convcrit
+      write(*,1) "* eigval_thr      = ", eigval_thr
+      write(*,1) "* relax_thr       = ", relax_thr
+      !
+      write(*,1) "* push_step_size  = ", push_step_size
+      write(*,1) "* eigen_step_size = ", eigen_step_size
+      write(*,1) "* dlanc           = ", dlanc
+      write(*,2) repeat("*",50)
+      !1 format(x,a,x,g15.5)
+      !2 format(*(x,a))
+    endif
+
+    !#! NEW VERSION
+    ! ...Convert the default values parameters from Engine_units
+    !! For the moment the ARTn units is in a.u. (Ry, L, T)
+    !! The default value are in ARTn units but the input values gives by the users
+    !! are suppose in engine_units. 
+    !! We convert the USERS Values in ARTn units to be coherente:
+    !! So we convert the value if it's differents from NAN initialized values
+
+    if( dist_thr == NAN )then; dist_thr = def_dist_thr
+    else;                      dist_thr = convert_length( dist_thr ); endif
+    ! 
+    if( convcrit_init == NAN )then; convcrit_init = def_convcrit_init
+    else;                           convcrit_init = convert_force( convcrit_init ); endif
+    !convcrit_init = 1.0d-2
+    if( convcrit_final == NAN )then; convcrit_final = def_convcrit_final
+    else;                            convcrit_final = convert_force( convcrit_final ); endif
+    !convcrit_final = 1.0d-3
+    if( fpara_convcrit == NAN )then; fpara_convcrit = def_fpara_convcrit
+    else;                            fpara_convcrit = convert_length( fpara_convcrit ); endif
+    !fpara_convcrit = 0.5d-2
+    if( eigval_thr == NAN )then; eigval_thr = def_eigval_thr
+    else;                        eigval_thr = convert_hessian( eigval_thr ); endif
+    !eigval_thr = -0.01_DP ! in Ry/bohr^2 corresponds to 0.5 eV/Angs^2
+    if( relax_thr == NAN )then; relax_thr = def_relax_thr
+    else;                       relax_thr = convert_hessian( relax_thr ); endif
+    !relax_thr  = -0.01_DP ! in Ry; ( etot - etot_saddle ) < relax_thr 
+    ! 
+    if( push_step_size == NAN )then; push_step_size = def_push_step_size
+    else;                            push_step_size = convert_length( push_step_size ); endif
+    !push_step_size = 0.3
+    if( eigen_step_size == NAN )then; eigen_step_size = def_eigen_step_size
+    else;                             eigen_step_size = convert_length( eigen_step_size ); endif
+    !eigen_step_size = 0.2
+    !
+    if( dlanc == NAN )then; dlanc = def_dlanc
+    else;                   dlanc = convert_hessian( dlanc ); endif
+    !dlanc = 1.D-2
+
+    if( verbose )then
+      write(*,2) repeat("*",50)
+      write(*,2) "* Units:          ", trim(engine_units)
+      write(*,1) "* dist_thr        = ", dist_thr
+      write(*,1) "* convcrit_init   = ", convcrit_init
+      write(*,1) "* convcrit_final  = ", convcrit_final 
+      write(*,1) "* fpara_convcrit  = ", fpara_convcrit 
+      write(*,1) "* eigval_thr      = ", eigval_thr
+      write(*,1) "* relax_thr       = ", relax_thr
+      !
+      write(*,1) "* push_step_size  = ", push_step_size 
+      write(*,1) "* eigen_step_size = ", eigen_step_size 
+      write(*,1) "* dlanc           = ", dlanc
+      write(*,2) repeat("*",50)
+      1 format(x,a,x,g15.5)
+      2 format(*(x,a))
+    endif
+
     ! 
   END SUBROUTINE initialize_artn 
   !
