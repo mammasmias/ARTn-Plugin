@@ -284,13 +284,13 @@ CONTAINS
     else;                            convcrit_final = convert_force( convcrit_final ); endif
     !convcrit_final = 1.0d-3
     if( fpara_convcrit == NAN )then; fpara_convcrit = def_fpara_convcrit
-    else;                            fpara_convcrit = convert_length( fpara_convcrit ); endif
+    else;                            fpara_convcrit = convert_force( fpara_convcrit ); endif
     !fpara_convcrit = 0.5d-2
     if( eigval_thr == NAN )then; eigval_thr = def_eigval_thr
     else;                        eigval_thr = convert_hessian( eigval_thr ); endif
     !eigval_thr = -0.01_DP ! in Ry/bohr^2 corresponds to 0.5 eV/Angs^2
     if( relax_thr == NAN )then; relax_thr = def_relax_thr
-    else;                       relax_thr = convert_hessian( relax_thr ); endif
+    else;                       relax_thr = convert_energy( relax_thr ); endif
     !relax_thr  = -0.01_DP ! in Ry; ( etot - etot_saddle ) < relax_thr 
     ! 
     if( push_step_size == NAN )then; push_step_size = def_push_step_size
@@ -301,7 +301,7 @@ CONTAINS
     !eigen_step_size = 0.2
     !
     if( dlanc == NAN )then; dlanc = def_dlanc
-    else;                   dlanc = convert_hessian( dlanc ); endif
+    else;                   dlanc = convert_length( dlanc ); endif
     !dlanc = 1.D-2
 
     if( verbose )then

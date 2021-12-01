@@ -71,7 +71,7 @@ module units
 
     logical :: verbose
     verbose = .true.
-    !verbose = .false.
+    verbose = .false.
 
 
     ! ...Extract the Keyword from the engine_units

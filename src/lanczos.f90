@@ -98,7 +98,7 @@ SUBROUTINE lanczos( nat, force,  v_in, dlanc, nlanc, ilanc, lowest_eigval, lowes
      IF ( abs(lowest_eigval_old) > 0.0_DP ) THEN
         eigval_diff = (lowest_eigval - lowest_eigval_old)/lowest_eigval_old
         ! write(785,*) 1, lowest_eigval_old, lowest_eigval, abs(eigval_diff)
-        write (*,*) "DEBUG", ilanc, eigval_diff, eigval_thr
+        !write (*,*) "DEBUG", ilanc, eigval_diff, eigval_thr
         IF ( ABS(eigval_diff) <= eigval_thr ) THEN
            !
            ! lanczos has converged
