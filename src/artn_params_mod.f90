@@ -141,7 +141,7 @@ CONTAINS
     INTEGER :: ios
 
     verbose = .true.
-    !verbose = .false.
+    verbose = .false.
 
     lartn = .true.
     INQUIRE( file = filnam, exist = file_exists )
