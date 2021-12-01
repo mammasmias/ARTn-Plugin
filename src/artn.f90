@@ -157,8 +157,15 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !
      CALL write_struct( at, nat, tau, order, elements, ityp, push, 1.0_DP, iunstruct, struc_format_out, initpfname )
      !
-     ! Set eigenvec as push, this is for sure step one of ARTn algo.
-     eigenvec(:,:) = push(:,:)
+     ! Set first eigenvec as push, this is for sure step one of ARTn algo.
+     ! eigenvec(:,:) = push(:,:)
+     !
+     ! generate random initial eigenvec (used as input for Lanczos)
+     DO i = 1, nat
+        eigenvec(:,i) = (/0.5_DP - ran3(idum),0.5_DP - ran3(idum),0.5_DP - ran3(idum)/)
+     END DO
+     eigenvec(:,:) = eigenvec(:,:)/dnrm2(3*nat,eigenvec,1) * dnrm2(3*nat,push,1)
+
      !
   ELSE IF ( lperp .and. .not. llanczos) THEN
      !
@@ -174,9 +181,9 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !
      ! If eigenvalue is good, overwrite push with eigenvec
      !
-     if( leigen ) then
+     IF( leigen ) THEN
         push(:,:) = eigenvec(:,:)
-     endif
+     ENDIF
      !
      ! Subtract parrallel components to push from force.
      ! Modify and overwrite force such that force = force - fpara = fperp
@@ -209,7 +216,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            ! The number of desired pushed still not reached:
            ! push in the specified direction
            !
-           force(:,:) =  eigenvec(:,:)
+           ! force(:,:) =  eigenvec(:,:)
+           force(:,:) =  push(:,:)
            disp = INIT
            !
            ipush = ipush + 1
