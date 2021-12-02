@@ -77,7 +77,8 @@ MODULE artn_params
   NAMELIST/artn_parameters/ lrestart, lrelax, lpush_final, npush, neigen, nlanc_init, nsmooth, push_mode, dist_thr,  &
        convcrit_init,convcrit_final,fpara_convcrit, eigval_thr, relax_thr, &
        push_step_size, dlanc, eigen_step_size, current_step_size, &
-       push_ids,add_const, engine_units, zseed, struc_format_out, elements
+       push_ids ,add_const, engine_units, zseed, struc_format_out, elements,  &
+       push_over
   ! 
   LOGICAL :: lrestart    !> do we want to restart the calculation  
   LOGICAL :: lrelax      !> do we want to relax to adjacent minima from the saddle point 
@@ -101,6 +102,7 @@ MODULE artn_params
   REAL(DP) :: current_step_size     !> controls the current size of eigenvector step
   REAL(DP) :: fpush_factor          !> factor for the final push 
   REAL(DP), target :: dlanc         !> step size in the lanczos algorithm 
+  REAL(DP) :: push_over             !> EigenVec fraction Push_over the saddle point for the relax
   ! Default Values
   REAL(DP), PARAMETER :: NAN = HUGE( dlanc )  !! Biggest number in DP representation
   REAL(DP), PARAMETER :: def_dist_thr = 0.0_DP,       def_convcrit_init = 1.0d-2,   &
@@ -178,6 +180,7 @@ CONTAINS
       !
       lowest_eigval = 0.D0
       fpush_factor = 1.0
+      push_over = 0.01_DP
       !
       ! Defaults for input parameters
       ! 

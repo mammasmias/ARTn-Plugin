@@ -26,7 +26,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
        push_ids,add_const, push, eigenvec, tau_step, force_step, tau_saddle, eigen_saddle, v_in, &
        VOID, INIT, PERP, EIGN, LANC, RELX, zseed, &
        engine_units, struc_format_out, elements, &
-       initialize_artn, write_initial_report, read_restart, write_restart
+       initialize_artn, write_initial_report, read_restart, write_restart, &
+       push_over
   !
   IMPLICIT NONE
   ! -- ARGUMENTS
@@ -500,8 +501,9 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            ! see Cances_JCP130: some improvements of the ART technique doi:10.1063/1.3088532
            !
            ! 0.13 is taken from ARTn, 0.5 eV/Angs^2 corresponds roughly to 0.01 Ry/Bohr^2
+           !%! Should be a parameter: push_over?
            !
-           current_step_size = MIN(eigen_step_size,ABS(fpara_tot)/MAX(ABS(lowest_eigval),0.01_DP))
+           current_step_size = MIN(eigen_step_size,ABS(fpara_tot)/MAX( ABS(lowest_eigval), 0.01_DP ))
            !
            eigenvec(:,:) = eigenvec(:,:)*current_step_size
            !

@@ -192,4 +192,7 @@ Engine specific flag:
 - nsteppos in ARTn doesn't have the same meaning for QE and LAMMPS in FIRE algo
 - Work on verbose debug mode 
 - Work on the parallelization: The convergence change a bit with the number of proc. Maybe the convertion at each step create some numerical noise.
-- 
+- Do pARTn output as ARTn output
+- Adapt the Units output with the Engine input
+- Verify the parameter NAME
+- Add the output filename custom
