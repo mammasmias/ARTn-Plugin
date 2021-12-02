@@ -26,7 +26,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
        push_ids,add_const, push, eigenvec, tau_step, force_step, tau_saddle, eigen_saddle, v_in, &
        VOID, INIT, PERP, EIGN, LANC, RELX, zseed, &
        engine_units, struc_format_out, elements, &
-       initialize_artn, write_initial_report, read_restart, write_restart
+       initialize_artn, write_initial_report, read_restart, write_restart, ran3
   !
   IMPLICIT NONE
   ! -- ARGUMENTS
@@ -46,7 +46,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   LOGICAL,          INTENT(OUT) :: lconv      !> flag for controlling convergence
 
   ! -- LOCAL VARIABLES
-  REAL(DP), EXTERNAL :: ran3, dnrm2, ddot     ! lapack functions
+  REAL(DP), EXTERNAL :: dnrm2, ddot     ! lapack functions
   INTEGER :: na, icoor, idum                  ! integers for loops
   !
   REAL(DP)  :: force_in(3,nat)                ! stores non-modified force
