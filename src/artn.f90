@@ -27,7 +27,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
        VOID, INIT, PERP, EIGN, LANC, RELX, zseed, &
        engine_units, struc_format_out, elements, &
        initialize_artn, write_initial_report, read_restart, write_restart, &
-       push_over
+       push_over, ran3
   !
   IMPLICIT NONE
   ! -- ARGUMENTS
@@ -47,7 +47,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   LOGICAL,          INTENT(OUT) :: lconv      !> flag for controlling convergence
 
   ! -- LOCAL VARIABLES
-  REAL(DP), EXTERNAL :: ran3, dnrm2, ddot     ! lapack functions
+  !REAL(DP), EXTERNAL :: ran3, dnrm2, ddot     ! lapack functions
+  REAL(DP), EXTERNAL :: dnrm2, ddot     ! lapack functions
   INTEGER :: na, icoor, idum                  ! integers for loops
   !
   REAL(DP)  :: force_in(3,nat)                ! stores non-modified force
@@ -163,7 +164,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !
      ! generate random initial eigenvec (used as input for Lanczos)
      DO i = 1, nat
-        eigenvec(:,i) = (/0.5_DP - ran3(idum),0.5_DP - ran3(idum),0.5_DP - ran3(idum)/)
+        eigenvec(:,i) = (/0.5_DP - ran3(idum),0.5_DP - ran3(idum),0.5_DP - ran3(idum)/) * if_pos(:,i)
      END DO
      eigenvec(:,:) = eigenvec(:,:)/dnrm2(3*nat,eigenvec,1) * dnrm2(3*nat,push,1)
 
@@ -418,7 +419,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   ! Reason for this: if we put restart after lanczos, then the restarted lanczos
   ! does not come back to initial point properly.
   !
-  CALL write_restart(restartfname,nat)
+  !CALL write_restart(restartfname,nat)
   !
   ! check if we should perform the lanczos algorithm
   !
