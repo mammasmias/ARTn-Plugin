@@ -94,6 +94,30 @@ Now you can compile LAMMPS using the normal command with the good name of the Ma
 make serial
 ```
 
+### Compile LAMMPS with cmake
+First, as in the previous case , copy the two files `fix_artn.h` and
+`fix_artn.cpp` from `LAMMPS_Fix/` to `LAMMPS/src/`.
+
+Then in the  `cmake/CMakeLists.txt:136` after `target_link_libraries(lmp PRIVATE
+lammps)` add the following lines that represent the same information added in
+the previous case.
+
+```cmake
+target_link_libraries(lmp PRIVATE path/to/artn-plugin-qe/src/libartn.a)
+target_link_libraries(lmp PRIVATE /usr/lib64/libgfortran.so.5)
+target_link_libraries(lmp PRIVATE /usr/lib64/libopenblaso.so.0)
+```
+
+The libraries nam and paths used here are the standard in Fedora. Things might
+differ in your distribution.
+
+Furthermore, as done before the `-lpthread` must be set with the following line.
+
+```cmake
+set_target_properties(lammps PROPERTIES LINK_FLAGS "-lpthread")
+```
+
+Now you can compile LAMMPS using the normal cmake workflow.
 
 
 ### Use fix_artn

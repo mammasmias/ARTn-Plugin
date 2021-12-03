@@ -47,7 +47,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   LOGICAL,          INTENT(OUT) :: lconv      !> flag for controlling convergence
 
   ! -- LOCAL VARIABLES
-  !REAL(DP), EXTERNAL :: ran3, dnrm2, ddot     ! lapack functions
   REAL(DP), EXTERNAL :: dnrm2, ddot     ! lapack functions
   INTEGER :: na, icoor, idum                  ! integers for loops
   !
