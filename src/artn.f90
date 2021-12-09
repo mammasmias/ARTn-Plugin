@@ -18,12 +18,12 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   !
   USE units
   USE artn_params, ONLY: iunartin, iunartout, iunstruct, &
-       lartn, lrelax,lpush_init,lperp,leigen,llanczos, lrestart, lsaddle, lpush_final, lbackward, &
-       istep, iperp, ieigen, ipush, ilanc, ismooth, nlanc, if_pos_ct, &
+       lrelax,linit,lperp,leigen,llanczos, lrestart, lsaddle, lpush_final, lbackward, &
+       istep, iperp, ieigen, iinit, ilanc, ismooth, nlanc, if_pos_ct, &
        lowest_eigval, etot_init, etot_step, etot_saddle, etot_final, de_saddle, de_back, de_fwd, &
-       npush, neigen, nlanc_init, nsmooth, push_mode, dist_thr, convcrit_init, convcrit_final, &
-       fpara_convcrit, eigval_thr, relax_thr, push_step_size, current_step_size, dlanc, eigen_step_size, fpush_factor, &
-       push_ids,add_const, push, eigenvec, tau_step, force_step, tau_saddle, eigen_saddle, v_in, &
+       ninit, neigen, lanc_mat_size, nsmooth, push_mode, dist_thr, init_forc_thr, final_forc_thr, &
+       fpara_thr, eigval_thr, frelax_ene_thr, push_step_size, current_step_size, dlanc, eigen_step_size, fpush_factor, &
+       push_ids, add_const, push, eigenvec, tau_step, force_step, tau_saddle, eigen_saddle, v_in, &
        VOID, INIT, PERP, EIGN, LANC, RELX, zseed, &
        engine_units, struc_format_out, elements, &
        initialize_artn, write_initial_report, read_restart, write_restart, &
@@ -47,7 +47,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   LOGICAL,          INTENT(OUT) :: lconv      !> flag for controlling convergence
 
   ! -- LOCAL VARIABLES
-  REAL(DP), EXTERNAL :: dnrm2, ddot     ! lapack functions
+  REAL(DP), EXTERNAL :: dnrm2, ddot           ! lapack functions
   INTEGER :: na, icoor, idum                  ! integers for loops
   !
   REAL(DP)  :: force_in(3,nat)                ! stores non-modified force
@@ -90,6 +90,9 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   IF( istep == 0 ) THEN
      ! read the input parameters
      CALL initialize_artn( nat, iunartin, filin )
+     ! 
+     CALL push_init(nat, tau, order, at, idum, push_ids, dist_thr, add_const, push_step_size, push , push_mode)
+     !
      !
      ! check if a restart was requested
      !
@@ -126,16 +129,14 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   disp = VOID
   ! store positions of current step
   tau_step = tau
-
   !
   ! Open the output file for writing
   !
   OPEN ( UNIT = iunartout, FILE = filout, FORM = 'formatted', ACCESS = 'append', STATUS = 'unknown', IOSTAT = ios )
-
   !
-  ! do initial push, then switch off lpush_init, and pass to lperp
+  ! initial displacement , then switch off linit, and pass to lperp
   !
-  IF ( lpush_init ) THEN
+  IF ( linit ) THEN
      !
      !=============================
      ! generate initial push vector
@@ -144,14 +145,13 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      CALL push_init(nat, tau, order, at, idum, push_ids, dist_thr, add_const, push_step_size, push , push_mode)
      !
      ! set up the flags (we did an initial push, now we need to relax perpendiculary)
-     lpush_init = .false.
+     linit = .false.
      lperp = .true.
      ! the push counter (controls if we should call lanczos or keep pushing)
-     ipush = ipush + 1
+     iinit = iinit + 1
      !
      ! modify the force to be equal to the push
      !
-     !force(:,:) =  push(:,:) ! Use push in move mode
      disp = INIT
      !
      CALL write_report( etot, force_in, lowest_eigval, disp, if_pos, istep, nat, iunartout )
@@ -174,12 +174,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      ! Relax forces perpendicular to eigenvector
      !=============================
      !
-     ! If we don't have eigenvector yet, overwrite it with push direction
-     ! IF ( .not. leigen ) THEN
-     !    ! before lanczos relax perpendiculary with respect to the push
-     !    eigenvec(:,:) = push(:,:)
-     ! ENDIF
-     !
      ! If eigenvalue is good, overwrite push with eigenvec
      !
      IF( leigen ) THEN
@@ -189,30 +183,28 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      ! Subtract parrallel components to push from force.
      ! Modify and overwrite force such that force = force - fpara = fperp
      !
-     ! CALL perpforce(force,if_pos,eigenvec,fpara,nat)
      CALL perpforce( force, if_pos, push, fpara, nat )
      !
-     IF (MAXVAL(ABS(fpara)) <= fpara_convcrit) THEN
+     IF (MAXVAL(ABS(fpara)) <= fpara_thr) THEN
         ! tighten perpendicular convergence criterion
-        convcrit_init = convcrit_final
+        init_forc_thr = final_forc_thr
      END IF
      !
      disp = PERP
      !
      iperp = iperp + 1
-
      !
      ! If the force_perp component are small we continue
      ! to push
      !
-     IF (( MAXVAL( ABS(force) )) < convcrit_init ) THEN  ! Here force = force_perp
+     IF (( MAXVAL( ABS(force) )) < init_forc_thr ) THEN  ! Here force = force_perp
         !
         ! we reached convergence in the perpendicular direction, go to pushing
         !
         lperp = .false.
         iperp = 0
         !
-        IF ( ipush < npush ) THEN
+        IF ( iinit < ninit ) THEN
            !
            ! The number of desired pushed still not reached:
            ! push in the specified direction
@@ -221,13 +213,13 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            force(:,:) =  push(:,:)
            disp = INIT
            !
-           ipush = ipush + 1
+           iinit = iinit + 1
            !
            lperp = .true.
            !
            CALL write_report(etot,force_in, lowest_eigval, disp, if_pos, istep, nat,  iunartout)
            !
-        ELSE IF ( ipush >= npush  ) THEN
+        ELSE IF ( iinit >= ninit  ) THEN
            !
            ! Number of desired pushes has been reached:
            ! use true force & start lanczos
@@ -244,9 +236,9 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      END IF
      !
   ELSE IF ( leigen .and. .not. lperp ) THEN
-     !=============================
+     !================================================
      ! Push in the direction of the lowest eigenvector
-     !=============================
+     !================================================
      !
      ! leigen is always .true. after we obtain a good eigenvector
      ! except during lanczos iterations
@@ -273,7 +265,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   !
   ! check for convergence of total forces (only after eigevec was obtained)
   !
-  IF (MAXVAL(ABS(force_in*if_pos)) < convcrit_final .AND. leigen .AND. .NOT. lsaddle ) THEN
+  IF (MAXVAL(ABS(force_in*if_pos)) < final_forc_thr .AND. leigen .AND. .NOT. lsaddle ) THEN
      force(:,:) = force_in(:,:)
      IF ( etot > etot_init ) THEN
         ! store the saddle point energy
@@ -298,8 +290,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         !WRITE (iunartout,'(15X,"E_final - E_initial =", F12.5," eV")') (etot - etot_init)*RY2EV
         WRITE (iunartout,'(15X,"E_final - E_initial =", F12.5," eV")') unconvert_energy((etot - etot_init)) !*RY2EV
         WRITE (iunartout,'(5X, "--------------------------------------------------")')
-
-        !write( iunartout, * ) " ARTn::", MAXVAL(ABS(force_in*if_pos)), convcrit_final, leigen, lsaddle
 
         IF ( lpush_final ) THEN
            WRITE (iunartout, '(5X,"       *** Pushing to adjacent minima  ***      ")')
@@ -336,7 +326,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         force(:,:) = fpush_factor*eigenvec(:,:)*eigen_step_size
         !
         ! ...If diff Energy is negative
-        IF ( etot - etot_saddle < relax_thr ) THEN
+        IF ( etot - etot_saddle < frelax_ene_thr ) THEN
            ! we started going downhill ...
            lrelax = .true.
         ELSE
@@ -363,7 +353,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !
      ! check for convergence
      !
-     IF ( MAXVAL(ABS(force_in(:,:)*if_pos(:,:))) <= convcrit_final  ) THEN
+     IF ( MAXVAL(ABS(force_in(:,:)*if_pos(:,:))) <= final_forc_thr  ) THEN
         IF ( fpush_factor == 1.0 ) THEN
 
            disp = RELX
@@ -371,15 +361,11 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            fpush_factor = -1.0
 
            ! restart from saddle point
-           do i = 1,nat
-           tau(:,i) = tau_saddle(:,order(i))
-           eigenvec(:,i) = eigen_saddle(:,order(i))
-           enddo
+           DO i = 1,nat
+              tau(:,i) = tau_saddle(:,order(i))
+              eigenvec(:,i) = eigen_saddle(:,order(i))
+           ENDDO
            lbackward = .true.
-
-           !do i = 1,nat
-           ! print*, i, order(i), tau(:,i)
-           !enddo
 
            lrelax = .false.
            etot_final = etot
@@ -388,7 +374,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            WRITE (iunartout,'(5X, "--------------------------------------------------")')
            WRITE (iunartout,'(5X, "    *** ARTn found adjacent minimum ***   ")')
            WRITE (iunartout,'(5X, "--------------------------------------------------")')
-           !WRITE (iunartout,'(15X,"backward E_act =", F12.5," eV")') de_back*RY2EV
            WRITE (iunartout,'(15X,"backward E_act =", F12.5," eV")') unconvert_energy(de_back) !*RY2EV
            WRITE (iunartout,'(5X, "--------------------------------------------------")')
         ELSE
@@ -397,10 +382,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            WRITE (iunartout,'(5X, "--------------------------------------------------")')
            WRITE (iunartout,'(5X, "    *** ARTn converged to initial minimum ***   ")')
            WRITE (iunartout,'(5X, "--------------------------------------------------")')
-           !WRITE (iunartout,'(15X,"forward  E_act =", F12.5," eV")') de_fwd*RY2EV
-           !WRITE (iunartout,'(15X,"backward E_act =", F12.5," eV")') de_back*RY2EV
-           !WRITE (iunartout,'(15X,"reaction dE    =", F12.5," eV")') (etot-etot_final) *RY2EV
-           !WRITE (iunartout,'(15X,"dEinit - dEfinal    =", F12.5," eV")') (etot_init-etot) *RY2EV
            WRITE (iunartout,'(15X,"forward  E_act =", F12.5," eV")') unconvert_energy(de_fwd) !*RY2EV
            WRITE (iunartout,'(15X,"backward E_act =", F12.5," eV")') unconvert_energy(de_back) !*RY2EV
            WRITE (iunartout,'(15X,"reaction dE    =", F12.5," eV")') unconvert_energy((etot-etot_final)) ! *RY2EV
@@ -427,9 +408,9 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   !
   IF ( llanczos ) THEN
      !
-     !=============================
+     !==========================================
      ! Perform Lanczos algo, one step at a time
-     !=============================
+     !==========================================
      !
      disp = LANC
      CALL write_report(etot,force_in, lowest_eigval, disp, if_pos, istep, nat,  iunartout)
@@ -478,7 +459,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         !
         ! max number of lanczos steps exceeded ; reset counters
         !
-        nlanc = nlanc_init
+        nlanc = lanc_mat_size
         ilanc = 0
         !
         llanczos = .false.
@@ -518,7 +499,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            leigen = .false.
            lperp = .true.
            iperp =  0
-           ipush = ipush - 1
+           iinit = iinit - 1
            !
         ENDIF
      ENDIF
