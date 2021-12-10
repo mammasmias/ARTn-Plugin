@@ -26,7 +26,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
        push_ids, add_const, push, eigenvec, tau_step, force_step, tau_saddle, eigen_saddle, v_in, &
        VOID, INIT, PERP, EIGN, LANC, RELX, zseed, &
        engine_units, struc_format_out, elements, &
-       initialize_artn, write_initial_report, read_restart, write_restart, &
+       !initialize_artn, write_initial_report, read_restart, write_restart, &
+       initialize_artn, read_restart, write_restart, &
        push_over, ran3
   !
   IMPLICIT NONE
@@ -142,7 +143,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      ! generate initial push vector
      !=============================
      !
-     CALL push_init(nat, tau, order, at, idum, push_ids, dist_thr, add_const, push_step_size, push , push_mode)
+     !CALL push_init(nat, tau, order, at, idum, push_ids, dist_thr, add_const, push_step_size, push , push_mode)
      !
      ! set up the flags (we did an initial push, now we need to relax perpendiculary)
      linit = .false.
@@ -164,6 +165,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      ! generate random initial eigenvec (used as input for Lanczos)
      DO i = 1, nat
         eigenvec(:,i) = (/0.5_DP - ran3(idum),0.5_DP - ran3(idum),0.5_DP - ran3(idum)/) * if_pos(:,i)
+        if( ANY(ABS(add_const(:,i)) > 0.D0) )print*, "PUSH_INIT2:", i, order(i), push(:,i)
      END DO
      eigenvec(:,:) = eigenvec(:,:)/dnrm2(3*nat,eigenvec,1) * dnrm2(3*nat,push,1)
 
