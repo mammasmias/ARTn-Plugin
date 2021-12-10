@@ -165,7 +165,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      ! generate random initial eigenvec (used as input for Lanczos)
      DO i = 1, nat
         eigenvec(:,i) = (/0.5_DP - ran3(idum),0.5_DP - ran3(idum),0.5_DP - ran3(idum)/) * if_pos(:,i)
-        if( ANY(ABS(add_const(:,i)) > 0.D0) )print*, "PUSH_INIT2:", i, order(i), push(:,i)
+        !if( ANY(ABS(add_const(:,i)) > 0.D0) )print*, "PUSH_INIT2:", i, order(i), push(:,i)
      END DO
      eigenvec(:,:) = eigenvec(:,:)/dnrm2(3*nat,eigenvec,1) * dnrm2(3*nat,push,1)
 

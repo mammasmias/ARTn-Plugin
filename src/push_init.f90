@@ -134,8 +134,8 @@ SUBROUTINE push_init(nat, tau, order, at, idum, push_ids, dist_thr, add_const, i
   push(:,:) = init_step_size*push(:,:)
 
 
-  do na =1,nat
-     if( ANY(ABS(add_const(:,na)) > 0.D0) )print*, "PUSH_INIT:", na, order(na), push(:,na)
-  enddo
+  !do na =1,nat
+  !   if( ANY(ABS(add_const(:,na)) > 0.D0) )print*, "PUSH_INIT:", na, order(na), push(:,na)
+  !enddo
 
 END SUBROUTINE push_init
