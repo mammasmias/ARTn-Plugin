@@ -3,15 +3,16 @@
   engine_units='lammps/metal'
 
 !  lrestart = .true.
-  npush = 5
+  ninit = 3
   lpush_final = .true. 
   nsmooth = 2
-  convcrit_init = 0.5
-  convcrit_final = 0.05
-  fpara_convcrit = 0.06
+  init_forc_thr = 0.5
+  final_forc_thr = 0.05
+  !force_thr = 0.05
+  fpara_thr = 0.07
 
   !! parameters for the push
-  push_step_size = 0.1
+  push_step_size = 0.2
   push_mode = 'list'
 
   !! define which atoms are to be pushed and the constraints ...
@@ -20,9 +21,9 @@
   
   !! lanczos parameters
   dlanc = 0.2D-1
-  nlanc_init = 16
+  lanc_mat_size = 16
   
   !! eigenpush parms
   eigen_step_size = 0.15
-  relax_thr = -0.005
+  frelax_ene_thr = -0.005
 /
