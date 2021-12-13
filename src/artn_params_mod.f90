@@ -34,6 +34,7 @@ MODULE artn_params
   ! counters
   INTEGER :: istep
   INTEGER, target :: iperp      !> number of steps in perpendicular relaxation
+  INTEGER :: nperp
   INTEGER :: ieigen     !> number of steps made with eigenvector
   INTEGER :: iinit      !> number of pushes made
   INTEGER :: ilanc      !> current lanczos iteration

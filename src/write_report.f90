@@ -8,7 +8,7 @@
 SUBROUTINE write_initial_report(iunartout, filout)
   use artn_params, ONLY: engine_units, ninit, init_forc_thr, final_forc_thr,  &
                          fpara_thr, eigval_thr, push_step_size, eigen_step_size, &
-                         push_mode, lanc_mat_size, lanc_mat_size
+                         push_mode, lanc_mat_size, lanc_mat_size, dlanc
   use units, only : strg_units
   INTEGER,             INTENT(IN) :: iunartout
   CHARACTER (LEN=255), INTENT(IN) :: filout

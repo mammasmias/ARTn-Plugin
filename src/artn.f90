@@ -291,7 +291,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         CALL write_struct( at, nat, tau, order, elements, ityp, force, 1.0_DP, iunstruct, struc_format_out, sadfname)
         !
 
-        call write_end_report( lsaddle, lpush_final, etot - etot_init )
+        call write_end_report( iunartout, lsaddle, lpush_final, etot - etot_init )
 
        !WRITE (iunartout,'(5X, "--------------------------------------------------")')
        !WRITE (iunartout,'(5X, "    *** ARTn found a potential saddle point ***   ")')
@@ -305,7 +305,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
        !   WRITE (iunartout,'(5X, "------------------------------------------------")')
        !ENDIF
      ELSE
-        call write_end_report( lsaddle, lpush_final, etot )
+        call write_end_report( iunartout, lsaddle, lpush_final, etot )
        !WRITE (iunartout,'(5X, "--------------------------------------------------")')
        !WRITE (iunartout,'(5X, "        *** ARTn saddle search failed  ***        ")')
        !WRITE (iunartout,'(5X, "--------------------------------------------------")')
