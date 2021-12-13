@@ -19,7 +19,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   USE units
   USE artn_params, ONLY: iunartin, iunartout, iunstruct, &
        lrelax,linit,lperp,leigen,llanczos, lrestart, lsaddle, lpush_final, lbackward, &
-       istep, iperp, ieigen, iinit, ilanc, ismooth, nlanc, if_pos_ct, &
+       istep, iperp, ieigen, iinit, ilanc, ismooth, nlanc, nperp, if_pos_ct, &
        lowest_eigval, etot_init, etot_step, etot_saddle, etot_final, de_saddle, de_back, de_fwd, &
        ninit, neigen, lanc_mat_size, nsmooth, push_mode, dist_thr, init_forc_thr, final_forc_thr, &
        fpara_thr, eigval_thr, frelax_ene_thr, push_step_size, current_step_size, dlanc, eigen_step_size, fpush_factor, &
@@ -203,7 +203,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      ! If the force_perp component are small we continue
      ! to push
      !
-     IF (( MAXVAL( ABS(force) )) < init_forc_thr ) THEN  ! Here force = force_perp
+     IF( ((MAXVAL( ABS(force) )) < init_forc_thr).OR.(iperp >= nperp) )THEN  ! Here force = force_perp
         !
         ! we reached convergence in the perpendicular direction, go to pushing
         !

@@ -183,6 +183,7 @@ CONTAINS
       ! Defaults for input parameters
       !
       ninit = 3
+      nperp = 4
       neigen = 1
       nsmooth = 1
       !

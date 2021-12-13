@@ -101,10 +101,10 @@ SUBROUTINE write_report( etot, force, lowest_eigval, disp, if_pos, istep, nat, i
   ! ...Displacement processing
   npart = 0
   rc2 = 0.1*0.1
- do i = 1, nat
-    if( norm2(delr(:,i)) > rc2 ) npart = npart + 1
- enddo
- call sum_force( delr, nat, dr )
+  do i = 1, nat
+     if( norm2(delr(:,i)) > rc2 ) npart = npart + 1
+  enddo
+  call sum_force( delr, nat, dr )
 
   ! .. Convertion Units
   fperp_tot = unconvert_force( fperp_tot )
@@ -120,9 +120,9 @@ SUBROUTINE write_report( etot, force, lowest_eigval, disp, if_pos, istep, nat, i
 
   !%! More Complete Output
   Mstep = "macrostep"
-  ! if( lbasin ) Mstep = 'Bstep'
-  ! if( .not.lbasin ) Mstep = 'Sstep'
-  ! delr = sum()
+  !if( lbasin ) Mstep = 'Bstep'
+  !if( .not.lbasin ) Mstep = 'Sstep'
+  !delr = sum()
   evalf = istep
   WRITE(iunartout,5) istep, Mstep, MOVE(disp), detot, iinit, ieigen, iperp, ilanc,   &
                      force_tot, fperp_tot, fpara_tot, lowEig,     &
