@@ -111,6 +111,7 @@ SUBROUTINE write_report( etot, force, lowest_eigval, disp, if_pos, istep, nat, i
   fpara_tot = unconvert_force( fpara_tot )
   dEtot = unconvert_energy(etot - etot_init)
   lowEig = unconvert_hessian( lowest_eigval )
+  !lowEig = lowest_eigval
 
   !  write report 
   !WRITE (iunartout,'(5X,I4,7X,A4,9X, F12.6, *(5X, F10.4))')  & !,5X, F7.4, 5X, F7.4, 5X, F7.4)') &
