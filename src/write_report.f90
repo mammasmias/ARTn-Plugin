@@ -101,10 +101,10 @@ SUBROUTINE write_report( etot, force, lowest_eigval, disp, if_pos, istep, nat, i
   ! ...Displacement processing
   npart = 0
   rc2 = 0.1*0.1
-  do i = 1, nat
-     if( norm2(delr(:,i)) > rc2 ) npart = npart + 1
-  enddo
-  call sum_force( delr, nat, dr )
+ do i = 1, nat
+    if( norm2(delr(:,i)) > rc2 ) npart = npart + 1
+ enddo
+ call sum_force( delr, nat, dr )
 
   ! .. Convertion Units
   fperp_tot = unconvert_force( fperp_tot )
@@ -124,7 +124,7 @@ SUBROUTINE write_report( etot, force, lowest_eigval, disp, if_pos, istep, nat, i
   ! delr = sum()
   evalf = istep
   WRITE(iunartout,5) istep, Mstep, MOVE(disp), detot, iinit, ieigen, iperp, ilanc,   &
-                     force_tot, fperp_tot, fpara_tot, lowest_eigval ,     &
+                     force_tot, fperp_tot, fpara_tot, lowEig,     &
                      dr, npart, evalf !, a1
   !5 format(5x,i4,3x,a,x,a,F10.4,3x,4(x,i2),4(x,f10.4))
   5 format(5x,i4,3x,a,x,a,F10.4,3x,4(x,i2),5(x,f10.4),2(x,i4))
@@ -141,7 +141,7 @@ SUBROUTINE write_end_report( iunartout, lsaddle, lpush_final, de )
 
   integer, intent( in ) :: iunartout
   logical, intent( in ) :: lsaddle, lpush_final
-  REAL(DP), intent( in ) :: de
+  REAL(DP), intent( in ), value :: de
   
   if( lsaddle )then
     WRITE (iunartout,'(5X, "--------------------------------------------------")')
@@ -187,8 +187,6 @@ subroutine compute_delr( nat, pos, lat )
      call pbc( r, lat )
      delr(:,i) = delr(:,i) + r(:)
   enddo
-
-
 end subroutine compute_delr
 
 

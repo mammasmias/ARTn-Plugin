@@ -132,7 +132,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
   ! store positions of current step
   lat = at
-  !if( istep > 0 )call compute_delr( nat, tau, lat )
+  if( istep > 0 )call compute_delr( nat, tau, lat )
   tau_step = tau
   !
   ! Open the output file for writing

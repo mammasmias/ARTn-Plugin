@@ -191,7 +191,7 @@ SUBROUTINE lanczos( nat, force,  v_in, dlanc, nlanc, ilanc, lowest_eigval, lowes
      ! write(785,*) ilanc, lowest_eigval_old, lowest_eigval, abs(eigval_diff)
      !
      IF ( ABS(eigval_diff) <= eigval_thr ) THEN
-         write(*,*) 'converged! in:',ilanc
+        ! write(*,*) 'converged! in:',ilanc
         !
         ! lanczos has converged
         ! set max number of iternations to current iteration
@@ -199,7 +199,6 @@ SUBROUTINE lanczos( nat, force,  v_in, dlanc, nlanc, ilanc, lowest_eigval, lowes
         nlanc = ilanc
         ! increase lanczos counter for last step
         !%!ilanc = ilanc + 1
-        write(*,*) "New lanc Value::", ilanc, nlanc
         !
      ENDIF
      !
@@ -244,7 +243,6 @@ SUBROUTINE lanczos( nat, force,  v_in, dlanc, nlanc, ilanc, lowest_eigval, lowes
         !ilanc = ilanc + 1
      END IF
 
-    print*, " * LANCZOS::", ilanc, nlanc
 
     ! correct v1 so that the move is made from the initial position
     !v1(:,:) = v1(:,:) - Vmat(:,:,ilanc-1)
