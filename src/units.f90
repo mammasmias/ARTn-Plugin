@@ -58,7 +58,7 @@ module units
 
   !> Units convertor
   CHARACTER(LEN=256) :: strg_units
-  REAL(DP) :: E2au, au2E, L2au, au2L, T2au, au2T, F2au, au2F
+  REAL(DP) :: E2au, au2E, L2au, au2L, T2au, au2T, F2au, au2F, H2au, au2H
 
  contains
 
@@ -147,29 +147,28 @@ module units
           case( 'metal' )
 
             !! Energy: eV
-            E2au = 1. / Ry2eV
+            E2au = 1.0_DP / Ry2eV
             au2E = Ry2eV
  
             !! Length: Angstrom
-            L2au = 1. / B2A
+            L2au = 1.0_DP / B2A
             au2L = B2A
 
             !! Time: picosecond
-            T2au = 1. / AU_PS
+            T2au = 1.0_DP / AU_PS
             au2T = AU_PS
 
             !! Force
             F2au = E2au / L2au
-            au2F = 1. / F2au
+            au2F = 1.0_DP / F2au
 
             !! Hessian
             H2au = F2au / L2au
-            au2H = 1. / H2au
+            au2H = 1.0_DP / H2au
 
             cE = "eV"
             cL = AA
             !strg_units = '(27X, "[eV]",17X,"-----------[eV/'//AA//']----------",3X,"eV/'//AA//'^2")'
-
 
           !case( 'real' )
             !! Energy: Kcal/mol
