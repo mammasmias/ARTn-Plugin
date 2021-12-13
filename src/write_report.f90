@@ -175,14 +175,17 @@ subroutine compute_delr( nat, pos, lat )
   REAL(DP), intent( in ) :: pos(3,nat), lat(3,3)
 
   integer :: i
-  REAL(DP) :: dr(3,nat)!, r(3)
+  REAL(DP) :: dr(3,nat), r(3)
   REAL(DP), external :: fpbc
   
-  dr = pos - tau_step
+  !dr = pos - tau_step
   do i = 1, nat
      !delr(:,i) = delr(:,i) + fpbc( dr(:,i), lat )
-     call pbc( dr(:,i), lat )
-     delr(:,i) = delr(:,i) + dr(:,i)
+     !call pbc( dr(:,i), lat )
+     !delr(:,i) = delr(:,i) + dr(:,i)
+     r = pos(:,i) - tau_step(:,i)
+     call pbc( r, lat )
+     delr(:,i) = delr(:,i) + r(:)
   enddo
 
 

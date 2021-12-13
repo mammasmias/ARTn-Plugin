@@ -65,7 +65,7 @@ SUBROUTINE lanczos( nat, force,  v_in, dlanc, nlanc, ilanc, lowest_eigval, lowes
      ! store this vector
      !
      Vmat(:,:,1) = v1(:,:)
-     ilanc = ilanc + 1
+     !%!ilanc = ilanc + 1
      !
   ELSEIF (ilanc == 1 ) THEN
      ! Generate lanczos vector, v = q - alpha*v0
@@ -111,10 +111,11 @@ SUBROUTINE lanczos( nat, force,  v_in, dlanc, nlanc, ilanc, lowest_eigval, lowes
            !
         ENDIF
      ENDIF
-     ilanc = ilanc + 1
+     !%!ilanc = ilanc + 1
      !
      ! correct v1 so that the move is made from the initial position
-     v1(:,:) = v1(:,:) - Vmat(:,:,ilanc -1)
+     !%!v1(:,:) = v1(:,:) - Vmat(:,:,ilanc -1)
+     v1(:,:) = v1(:,:) - Vmat(:,:,ilanc)
      !
   ELSEIF (ilanc > 1 .and. ilanc <= nlanc ) THEN
      !
@@ -190,14 +191,15 @@ SUBROUTINE lanczos( nat, force,  v_in, dlanc, nlanc, ilanc, lowest_eigval, lowes
      ! write(785,*) ilanc, lowest_eigval_old, lowest_eigval, abs(eigval_diff)
      !
      IF ( ABS(eigval_diff) <= eigval_thr ) THEN
-        ! write(785,*) 'converged! in:',ilanc
+         write(*,*) 'converged! in:',ilanc
         !
         ! lanczos has converged
         ! set max number of iternations to current iteration
         !
         nlanc = ilanc
         ! increase lanczos counter for last step
-        ilanc = ilanc + 1
+        !%!ilanc = ilanc + 1
+        write(*,*) "New lanc Value::", ilanc, nlanc
         !
      ENDIF
      !
@@ -233,17 +235,20 @@ SUBROUTINE lanczos( nat, force,  v_in, dlanc, nlanc, ilanc, lowest_eigval, lowes
            beta = ddot(3*nat, q, 1, v1, 1)
            H(ilanc+1,ilanc ) = beta
            H(ilanc, ilanc+1) = beta
-           ilanc = ilanc + 1
+           !%!ilanc = ilanc + 1
            !
         ENDIF
         !
      ELSE
         ! increas counter if lanczos is not converged in nlanciter
-        ilanc = ilanc + 1
-    END IF
+        !ilanc = ilanc + 1
+     END IF
+
+    print*, " * LANCZOS::", ilanc, nlanc
 
     ! correct v1 so that the move is made from the initial position
-    v1(:,:) = v1(:,:) - Vmat(:,:,ilanc-1)
+    !v1(:,:) = v1(:,:) - Vmat(:,:,ilanc-1)
+    v1(:,:) = v1(:,:) - Vmat(:,:,ilanc)
     !
  ENDIF
   !

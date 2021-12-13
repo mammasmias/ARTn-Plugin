@@ -143,7 +143,7 @@ CONTAINS
     INTEGER :: ios, mem
 
     verbose = .true.
-    verbose = .false.
+    !verbose = .false.
 
     INQUIRE( file = filnam, exist = file_exists )
 
@@ -334,13 +334,15 @@ CONTAINS
       write(*,1) "* convcrit_final  = ", final_forc_thr
       write(*,1) "* fpara_convcrit  = ", fpara_thr
       write(*,1) "* eigval_thr      = ", eigval_thr
-      write(*,1) "* frelax_ene_thr       = ", frelax_ene_thr
+      write(*,1) "* frelax_ene_thr  = ", frelax_ene_thr
       !
       write(*,1) "* push_step_size  = ", push_step_size
       write(*,1) "* eigen_step_size = ", eigen_step_size
       write(*,1) "* dlanc           = ", dlanc
+      write(*,1) "* nlanc           = ", nlanc
       write(*,2) repeat("*",50)
       1 format(x,a,x,g15.5)
+      3 format(x,a,x,i0)
       2 format(*(x,a))
     endif
 
