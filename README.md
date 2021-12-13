@@ -136,12 +136,13 @@ Depending of the engine the works units changes and it is to the user to be cohe
 - `lrelax`: Values `.true./.false`, default is `false.`.
 Flag if we want to relax to adjacent minima from the saddle point.  
 - `lpush_final`: Values `.true./.false.`, default is `.true.`.  
-Flag to push to adjacent minimum along eigenvector.
+Flag to push to adjacent minimum along eigenvector. Flag to push to the second minimum.
 - `lrestart`: Values `.true./.false.`, default is `.false.`.
 Flag for restarting a ARTn calculation.  
-- `npush`: Value integer, by default is `3`. Number of initial pushes before lanczos start.
+- `ninit`: Value integer, by default is `3`. Number of initial pushes before lanczos start.
 - `neigen`: Value integer, by default is `1`. Number of steps made with eigenvector before perpendicular relax.
-- `nlanc_init`: Value integer, by default is `16`. Maximum number of lanczos iterations
+- `npush`: Value integer, by default is `3`. Maximum number of relaxation perpendicular to the move direction 
+- `lanc_mat_size`: Value integer, by default is `16`. Maximum number of Lanczos iterations
 - `nsmooth`: Value integer, by default is `1`. Number of smoothing steps from push to eigenvector.
 - `struc_format_out`: Value character, default is `"xsf"`. Output structure format. Value accepted `"xyz"` .
 Engine specific flag:
@@ -170,13 +171,13 @@ Engine specific flag:
 
 **The values gives by the user through the input file should be in engine units**
 
-- `convcrit_init`: Value is real, by default is `1e-2 Ry/bohr` . Initial force convergence criteria. Used for the perpendicular relax before the saddle point convergence
-- `convcrit_final`: Value is real, by default is `1e-3 Ry/bohr`. Final force convergence criteria. Used for the perpendicular relax close to the saddle point.
-- `fpara_convcrit`: Value is real, by default is `5e-3 Ry/bohr`. Initial force convergence criteria. Used for the parallel relaxation.
+- `init_forc_thr`: Value is real, by default is `1e-2 Ry/bohr` . Initial force convergence criteria. Used for the perpendicular relax before the saddle point convergence
+- `final_forc_thr`: Value is real, by default is `1e-3 Ry/bohr`. Final force convergence criteria. Used for the perpendicular relax close to the saddle point.
+- `fpara_thr`: Value is real, by default is `5e-3 Ry/bohr`. Initial force convergence criteria. Used for the parallel relaxation.
 - `eigval_thr`: Is a real value, by default is `-0.01 Ry/bohr^2` . Threshold for the Hessian eigen value obtain by Lanczos algorithm to start to converge to. The eigen value relative to the saddle point should be negative.
-- `relax_thr`: Is a real value, by default is `-0.01 Ry`. Energy threshold at the saddle point to start relaxation to adjacent minima.
+- `frelax_ene_thr`: Is a real value, by default is `-0.01 Ry`. Energy threshold at the saddle point to start relaxation to adjacent minima.
 - `push_step_size`: Is a real value, by default is `0.3 bohr`. Step size of the inital push (note: the step size is limited by the engine) 
-- `dlanc`: Is a real value, by default is `1e-2 bohr`. Step size in the lanczos algorithm.
+- `dlanc`: Is a real value, by default is `1e-2 bohr`. Step size in the lanczos algorithm. Should not be (`lanc_step_size`)
 - `eigen_step_size`:  Is a real value, by default is `0.2 bohr`. Step size for a step with the lanczos eigenvector (note: the step size is limited by the engine).
 
 
