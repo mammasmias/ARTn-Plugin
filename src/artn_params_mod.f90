@@ -114,7 +114,7 @@ MODULE artn_params
   CHARACTER(LEN=3), ALLOCATABLE :: elements(:)
   !
   NAMELIST/artn_parameters/ lrestart, lrelax, lpush_final, ninit, neigen, lanc_mat_size, nsmooth, push_mode, dist_thr,  &
-       init_forc_thr,final_forc_thr, fpara_thr, eigval_thr, frelax_ene_thr, &
+       init_forc_thr, final_forc_thr, fpara_thr, eigval_thr, frelax_ene_thr, &
        push_step_size, dlanc, eigen_step_size, current_step_size, &
        push_ids,add_const, engine_units, zseed, struc_format_out, elements, &
        push_over
