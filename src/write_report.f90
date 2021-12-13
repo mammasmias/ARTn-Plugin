@@ -45,8 +45,8 @@ SUBROUTINE write_initial_report(iunartout, filout)
   WRITE (iunartout,'(/,/)') 
   !WRITE (iunartout,*) " "
   !%! Condition on the engin_units..
-  WRITE (iunartout,'(5X,"istep",4X,"ART_step",4X,"Etot",3x,"init/eig/ip/il","&
-                    "3X," Ftot ",6X," Fperp ",6X," Fpara ",6X,"eigval")')
+  WRITE (iunartout,'(5X,"istep",4X,"ART_step",4X,"Etot",5x,"init/eig/ip/il","&
+                    "3X," Ftot ",5X," Fperp ",5X," Fpara ",3X,"eigval", 6X, "delr", 2X, "npart", X,"evalf")')
   !WRITE (iunartout,'(27X, "[Ry]",17X,"-----------[Ry/a.u.]----------",3X,"Ry/a.u.^2")')
   WRITE (iunartout, strg_units )
 
@@ -73,31 +73,40 @@ SUBROUTINE write_report( etot, force, lowest_eigval, disp, if_pos, istep, nat, i
   !> @param [in]  iunartout	Channel of output
   !
   USE artn_params, ONLY: push, MOVE  &
-                        ,etot_init, iinit, iperp, ieigen, ilanc
+                        ,etot_init, iinit, iperp, ieigen, ilanc, delr
   USE UNITS
   IMPLICIT NONE
+
   ! -- Arguments
   INTEGER,  INTENT(IN) :: nat, istep, iunartout
   INTEGER,  INTENT(IN) :: if_pos(3,nat)
   REAL(DP), INTENT(IN) :: force(3,nat), etot, lowest_eigval
   INTEGER,  INTENT(IN) :: disp
+
   ! -- Local Variables
   CHARACTER(LEN=5) :: Mstep
-  integer :: macrostep = -1
+  integer :: macrostep = -1, evalf, i, npart
   REAL(DP) :: fpara(3,nat), fperp(3,nat)
-  REAL(DP) :: force_tot, fperp_tot, fpara_tot, detot, lowEig
+  REAL(DP) :: force_tot, fperp_tot, fpara_tot, detot, lowEig, dr, rc2
   REAL(DP), EXTERNAL :: ddot
   !
-  CALL sum_force(force,nat,force_tot)
 
+  ! ...Force processing
+  CALL sum_force( force, nat, force_tot )
   fperp(:,:) = force(:,:)
-
   CALL perpforce(fperp,if_pos,push,fpara,nat)
-
   CALL sum_force(fperp,nat,fperp_tot)
-
   fpara_tot = ddot(3*nat,force,1,push,1)
 
+  ! ...Displacement processing
+  npart = 0
+  rc2 = 0.1*0.1
+  do i = 1, nat
+     if( norm2(delr(:,i)) > rc2 ) npart = npart + 1
+  enddo
+  call sum_force( delr, nat, dr )
+
+  ! .. Convertion Units
   fperp_tot = unconvert_force( fperp_tot )
   fpara_tot = unconvert_force( fpara_tot )
   dEtot = unconvert_energy(etot - etot_init)
@@ -113,9 +122,71 @@ SUBROUTINE write_report( etot, force, lowest_eigval, disp, if_pos, istep, nat, i
   ! if( lbasin ) Mstep = 'Bstep'
   ! if( .not.lbasin ) Mstep = 'Sstep'
   ! delr = sum()
+  evalf = istep
   WRITE(iunartout,5) istep, Mstep, MOVE(disp), detot, iinit, ieigen, iperp, ilanc,   &
-                     force_tot, fperp_tot, fpara_tot, lowest_eigval !,     &
-  !                   delr, npart, evalf, a1
-  5 format(5x,i4,3x,a,x,a,F10.4,3x,4(x,i2),4(x,f10.4))
+                     force_tot, fperp_tot, fpara_tot, lowest_eigval ,     &
+                     dr, npart, evalf !, a1
+  !5 format(5x,i4,3x,a,x,a,F10.4,3x,4(x,i2),4(x,f10.4))
+  5 format(5x,i4,3x,a,x,a,F10.4,3x,4(x,i2),5(x,f10.4),2(x,i4))
 
 END SUBROUTINE write_report
+
+
+
+
+SUBROUTINE write_end_report( iunartout, lsaddle, lpush_final, de )
+  
+  use units, only : DP, unconvert_energy
+  implicit none
+
+  integer, intent( in ) :: iunartout
+  logical, intent( in ) :: lsaddle, lpush_final
+  REAL(DP), intent( in ) :: de
+  
+  if( lsaddle )then
+    WRITE (iunartout,'(5X, "--------------------------------------------------")')
+    WRITE (iunartout,'(5X, "    *** ARTn found a potential saddle point ***   ")')
+    WRITE (iunartout,'(5X, "--------------------------------------------------")')
+    WRITE (iunartout,'(15X,"E_final - E_initial =", F12.5," eV")') unconvert_energy(de)
+    WRITE (iunartout,'(5X, "--------------------------------------------------")')
+
+    IF ( lpush_final ) THEN
+       WRITE (iunartout, '(5X,"       *** Pushing to adjacent minima  ***      ")')
+       WRITE (iunartout,'(5X, "------------------------------------------------")')
+    ENDIF
+
+  else
+    WRITE (iunartout,'(5X, "--------------------------------------------------")')
+    WRITE (iunartout,'(5X, "        *** ARTn saddle search failed  ***        ")')
+    WRITE (iunartout,'(5X, "--------------------------------------------------")')
+  endif
+
+END SUBROUTINE write_end_report
+
+
+
+
+subroutine compute_delr( nat, pos, lat )
+  use artn_params, only : delr, tau_step
+   use units, only : DP
+  implicit none
+
+  INTEGER, intent( in ) :: nat
+  REAL(DP), intent( in ) :: pos(3,nat), lat(3,3)
+
+  integer :: i
+  REAL(DP) :: dr(3,nat)!, r(3)
+  REAL(DP), external :: fpbc
+  
+  dr = pos - tau_step
+  do i = 1, nat
+     !delr(:,i) = delr(:,i) + fpbc( dr(:,i), lat )
+     call pbc( dr(:,i), lat )
+     delr(:,i) = delr(:,i) + dr(:,i)
+  enddo
+
+
+end subroutine compute_delr
+
+
+

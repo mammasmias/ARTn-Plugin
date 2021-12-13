@@ -46,6 +46,7 @@ MODULE artn_params
   !                                           !
   ! arrays that are needed by ARTn internally !
   !                                           !
+  REAL(DP), ALLOCATABLE :: delr(:,:)
   REAL(DP), ALLOCATABLE :: push(:,:)             !> initial push vector
   REAL(DP), ALLOCATABLE, target :: eigenvec(:,:) !> lanczos eigenvector
   REAL(DP), ALLOCATABLE :: tau_step(:,:)         !> current coordinates (restart)
@@ -139,7 +140,7 @@ CONTAINS
     CHARACTER (LEN=255), INTENT(IN) :: filnam
     ! -- Local Variables
     LOGICAL :: file_exists, verbose
-    INTEGER :: ios
+    INTEGER :: ios, mem
 
     verbose = .true.
     verbose = .false.
@@ -216,6 +217,28 @@ CONTAINS
       IF ( .not. ALLOCATED(force_old) ) ALLOCATE( force_old(3,nat), source = 0.D0 )
       IF ( .not. ALLOCATED(v_in) ) ALLOCATE( v_in(3,nat), source = 0.D0 )
       IF ( .not. ALLOCATED(elements) )     ALLOCATE(elements(300), source = "XXX")
+
+      IF ( .not. ALLOCATED(delr) ) ALLOCATE( delr(3,nat), source = 0.D0 )
+
+      ! ...Compute the size of ARTn lib
+      mem = 0
+      mem = mem + sizeof( add_const )
+      mem = mem + sizeof( push_ids  )
+      mem = mem + sizeof( push      )
+      mem = mem + sizeof( eigenvec  )
+      mem = mem + sizeof( eigen_saddle )
+      mem = mem + sizeof( tau_saddle )
+      mem = mem + sizeof( tau_step  )
+      mem = mem + sizeof( force_step )
+      mem = mem + sizeof( force_old )
+      mem = mem + sizeof( v_in      )
+      mem = mem + sizeof( elements  )
+      mem = mem + sizeof( delr      )
+
+      print*, "* LIB-ARTn MEMORY: ", mem, "Bytes"
+      print*, "* LIB-ARTn MEMORY: ", real(mem)/1000., "KB"
+      print*, "* LIB-ARTn MEMORY: ", real(mem)/1000000., "MB"
+      
       !
       ! read the ARTn input file
       OPEN( UNIT = iunartin, FILE = filnam, FORM = 'formatted', STATUS = 'unknown', IOSTAT = ios)

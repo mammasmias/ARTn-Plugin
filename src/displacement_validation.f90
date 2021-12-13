@@ -44,8 +44,8 @@ SUBROUTINE displacement_validation( atom_id, atom_const, push, lvalid)
   dot_prod                = ddot( 3, cone_dir, 1, displacement, 1 ) / ( cone_dir_norm * displacement_norm )
   displacement_angle      = ACOS( dot_prod ) *180.0_DP / PI
   lvalid                  = ( displacement_angle < cone_angle )
-  write (*,*) "Finished displacement validation",lvalid  &
-          , displacement_norm, cone_dir_norm, dot_prod, displacement_angle, atom_const
+  write (*,*) "Finished displacement validation",lvalid  !&
+          !, displacement_norm, cone_dir_norm, dot_prod, displacement_angle, atom_const
   !
   IF ( cone_angle == 0.0_DP) THEN
      lvalid = .TRUE.
@@ -53,7 +53,7 @@ SUBROUTINE displacement_validation( atom_id, atom_const, push, lvalid)
      ! TODO: why is the direction multiplied by 0.1? seems kind of random ...
      !
      push(:) = cone_dir(:)
-     print*, "**disp_valid",push, norm2(push)
+     !print*, "**disp_valid",push, norm2(push)
   ENDIF
   !
 END SUBROUTINE displacement_validation

@@ -211,7 +211,7 @@ module units
 
     ! ...Define the output units string
     strg_units = '(27X, "['//cE//']",21X,"-----------['//cE//'/'//   &
-                  cL//']----------",8X,"'//cE//'/'//cL//to2//'")'
+                  cL//']-----------",6X,"'//cE//'/'//cL//to2//'")'
 
 
     if( verbose )then

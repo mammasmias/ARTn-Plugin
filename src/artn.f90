@@ -126,9 +126,13 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   ! ...Convert the Energy
   etot = convert_energy( etot_eng )
   etot_step = etot
+
   ! ...Initialize the displacement
   disp = VOID
+
   ! store positions of current step
+  lat = at
+  if( istep > 0 )call compute_delr( nat, tau, lat )
   tau_step = tau
   !
   ! Open the output file for writing
@@ -286,21 +290,25 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         !CALL write_struct( at, nat, tau, order, atm, ityp, force, 1.0_DP, iunstruct, struc_format_out, sadfname)
         CALL write_struct( at, nat, tau, order, elements, ityp, force, 1.0_DP, iunstruct, struc_format_out, sadfname)
         !
-        WRITE (iunartout,'(5X, "--------------------------------------------------")')
-        WRITE (iunartout,'(5X, "    *** ARTn found a potential saddle point ***   ")')
-        WRITE (iunartout,'(5X, "--------------------------------------------------")')
-        !WRITE (iunartout,'(15X,"E_final - E_initial =", F12.5," eV")') (etot - etot_init)*RY2EV
-        WRITE (iunartout,'(15X,"E_final - E_initial =", F12.5," eV")') unconvert_energy((etot - etot_init)) !*RY2EV
-        WRITE (iunartout,'(5X, "--------------------------------------------------")')
 
-        IF ( lpush_final ) THEN
-           WRITE (iunartout, '(5X,"       *** Pushing to adjacent minima  ***      ")')
-           WRITE (iunartout,'(5X, "------------------------------------------------")')
-        ENDIF
+        call write_end_report( lsaddle, lpush_final, etot - etot_init )
+
+       !WRITE (iunartout,'(5X, "--------------------------------------------------")')
+       !WRITE (iunartout,'(5X, "    *** ARTn found a potential saddle point ***   ")')
+       !WRITE (iunartout,'(5X, "--------------------------------------------------")')
+       !!WRITE (iunartout,'(15X,"E_final - E_initial =", F12.5," eV")') (etot - etot_init)*RY2EV
+       !WRITE (iunartout,'(15X,"E_final - E_initial =", F12.5," eV")') unconvert_energy((etot - etot_init)) !*RY2EV
+       !WRITE (iunartout,'(5X, "--------------------------------------------------")')
+
+       !IF ( lpush_final ) THEN
+       !   WRITE (iunartout, '(5X,"       *** Pushing to adjacent minima  ***      ")')
+       !   WRITE (iunartout,'(5X, "------------------------------------------------")')
+       !ENDIF
      ELSE
-        WRITE (iunartout,'(5X, "--------------------------------------------------")')
-        WRITE (iunartout,'(5X, "        *** ARTn saddle search failed  ***        ")')
-        WRITE (iunartout,'(5X, "--------------------------------------------------")')
+        call write_end_report( lsaddle, lpush_final, etot )
+       !WRITE (iunartout,'(5X, "--------------------------------------------------")')
+       !WRITE (iunartout,'(5X, "        *** ARTn saddle search failed  ***        ")')
+       !WRITE (iunartout,'(5X, "--------------------------------------------------")')
      ENDIF
   ENDIF
   !
