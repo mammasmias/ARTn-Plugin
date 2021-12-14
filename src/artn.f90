@@ -26,7 +26,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
        push_ids, add_const, push, eigenvec, tau_step, force_step, tau_saddle, eigen_saddle, v_in, &
        VOID, INIT, PERP, EIGN, LANC, RELX, zseed, &
        engine_units, struc_format_out, elements, &
-       initialize_artn, write_initial_report, read_restart, write_restart, &
+       !initialize_artn, write_initial_report, read_restart, write_restart, &
+       initialize_artn, read_restart, write_restart, &
        push_over, ran3
   !
   IMPLICIT NONE
@@ -133,9 +134,13 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   ! ...Convert the Energy
   etot = convert_energy( etot_eng )
   etot_step = etot
+
   ! ...Initialize the displacement
   disp = VOID
+
   ! store positions of current step
+  lat = at
+  if( istep > 0 )call compute_delr( nat, tau, lat )
   tau_step = tau
   !
   ! Open the output file for writing
@@ -150,7 +155,11 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      ! generate initial push vector
      !=============================
      !
+<<<<<<< HEAD
      ! CALL push_init(nat, tau, order, at, idum, push_ids, dist_thr, add_const, push_step_size, push , push_mode)
+=======
+     !CALL push_init(nat, tau, order, at, idum, push_ids, dist_thr, add_const, push_step_size, push , push_mode)
+>>>>>>> 9aa3ebbb85903897ff30f299c49fd428645c26be
      !
      ! set up the flags (we did an initial push, now we need to relax perpendiculary)
      
@@ -174,6 +183,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      ! generate random initial eigenvec (used as input for Lanczos)
      DO i = 1, nat
         eigenvec(:,i) = (/0.5_DP - ran3(idum),0.5_DP - ran3(idum),0.5_DP - ran3(idum)/) * if_pos(:,i)
+        !if( ANY(ABS(add_const(:,i)) > 0.D0) )print*, "PUSH_INIT2:", i, order(i), push(:,i)
      END DO
      eigenvec(:,:) = eigenvec(:,:)/dnrm2(3*nat,eigenvec,1) * dnrm2(3*nat,push,1)
 
@@ -288,21 +298,25 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         !CALL write_struct( at, nat, tau, order, atm, ityp, force, 1.0_DP, iunstruct, struc_format_out, sadfname)
         CALL write_struct( at, nat, tau, order, elements, ityp, force, 1.0_DP, iunstruct, struc_format_out, sadfname)
         !
-        WRITE (iunartout,'(5X, "--------------------------------------------------")')
-        WRITE (iunartout,'(5X, "    *** ARTn found a potential saddle point ***   ")')
-        WRITE (iunartout,'(5X, "--------------------------------------------------")')
-        !WRITE (iunartout,'(15X,"E_final - E_initial =", F12.5," eV")') (etot - etot_init)*RY2EV
-        WRITE (iunartout,'(15X,"E_final - E_initial =", F12.5," eV")') unconvert_energy((etot - etot_init)) !*RY2EV
-        WRITE (iunartout,'(5X, "--------------------------------------------------")')
 
-        IF ( lpush_final ) THEN
-           WRITE (iunartout, '(5X,"       *** Pushing to adjacent minima  ***      ")')
-           WRITE (iunartout,'(5X, "------------------------------------------------")')
-        ENDIF
+        call write_end_report( iunartout, lsaddle, lpush_final, etot - etot_init )
+
+       !WRITE (iunartout,'(5X, "--------------------------------------------------")')
+       !WRITE (iunartout,'(5X, "    *** ARTn found a potential saddle point ***   ")')
+       !WRITE (iunartout,'(5X, "--------------------------------------------------")')
+       !!WRITE (iunartout,'(15X,"E_final - E_initial =", F12.5," eV")') (etot - etot_init)*RY2EV
+       !WRITE (iunartout,'(15X,"E_final - E_initial =", F12.5," eV")') unconvert_energy((etot - etot_init)) !*RY2EV
+       !WRITE (iunartout,'(5X, "--------------------------------------------------")')
+
+       !IF ( lpush_final ) THEN
+       !   WRITE (iunartout, '(5X,"       *** Pushing to adjacent minima  ***      ")')
+       !   WRITE (iunartout,'(5X, "------------------------------------------------")')
+       !ENDIF
      ELSE
-        WRITE (iunartout,'(5X, "--------------------------------------------------")')
-        WRITE (iunartout,'(5X, "        *** ARTn saddle search failed  ***        ")')
-        WRITE (iunartout,'(5X, "--------------------------------------------------")')
+        call write_end_report( iunartout, lsaddle, lpush_final, etot )
+       !WRITE (iunartout,'(5X, "--------------------------------------------------")')
+       !WRITE (iunartout,'(5X, "        *** ARTn saddle search failed  ***        ")')
+       !WRITE (iunartout,'(5X, "--------------------------------------------------")')
      ENDIF
   ENDIF
   !
@@ -452,7 +466,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !
      !
      CALL lanczos( nat, force, v_in, dlanc, nlanc, ilanc, lowest_eigval,  eigenvec, push)
-
+     ilanc = ilanc + 1
      iperp = 0
 
      !

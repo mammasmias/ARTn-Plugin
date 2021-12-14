@@ -17,7 +17,8 @@ module units
             convert_force, unconvert_force,     &
             convert_hessian, unconvert_hessian, &
             convert_energy, unconvert_energy,   &
-            convert_time, unconvert_time
+            convert_time, unconvert_time, strg_units
+             
   
 
   INTEGER, PARAMETER ::  DP = selected_real_kind(14,200)           !> double precision
@@ -49,8 +50,15 @@ module units
   REAL(DP), PARAMETER :: AU_PS            = AU_SEC * 1.0E+12_DP
 
 
+  !> Units Character
+  character(*), parameter :: AA = char(197) ! Angstrom (ANSI code)
+  character(*), parameter :: to2 = char(178)  ! exponent 2
+
+  character(:), allocatable :: cL, cE
+
   !> Units convertor
-  REAL(DP) :: E2au, au2E, L2au, au2L, T2au, au2T, F2au, au2F
+  CHARACTER(LEN=256) :: strg_units
+  REAL(DP) :: E2au, au2E, L2au, au2L, T2au, au2T, F2au, au2F, H2au, au2H
 
  contains
 
@@ -127,6 +135,10 @@ module units
         F2au = 1. !/ au2E / L2au
         au2F = 1. !/ F2au
 
+        cE = "Ry"
+        cL = "a.u." ! "bohr"
+        !strg_units = '(27X, "[Ry]",17X,"-----------[Ry/a.u.]----------",3X,"Ry/a.u.^2")'
+
       ! ---------------------------------------------- LAMMPS
       case( 'lammps' )
 
@@ -135,24 +147,28 @@ module units
           case( 'metal' )
 
             !! Energy: eV
-            E2au = 1. / Ry2eV
+            E2au = 1.0_DP / Ry2eV
             au2E = Ry2eV
  
             !! Length: Angstrom
-            L2au = 1. / B2A
+            L2au = 1.0_DP / B2A
             au2L = B2A
 
             !! Time: picosecond
-            T2au = 1. / AU_PS
+            T2au = 1.0_DP / AU_PS
             au2T = AU_PS
 
             !! Force
             F2au = E2au / L2au
-            au2F = 1. / F2au
+            au2F = 1.0_DP / F2au
 
             !! Hessian
             H2au = F2au / L2au
-            au2H = 1. / H2au
+            au2H = 1.0_DP / H2au
+
+            cE = "eV"
+            cL = AA
+            !strg_units = '(27X, "[eV]",17X,"-----------[eV/'//AA//']----------",3X,"eV/'//AA//'^2")'
 
           !case( 'real' )
             !! Energy: Kcal/mol
@@ -192,6 +208,9 @@ module units
     end select   
 
 
+    ! ...Define the output units string
+    strg_units = '(27X, "['//cE//']",21X,"-----------['//cE//'/'//   &
+                  cL//']-----------",6X,"'//cE//'/'//cL//to2//'")'
 
 
     if( verbose )then

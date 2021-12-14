@@ -103,21 +103,25 @@ SUBROUTINE push_init(nat, tau, order, at, idum, push_ids, dist_thr, add_const, i
 
   !
   !%! Now All the information are converted in local index
-  DO na=1,nat
+  INDEX:DO na=1,nat
      IF (atom_displaced(na) == 1 ) THEN
-        DO
+        RDM:DO
            push(:,na) = (/0.5_DP - ran3(idum),0.5_DP - ran3(idum),0.5_DP - ran3(idum)/)
            dr2 = push(1,na)**2 + push(2,na)**2 + push(3,na)**2
+
            ! check if the atom is constrained
-           IF (ANY(ABS(add_const(:,na)) > 0.D0)) THEN
+           IF(ANY(ABS(add_const(:,na)) > 0.D0)) THEN
               ! check if the displacement is within the chosen constraint
               CALL displacement_validation(na,add_const(:,na),push(:,na),lvalid )
-              IF ( .not. lvalid ) CYCLE
+              IF( .not. lvalid )THEN; CYCLE RDM      ! draw another random vector
+              ELSE;                   CYCLE INDEX    ! go to the next atom index
+              ENDIF
            ENDIF
            IF ( dr2 < 0.25_DP ) EXIT
-        ENDDO
+
+        ENDDO RDM 
      ENDIF
-  ENDDO
+  ENDDO INDEX
   ! if all atoms are pushed center the push vector to avoid translational motion 
   IF ( mode == 'all')  CALL center(push(:,:), nat)
   ! 
@@ -131,7 +135,7 @@ SUBROUTINE push_init(nat, tau, order, at, idum, push_ids, dist_thr, add_const, i
 
 
   !do na =1,nat
-  !   print*, "PUSH_INIT:", na, order(na), push(:,na)
+  !   if( ANY(ABS(add_const(:,na)) > 0.D0) )print*, "PUSH_INIT:", na, order(na), push(:,na)
   !enddo
 
 END SUBROUTINE push_init
