@@ -12,6 +12,7 @@ LIB_OBJECTS := \
             $(OBJ)/center.o \
             $(OBJ)/diag.o \
 	    $(OBJ)/lanczos.o \
+            $(OBJ)/check_force_convergence.o \
             $(OBJ)/displacement_validation.o \
 	    $(OBJ)/pbc.o \
 	    $(OBJ)/invmat3x3.o \
