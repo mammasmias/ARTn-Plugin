@@ -32,9 +32,8 @@ SUBROUTINE write_report( etot, force, lowest_eigval, disp, if_pos, istep, nat, i
   !
   CALL sum_force(force,nat,force_tot)
 
-  fperp(:,:) = force(:,:)
 
-  CALL perpforce(fperp,if_pos,push,fpara,nat)
+  CALL perpforce(force,if_pos,push,fperp,fpara,nat)
 
   CALL sum_force(fperp,nat,fperp_tot)
 

@@ -52,11 +52,13 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   !
   REAL(DP)  :: force_in(3,nat)                ! stores non-modified force
   REAL(DP)  :: fpara(3,nat)                   ! force parallel to push/eigenvec
+  REAL(DP)  :: fperp(3,nat)                   ! force parallel to push/eigenvec
   REAL(DP)  :: fpara_tot                      ! total force in parallel direction
   REAL(DP)  :: smoothing_factor               ! mixing factor for smooth transition between eigenvec and push
   REAL(DP)  :: lat(3,3), etot
   INTEGER   :: ios ,i                         ! file IOSTAT
   CHARACTER( LEN=255) :: filin, filout, sadfname, initpfname, eigenfname, restartfname
+  LOGICAL :: lforc_conv, lsaddle_conv
 
   integer :: natom
 
@@ -73,6 +75,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   ! flag that controls convergence
   !
   lconv = .false.
+  lforc_conv = .false.
+  lsaddle_conv = .false. 
   !
   ! fpara_tot is used to scale the magnitude of the eigenvector
   !
@@ -87,6 +91,13 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   !
   ! initialize artn
   !
+  ! set initial random seed
+  IF( zseed .ne. 0 ) idum = zseed
+  ! ...Store & convert original force in a.u.
+  force_in = convert_force( force )
+  force = force_in
+  force_step = force
+
   IF( istep == 0 ) THEN
      ! read the input parameters
      CALL initialize_artn( nat, iunartin, filin )
@@ -111,16 +122,13 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         ! store energy of initial state
         etot_init = convert_energy( etot_eng )
      ENDIF
+  ELSE
+     !
+     CALL perpforce( force, if_pos, push, fperp, fpara, nat)
+     CALL check_force_convergence(nat,force,if_pos,fperp,fpara, lforc_conv, lsaddle_conv)
+     write (*,*) "Debug3", fpara(:,1)
+     ! 
   ENDIF
-
-  ! set initial random seed
-  IF( zseed .ne. 0 ) idum = zseed
-
-
-  ! ...Store & convert original force in a.u.
-  force_in = convert_force( force )
-  force = force_in
-  force_step = force
 
   ! ...Convert the Energy
   etot = convert_energy( etot_eng )
@@ -142,9 +150,10 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      ! generate initial push vector
      !=============================
      !
-     CALL push_init(nat, tau, order, at, idum, push_ids, dist_thr, add_const, push_step_size, push , push_mode)
+     ! CALL push_init(nat, tau, order, at, idum, push_ids, dist_thr, add_const, push_step_size, push , push_mode)
      !
      ! set up the flags (we did an initial push, now we need to relax perpendiculary)
+     
      linit = .false.
      lperp = .true.
      ! the push counter (controls if we should call lanczos or keep pushing)
@@ -156,6 +165,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !
      CALL write_report( etot, force_in, lowest_eigval, disp, if_pos, istep, nat, iunartout )
      !
+     
      CALL write_struct( at, nat, tau, order, elements, ityp, push, 1.0_DP, iunstruct, struc_format_out, initpfname )
      !
      ! Set first eigenvec as push, this is for sure step one of ARTn algo.
@@ -170,9 +180,9 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !
   ELSE IF ( lperp .and. .not. llanczos) THEN
      !
-     !=============================
-     ! Relax forces perpendicular to eigenvector
-     !=============================
+     !===============================================
+     ! Relax forces perpendicular to eigenvector/push
+     !===============================================
      !
      ! If eigenvalue is good, overwrite push with eigenvec
      !
@@ -181,14 +191,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      ENDIF
      !
      ! Subtract parrallel components to push from force.
-     ! Modify and overwrite force such that force = force - fpara = fperp
      !
-     CALL perpforce( force, if_pos, push, fpara, nat )
-     !
-     IF (MAXVAL(ABS(fpara)) <= fpara_thr) THEN
-        ! tighten perpendicular convergence criterion
-        init_forc_thr = final_forc_thr
-     END IF
+     force(:,:) = fperp(:,:)
      !
      disp = PERP
      !
@@ -197,7 +201,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      ! If the force_perp component are small we continue
      ! to push
      !
-     IF (( MAXVAL( ABS(force) )) < init_forc_thr ) THEN  ! Here force = force_perp
+     IF ( lforc_conv ) THEN  ! Here force = force_perp
         !
         ! we reached convergence in the perpendicular direction, go to pushing
         !
@@ -265,7 +269,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   !
   ! check for convergence of total forces (only after eigevec was obtained)
   !
-  IF (MAXVAL(ABS(force_in*if_pos)) < final_forc_thr .AND. leigen .AND. .NOT. lsaddle ) THEN
+  IF ( lsaddle_conv ) THEN
      force(:,:) = force_in(:,:)
      IF ( etot > etot_init ) THEN
         ! store the saddle point energy
@@ -353,7 +357,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !
      ! check for convergence
      !
-     IF ( MAXVAL(ABS(force_in(:,:)*if_pos(:,:))) <= final_forc_thr  ) THEN
+     IF ( lforc_conv ) THEN
         IF ( fpush_factor == 1.0 ) THEN
 
            disp = RELX

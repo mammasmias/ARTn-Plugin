@@ -12,8 +12,8 @@ SUBROUTINE artn_QE( force, etot, epsf_qe, nat, ityp, atm, tau, at, alat, istep, 
                     vel, dt_init, fire_alpha_init, lconv, prefix_qe, tmp_dir_qe )
   !----------------------------------------------------------------------------
   !
-  USE units, only : DP
-  USE artn_params, ONLY: final_forc_thr 
+  USE units, ONLY : DP
+  USE artn_params, ONLY: forc_thr 
   !
   !  Interface Quantum ESPRESSO/ARTn:
   !  We convert/compute/adapt some variables 
@@ -105,9 +105,9 @@ SUBROUTINE artn_QE( force, etot, epsf_qe, nat, ityp, atm, tau, at, alat, istep, 
 
 
   ! ...Compare the Threshold
-  if( epsf_qe < final_forc_thr )then
-    write( *,* ) "WARNING:: QE force threshold is lower than ARTn", epsf_qe, final_forc_thr
-    epsf_qe = final_forc_thr  
+  if( epsf_qe < forc_thr )then
+    write( *,* ) "WARNING:: QE force threshold is lower than ARTn", epsf_qe, forc_thr
+    epsf_qe = forc_thr  
   endif
   
   ! ...Change the position to QE

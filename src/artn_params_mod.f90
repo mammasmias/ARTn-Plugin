@@ -85,7 +85,7 @@ MODULE artn_params
   ! convergence criteria
   REAL(DP) :: dist_thr       !> distance threshold for push mode "rad"
   REAL(DP) :: init_forc_thr  !> initial perp force threshold for perp relax convergence
-  REAL(DP) :: final_forc_thr  !> tightened force convergence criterion when near the saddle point
+  REAL(DP) :: forc_thr  !> tightened force convergence criterion when near the saddle point
   REAL(DP) :: fpara_thr !> parallel force convergence criterion, used to determine when to tighten convcrit_final
   REAL(DP) :: eigval_thr     !> threshold for eigenvalue
   REAL(DP) :: frelax_ene_thr      !> threshold to start relaxation to adjacent minima
@@ -99,7 +99,7 @@ MODULE artn_params
   ! Default Values
   REAL(DP), PARAMETER :: NAN = HUGE( dlanc )  !! Biggest number in DP representation
   REAL(DP), PARAMETER :: def_dist_thr = 0.0_DP,       def_init_forc_thr = 1.0d-2,   &
-                         def_final_forc_thr = 1.0d-3, def_fpara_thr = 0.5d-2,  &
+                         def_forc_thr = 1.0d-3,       def_fpara_thr = 0.5d-2,  &
                          def_eigval_thr = -0.01_DP,   def_frelax_ene_thr  = -0.01_DP,    &
                          def_push_step_size = 0.3,    def_eigen_step_size = 0.2,    &
                          def_dlanc = 1.D-2
@@ -112,7 +112,7 @@ MODULE artn_params
   CHARACTER(LEN=3), ALLOCATABLE :: elements(:)
   !
   NAMELIST/artn_parameters/ lrestart, lrelax, lpush_final, ninit, neigen, lanc_mat_size, nsmooth, push_mode, dist_thr,  &
-       init_forc_thr,final_forc_thr, fpara_thr, eigval_thr, frelax_ene_thr, &
+       init_forc_thr,forc_thr, fpara_thr, eigval_thr, frelax_ene_thr, &
        push_step_size, dlanc, eigen_step_size, current_step_size, &
        push_ids,add_const, engine_units, zseed, struc_format_out, elements, &
        push_over
@@ -187,7 +187,7 @@ CONTAINS
       dist_thr = NAN
       !
       init_forc_thr = NAN
-      final_forc_thr = NAN
+      forc_thr = NAN
       fpara_thr = NAN
       eigval_thr = NAN ! 0.1 Ry/bohr^2 corresponds to 0.5 eV/Angs^2
       frelax_ene_thr  = NAN ! in Ry; ( etot - etot_saddle ) < frelax_ene_thr
@@ -252,7 +252,7 @@ CONTAINS
       write(*,2) "* Units:          ", trim(engine_units)
       write(*,1) "* dist_thr        = ", dist_thr
       write(*,1) "* init_forc_thr   = ", init_forc_thr
-      write(*,1) "* final_forc_thr  = ", final_forc_thr
+      write(*,1) "* forc_thr        = ", forc_thr
       write(*,1) "* fpara_thr       = ", fpara_thr
       write(*,1) "* eigval_thr      = ", eigval_thr
       write(*,1) "* frelax_ene_thr       = ", frelax_ene_thr
@@ -279,8 +279,8 @@ CONTAINS
     if( init_forc_thr == NAN )then; init_forc_thr = def_init_forc_thr
     else;                           init_forc_thr = convert_force( init_forc_thr ); endif
     !convcrit_init = 1.0d-2
-    if( final_forc_thr == NAN )then; final_forc_thr = def_final_forc_thr
-    else;                            final_forc_thr = convert_force( final_forc_thr ); endif
+    if( forc_thr == NAN )     then;  forc_thr = def_forc_thr
+    else;                            forc_thr = convert_force( forc_thr ); endif
     !convcrit_final = 1.0d-3
     if( fpara_thr == NAN )then; fpara_thr = def_fpara_thr
     else;                            fpara_thr = convert_force( fpara_thr ); endif
@@ -308,7 +308,7 @@ CONTAINS
       write(*,2) "* Units:          ", trim(engine_units)
       write(*,1) "* dist_thr        = ", dist_thr
       write(*,1) "* convcrit_init   = ", init_forc_thr
-      write(*,1) "* convcrit_final  = ", final_forc_thr
+      write(*,1) "* convcrit_final  = ", forc_thr
       write(*,1) "* fpara_convcrit  = ", fpara_thr
       write(*,1) "* eigval_thr      = ", eigval_thr
       write(*,1) "* frelax_ene_thr       = ", frelax_ene_thr
@@ -345,7 +345,7 @@ CONTAINS
     WRITE (iunartout,'(5X, "--------------------------------------------------")')
     WRITE (iunartout,'(15X,"ninit           = ", I6)') ninit
     WRITE (iunartout,'(15X,"init_forc_thr   = ", F6.3)') init_forc_thr
-    WRITE (iunartout,'(15X,"final_forc_thr  = ", F6.3)') final_forc_thr
+    WRITE (iunartout,'(15X,"forc_thr        = ", F6.3)') forc_thr
     WRITE (iunartout,'(15X,"fpara_thr       = ", F6.3)') fpara_thr
     WRITE (iunartout,'(15X,"eigval_thr      = ", F6.3)') eigval_thr
     WRITE (iunartout,'(15X,"push_step_size  = ", F6.1)') push_step_size
