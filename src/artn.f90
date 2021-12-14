@@ -21,7 +21,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
        lrelax,linit,lperp,leigen,llanczos, lrestart, lsaddle, lpush_final, lbackward, &
        istep, iperp, ieigen, iinit, ilanc, ismooth, nlanc, if_pos_ct, &
        lowest_eigval, etot_init, etot_step, etot_saddle, etot_final, de_saddle, de_back, de_fwd, &
-       ninit, neigen, lanc_mat_size, nsmooth, push_mode, dist_thr, init_forc_thr, final_forc_thr, &
+       ninit, neigen, lanc_mat_size, nsmooth, push_mode, dist_thr, init_forc_thr, forc_thr, &
        fpara_thr, eigval_thr, frelax_ene_thr, push_step_size, current_step_size, dlanc, eigen_step_size, fpush_factor, &
        push_ids, add_const, push, eigenvec, tau_step, force_step, tau_saddle, eigen_saddle, v_in, &
        VOID, INIT, PERP, EIGN, LANC, RELX, zseed, &
@@ -127,7 +127,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !
      CALL perpforce( force, if_pos, push, fperp, fpara, nat)
      CALL check_force_convergence(nat,force,if_pos,fperp,fpara, lforc_conv, lsaddle_conv)
-     write (*,*) "Debug3", fpara(:,1)
      ! 
   ENDIF
 
@@ -155,11 +154,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      ! generate initial push vector
      !=============================
      !
-<<<<<<< HEAD
-     ! CALL push_init(nat, tau, order, at, idum, push_ids, dist_thr, add_const, push_step_size, push , push_mode)
-=======
-     !CALL push_init(nat, tau, order, at, idum, push_ids, dist_thr, add_const, push_step_size, push , push_mode)
->>>>>>> 9aa3ebbb85903897ff30f299c49fd428645c26be
      !
      ! set up the flags (we did an initial push, now we need to relax perpendiculary)
      

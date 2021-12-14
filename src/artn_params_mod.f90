@@ -350,48 +350,6 @@ CONTAINS
     !
   END SUBROUTINE initialize_artn
   !
-<<<<<<< HEAD
-  SUBROUTINE write_initial_report(iunartout, filout)
-    INTEGER,             INTENT(IN) :: iunartout
-    CHARACTER (LEN=255), INTENT(IN) :: filout
-    ! -- Local Variables
-    INTEGER :: ios
-    !
-    ! Writes the header to the artn output file
-    !
-    OPEN ( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'unknown', IOSTAT = ios )
-    WRITE (iunartout,'(5X, "--------------------------------------------------")')
-    WRITE (iunartout,'(5X, "                ARTn plugin                       ")')
-    WRITE (iunartout,'(5X, "--------------------------------------------------")')
-    WRITE (iunartout,'(5X, " "                                                 )')
-    WRITE (iunartout,'(5X, "               INPUT PARAMETERS                   ")')
-    WRITE (iunartout,'(5X, "--------------------------------------------------")')
-    WRITE (iunartout,'(5x, "engine_units:", *(x,A))') TRIM(engine_units)
-    WRITE (iunartout,'(5X, "--------------------------------------------------")')
-    WRITE (iunartout,'(5X, "Push and perpendicular relax:")')
-    WRITE (iunartout,'(5X, "--------------------------------------------------")')
-    WRITE (iunartout,'(15X,"ninit           = ", I6)') ninit
-    WRITE (iunartout,'(15X,"init_forc_thr   = ", F6.3)') init_forc_thr
-    WRITE (iunartout,'(15X,"forc_thr        = ", F6.3)') forc_thr
-    WRITE (iunartout,'(15X,"fpara_thr       = ", F6.3)') fpara_thr
-    WRITE (iunartout,'(15X,"eigval_thr      = ", F6.3)') eigval_thr
-    WRITE (iunartout,'(15X,"push_step_size  = ", F6.1)') push_step_size
-    WRITE (iunartout,'(15X,"eigen_step_size = ", F6.1)') eigen_step_size
-    WRITE (iunartout,'(15X,"push_mode       = ", A6)') push_mode
-    WRITE (iunartout,'(5X, "--------------------------------------------------")')
-    WRITE (iunartout,'(5X, "Lanczos algorithm:")' )
-    WRITE (iunartout,'(5X, "--------------------------------------------------")')
-    WRITE (iunartout,'(15X, "lanc_mat_size     = ", I6)') lanc_mat_size
-    WRITE (iunartout,'(15X, "dlanc          = ", F6.3)') dlanc
-    WRITE (iunartout,'(5X, "--------------------------------------------------")')
-    WRITE (iunartout,*) " "
-    WRITE (iunartout,*) " "
-    WRITE (iunartout,'(5X,"istep",4X,"ART_step",12X,"Etot",12X," Ftot ",9X," Fperp ",8X," Fpara ",8X,"eigval")')
-    WRITE (iunartout,'(34X, "[Ry]",15X,"-----------[Ry/a.u.]----------",10X,"Ry/a.u.^2")')
-    CLOSE ( UNIT = iunartout, STATUS = 'KEEP')
-
-  END SUBROUTINE write_initial_report
-=======
 ! SUBROUTINE write_initial_report(iunartout, filout)
 !   INTEGER,             INTENT(IN) :: iunartout
 !   CHARACTER (LEN=255), INTENT(IN) :: filout
@@ -432,8 +390,7 @@ CONTAINS
 !   CLOSE ( UNIT = iunartout, STATUS = 'KEEP')
 
 ! END SUBROUTINE write_initial_report
->>>>>>> 9aa3ebbb85903897ff30f299c49fd428645c26be
-  !
+!
   SUBROUTINE write_restart(filnres,nat)
     !
     ! Subroutine that writes the minimum parameters required for restart of a calculation
