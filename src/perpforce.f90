@@ -2,7 +2,7 @@
 !> @author
 !!   Matic Poberznik,
 !!   Miha Gunde
-SUBROUTINE perpforce( force, if_pos, push, fpara, nat )
+SUBROUTINE perpforce( force, if_pos, push, fperp, fpara, nat )
   !
   !> @brief subroutine that subtracts parallel components to push from force
   !
@@ -17,8 +17,9 @@ SUBROUTINE perpforce( force, if_pos, push, fpara, nat )
   ! -- ARGUMENTS
   INTEGER,  INTENT(IN)     :: nat
   REAL(DP), INTENT(IN)     :: push(3,nat)
-  REAL(DP), INTENT(INOUT)  :: force(3,nat)
+  REAL(DP), INTENT(IN)     :: force(3,nat)
   REAL(DP), INTENT(OUT)    :: fpara(3,nat)
+  REAL(DP), INTENT(OUT)    :: fperp(3,nat)
   INTEGER,  INTENT(IN)     :: if_pos(3,nat)
   ! -- LOCAL VARIABLE
   REAL(DP) :: push_norm(3,nat)
@@ -29,10 +30,10 @@ SUBROUTINE perpforce( force, if_pos, push, fpara, nat )
   fpara(:,:) = ddot(3*nat,force(:,:),1,push(:,:),1) / ddot(3*nat,push(:,:),1,push(:,:),1) * push(:,:)
 
   ! subtract them
-  force(:,:) = force(:,:) - fpara(:,:)
+  fperp(:,:) = force(:,:) - fpara(:,:)
 
   ! apply constraints
-  IF ( ANY(if_pos(:,:) == 0)  ) force(:,:) = force(:,:)*if_pos(:,:) 
+  IF ( ANY(if_pos(:,:) == 0)  ) fperp(:,:) = fperp(:,:)*if_pos(:,:) 
 
 END SUBROUTINE perpforce
 
