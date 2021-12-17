@@ -6,9 +6,10 @@
 
 
 SUBROUTINE write_initial_report(iunartout, filout)
-  use artn_params, ONLY: engine_units, ninit, init_forc_thr, final_forc_thr,  &
-                         fpara_thr, eigval_thr, push_step_size, eigen_step_size, &
-                         push_mode, lanc_mat_size, lanc_mat_size, dlanc
+  use artn_params, ONLY: engine_units, ninit, nperp, neigen, nsmooth,  &
+                         init_forc_thr, final_forc_thr, fpara_thr, eigval_thr, &
+                         push_step_size, eigen_step_size, lanc_mat_size, dlanc, &
+                         push_mode
   use units, only : strg_units
   INTEGER,             INTENT(IN) :: iunartout
   CHARACTER (LEN=255), INTENT(IN) :: filout
@@ -29,6 +30,10 @@ SUBROUTINE write_initial_report(iunartout, filout)
   WRITE (iunartout,'(5X, "Push and perpendicular relax:")')
   WRITE (iunartout,'(5X, "--------------------------------------------------")')
   WRITE (iunartout,'(15X,"ninit           = ", I6)') ninit
+  WRITE (iunartout,'(15X,"nperp           = ", I6)') nperp
+  WRITE (iunartout,'(15X,"neigen          = ", I6)') neigen
+  WRITE (iunartout,'(15X,"nsmooth         = ", I6)') nsmooth
+  WRITE (iunartout,'(15X,"Threshold Parameter: ")')
   WRITE (iunartout,'(15X,"init_forc_thr   = ", F6.3)') init_forc_thr
   WRITE (iunartout,'(15X,"final_forc_thr  = ", F6.3)') final_forc_thr
   WRITE (iunartout,'(15X,"fpara_thr       = ", F6.3)') fpara_thr

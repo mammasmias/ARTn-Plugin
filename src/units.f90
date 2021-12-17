@@ -79,7 +79,7 @@ module units
 
     logical :: verbose
     verbose = .true.
-    verbose = .false.
+    !verbose = .false.
 
 
     ! ...Extract the Keyword from the engine_units
@@ -219,6 +219,7 @@ module units
       write(*,1) " * ARTn::UNITS::L2au::", L2au, "au2L", au2L
       write(*,1) " * ARTn::UNITS::T2au::", T2au, "au2T", au2T
       write(*,1) " * ARTn::UNITS::F2au::", F2au, "au2F", au2F
+      write(*,1) " * ARTn::UNITS::H2au::", F2au/L2au, "au2F", au2F/au2L
       1 format(*(x,a,x,g15.5))
     endif
 

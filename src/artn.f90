@@ -203,7 +203,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      ! If the force_perp component are small we continue
      ! to push
      !
-     IF( ((MAXVAL( ABS(force) )) < init_forc_thr).OR.(iperp >= nperp) )THEN  ! Here force = force_perp
+     !IF( ((MAXVAL( ABS(force) )) < init_forc_thr).OR.(iperp >= nperp) )THEN  ! Here force = force_perp
+     IF( ((MAXVAL( ABS(force) )) < init_forc_thr) )THEN  ! Here force = force_perp
         !
         ! we reached convergence in the perpendicular direction, go to pushing
         !
