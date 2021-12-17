@@ -59,7 +59,7 @@ END SUBROUTINE write_initial_report
 
 
 
-SUBROUTINE write_report( etot, force, lowest_eigval, disp, if_pos, istep, nat, iunartout )
+SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat, iunartout )
   !
   !> @brief
   !!   a subroutine that writes a report of the current step to the output file  
@@ -80,25 +80,23 @@ SUBROUTINE write_report( etot, force, lowest_eigval, disp, if_pos, istep, nat, i
   ! -- Arguments
   INTEGER,  INTENT(IN) :: nat, istep, iunartout
   INTEGER,  INTENT(IN) :: if_pos(3,nat)
-  REAL(DP), INTENT(IN) :: force(3,nat), etot, lowest_eigval
+  REAL(DP), INTENT(IN) :: force(3,nat), fpara(3,nat), fperp(3,nat), etot, lowest_eigval
   INTEGER,  INTENT(IN) :: disp
 
   ! -- Local Variables
   CHARACTER(LEN=5) :: Mstep
   integer :: macrostep = -1, evalf, i, npart
-  REAL(DP) :: fpara(3,nat), fperp(3,nat)
   REAL(DP) :: force_tot, fperp_tot, fpara_tot, detot, lowEig, dr, rc2
   REAL(DP), EXTERNAL :: ddot
   !
 
 
-  CALL perpforce(force,if_pos,push,fperp,fpara,nat)
-
   ! ...Force processing
   CALL sum_force( force, nat, force_tot )
-  CALL perpforce(force,if_pos,push,fperp,fpara,nat)
+  ! 
   CALL sum_force(fperp,nat,fperp_tot)
-  fpara_tot = ddot(3*nat,force,1,push,1)
+  CALL sum_force(fpara,nat,fpara_tot)
+  !fpara_tot = ddot(3*nat,force,1,push,1)
   ! ...Displacement processing
   npart = 0
   rc2 = 0.1*0.1
@@ -106,12 +104,13 @@ SUBROUTINE write_report( etot, force, lowest_eigval, disp, if_pos, istep, nat, i
     if( norm2(delr(:,i)) > rc2 ) npart = npart + 1
  enddo
  call sum_force( delr, nat, dr )
+ ! .. Conversion Units
+ force_tot = unconvert_force( force_tot )
+ fperp_tot = unconvert_force( fperp_tot )
+ fpara_tot = unconvert_force( fpara_tot )
 
-  ! .. Convertion Units
-  fperp_tot = unconvert_force( fperp_tot )
-  fpara_tot = unconvert_force( fpara_tot )
-  dEtot = unconvert_energy(etot - etot_init)
-  lowEig = unconvert_hessian( lowest_eigval )
+ dEtot = unconvert_energy(etot - etot_init)
+ lowEig = unconvert_hessian( lowest_eigval )
   !lowEig = lowest_eigval
 
   !  write report 

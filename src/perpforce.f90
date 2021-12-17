@@ -25,7 +25,6 @@ SUBROUTINE perpforce( force, if_pos, push, fperp, fpara, nat )
   REAL(DP) :: push_norm(3,nat)
   REAL(DP), EXTERNAL :: ddot,dnrm2
   INTEGER  :: na
-
   ! calculate components parallel to the push
   fpara(:,:) = ddot(3*nat,force(:,:),1,push(:,:),1) / ddot(3*nat,push(:,:),1,push(:,:),1) * push(:,:)
 

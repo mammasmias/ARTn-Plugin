@@ -38,9 +38,10 @@ SUBROUTINE artn_QE( force, etot, epsf_qe, nat, ityp, atm, tau, at, alat, istep, 
   CHARACTER(LEN=255), INTENT(IN) :: prefix_qe           !> prefix for scratch files of engine 
   LOGICAL,            INTENT(OUT) :: lconv              !> flag for controlling convergence 
   !  
-  real(dp)                  :: box(3,3)
-  real(dp)                  :: pos(3,nat)
-  real(dp)                  :: etot_fire, dt_curr, alpha
+  REAL(DP)                  :: box(3,3)
+  REAL(DP)                  :: pos(3,nat)
+  REAL(DP)                  :: etot_fire, dt_curr, alpha
+  REAL(DP)                  :: displ_vec(3,nat)
   INTEGER                   :: nsteppos, order(nat)
 
   LOGICAL                   :: file_exists
@@ -50,11 +51,12 @@ SUBROUTINE artn_QE( force, etot, epsf_qe, nat, ityp, atm, tau, at, alat, istep, 
 
   !------------------------------------------------------------------------------------------------------------
   interface
-    SUBROUTINE artn( force, etot, nat, ityp, atm, tau, order, at, if_pos, disp, lconv )
+    SUBROUTINE artn( force, etot, nat, ityp, atm, tau, order, at, if_pos, disp, displ_vec, lconv )
       USE units, ONLY: DP
       IMPLICIT NONE
       REAL(DP), INTENT(INOUT) :: force(3,nat)     ! force calculated by the engine
       REAL(DP), INTENT(INOUT) :: tau(3,nat)       ! atomic positions (needed for output only)
+      REAL(DP), INTENT(OUT) :: displ_vec(3,nat)   ! displacement vector communicated to move mode
       REAL(DP), INTENT(IN) ::    etot             ! total energy in current step
       REAL(DP), INTENT(IN) ::    at(3,3)          ! lattice parameters in alat units 
       INTEGER,  INTENT(IN), value ::    nat       ! number of atoms
@@ -65,13 +67,14 @@ SUBROUTINE artn_QE( force, etot, epsf_qe, nat, ityp, atm, tau, at, alat, istep, 
       INTEGER,          INTENT(OUT) :: disp
       LOGICAL,          INTENT(OUT) :: lconv  
     END SUBROUTINE artn
-    SUBROUTINE move_mode(nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_init, dt_init, disp )
+    SUBROUTINE move_mode(nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_init, dt_init, disp, displ_vec )
       use units, only : DP
       USE artn_params, ONLY: iperp, push0 => push, push=>eigenvec, dlanc, move
       IMPLICIT NONE
       INTEGER, INTENT(IN), value                :: nat
       REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: force
       REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: vel
+      REAL(DP), DIMENSION(3,nat), INTENT(IN)    :: displ_vec 
       REAL(DP), INTENT(IN)                      :: alpha_init, dt_init
       REAL(DP), INTENT(INOUT)                   :: etot, alpha, dt_curr
       INTEGER,  INTENT(INOUT)                   :: nsteppos
@@ -101,7 +104,7 @@ SUBROUTINE artn_QE( force, etot, epsf_qe, nat, ityp, atm, tau, at, alat, istep, 
 
 
   ! ...Launch ARTn
-  call artn( force, etot, nat, ityp, atm, pos, order, box, if_pos, disp, lconv )
+  call artn( force, etot, nat, ityp, atm, pos, order, box, if_pos, disp, displ_vec, lconv )
 
 
   ! ...Compare the Threshold
@@ -132,7 +135,7 @@ SUBROUTINE artn_QE( force, etot, epsf_qe, nat, ityp, atm, tau, at, alat, istep, 
   !print*, " * ARTn_QE::PRE_MOVEMODE "
 
   ! ...Convert the dR given by ARTn to forces
-  call move_mode( nat, force, vel, etot_fire, nsteppos, dt_curr, alpha, fire_alpha_init, dt_init, disp )
+  call move_mode( nat, force, vel, etot_fire, nsteppos, dt_curr, alpha, fire_alpha_init, dt_init, disp, displ_vec )
 
 
   !

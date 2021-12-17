@@ -5,7 +5,7 @@
 !!  Nicolas Salles
 
 
-SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_init, dt_init, disp )
+SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_init, dt_init, disp, displ_vec )
   !
   !> @breif
   !!   translate specified move to appropriate force and set FIRE parameters accordingly  
@@ -29,6 +29,7 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
   ! -- Arguments
   INTEGER, INTENT(IN), value                       :: nat
 
+  REAL(DP), DIMENSION(3,nat), INTENT(IN)    :: displ_vec
   REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: force
   REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: vel
 
@@ -49,7 +50,7 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
 
 
   ! .. Convert the force & time
-  force = convert_force( force )
+  force = convert_force( displ_vec )
   dt = convert_time( dt_curr )
   dt0 = convert_time( dt_init )   !%! Finally we don't touch dt_init
 
@@ -65,7 +66,7 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
      dt = dt0
      nsteppos = 0
      !force(:,:) = push0(:,:)*amu_ry/dt_curr**2
-     force(:,:) = push0(:,:)*amu_ry/dt**2
+     force(:,:) = force(:,:)*amu_ry/dt**2
 
      !do i = 1,nat
      !print*, MOVE(disp), force(:,i)
