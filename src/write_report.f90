@@ -35,7 +35,7 @@ SUBROUTINE write_initial_report(iunartout, filout)
   WRITE (iunartout,'(15X,"nsmooth         = ", I6)') nsmooth
   WRITE (iunartout,'(15X,"Threshold Parameter: ")')
   WRITE (iunartout,'(15X,"init_forc_thr   = ", F6.3)') init_forc_thr
-  WRITE (iunartout,'(15X,"final_forc_thr  = ", F6.3)') final_forc_thr
+  WRITE (iunartout,'(15X,"forc_thr        = ", F6.3)') forc_thr
   WRITE (iunartout,'(15X,"fpara_thr       = ", F6.3)') fpara_thr
   WRITE (iunartout,'(15X,"eigval_thr      = ", F6.3)') eigval_thr
   WRITE (iunartout,'(15X,"push_step_size  = ", F6.1)') push_step_size
@@ -96,13 +96,14 @@ SUBROUTINE write_report( etot, force, lowest_eigval, disp, if_pos, istep, nat, i
   REAL(DP), EXTERNAL :: ddot
   !
 
+
+  CALL perpforce(force,if_pos,push,fperp,fpara,nat)
+
   ! ...Force processing
   CALL sum_force( force, nat, force_tot )
-  fperp(:,:) = force(:,:)
-  CALL perpforce(fperp,if_pos,push,fpara,nat)
+  CALL perpforce(force,if_pos,push,fperp,fpara,nat)
   CALL sum_force(fperp,nat,fperp_tot)
   fpara_tot = ddot(3*nat,force,1,push,1)
-
   ! ...Displacement processing
   npart = 0
   rc2 = 0.1*0.1
