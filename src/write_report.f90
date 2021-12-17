@@ -7,7 +7,7 @@
 
 SUBROUTINE write_initial_report(iunartout, filout)
   use artn_params, ONLY: engine_units, ninit, nperp, neigen, nsmooth,  &
-                         init_forc_thr, final_forc_thr, fpara_thr, eigval_thr, &
+                         init_forc_thr, forc_thr, fpara_thr, eigval_thr, &
                          push_step_size, eigen_step_size, lanc_mat_size, dlanc, &
                          push_mode
   use units, only : strg_units
