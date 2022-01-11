@@ -98,7 +98,7 @@ MODULE artn_params
   REAL(DP) :: fpush_factor          !> factor for the final push 
   REAL(DP), target :: dlanc         !> step size in the lanczos algorithm 
   REAL(DP) :: push_over             !> EigenVec fraction Push_over the saddle point for the relax
-  ! Default Values
+  ! Default Values (in Ry, au)
   REAL(DP), PARAMETER :: NAN = HUGE( dlanc )  !! Biggest number in DP representation
   REAL(DP), PARAMETER :: def_dist_thr = 0.0_DP,       def_init_forc_thr = 1.0d-2,   &
                          def_forc_thr = 1.0d-3,       def_fpara_thr = 0.5d-2,  &

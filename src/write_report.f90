@@ -51,7 +51,7 @@ SUBROUTINE write_initial_report(iunartout, filout)
   !WRITE (iunartout,*) " "
   !%! Condition on the engin_units..
   WRITE (iunartout,'(5X,"istep",4X,"ART_step",4X,"Etot",5x,"init/eig/ip/il","&
-                    "3X," Ftot ",5X," Fperp ",5X," Fpara ",3X,"eigval", 6X, "delr", 2X, "npart", X,"evalf")')
+                    "3X," Ftot ",5X," Fperp ",4X," Fpara ",4X,"eigval", 6X, "delr", 2X, "npart", X,"evalf")')
   !WRITE (iunartout,'(27X, "[Ry]",17X,"-----------[Ry/a.u.]----------",3X,"Ry/a.u.^2")')
   WRITE (iunartout, strg_units )
 

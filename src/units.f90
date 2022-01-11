@@ -52,7 +52,8 @@ module units
 
   !> Units Character
   character(*), parameter :: AA = char(197) ! Angstrom (ANSI code)
-  character(*), parameter :: to2 = char(178)  ! exponent 2
+  !character(*), parameter :: to2 = char(178)  ! exponent 2
+  character(*), parameter :: to2 = "**2"  ! exponent 2
 
   character(:), allocatable :: cL, cE
 
@@ -167,8 +168,8 @@ module units
             au2H = 1.0_DP / H2au
 
             cE = "eV"
-            cL = AA
-            !strg_units = '(27X, "[eV]",17X,"-----------[eV/'//AA//']----------",3X,"eV/'//AA//'^2")'
+            !cL = AA
+            cL = "Ang"
 
           !case( 'real' )
             !! Energy: Kcal/mol
@@ -209,8 +210,8 @@ module units
 
 
     ! ...Define the output units string
-    strg_units = '(27X, "['//cE//']",21X,"-----------['//cE//'/'//   &
-                  cL//']-----------",6X,"'//cE//'/'//cL//to2//'")'
+    strg_units = '(27X, "['//cE//']",20X,"-----------['//cE//'/'//   &
+                  cL//']-----------",2X,"['//cE//'/'//cL//to2//']   ['//cL//']")'
 
 
     if( verbose )then
