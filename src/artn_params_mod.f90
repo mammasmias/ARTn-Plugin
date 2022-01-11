@@ -25,10 +25,11 @@ MODULE artn_params
   CHARACTER(LEN=4) :: MOVE(6)
   PARAMETER( MOVE = [ 'void', 'init', 'perp', 'eign', 'lanc', 'relx' ])
   ! control flags
-  LOGICAL :: linit !> initial push
+  LOGICAL :: linit      !> initial push
   LOGICAL :: lperp      !> perpendicular relax
   LOGICAL :: leigen     !> push with lanczos eigenvector
   LOGICAL :: llanczos   !> lanczos algorithm
+  LOGICAL :: lbasin     !> true while in basin 
   LOGICAL :: lsaddle    !> saddle point obtained
   LOGICAL :: lbackward  !> backward saddle point obtained
   ! counters
@@ -160,6 +161,7 @@ CONTAINS
       !
       lrelax = .false.
       linit = .true.
+      lbasin = .true.
       lperp = .false.
       llanczos = .false.
       leigen = .false.

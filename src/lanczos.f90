@@ -4,7 +4,7 @@
 !!  Miha Gunde
 
 
-SUBROUTINE lanczos( nat, force,  v_in, dlanc, nlanc, ilanc, lowest_eigval, lowest_eigvec, pushdir)
+SUBROUTINE lanczos( nat, force, displ_vec,  v_in, dlanc, nlanc, ilanc, lowest_eigval, lowest_eigvec, pushdir)
   USE artn_params,            ONLY: DP, Vmat, H, force_old
   !
   !> @brief
@@ -36,6 +36,7 @@ SUBROUTINE lanczos( nat, force,  v_in, dlanc, nlanc, ilanc, lowest_eigval, lowes
   REAL(DP),                   INTENT(INOUT) :: lowest_eigval
   INTEGER,                    INTENT(INOUT) :: nlanc
   INTEGER,                    INTENT(INOUT) :: ilanc
+  REAL(DP), DIMENSION(3,nat), INTENT(OUT) :: displ_vec
   ! -- LOCAL VARIABLES
   INTEGER :: i, j, io, id_min
   REAL(DP), PARAMETER :: eigval_thr = 1.0D-2
@@ -156,8 +157,9 @@ SUBROUTINE lanczos( nat, force,  v_in, dlanc, nlanc, ilanc, lowest_eigval, lowes
            id_min = i
         ENDIF
      ENDDO
+     !write (*,*) "Debug eigval", lowest_eigval
      !
-     ! generate eigenvector in ral space, corresponding to lowest eigenvalue
+     ! generate eigenvector in real space, corresponding to lowest eigenvalue
      !
      ! Hstep now stores eigvecs of H
      ! eigvecs in coordinate space are computed as matmul(V, lowest_eigvec_H )
@@ -185,6 +187,7 @@ SUBROUTINE lanczos( nat, force,  v_in, dlanc, nlanc, ilanc, lowest_eigval, lowes
      ! check if the obtained eigenvec points in the same direction as the pushing direction
      !
      dir = ddot(3*nat,lowest_eigvec,1, pushdir, 1)
+     write (*,*) "Debug dir:", dir
      IF ( dir < 0.D0 ) THEN
         lowest_eigvec(:,:) = -1.D0*lowest_eigvec(:,:)
      ENDIF
@@ -194,7 +197,7 @@ SUBROUTINE lanczos( nat, force,  v_in, dlanc, nlanc, ilanc, lowest_eigval, lowes
      ! Check for the convergence of the lanczos eigenvalue
      !
      eigval_diff = (lowest_eigval - lowest_eigval_old)/lowest_eigval_old
-     ! write(785,*) ilanc, lowest_eigval_old, lowest_eigval, abs(eigval_diff)
+     !write (*,*) "Debug eigval:", ilanc, lowest_eigval_old, lowest_eigval, abs(eigval_diff)
      !
      IF ( ABS(eigval_diff) <= eigval_thr ) THEN
         ! write(*,*) 'converged! in:',ilanc
@@ -202,7 +205,7 @@ SUBROUTINE lanczos( nat, force,  v_in, dlanc, nlanc, ilanc, lowest_eigval, lowes
         !
         ! lanczos has converged
         ! set max number of iternations to current iteration
-        !
+        
         nlanc = ilanc
         !
      ENDIF
@@ -265,7 +268,7 @@ SUBROUTINE lanczos( nat, force,  v_in, dlanc, nlanc, ilanc, lowest_eigval, lowes
   !
   ! overwrite force with desired move vector
   !
-  force(:,:) = v1(:,:)
+  displ_vec(:,:) = v1(:,:)
 
   DEALLOCATE( q, v1 )
 

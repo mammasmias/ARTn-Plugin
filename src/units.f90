@@ -135,6 +135,9 @@ module units
         !! Force: Ry/au
         F2au = 1. !/ au2E / L2au
         au2F = 1. !/ F2au
+        !! Hessian
+        H2au = 1.0_DP 
+        au2H = 1.0_DP 
 
         cE = "Ry"
         cL = "a.u." ! "bohr"
