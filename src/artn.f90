@@ -174,41 +174,34 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !   - check_force_convergence() 
      !   - here
      !.............................
-     !
-     ! set up the flags (we did an initial push, now we need to relax perpendiculary)
-     !linit = .false.
-     !lperp = .true.
-     ! the push counter (controls if we should call lanczos or keep pushing)
+     
+
+     ! ...The push counter (controls if we should call lanczos or keep pushing)
      IF (iinit == 1) THEN
         CALL write_struct( at, nat, tau, order, elements, ityp, push, 1.0_DP, iunstruct, struc_format_out, initpfname )
      ENDIF
-     ! 
-     !iperp = 0
-     !
-     ! modify the force to be equal to the push
-     !
-     !disp = INIT
-     !displ_vec = push
      
-     ! start lanczos when number of init steps is reached
+     
+     ! ...Start lanczos when number of init steps is reached
      IF ( iinit >= ninit ) THEN
 
         llanczos = .true.
         linit = .false.
         lperp = .false.
 
-     ELSE 
 
-        ! ...Init Push
+     ELSE  ! ...Init Push
+
         iinit = iinit + 1
         disp = INIT
 
+        ! ...modify the force to be equal to the push
         displ_vec = push
 
         CALL write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat, iunartout )
 
 
-        ! set up the flags (we did an initial push, now we need to relax perpendiculary)
+        ! ...set up the flags (we did an initial push, now we need to relax perpendiculary)
         linit = .false.
         lperp = .true.
         iperp = 0
@@ -220,6 +213,11 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !===============================================
      ! Relax forces perpendicular to eigenvector/push
      !===============================================
+     ! lperp is touched by: 
+     !   - initialize_artn(), 
+     !   - check_force_convergence() 
+     !   - here
+     !.............................
      !
      ! If eigenvalue is good, overwrite push with eigenvec (NS: Why?!)
      !
@@ -288,6 +286,9 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      CALL write_report(etot,force, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat,  iunartout)
       
   END IF
+
+
+
   !
   ! check for convergence of total forces (only after eigevec was obtained)
   !
@@ -351,6 +352,9 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         lconv = .true.
      ENDIF
   ENDIF
+
+
+
   !
   ! perform a FIRE relaxation (only for reaching adjacent minima)
   !
@@ -381,33 +385,18 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            etot_final = etot
            de_back = etot_saddle - etot_final
 
-           print*, "PUSH_FACTOR", fpush_factor
-           !call write_inter_report( iunartout, int(fpush_factor), [de_back] )
-           call write_inter_report( iunartout, 1, [de_back] )
+           call write_inter_report( iunartout, int(fpush_factor), [de_back] )
 
            ! reverse direction of push
            fpush_factor = -1.0
 
-           !WRITE (iunartout,'(5X, "--------------------------------------------------")')
-           !WRITE (iunartout,'(5X, "    *** ARTn found adjacent minimum ***   ")')
-           !WRITE (iunartout,'(5X, "--------------------------------------------------")')
-           !WRITE (iunartout,'(15X,"backward E_act =", F12.5," eV")') unconvert_energy(de_back) !*RY2EV
-           !WRITE (iunartout,'(5X, "--------------------------------------------------")')
         ELSE
+
            lconv = .true.
            de_fwd = etot_saddle - etot
-           print*, "PUSH_FACTOR", fpush_factor
-           !call write_inter_report( iunartout, int(fpush_factor), [de_back, de_fwd, etot_init, etot_final, etot] )
-           call write_inter_report( iunartout, -1, [de_back, de_fwd, etot_init, etot_final, etot] )
 
-           !WRITE (iunartout,'(5X, "--------------------------------------------------")')
-           !WRITE (iunartout,'(5X, "    *** ARTn converged to initial minimum ***   ")')
-           !WRITE (iunartout,'(5X, "--------------------------------------------------")')
-           !WRITE (iunartout,'(15X,"forward  E_act =", F12.5," eV")') unconvert_energy(de_fwd) !*RY2EV
-           !WRITE (iunartout,'(15X,"backward E_act =", F12.5," eV")') unconvert_energy(de_back) !*RY2EV
-           !WRITE (iunartout,'(15X,"reaction dE    =", F12.5," eV")') unconvert_energy((etot-etot_final)) ! *RY2EV
-           !WRITE (iunartout,'(15X,"dEinit - dEfinal    =", F12.5," eV")') unconvert_energy((etot_init-etot)) ! *RY2EV
-           !WRITE (iunartout,'(5X, "--------------------------------------------------")')
+           call write_inter_report( iunartout, int(fpush_factor), [de_back, de_fwd, etot_init, etot_final, etot] )
+
         END IF
         !
      END IF

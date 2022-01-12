@@ -44,7 +44,7 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         ! 
         IF ( MAXVAL(ABS(fpara)) <= fpara_thr ) THEN
            fperp_thr = forc_thr
-           nperp = 0    !
+           nperp = 0    ! Remove the Perp-Relax Iteration constrain
         ELSE
            fperp_thr = init_forc_thr
         ENDIF
