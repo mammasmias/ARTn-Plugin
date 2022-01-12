@@ -288,8 +288,8 @@ CONTAINS
       write(*,1) "* eigen_step_size = ", eigen_step_size
       write(*,1) "* dlanc           = ", dlanc
       write(*,2) repeat("*",50)
-      !1 format(x,a,x,g15.5)
-      !2 format(*(x,a))
+      1 format(x,a,x,g15.5)
+      2 format(*(x,a))
     endif
 
     !#! NEW VERSION
@@ -334,66 +334,23 @@ CONTAINS
       write(*,2) repeat("*",50)
       write(*,2) "* Units:          ", trim(engine_units)
       write(*,1) "* dist_thr        = ", dist_thr
-      write(*,1) "* convcrit_init   = ", init_forc_thr
-      write(*,1) "* convcrit_final  = ", forc_thr
-      write(*,1) "* fpara_convcrit  = ", fpara_thr
+      write(*,1) "* init_forc_thr   = ", init_forc_thr
+      write(*,1) "* forc_thr        = ", forc_thr
+      write(*,1) "* fpara_thr       = ", fpara_thr
       write(*,1) "* eigval_thr      = ", eigval_thr
-      write(*,1) "* frelax_ene_thr  = ", frelax_ene_thr
+      write(*,1) "* frelax_ene_thr       = ", frelax_ene_thr
       !
       write(*,1) "* push_step_size  = ", push_step_size
       write(*,1) "* eigen_step_size = ", eigen_step_size
       write(*,1) "* dlanc           = ", dlanc
-      write(*,1) "* nlanc           = ", nlanc
       write(*,2) repeat("*",50)
-      1 format(x,a,x,g15.5)
-      3 format(x,a,x,i0)
-      2 format(*(x,a))
+      !1 format(x,a,x,g15.5)
+      !2 format(*(x,a))
     endif
 
     !
   END SUBROUTINE initialize_artn
   !
-! SUBROUTINE write_initial_report(iunartout, filout)
-!   INTEGER,             INTENT(IN) :: iunartout
-!   CHARACTER (LEN=255), INTENT(IN) :: filout
-!   ! -- Local Variables
-!   INTEGER :: ios
-!   !
-!   ! Writes the header to the artn output file
-!   !
-!   OPEN ( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'unknown', IOSTAT = ios )
-!   WRITE (iunartout,'(5X, "--------------------------------------------------")')
-!   WRITE (iunartout,'(5X, "                ARTn plugin                       ")')
-!   WRITE (iunartout,'(5X, "--------------------------------------------------")')
-!   WRITE (iunartout,'(5X, " "                                                 )')
-!   WRITE (iunartout,'(5X, "               INPUT PARAMETERS                   ")')
-!   WRITE (iunartout,'(5X, "--------------------------------------------------")')
-!   WRITE (iunartout,'(5x, "engine_units:", *(x,A))') TRIM(engine_units)
-!   WRITE (iunartout,'(5X, "--------------------------------------------------")')
-!   WRITE (iunartout,'(5X, "Push and perpendicular relax:")')
-!   WRITE (iunartout,'(5X, "--------------------------------------------------")')
-!   WRITE (iunartout,'(15X,"ninit           = ", I6)') ninit
-!   WRITE (iunartout,'(15X,"init_forc_thr   = ", F6.3)') init_forc_thr
-!   WRITE (iunartout,'(15X,"final_forc_thr  = ", F6.3)') final_forc_thr
-!   WRITE (iunartout,'(15X,"fpara_thr       = ", F6.3)') fpara_thr
-!   WRITE (iunartout,'(15X,"eigval_thr      = ", F6.3)') eigval_thr
-!   WRITE (iunartout,'(15X,"push_step_size  = ", F6.1)') push_step_size
-!   WRITE (iunartout,'(15X,"eigen_step_size = ", F6.1)') eigen_step_size
-!   WRITE (iunartout,'(15X,"push_mode       = ", A6)') push_mode
-!   WRITE (iunartout,'(5X, "--------------------------------------------------")')
-!   WRITE (iunartout,'(5X, "Lanczos algorithm:")' )
-!   WRITE (iunartout,'(5X, "--------------------------------------------------")')
-!   WRITE (iunartout,'(15X, "lanc_mat_size     = ", I6)') lanc_mat_size
-!   WRITE (iunartout,'(15X, "dlanc          = ", F6.3)') dlanc
-!   WRITE (iunartout,'(5X, "--------------------------------------------------")')
-!   WRITE (iunartout,*) " "
-!   WRITE (iunartout,*) " "
-!   WRITE (iunartout,'(5X,"istep",4X,"ART_step",12X,"Etot",12X," Ftot ",9X," Fperp ",8X," Fpara ",8X,"eigval")')
-!   WRITE (iunartout,'(34X, "[Ry]",15X,"-----------[Ry/a.u.]----------",10X,"Ry/a.u.^2")')
-!   CLOSE ( UNIT = iunartout, STATUS = 'KEEP')
-
-! END SUBROUTINE write_initial_report
-!
   SUBROUTINE write_restart(filnres,nat)
     !
     ! Subroutine that writes the minimum parameters required for restart of a calculation

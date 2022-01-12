@@ -10,7 +10,8 @@ SUBROUTINE write_initial_report(iunartout, filout)
                          init_forc_thr, forc_thr, fpara_thr, eigval_thr, &
                          push_step_size, eigen_step_size, lanc_mat_size, dlanc, &
                          push_mode
-  use units, only : strg_units
+  use units, only : strg_units, unconvert_force, &
+                    unconvert_energy, unconvert_hessian, unconvert_length
   INTEGER,             INTENT(IN) :: iunartout
   CHARACTER (LEN=255), INTENT(IN) :: filout
   ! -- Local Variables
@@ -34,24 +35,27 @@ SUBROUTINE write_initial_report(iunartout, filout)
   WRITE (iunartout,'(15X,"neigen          = ", I6)') neigen
   WRITE (iunartout,'(15X,"nsmooth         = ", I6)') nsmooth
   WRITE (iunartout,'(15X,"Threshold Parameter: ")')
-  WRITE (iunartout,'(15X,"init_forc_thr   = ", F6.3)') init_forc_thr
-  WRITE (iunartout,'(15X,"forc_thr        = ", F6.3)') forc_thr
-  WRITE (iunartout,'(15X,"fpara_thr       = ", F6.3)') fpara_thr
-  WRITE (iunartout,'(15X,"eigval_thr      = ", F6.3)') eigval_thr
-  WRITE (iunartout,'(15X,"push_step_size  = ", F6.1)') push_step_size
-  WRITE (iunartout,'(15X,"eigen_step_size = ", F6.1)') eigen_step_size
+  WRITE (iunartout,'(15X,"init_forc_thr   = ", F6.3)') unconvert_force( init_forc_thr )
+  WRITE (iunartout,'(15X,"forc_thr        = ", F6.3)') unconvert_force( forc_thr )
+  WRITE (iunartout,'(15X,"fpara_thr       = ", F6.3)') unconvert_force( fpara_thr )
+  WRITE (iunartout,'(15X,"eigval_thr      = ", F6.3)') unconvert_hessian( eigval_thr )
+  WRITE (iunartout,'(15X,"push_step_size  = ", F6.1)') unconvert_length( push_step_size )
+  WRITE (iunartout,'(15X,"eigen_step_size = ", F6.1)') unconvert_hessian( eigen_step_size )
   WRITE (iunartout,'(15X,"push_mode       = ", A6)') push_mode
   WRITE (iunartout,'(5X, "--------------------------------------------------")')
   WRITE (iunartout,'(5X, "Lanczos algorithm:")' )
   WRITE (iunartout,'(5X, "--------------------------------------------------")')
-  WRITE (iunartout,'(15X, "lanc_mat_size     = ", I6)') lanc_mat_size
-  WRITE (iunartout,'(15X, "dlanc          = ", F6.3)') dlanc
+  WRITE (iunartout,'(15X,"lanc_mat_size   = ", I6)') lanc_mat_size
+  WRITE (iunartout,'(15X,"dlanc           = ", F6.3)') unconvert_length( dlanc )
   WRITE (iunartout,'(5X, "--------------------------------------------------")')
   WRITE (iunartout,'(/,/)') 
   !WRITE (iunartout,*) " "
   !%! Condition on the engin_units..
+  !WRITE (iunartout,'(5X,"istep",4X,"ART_step",4X,"Etot",5x,"init/eig/ip/il","&
+  !                  "3X," Ftot ",5X," Fperp ",4X," Fpara ",4X,"eigval", 6X, "delr", 2X, "npart", X,"evalf")')
   WRITE (iunartout,'(5X,"istep",4X,"ART_step",4X,"Etot",5x,"init/eig/ip/il","&
-                    "3X," Ftot ",5X," Fperp ",4X," Fpara ",4X,"eigval", 6X, "delr", 2X, "npart", X,"evalf")')
+                    "3X," Ftot ",5X," Fperp ",4X," Fpara ",4X,"eigval", 6X, "delr", 2X, "npart", X,"evalf","&
+                    "2X,"B/S/R|I/P/L/E|P/B/R")')
   !WRITE (iunartout,'(27X, "[Ry]",17X,"-----------[Ry/a.u.]----------",3X,"Ry/a.u.^2")')
   WRITE (iunartout, strg_units )
 
@@ -78,7 +82,8 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
   !> @param [in]  iunartout	Channel of output
   !
   USE artn_params, ONLY: push, MOVE  &
-                        ,etot_init, iinit, iperp, ieigen, ilanc, delr
+                        ,etot_init, iinit, iperp, ieigen, ilanc, delr &
+                        ,lrelax, linit, lbasin, lperp, llanczos, leigen, lsaddle, lpush_final, lbackward, lrestart 
   USE UNITS
   IMPLICIT NONE
 
@@ -129,19 +134,68 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
   !if( .not.lbasin ) Mstep = 'Sstep'
   !delr = sum()
   evalf = istep
+  !WRITE(iunartout,5) istep, Mstep, MOVE(disp), detot, iinit, ieigen, iperp, ilanc,   &
+  !                   force_tot, fperp_tot, fpara_tot, lowEig,     &
+  !                   dr, npart, evalf !, a1
+  !5 format(5x,i4,3x,a,x,a,F10.4,3x,4(x,i2),5(x,f10.4),2(x,i4))
   WRITE(iunartout,5) istep, Mstep, MOVE(disp), detot, iinit, ieigen, iperp, ilanc,   &
                      force_tot, fperp_tot, fpara_tot, lowEig,     &
-                     dr, npart, evalf !, a1
-  !5 format(5x,i4,3x,a,x,a,F10.4,3x,4(x,i2),4(x,f10.4))
-  5 format(5x,i4,3x,a,x,a,F10.4,3x,4(x,i2),5(x,f10.4),2(x,i4))
+                     dr, npart, evalf,   &
+      lbasin, lsaddle, lrelax, linit, lperp, llanczos, leigen,  lpush_final, lbackward, lrestart !, a1
+  5 format(5x,i4,3x,a,x,a,F10.4,3x,4(x,i2),5(x,f10.4),2(x,i4),3X,*(L2))
 
 END SUBROUTINE write_report
 
 
+SUBROUTINE write_inter_report( u, pushfactor, de )
+  use units, only : DP, unconvert_energy
+  implicit none
+
+  integer, intent( in ) :: u             !> Ouput Unit 
+  integer, intent( in ) :: pushfactor
+  real(DP), intent( in ) :: de(:)            !> list of energie 
+
+  !if( pushfactor == 1 )then
+  SELECT CASE( pushfactor )
+
+    CASE( 1 )
+      IF( size(de) /= 1 ) WRITE(*,*) "********* ERROR write_inter_report:: size(de)", de, " **************"
+      WRITE( u, '(5X, "--------------------------------------------------")')
+      WRITE( u, '(5X, "    *** ARTn found adjacent minimum ***   ")')
+      WRITE( u, '(5X, "--------------------------------------------------")')
+      !WRITE( u, '(15X,"backward E_act =", F12.5," eV")') unconvert_energy(de_back) !*RY2EV
+      WRITE( u, '(15X,"backward E_act =", F12.5," eV")') unconvert_energy( de(1) )
+      WRITE( u, '(5X, "--------------------------------------------------")')
+
+    !elseif( pushfactor == -1 )then
+    CASE( -1 )
+      IF( size(de) /= 5 ) WRITE(*,*) "********* ERROR write_inter_report:: size(de)", de, " **************"
+      WRITE( u,'(5X, "--------------------------------------------------")')
+      WRITE( u,'(5X, "    *** ARTn converged to initial minimum ***   ")')
+      WRITE( u,'(5X, "--------------------------------------------------")')
+      !WRITE( u,'(15X,"forward  E_act =", F12.5," eV")') unconvert_energy(de_fwd) !*RY2EV
+      !WRITE( u,'(15X,"backward E_act =", F12.5," eV")') unconvert_energy(de_back) !*RY2EV
+      !WRITE( u,'(15X,"reaction dE    =", F12.5," eV")') unconvert_energy((etot-etot_final)) ! *RY2EV
+      !WRITE( u,'(15X,"dEinit - dEfinal    =", F12.5," eV")') unconvert_energy((etot_init-etot)) ! *RY2EV
+      WRITE( u,'(15X,"forward  E_act =", F12.5," eV")') unconvert_energy(de(2)) !*RY2EV
+      WRITE( u,'(15X,"backward E_act =", F12.5," eV")') unconvert_energy(de(1)) !*RY2EV
+      WRITE( u,'(15X,"reaction dE    =", F12.5," eV")') unconvert_energy((de(5)-de(4))) ! *RY2EV
+      WRITE( u,'(15X,"dEinit - dEfinal    =", F12.5," eV")') unconvert_energy((de(3)-de(5))) ! *RY2EV
+      WRITE( u,'(5X, "--------------------------------------------------")')
+
+
+    CASE DEFAULT
+      WRITE(*,*) "********* ERROR write_inter_report:: pushfactor", pushfactor, " **************"
+      
+
+  END SELECT
+
+END SUBROUTINE write_inter_report
+
 
 
 SUBROUTINE write_end_report( iunartout, lsaddle, lpush_final, de )
-  
+ 
   use units, only : DP, unconvert_energy
   implicit none
 

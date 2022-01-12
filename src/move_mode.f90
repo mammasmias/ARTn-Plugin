@@ -20,6 +20,7 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
   !> @param [inout] dt_curr	Value of dt paramter of FIRE algorithm
   !> @param [inout] nsteppos	??
   !> @param [in]    disp	Kind of actual displacement 
+  !> @param [in]    displ_vec	Displacement field (unit lemgth/force/hessian ) 
   !
   USE artn_params, ONLY:  iperp, push0 => push, push=>eigenvec, dlanc, MOVE
   USE UNITS
@@ -62,11 +63,13 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
      etot = 1.D0
      vel(:,:) = 0.D0
      alpha = 0.0_DP
-     !dt_curr = dt_init
      dt = dt0
      nsteppos = 0
+
+     ! ...Displ_vec should be a Length
      !force(:,:) = push0(:,:)*amu_ry/dt_curr**2
-     force(:,:) = force(:,:)*amu_ry/dt**2
+     !force(:,:) = force(:,:)*amu_ry/dt**2
+     force(:,:) = displ_vec(:,:)*amu_ry/dt**2
 
      !do i = 1,nat
      !print*, MOVE(disp), force(:,i)
@@ -74,13 +77,15 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
 
   CASE( 'perp' )
      !
-     !IF( iperp .eq. 0 ) THEN
+
+     ! ...Displ_vec is fperp
+     force = displ_vec
+
      IF( iperp - 1 .eq. 0 ) THEN  !%! Because I increment iperp before to enter in move_mode
         ! for the first step forget previous velocity (prevent P < 0)
         etot = 0.D0
         vel(:,:) = 0.D0
         alpha = alpha_init
-        !dt_curr = dt_init
         dt = dt0
         nsteppos = 5
      ELSE
@@ -100,10 +105,11 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
      dt = dt0
      alpha = 0.D0
      nsteppos = 0
+
      ! the step performed should be like this now translate it into the correct force
      !force(:,:) = force(:,:)*dlanc*amu_ry/dt_curr**2
-     force(:,:) = force(:,:)*dlanc*amu_ry/dt**2
-     !force(:,:) = eigenvec(:,:)*dlanc*amu_ry/dt**2   ! Should be like that
+     !force(:,:) = force(:,:)*dlanc*amu_ry/dt**2
+     force(:,:) = displ_vec(:,:)*dlanc*amu_ry/dt**2
 
      !do i = 1,nat
      !print*, MOVE(disp), push(:,i)
@@ -119,8 +125,8 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
      dt = dt0
      nsteppos = 0
      !force(:,:) = force(:,:)*amu_ry/dt_curr**2
-     force(:,:) = force(:,:)*amu_ry/dt**2
-     !force(:,:) = eigenvec(:,:)*amu_ry/dt**2   ! Should be like that
+     !force(:,:) = force(:,:)*amu_ry/dt**2
+     force(:,:) = displ_vec(:,:)*amu_ry/dt**2
      !
 
   CASE( 'relx' )

@@ -1,6 +1,15 @@
-SUBROUTINE check_force_convergence(nat,force, if_pos, fperp, fpara, lforc_conv, lsaddle_conv) 
+SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv, lsaddle_conv) 
   !
-  ! A subroutine that checks the force convergence of a particular step in the artn algorithm 
+  !> @breif 
+  !!   A subroutine that checks the force convergence of a particular step in the artn algorithm 
+  !
+  !> @param [in]   nat             Size of list: number of atoms
+  !> @param [in]   force           Force field
+  !> @param [in]   if_pos          List of atom move or not
+  !> @param [in]   fperp           Perpendicular Force Field
+  !> @param [in]   fpara           Parallel Force Field
+  !> @param [out]  lforc_conv      Force Convergence Flag
+  !> @param [out]  lsaddke_conv    Saddle-point Convergence Flag
   !
   USE units
   USE artn_params, ONLY : linit, lbasin, leigen, llanczos, lperp, lrelax, init_forc_thr, forc_thr, fpara_thr, push
@@ -42,12 +51,17 @@ SUBROUTINE check_force_convergence(nat,force, if_pos, fperp, fpara, lforc_conv, 
            llanczos = .true.
            leigen = .false. 
         ENDIF
+
      ELSE
+
         fperp_thr = init_forc_thr 
+
+        ! ...Do INIT until fperp is > fperp_thr
         IF ((MAXVAL( ABS(fperp))) < fperp_thr  ) THEN
            lperp = .false.
            linit = .true.
         ENDIF
+
      ENDIF
      ! 
   ELSE IF ( lrelax ) THEN  

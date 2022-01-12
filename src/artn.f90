@@ -92,13 +92,14 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   !
   ! set initial random seed
   IF( zseed .ne. 0 ) idum = zseed
+
   ! ...Store & convert original force in a.u.
   IF( istep == 0 ) THEN
      ! read the input parameters
      CALL initialize_artn( nat, iunartin, filin )
      ! 
      CALL push_init(nat, tau, order, at, idum, push_ids, dist_thr, add_const, push_step_size, push , push_mode)
-     ! generate first lanczos eigenvector
+     ! generate first lanczos eigenvector (NS: Maybe put in push_init)
      DO i = 1, nat
         eigenvec(:,i) = (/0.5_DP - ran3(idum),0.5_DP - ran3(idum),0.5_DP - ran3(idum)/) * if_pos(:,i)
         !if( ANY(ABS(add_const(:,i)) > 0.D0) )print*, "PUSH_INIT2:", i, order(i), push(:,i)
@@ -109,30 +110,39 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      ! check if a restart was requested
      !
      IF ( lrestart ) THEN
+
+        ! ...Signal that it is a restart
         OPEN ( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'old', POSITION = 'append', IOSTAT = ios )
         WRITE (iunartout, *) "Restarted previous ARTn calculation"
         CLOSE ( UNIT = iunartout, STATUS = 'KEEP')
-        CALL read_restart(restartfname,nat)
+
+        ! ...Read the FLAGS, FORCES, POSITIONS, ENERGY, ... 
+        CALL read_restart( restartfname, nat )
         !
         ! ...Unconvert Energy/Forces because it will be convert just after
         tau = tau_step
         force = unconvert_force( force_step )
         etot_eng = unconvert_energy( etot_step )
      ELSE
-        CALL write_initial_report(iunartout, filout)
+        CALL write_initial_report( iunartout, filout )
         ! store energy of initial state
         etot_init = convert_energy( etot_eng )
      ENDIF
-       force = convert_force( force )
-       force_step = force
-       CALL perpforce( force, if_pos, push, fperp, fpara, nat)
-  ELSE
+     force = convert_force( force )
+     force_step = force
+     CALL perpforce( force, if_pos, push, fperp, fpara, nat)
+
+
+  ELSE ! ...ISTEP > 0
+
      !
      force = convert_force( force )
      force_step = force
      CALL perpforce( force, if_pos, push, fperp, fpara, nat)
-     write (*,*) "Debug force:", force(:,1)
+     !write (*,*) "Debug force:", force(:,1)
      CALL check_force_convergence(nat,force,if_pos,fperp,fpara, lforc_conv, lsaddle_conv)
+     !write (*,*) "Debug B/S/R|I/P/L/E|P/B/R", &
+     !  lbasin, lsaddle, lrelax, linit, lperp, llanczos, leigen,  lpush_final, lbackward, lrestart
      !
   ENDIF
 
@@ -159,6 +169,11 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !=============================
      ! generate initial push vector
      !=============================
+     ! linit is touched by: 
+     !   - initialize_artn(), 
+     !   - check_force_convergence() 
+     !   - here
+     !.............................
      !
      ! set up the flags (we did an initial push, now we need to relax perpendiculary)
      linit = .false.
@@ -190,7 +205,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      ! Relax forces perpendicular to eigenvector/push
      !===============================================
      !
-     ! If eigenvalue is good, overwrite push with eigenvec
+     ! If eigenvalue is good, overwrite push with eigenvec (NS: Why?!)
      !
      IF( leigen ) THEN
         push(:,:) = eigenvec(:,:)
@@ -206,7 +221,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      ! to push
      !
      displ_vec(:,:) = fperp(:,:)
-     CALL write_report(etot,force, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat,  iunartout)
+     CALL write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat,  iunartout)
      !
      !
      !
@@ -338,8 +353,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         IF ( fpush_factor == 1.0 ) THEN
 
            disp = RELX
-           ! reverse direction of push
-           fpush_factor = -1.0
 
            ! restart from saddle point
            DO i = 1,nat
@@ -352,6 +365,13 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            etot_final = etot
            de_back = etot_saddle - etot_final
 
+           print*, "PUSH_FACTOR", fpush_factor
+           !call write_inter_report( iunartout, int(fpush_factor), [de_back] )
+           !call write_inter_report( iunartout, 1, [de_back] )
+
+           ! reverse direction of push
+           fpush_factor = -1.0
+
            WRITE (iunartout,'(5X, "--------------------------------------------------")')
            WRITE (iunartout,'(5X, "    *** ARTn found adjacent minimum ***   ")')
            WRITE (iunartout,'(5X, "--------------------------------------------------")')
@@ -360,6 +380,10 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         ELSE
            lconv = .true.
            de_fwd = etot_saddle - etot
+           print*, "PUSH_FACTOR", fpush_factor
+           !call write_inter_report( iunartout, int(fpush_factor), [de_back, de_fwd, etot_init, etot_final, etot] )
+           !call write_inter_report( iunartout, -1, [de_back, de_fwd, etot_init, etot_final, etot] )
+
            WRITE (iunartout,'(5X, "--------------------------------------------------")')
            WRITE (iunartout,'(5X, "    *** ARTn converged to initial minimum ***   ")')
            WRITE (iunartout,'(5X, "--------------------------------------------------")')
@@ -387,7 +411,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   ! Lanczos at the end. Reason: check convergence at saddle before going into
   ! un-needed lanczos near saddle.
   !
-  IF ( llanczos ) THEN
+  LANCZOS_: IF ( llanczos ) THEN
      !
      !==========================================
      ! Perform Lanczos algo, one step at a time
@@ -464,7 +488,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            !
         ENDIF
      ENDIF
-  ENDIF
+
+  ENDIF LANCZOS_
 
   ! ...Increment the ARTn-step
   istep = istep + 1

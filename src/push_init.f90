@@ -4,7 +4,7 @@
 !!   Miha Gunde
 
 
-SUBROUTINE push_init(nat, tau, order, at, idum, push_ids, dist_thr, add_const, init_step_size, push, mode)
+SUBROUTINE push_init( nat, tau, order, at, idum, push_ids, dist_thr, add_const, init_step_size, push, mode)
   !
   !> @brief
   !!   subroutine that generates the initial push; options are specified by mode: 
@@ -51,12 +51,6 @@ SUBROUTINE push_init(nat, tau, order, at, idum, push_ids, dist_thr, add_const, i
   atom_displaced(:) = 0
   lvalid = .false.
 
-  !do na = 1,nat
-  !   if( order(na) == 0 )then
-  !     print*, "WARNING::Order contains index = 0 | ", na, order(na)
-  !   endif
-  !enddo
-  
 
   !
   !  read the list of pushed atoms
