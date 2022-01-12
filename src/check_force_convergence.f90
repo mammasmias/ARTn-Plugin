@@ -24,6 +24,8 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
   REAL(DP) :: fperp_thr
   LOGICAL, INTENT(OUT) :: lforc_conv, lsaddle_conv
   !
+  LOGICAL :: C1, C2
+
   lforc_conv = .false.
   lsaddle_conv = .false.
   !
@@ -42,13 +44,17 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         ! 
         IF ( MAXVAL(ABS(fpara)) <= fpara_thr ) THEN
            fperp_thr = forc_thr
+           nperp = 0    !
         ELSE
            fperp_thr = init_forc_thr
         ENDIF
         ! 
         ! check perpendicular force convergence 
         ! 
-        IF ((MAXVAL( ABS(fperp))) < fperp_thr  ) THEN
+        C1 = ( MAXVAL( ABS(fperp)) < fperp_thr ) ! check on the force field
+        C2 = ( nperp > 0.AND.iperp >= nperp )    ! check on the perp-relax iteration
+
+        IF( C1 .OR. C2  ) THEN
            lperp = .false.
            llanczos = .true.
            leigen = .false. 
@@ -67,7 +73,8 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
            linit = .true.
 
         ! ...Max Iteration of Perp-Relax
-        ELSEIF( iperp >= nperp )THEN
+        ! OPTION::nperp = 0 means no nperp constrain
+        ELSEIF( nperp > 0.AND.iperp >= nperp )THEN
            lperp = .false.
            linit = .true.
 
