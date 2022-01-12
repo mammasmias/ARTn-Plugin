@@ -9,7 +9,7 @@ SUBROUTINE write_initial_report(iunartout, filout)
   use artn_params, ONLY: engine_units, ninit, nperp, neigen, nsmooth,  &
                          init_forc_thr, forc_thr, fpara_thr, eigval_thr, &
                          push_step_size, eigen_step_size, lanc_mat_size, dlanc, &
-                         push_mode
+                         push_mode, iverbose
   use units, only : strg_units, unconvert_force, &
                     unconvert_energy, unconvert_hessian, unconvert_length
   INTEGER,             INTENT(IN) :: iunartout
@@ -27,6 +27,7 @@ SUBROUTINE write_initial_report(iunartout, filout)
   WRITE (iunartout,'(5X, "               INPUT PARAMETERS                   ")')
   WRITE (iunartout,'(5X, "--------------------------------------------------")')
   WRITE (iunartout,'(5x, "engine_units:", *(x,A))') TRIM(engine_units)
+  WRITE (iunartout,'(5x, "Verbosity Level:", *(x,i2))') iverbose
   WRITE (iunartout,'(5X, "--------------------------------------------------")')
   WRITE (iunartout,'(5X, "Push and perpendicular relax:")')
   WRITE (iunartout,'(5X, "--------------------------------------------------")')
@@ -68,7 +69,7 @@ END SUBROUTINE write_initial_report
 
 
 
-SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat, iunartout )
+SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat, iunartout, ArtnStep )
   !
   !> @brief
   !!   a subroutine that writes a report of the current step to the output file  
@@ -82,7 +83,7 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
   !> @param [in]  iunartout	Channel of output
   !
   USE artn_params, ONLY: push, MOVE  &
-                        ,etot_init, iinit, iperp, ieigen, ilanc, delr &
+                        ,etot_init, iinit, iperp, ieigen, ilanc, delr, iverbose, iartn &
                         ,lrelax, linit, lbasin, lperp, llanczos, leigen, lsaddle, lpush_final, lbackward, lrestart 
   USE UNITS
   IMPLICIT NONE
@@ -92,6 +93,7 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
   INTEGER,  INTENT(IN) :: if_pos(3,nat)
   REAL(DP), INTENT(IN) :: force(3,nat), fpara(3,nat), fperp(3,nat), etot, lowest_eigval
   INTEGER,  INTENT(IN) :: disp
+  LOGICAL, intent(IN)  :: ArtnStep
 
   ! -- Local Variables
   CHARACTER(LEN=5) :: Mstep
@@ -99,6 +101,12 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
   REAL(DP) :: force_tot, fperp_tot, fpara_tot, detot, lowEig, dr, rc2
   REAL(DP), EXTERNAL :: ddot
   !
+
+  ! ...Print only ARTn-Step
+  print*, "WRITE_REPORT", ArtnStep, iverbose == 0
+  if( .NOT.ArtnStep .AND. iverbose == 0 )then
+    RETURN
+  endif
 
 
   ! ...Force processing
@@ -123,26 +131,29 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
   lowEig = unconvert_hessian( lowest_eigval )
   !lowEig = lowest_eigval
 
-  !  write report 
-  !WRITE (iunartout,'(5X,I4,7X,A4,9X, F12.6, *(5X, F10.4))')  & !,5X, F7.4, 5X, F7.4, 5X, F7.4)') &
-  !     & istep, MOVE(disp), etot, force_tot,fperp_tot,fpara_tot, lowest_eigval !, MAXVAL(fperp)
-       !& istep, MOVE(disp), unconvert_energy(etot), force_tot, fperp_tot, fpara_tot, lowest_eigval, MAXVAL(fperp)
 
   !%! More Complete Output
   Mstep = "macrostep"
-  !if( lbasin ) Mstep = 'Bstep'
-  !if( .not.lbasin ) Mstep = 'Sstep'
+  if( lbasin ) Mstep = 'Bstep'
+  if( .not.lbasin ) Mstep = 'Sstep'
+  if( lrelax ) Mstep = 'Rstep'
+
   !delr = sum()
   evalf = istep
+
+  if( ArtnStep ) iartn = iartn + 1
+
+
   !WRITE(iunartout,5) istep, Mstep, MOVE(disp), detot, iinit, ieigen, iperp, ilanc,   &
   !                   force_tot, fperp_tot, fpara_tot, lowEig,     &
   !                   dr, npart, evalf !, a1
   !5 format(5x,i4,3x,a,x,a,F10.4,3x,4(x,i2),5(x,f10.4),2(x,i4))
-  WRITE(iunartout,5) istep, Mstep, MOVE(disp), detot, iinit, ieigen, iperp, ilanc,   &
+  WRITE(iunartout,5) iartn, Mstep, MOVE(disp), detot, iinit, ieigen, iperp, ilanc,   &
                      force_tot, fperp_tot, fpara_tot, lowEig,     &
                      dr, npart, evalf,   &
       lbasin, lsaddle, lrelax, linit, lperp, llanczos, leigen,  lpush_final, lbackward, lrestart !, a1
   5 format(5x,i4,3x,a,x,a,F10.4,3x,4(x,i2),5(x,f10.4),2(x,i4),3X,*(L2))
+
 
 END SUBROUTINE write_report
 
@@ -155,28 +166,25 @@ SUBROUTINE write_inter_report( u, pushfactor, de )
   integer, intent( in ) :: pushfactor
   real(DP), intent( in ) :: de(*)            !> list of energie 
 
-  !if( pushfactor == 1 )then
   SELECT CASE( pushfactor )
 
     CASE( 1 )
-      !IF( size(de) /= 1 ) WRITE(*,*) "********* ERROR write_inter_report:: size(de)", de, " **************"
+      ! de(1) = de_back
       WRITE( u, '(5X, "--------------------------------------------------")')
       WRITE( u, '(5X, "    *** ARTn found adjacent minimum ***   ")')
       WRITE( u, '(5X, "--------------------------------------------------")')
-      !WRITE( u, '(15X,"backward E_act =", F12.5," eV")') unconvert_energy(de_back) !*RY2EV
       WRITE( u, '(15X,"backward E_act =", F12.5," eV")') unconvert_energy( de(1) )
       WRITE( u, '(5X, "--------------------------------------------------")')
 
-    !elseif( pushfactor == -1 )then
     CASE( -1 )
-      !IF( size(de) /= 5 ) WRITE(*,*) "********* ERROR write_inter_report:: size(de)", de, " **************"
+      ! de(1) = de_back
+      ! de(2) = de_fwd 
+      ! de(3) = etot_init 
+      ! de(4) = etot_final
+      ! de(5) = etot   
       WRITE( u,'(5X, "--------------------------------------------------")')
       WRITE( u,'(5X, "    *** ARTn converged to initial minimum ***   ")')
       WRITE( u,'(5X, "--------------------------------------------------")')
-      !WRITE( u,'(15X,"forward  E_act =", F12.5," eV")') unconvert_energy(de_fwd) !*RY2EV
-      !WRITE( u,'(15X,"backward E_act =", F12.5," eV")') unconvert_energy(de_back) !*RY2EV
-      !WRITE( u,'(15X,"reaction dE    =", F12.5," eV")') unconvert_energy((etot-etot_final)) ! *RY2EV
-      !WRITE( u,'(15X,"dEinit - dEfinal    =", F12.5," eV")') unconvert_energy((etot_init-etot)) ! *RY2EV
       WRITE( u,'(15X,"forward  E_act =", F12.5," eV")') unconvert_energy(de(2)) !*RY2EV
       WRITE( u,'(15X,"backward E_act =", F12.5," eV")') unconvert_energy(de(1)) !*RY2EV
       WRITE( u,'(15X,"reaction dE    =", F12.5," eV")') unconvert_energy((de(5)-de(4))) ! *RY2EV

@@ -87,6 +87,14 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   initpfname = 'initp'
   eigenfname = 'latest_eigenvec'
   restartfname = 'artn.restart'
+
+
+
+  ! Open the output file for writing
+  !
+  !OPEN ( UNIT = iunartout, FILE = filout, FORM = 'formatted', ACCESS = 'append', STATUS = 'unknown', IOSTAT = ios )
+
+
   !
   ! initialize artn
   !
@@ -140,7 +148,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      force_step = force
      CALL perpforce( force, if_pos, push, fperp, fpara, nat)
      !write (*,*) "Debug force:", force(:,1)
-     CALL check_force_convergence(nat,force,if_pos,fperp,fpara, lforc_conv, lsaddle_conv)
+     CALL check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv, lsaddle_conv )
      !write (*,*) "Debug B/S/R|I/P/L/E|P/B/R", &
      !  lbasin, lsaddle, lrelax, linit, lperp, llanczos, leigen,  lpush_final, lbackward, lrestart
      !
@@ -198,7 +206,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         ! ...modify the force to be equal to the push
         displ_vec = push
 
-        CALL write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat, iunartout )
+        CALL write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat, iunartout, .false. )
 
 
         ! ...set up the flags (we did an initial push, now we need to relax perpendiculary)
@@ -235,7 +243,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      ! to push
      !
      displ_vec(:,:) = fperp(:,:)
-     CALL write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat,  iunartout)
+     CALL write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat,  iunartout, .false. )
      !
      !
      !
@@ -282,8 +290,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         ilanc = 0
         ! 
      ENDIF
-     CALL write_struct( at, nat, tau, order, elements, ityp, force, 1.0_DP, iunstruct, struc_format_out, eigenfname)
-     CALL write_report(etot,force, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat,  iunartout)
+     CALL write_struct( at, nat, tau, order, elements, ityp, force, 1.0_DP, iunstruct, struc_format_out, eigenfname )
+     CALL write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat,  iunartout, .false. )
       
   END IF
 
@@ -344,7 +352,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            !
            disp = EIGN
            !
-           CALL write_report(etot,force, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat,  iunartout)
+           CALL write_report( etot,force, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat,  iunartout, .false. )
            ! 
            displ_vec(:,:) = fpush_factor*eigenvec(:,:)*eigen_step_size
         END IF
@@ -365,7 +373,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      disp = RELX
      displ_vec = force
      !
-     CALL write_report(etot, force, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat, iunartout)
+     CALL write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat, iunartout, .false. )
      !
      ! check for convergence
      !
@@ -423,7 +431,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !==========================================
      !
      disp = LANC
-     CALL write_report(etot,force, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat,  iunartout)
+     CALL write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat,  iunartout, .false. )
      IF (ilanc == 0 ) THEN
         IF ( .not. leigen ) THEN
            !
@@ -460,6 +468,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      CALL lanczos( nat, force, displ_vec, v_in, dlanc, nlanc, ilanc, lowest_eigval,  eigenvec, push)
      ilanc = ilanc + 1
      iperp = 0
+
      !
      ! when lanczos converges, nlanc = number of steps it took to converge,
      ! and ilanc = ilanc + 1
@@ -476,7 +485,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         ! check the eigenvalue, if it's lower than threshold use the eigenvector, otherwise push again ...
         !
         IF ( lowest_eigval < eigval_thr ) THEN
-           ! make a push with the eigenvector
+           !* make a push with the eigenvector
+           !! Next Mstep outside the basin 
            leigen = .true.
            lbasin = .false.
            ieigen = 0
@@ -484,7 +494,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            iperp = 0
            !
         ELSE
-           ! make an initial push
+           !* make an initial push
+           !! Next Mstep inside the Basin
            leigen = .false.
            linit  = .true.
            lbasin = .true.

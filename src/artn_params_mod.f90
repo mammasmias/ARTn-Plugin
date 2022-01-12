@@ -32,8 +32,9 @@ MODULE artn_params
   LOGICAL :: lbasin     !> true while in basin 
   LOGICAL :: lsaddle    !> saddle point obtained
   LOGICAL :: lbackward  !> backward saddle point obtained
+  INTEGER :: iverbose   !> Verbose Level
   ! counters
-  INTEGER :: istep
+  INTEGER :: istep, iartn
   INTEGER, target :: iperp      !> number of steps in perpendicular relaxation
   INTEGER :: nperp
   INTEGER :: ieigen     !> number of steps made with eigenvector
@@ -59,7 +60,7 @@ MODULE artn_params
   ! stored total energies and energy differences
   !
   REAL(DP) :: etot_init    !>  the total energy of the initial state
-  REAL(DP) :: etot_step !>  the total energy in the current step
+  REAL(DP) :: etot_step    !>  the total energy in the current step
   REAL(DP) :: etot_saddle  !>  the total energy of the saddle point
   REAL(DP) :: etot_final   !>  the total energy of the next minimum along eigenvector
   REAL(DP) :: de_saddle !> change in E from starting point
@@ -169,7 +170,9 @@ CONTAINS
       lpush_final = .false.
       lbackward = .true.
       lrestart = .false.
+      iverbose = 0
       !
+      iartn = 0
       istep = 0
       iinit = 0
       iperp = 0
