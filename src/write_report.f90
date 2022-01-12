@@ -153,13 +153,13 @@ SUBROUTINE write_inter_report( u, pushfactor, de )
 
   integer, intent( in ) :: u             !> Ouput Unit 
   integer, intent( in ) :: pushfactor
-  real(DP), intent( in ) :: de(:)            !> list of energie 
+  real(DP), intent( in ) :: de(*)            !> list of energie 
 
   !if( pushfactor == 1 )then
   SELECT CASE( pushfactor )
 
     CASE( 1 )
-      IF( size(de) /= 1 ) WRITE(*,*) "********* ERROR write_inter_report:: size(de)", de, " **************"
+      !IF( size(de) /= 1 ) WRITE(*,*) "********* ERROR write_inter_report:: size(de)", de, " **************"
       WRITE( u, '(5X, "--------------------------------------------------")')
       WRITE( u, '(5X, "    *** ARTn found adjacent minimum ***   ")')
       WRITE( u, '(5X, "--------------------------------------------------")')
@@ -169,7 +169,7 @@ SUBROUTINE write_inter_report( u, pushfactor, de )
 
     !elseif( pushfactor == -1 )then
     CASE( -1 )
-      IF( size(de) /= 5 ) WRITE(*,*) "********* ERROR write_inter_report:: size(de)", de, " **************"
+      !IF( size(de) /= 5 ) WRITE(*,*) "********* ERROR write_inter_report:: size(de)", de, " **************"
       WRITE( u,'(5X, "--------------------------------------------------")')
       WRITE( u,'(5X, "    *** ARTn converged to initial minimum ***   ")')
       WRITE( u,'(5X, "--------------------------------------------------")')

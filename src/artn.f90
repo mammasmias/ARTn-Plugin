@@ -367,31 +367,31 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
            print*, "PUSH_FACTOR", fpush_factor
            !call write_inter_report( iunartout, int(fpush_factor), [de_back] )
-           !call write_inter_report( iunartout, 1, [de_back] )
+           call write_inter_report( iunartout, 1, [de_back] )
 
            ! reverse direction of push
            fpush_factor = -1.0
 
-           WRITE (iunartout,'(5X, "--------------------------------------------------")')
-           WRITE (iunartout,'(5X, "    *** ARTn found adjacent minimum ***   ")')
-           WRITE (iunartout,'(5X, "--------------------------------------------------")')
-           WRITE (iunartout,'(15X,"backward E_act =", F12.5," eV")') unconvert_energy(de_back) !*RY2EV
-           WRITE (iunartout,'(5X, "--------------------------------------------------")')
+           !WRITE (iunartout,'(5X, "--------------------------------------------------")')
+           !WRITE (iunartout,'(5X, "    *** ARTn found adjacent minimum ***   ")')
+           !WRITE (iunartout,'(5X, "--------------------------------------------------")')
+           !WRITE (iunartout,'(15X,"backward E_act =", F12.5," eV")') unconvert_energy(de_back) !*RY2EV
+           !WRITE (iunartout,'(5X, "--------------------------------------------------")')
         ELSE
            lconv = .true.
            de_fwd = etot_saddle - etot
            print*, "PUSH_FACTOR", fpush_factor
            !call write_inter_report( iunartout, int(fpush_factor), [de_back, de_fwd, etot_init, etot_final, etot] )
-           !call write_inter_report( iunartout, -1, [de_back, de_fwd, etot_init, etot_final, etot] )
+           call write_inter_report( iunartout, -1, [de_back, de_fwd, etot_init, etot_final, etot] )
 
-           WRITE (iunartout,'(5X, "--------------------------------------------------")')
-           WRITE (iunartout,'(5X, "    *** ARTn converged to initial minimum ***   ")')
-           WRITE (iunartout,'(5X, "--------------------------------------------------")')
-           WRITE (iunartout,'(15X,"forward  E_act =", F12.5," eV")') unconvert_energy(de_fwd) !*RY2EV
-           WRITE (iunartout,'(15X,"backward E_act =", F12.5," eV")') unconvert_energy(de_back) !*RY2EV
-           WRITE (iunartout,'(15X,"reaction dE    =", F12.5," eV")') unconvert_energy((etot-etot_final)) ! *RY2EV
-           WRITE (iunartout,'(15X,"dEinit - dEfinal    =", F12.5," eV")') unconvert_energy((etot_init-etot)) ! *RY2EV
-           WRITE (iunartout,'(5X, "--------------------------------------------------")')
+           !WRITE (iunartout,'(5X, "--------------------------------------------------")')
+           !WRITE (iunartout,'(5X, "    *** ARTn converged to initial minimum ***   ")')
+           !WRITE (iunartout,'(5X, "--------------------------------------------------")')
+           !WRITE (iunartout,'(15X,"forward  E_act =", F12.5," eV")') unconvert_energy(de_fwd) !*RY2EV
+           !WRITE (iunartout,'(15X,"backward E_act =", F12.5," eV")') unconvert_energy(de_back) !*RY2EV
+           !WRITE (iunartout,'(15X,"reaction dE    =", F12.5," eV")') unconvert_energy((etot-etot_final)) ! *RY2EV
+           !WRITE (iunartout,'(15X,"dEinit - dEfinal    =", F12.5," eV")') unconvert_energy((etot_init-etot)) ! *RY2EV
+           !WRITE (iunartout,'(5X, "--------------------------------------------------")')
         END IF
         !
      END IF
