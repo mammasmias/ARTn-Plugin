@@ -12,7 +12,9 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
   !> @param [out]  lsaddke_conv    Saddle-point Convergence Flag
   !
   USE units
-  USE artn_params, ONLY : linit, lbasin, leigen, llanczos, lperp, lrelax, init_forc_thr, forc_thr, fpara_thr, push
+  USE artn_params, ONLY : linit, lbasin, leigen, llanczos, lperp, lrelax, &
+                          iperp, nperp, &
+                          init_forc_thr, forc_thr, fpara_thr, push
   IMPLICIT NONE
   REAL(DP), INTENT(IN) :: force(3,nat)
   REAL(DP), INTENT(IN) :: fperp(3,nat)
@@ -53,6 +55,9 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         ENDIF
 
      ELSE
+        !
+        ! In the Basin after perp-relax we always return to init mode
+        !
 
         fperp_thr = init_forc_thr 
 
@@ -60,6 +65,12 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         IF ((MAXVAL( ABS(fperp))) < fperp_thr  ) THEN
            lperp = .false.
            linit = .true.
+
+        ! ...Max Iteration of Perp-Relax
+        ELSEIF( iperp >= nperp )THEN
+           lperp = .false.
+           linit = .true.
+
         ENDIF
 
      ENDIF

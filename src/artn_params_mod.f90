@@ -25,7 +25,7 @@ MODULE artn_params
   CHARACTER(LEN=4) :: MOVE(6)
   PARAMETER( MOVE = [ 'void', 'init', 'perp', 'eign', 'lanc', 'relx' ])
   ! control flags
-  LOGICAL :: linit      !> initial push
+  LOGICAL :: linit      !> initial push OF THE MACROSTEP
   LOGICAL :: lperp      !> perpendicular relax
   LOGICAL :: leigen     !> push with lanczos eigenvector
   LOGICAL :: llanczos   !> lanczos algorithm

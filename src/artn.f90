@@ -176,27 +176,43 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !.............................
      !
      ! set up the flags (we did an initial push, now we need to relax perpendiculary)
-     linit = .false.
-     lperp = .true.
+     !linit = .false.
+     !lperp = .true.
      ! the push counter (controls if we should call lanczos or keep pushing)
      IF (iinit == 1) THEN
         CALL write_struct( at, nat, tau, order, elements, ityp, push, 1.0_DP, iunstruct, struc_format_out, initpfname )
      ENDIF
      ! 
-     iperp = 0
+     !iperp = 0
      !
      ! modify the force to be equal to the push
      !
-     disp = INIT
-     displ_vec = push
+     !disp = INIT
+     !displ_vec = push
      
      ! start lanczos when number of init steps is reached
      IF ( iinit >= ninit ) THEN
+
         llanczos = .true.
+        linit = .false.
+        lperp = .false.
+
      ELSE 
-        !
+
+        ! ...Init Push
         iinit = iinit + 1
+        disp = INIT
+
+        displ_vec = push
+
         CALL write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat, iunartout )
+
+
+        ! set up the flags (we did an initial push, now we need to relax perpendiculary)
+        linit = .false.
+        lperp = .true.
+        iperp = 0
+
      ENDIF
      !
   ELSE IF ( lperp ) THEN
@@ -338,7 +354,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   !
   ! perform a FIRE relaxation (only for reaching adjacent minima)
   !
-  IF ( lrelax ) THEN
+  RELAX: IF ( lrelax ) THEN
      !
      ! reset force
      !
@@ -396,7 +412,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         !
      END IF
      !
-  END IF
+  END IF RELAX
 
   !
   ! write restart before the lanczos. If restart happens during lanczos,
@@ -491,6 +507,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
   ENDIF LANCZOS_
 
+
+
   ! ...Increment the ARTn-step
   istep = istep + 1
   ! CALL write_restart(restartfname,nat)
@@ -503,6 +521,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   force = unconvert_force( force )
   !tau = unconvert_length( tau )
   !at = unconvert_length( at )
+
 
 END SUBROUTINE artn
 
