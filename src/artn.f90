@@ -91,16 +91,12 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
 
 
-  ! store positions of current step
-  lat = at
-  !if( istep > 0 )call compute_delr( nat, tau, lat )
-  tau_step = tau
-
 
 
   !
   ! initialize artn
   !
+
   ! set initial random seed
   IF( zseed .ne. 0 ) idum = zseed
 
@@ -135,14 +131,27 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         CALL read_restart( restartfname, nat )
         !
         ! ...Unconvert Energy/Forces because it will be convert just after
+        lat = at
         tau = tau_step
         force = unconvert_force( force_step )
         etot_eng = unconvert_energy( etot_step )
+        etot = etot_step
+
      ELSE
+
         CALL write_initial_report( iunartout, filout )
         ! store energy of initial state
         etot_init = convert_energy( etot_eng )
+        ! ...Convert the Energy
+        etot = etot_init
+        etot_step = etot
+
      ENDIF
+
+     ! ...store positions of current step
+     lat = at
+     tau_step = tau
+
      force = convert_force( force )
      force_step = force
      CALL perpforce( force, if_pos, push, fperp, fpara, nat)
@@ -150,6 +159,13 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
   ELSE ! ...ISTEP > 0
 
+     ! ...store positions of current step
+     lat = at
+     tau_step = tau
+
+     ! ...Convert the Energy
+     etot = convert_energy( etot_eng )
+     etot_step = etot
      !
      force = convert_force( force )
      force_step = force
@@ -160,16 +176,22 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   ENDIF
 
   ! ...Convert the Energy
-  etot = convert_energy( etot_eng )
-  etot_step = etot
+  !etot = convert_energy( etot_eng )
+  !etot_step = etot
 
   ! ...Initialize the displacement
   disp = VOID
+
 
   !
   ! Open the output file for writing
   !
   OPEN ( UNIT = iunartout, FILE = filout, FORM = 'formatted', ACCESS = 'append', STATUS = 'unknown', IOSTAT = ios )
+
+  if( istep == 0 )then
+     ! ...Write Zero step  
+     CALL write_report( etot, force, fperp, fpara, lowest_eigval, VOID, if_pos, istep, nat, iunartout, .true. )
+  endif
 
   !
   ! initial displacement , then switch off linit, and pass to lperp
@@ -204,6 +226,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
         iinit = iinit + 1
         disp = INIT
+
 
         ! ...modify the force to be equal to the push
         displ_vec = push

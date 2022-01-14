@@ -133,6 +133,7 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
   fperp_tot = unconvert_force( fperp_tot )
   fpara_tot = unconvert_force( fpara_tot )
 
+  !write( iunartout,*) "write_report::", etot,etot_init, etot - etot_init
   dEtot = unconvert_energy(etot - etot_init)
   lowEig = unconvert_hessian( lowest_eigval )
   !lowEig = lowest_eigval
@@ -149,11 +150,11 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
   evalf = istep
 
 
-  IF( ArtnStep )THEN
+  IF( ARTnStep )THEN
 
     ! ...Displacement processing
     if( iartn == 0 )allocate( old_tau, source = tau_step )
-    call compute_delr( nat, tau_step, lat )
+    call compute_delr( nat, tau_step, old_tau, lat )
     npart = 0
     rc2 = 0.1*0.1
     do i = 1, nat
@@ -161,7 +162,6 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
     enddo
     call sum_force( delr, nat, dr )
 
-    iartn = iartn + 1
   ENDIF
 
 
@@ -175,6 +175,7 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
   !    lbasin, lsaddle, lrelax, linit, lperp, llanczos, leigen,  lpush_final, lbackward, lrestart , a1
   !5 format(5x,i4,3x,a,x,a,F10.4,3x,4(x,i2),5(x,f10.4),2(x,i4),3X,10(L2),3X,f4.2)
 
+  IF( ARTnStep )iartn = iartn + 1
 
 END SUBROUTINE write_report
 
@@ -267,26 +268,28 @@ END SUBROUTINE write_end_report
 
 
 !------------------------------------------------------------
-subroutine compute_delr( nat, pos, lat )
+subroutine compute_delr( nat, pos, old_pos, lat )
   use artn_params, only : delr, old_tau
    use units, only : DP
   implicit none
 
   INTEGER, intent( in ) :: nat
   REAL(DP), intent( in ) :: pos(3,nat), lat(3,3)
+  REAL(DP), intent( in ) :: old_pos(3,nat)
 
   integer :: i
-  REAL(DP) :: dr(3,nat), r(3)
-  REAL(DP), external :: fpbc
+  REAL(DP) :: r(3)
+  !REAL(DP), external :: fpbc
   
   !dr = pos - tau_step
   do i = 1, nat
      !r = pos(:,i) - tau_step(:,i)
-     r = pos(:,i) - old_tau(:,i)
+     r = pos(:,i) - old_pos(:,i)
      call pbc( r, lat )
-     delr(:,i) = delr(:,i) + r(:)
+     !delr(:,i) = delr(:,i) + r(:)
+     delr(:,i) = r(:)
   enddo
-  old_tau = pos
+  !old_pos = pos
 end subroutine compute_delr
 
 

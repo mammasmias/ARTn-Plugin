@@ -26,7 +26,7 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
   LOGICAL, INTENT(OUT) :: lforc_conv, lsaddle_conv
   !
   LOGICAL :: C1, C2
-  LOGICAL, parameter :: ArtnStep = .true.
+  LOGICAL, parameter :: ARTnStep = .true.
   integer :: ios
 
   lforc_conv = .false.
@@ -44,6 +44,7 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         ! 
         IF (MAXVAL( ABS(force*if_pos)) < forc_thr  ) THEN
            lsaddle_conv = .true.
+           !write(iunartout,*)"Check_force::eigen->Force"
            CALL write_report( etot_step, force, fperp, fpara, lowest_eigval, EIGN, if_pos, istep, nat,  iunartout, ArtnStep )
            RETURN
         ENDIF
@@ -66,7 +67,7 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
            lperp = .false.
            llanczos = .true.
            leigen = .false. 
-           !if( C2 )  &    ! Because if C1 it already write_report before => If f < f_thr then fperp < f_thr
+           !write(iunartout,*)"Check_force::eigen->Fperp"
             CALL write_report( etot_step, force, fperp, fpara, lowest_eigval, EIGN, if_pos, istep, nat,  iunartout, ArtnStep )
         ENDIF
 
@@ -87,6 +88,7 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         IF( C1 .OR. C2 ) THEN
            lperp = .false.
            linit = .true.
+           !write(iunartout,*)"Check_force::basin->Fperp"
            CALL write_report( etot_step, force, fperp, fpara, lowest_eigval, INIT, if_pos, istep, nat,  iunartout, ArtnStep )
         ENDIF
 
@@ -96,6 +98,7 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
      !
      IF( MAXVAL( ABS(force*if_pos)) < forc_thr  )then
        lforc_conv = .true.
+       !write(iunartout,*)"Check_force::Relax->Force"
        CALL write_report( etot_step, force, fperp, fpara, lowest_eigval, RELX, if_pos, istep, nat,  iunartout, ArtnStep )
      ENDIF
      !
