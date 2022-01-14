@@ -45,6 +45,7 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         IF (MAXVAL( ABS(force*if_pos)) < forc_thr  ) THEN
            lsaddle_conv = .true.
            CALL write_report( etot_step, force, fperp, fpara, lowest_eigval, EIGN, if_pos, istep, nat,  iunartout, ArtnStep )
+           RETURN
         ENDIF
         !
         ! check whether the fperp criterion should be tightened

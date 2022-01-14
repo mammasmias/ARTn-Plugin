@@ -4,7 +4,7 @@
 !!  Miha Gunde
 
 
-SUBROUTINE lanczos( nat, force, displ_vec,  v_in, dlanc, nlanc, ilanc, lowest_eigval, lowest_eigvec, pushdir)
+SUBROUTINE lanczos( nat, force, displ_vec, v_in, dlanc, nlanc, ilanc, lowest_eigval, lowest_eigvec, pushdir )
   USE artn_params,            ONLY: DP, Vmat, H, force_old
   !
   !> @brief

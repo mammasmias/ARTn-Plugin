@@ -32,11 +32,14 @@ MODULE artn_params
   LOGICAL :: lbasin     !> true while in basin 
   LOGICAL :: lsaddle    !> saddle point obtained
   LOGICAL :: lbackward  !> backward saddle point obtained
-  INTEGER :: iverbose   !> Verbose Level
+  !
+  LOGICAL :: lend
+  INTEGER :: verbose    !> Verbose Level
   ! counters
   INTEGER :: istep, iartn
   INTEGER, target :: iperp      !> number of steps in perpendicular relaxation
   INTEGER :: nperp
+  INTEGER :: irelax
   INTEGER :: ieigen     !> number of steps made with eigenvector
   INTEGER :: iinit      !> number of pushes made
   INTEGER :: ilanc      !> current lanczos iteration
@@ -49,6 +52,8 @@ MODULE artn_params
   !                                           !
   ! arrays that are needed by ARTn internally !
   !                                           !
+  REAL(DP) :: lat(3,3)
+  REAL(DP), ALLOCATABLE :: old_tau(:,:)
   REAL(DP), ALLOCATABLE :: delr(:,:)
   REAL(DP), ALLOCATABLE :: push(:,:)             !> initial push vector
   REAL(DP), ALLOCATABLE, target :: eigenvec(:,:) !> lanczos eigenvector
@@ -69,10 +74,12 @@ MODULE artn_params
   !                                               !
   ! arrays that are used by the Lanczos algorithm !
   !                                               !
-  REAL(DP), ALLOCATABLE :: H(:,:)         !> tridiagonal matrix
-  REAL(DP), ALLOCATABLE :: Vmat(:,:,:)    !> matrix containing the laczos vectors
-  REAL(DP), ALLOCATABLE :: force_old(:,:) !> force in the previous step
-  REAL(DP), ALLOCATABLE :: v_in(:,:)      !> first lanczos eigenvector
+  REAL(DP) :: a1  !> dot product between previous and actual min lanczos vector
+  REAL(DP), ALLOCATABLE :: old_lanczos_vec(:,:) !> Store the previous lanczos vec
+  REAL(DP), ALLOCATABLE :: H(:,:)               !> tridiagonal matrix
+  REAL(DP), ALLOCATABLE :: Vmat(:,:,:)          !> matrix containing the laczos vectors
+  REAL(DP), ALLOCATABLE :: force_old(:,:)       !> force in the previous step
+  REAL(DP), ALLOCATABLE :: v_in(:,:)            !> first lanczos eigenvector
   !------------------------------------------------------------!
   ! variables that are read from the input  start here
   !------------------------------------------------------------!
@@ -119,7 +126,7 @@ MODULE artn_params
        init_forc_thr,forc_thr, fpara_thr, eigval_thr, frelax_ene_thr, &
        push_step_size, dlanc, eigen_step_size, current_step_size, &
        push_ids,add_const, engine_units, zseed, struc_format_out, elements, &
-       push_over
+       push_over, verbose
   !
 CONTAINS
   !
@@ -142,11 +149,11 @@ CONTAINS
     INTEGER,             INTENT(IN) :: nat,iunartin
     CHARACTER (LEN=255), INTENT(IN) :: filnam
     ! -- Local Variables
-    LOGICAL :: file_exists, verbose
+    LOGICAL :: file_exists, verb
     INTEGER :: ios, mem
 
-    verbose = .true.
-    !verbose = .false.
+    verb = .true.
+    !verb = .false.
 
     INQUIRE( file = filnam, exist = file_exists )
 
@@ -170,7 +177,9 @@ CONTAINS
       lpush_final = .false.
       lbackward = .true.
       lrestart = .false.
-      iverbose = 0
+
+      lend = .false.
+      verbose = 0
       !
       iartn = 0
       istep = 0
@@ -180,6 +189,7 @@ CONTAINS
       ieigen = 0
       ismooth = 1
       if_pos_ct = 0
+      irelax = 0
       !
       lowest_eigval = 0.D0
       fpush_factor = 1.0
@@ -277,7 +287,7 @@ CONTAINS
     !dlanc = convert_length( dlanc )
     !dist_thr = convert_length( dist_thr )
 
-    if( verbose )then
+    if( verb )then
       write(*,2) repeat("*",50)
       write(*,2) "* Units:          ", trim(engine_units)
       write(*,1) "* dist_thr        = ", dist_thr
@@ -333,7 +343,7 @@ CONTAINS
     else;                   dlanc = convert_length( dlanc ); endif
     !dlanc = 1.D-2
 
-    if( verbose )then
+    if( verb )then
       write(*,2) repeat("*",50)
       write(*,2) "* Units:          ", trim(engine_units)
       write(*,1) "* dist_thr        = ", dist_thr
@@ -354,6 +364,7 @@ CONTAINS
     !
   END SUBROUTINE initialize_artn
   !
+  !---------------------------------------------------------------------------
   SUBROUTINE write_restart(filnres,nat)
     !
     ! Subroutine that writes the minimum parameters required for restart of a calculation
@@ -378,6 +389,7 @@ CONTAINS
 
   END SUBROUTINE write_restart
   !
+  !---------------------------------------------------------------------------
   SUBROUTINE read_restart(filnres,nat)
     !
     ! Subroutine that reads the restart file, if a restart is requested

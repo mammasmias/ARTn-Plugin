@@ -19,7 +19,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   USE units
   USE artn_params, ONLY: iunartin, iunartout, iunstruct, &
        lrelax, linit, lperp, leigen, llanczos, lrestart, lbasin, lsaddle, lpush_final, lbackward, &
-       istep, iperp, ieigen, iinit, ilanc, ismooth, nlanc, nperp, if_pos_ct, &
+       irelax, istep, iperp, ieigen, iinit, ilanc, ismooth, nlanc, nperp, if_pos_ct, &
        lowest_eigval, etot_init, etot_step, etot_saddle, etot_final, de_saddle, de_back, de_fwd, &
        ninit, neigen, lanc_mat_size, nsmooth, push_mode, dist_thr, init_forc_thr, forc_thr, &
        fpara_thr, eigval_thr, frelax_ene_thr, push_step_size, current_step_size, dlanc, eigen_step_size, fpush_factor, &
@@ -27,7 +27,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
        VOID, INIT, PERP, EIGN, LANC, RELX, zseed, &
        engine_units, struc_format_out, elements, &
        initialize_artn, read_restart, write_restart, &
-       push_over, ran3
+       push_over, ran3, a1, old_lanczos_vec, lend, lat
   !
   IMPLICIT NONE
   ! -- ARGUMENTS
@@ -56,12 +56,13 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   REAL(DP)  :: fperp(3,nat)                   ! force parallel to push/eigenvec
   REAL(DP)  :: fpara_tot                      ! total force in parallel direction
   REAL(DP)  :: smoothing_factor               ! mixing factor for smooth transition between eigenvec and push
-  REAL(DP)  :: lat(3,3), etot
+  REAL(DP)  :: etot!, lat(3,3)
   INTEGER   :: ios ,i                         ! file IOSTAT
   CHARACTER( LEN=255) :: filin, filout, sadfname, initpfname, eigenfname, restartfname
-  LOGICAL :: lforc_conv, lsaddle_conv
+  LOGICAL :: lforc_conv, lsaddle_conv, ArtnStep
 
   integer :: natom
+  LOGICAL, PARAMETER :: noARTnStep = .false.
 
   !
   ! The ARTn algorithm proceeds as follows:
@@ -90,9 +91,11 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
 
 
-  ! Open the output file for writing
-  !
-  !OPEN ( UNIT = iunartout, FILE = filout, FORM = 'formatted', ACCESS = 'append', STATUS = 'unknown', IOSTAT = ios )
+  ! store positions of current step
+  lat = at
+  !if( istep > 0 )call compute_delr( nat, tau, lat )
+  tau_step = tau
+
 
 
   !
@@ -103,14 +106,18 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
   ! ...Store & convert original force in a.u.
   IF( istep == 0 ) THEN
+
+     !CALL ARTn_Setup( nat, filin, order )
+
      ! read the input parameters
      CALL initialize_artn( nat, iunartin, filin )
      ! 
+
      CALL push_init(nat, tau, order, at, idum, push_ids, dist_thr, add_const, push_step_size, push , push_mode)
+
      ! generate first lanczos eigenvector (NS: Maybe put in push_init)
      DO i = 1, nat
         eigenvec(:,i) = (/0.5_DP - ran3(idum),0.5_DP - ran3(idum),0.5_DP - ran3(idum)/) * if_pos(:,i)
-        !if( ANY(ABS(add_const(:,i)) > 0.D0) )print*, "PUSH_INIT2:", i, order(i), push(:,i)
      END DO
      eigenvec(:,:) = eigenvec(:,:)/dnrm2(3*nat,eigenvec,1) * dnrm2(3*nat,push,1)
      ! 
@@ -149,8 +156,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      CALL perpforce( force, if_pos, push, fperp, fpara, nat)
      !write (*,*) "Debug force:", force(:,1)
      CALL check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv, lsaddle_conv )
-     !write (*,*) "Debug B/S/R|I/P/L/E|P/B/R", &
-     !  lbasin, lsaddle, lrelax, linit, lperp, llanczos, leigen,  lpush_final, lbackward, lrestart
      !
   ENDIF
 
@@ -161,14 +166,11 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   ! ...Initialize the displacement
   disp = VOID
 
-  ! store positions of current step
-  lat = at
-  if( istep > 0 )call compute_delr( nat, tau, lat )
-  tau_step = tau
   !
   ! Open the output file for writing
   !
   OPEN ( UNIT = iunartout, FILE = filout, FORM = 'formatted', ACCESS = 'append', STATUS = 'unknown', IOSTAT = ios )
+
   !
   ! initial displacement , then switch off linit, and pass to lperp
   !
@@ -206,7 +208,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         ! ...modify the force to be equal to the push
         displ_vec = push
 
-        CALL write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat, iunartout, .false. )
+        CALL write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat, iunartout, noARTnStep )
 
 
         ! ...set up the flags (we did an initial push, now we need to relax perpendiculary)
@@ -243,7 +245,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      ! to push
      !
      displ_vec(:,:) = fperp(:,:)
-     CALL write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat,  iunartout, .false. )
+     CALL write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat,  iunartout, noARTnStep )
      !
      !
      !
@@ -291,7 +293,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         ! 
      ENDIF
      CALL write_struct( at, nat, tau, order, elements, ityp, force, 1.0_DP, iunstruct, struc_format_out, eigenfname )
-     CALL write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat,  iunartout, .false. )
+     CALL write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat,  iunartout, noARTnStep )
       
   END IF
 
@@ -313,7 +315,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         !
         lsaddle = .true.
         !
-        CALL write_struct( at, nat, tau, order, elements, ityp, force, 1.0_DP, iunstruct, struc_format_out, sadfname)
+        CALL write_struct( at, nat, tau, order, elements, ityp, force, 1.0_DP, iunstruct, struc_format_out, sadfname )
         !
         CALL write_end_report( iunartout, lsaddle, lpush_final, etot - etot_init )
         ! 
@@ -352,7 +354,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            !
            disp = EIGN
            !
-           CALL write_report( etot,force, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat,  iunartout, .false. )
+           CALL write_report( etot,force, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat,  iunartout, noARTnStep )
            ! 
            displ_vec(:,:) = fpush_factor*eigenvec(:,:)*eigen_step_size
         END IF
@@ -372,8 +374,12 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !
      disp = RELX
      displ_vec = force
+
+     irelax = irelax + 1
      !
-     CALL write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat, iunartout, .false. )
+     ArtnStep = noArtnStep
+     if( mod(irelax,5) == 0 ) ArtnStep = .true.
+     CALL write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat, iunartout, ARTnStep )
      !
      ! check for convergence
      !
@@ -398,9 +404,10 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            ! reverse direction of push
            fpush_factor = -1.0
 
-        ELSE
+        ELSEIF( .NOT.lend )THEN  !< If already pass before no need to rewrite again
 
            lconv = .true.
+           lend = lconv
            de_fwd = etot_saddle - etot
 
            call write_inter_report( iunartout, int(fpush_factor), [de_back, de_fwd, etot_init, etot_final, etot] )
@@ -431,7 +438,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !==========================================
      !
      disp = LANC
-     CALL write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat,  iunartout, .false. )
+     CALL write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat,  iunartout, noARTnStep )
      IF (ilanc == 0 ) THEN
         IF ( .not. leigen ) THEN
            !
@@ -492,6 +499,19 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            ieigen = 0
            lperp = .false.
            iperp = 0
+
+
+           ! ...Compare the eigenvec with the previous one
+           
+           if( allocated(old_lanczos_vec) )then
+             a1 = ddot( 3*nat, old_lanczos_vec, 1, displ_vec, 1 )
+             old_lanczos_vec = displ_vec
+
+           else
+             a1 = 0.0
+             allocate( old_lanczos_vec, source = displ_vec )
+           endif
+
            !
         ELSE
            !* make an initial push
