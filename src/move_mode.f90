@@ -22,7 +22,7 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
   !> @param [in]    disp	Kind of actual displacement 
   !> @param [in]    displ_vec	Displacement field (unit lemgth/force/hessian ) 
   !
-  USE artn_params, ONLY:  iperp, push0 => push, push=>eigenvec, dlanc, MOVE
+  USE artn_params, ONLY:  iperp, irelax, push0 => push, push=>eigenvec, dlanc, MOVE
   USE UNITS
   !
   IMPLICIT NONE
@@ -131,9 +131,11 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
 
   CASE( 'relx' )
      !forc_thr = 10D-8    !! QE dependent
-     alpha = alpha_init
-     !dt_curr = dt_init
-     dt = dt0
+     if( irelax == 1 )then
+       alpha = alpha_init
+       !dt_curr = dt_init
+       dt = dt0
+     endif
 
   CASE default
      write(*,*) 'Problem with move_mode!'

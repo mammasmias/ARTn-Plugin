@@ -398,11 +398,13 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      disp = RELX
      displ_vec = force
 
-     irelax = irelax + 1
      !
      ArtnStep = noArtnStep
      if( mod(irelax,5) == 0 ) ArtnStep = .true.
      CALL write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat, iunartout, ARTnStep )
+
+     irelax = irelax + 1
+
      !
      ! check for convergence
      !
@@ -422,10 +424,12 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            etot_final = etot
            de_back = etot_saddle - etot_final
 
+           CALL write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat, iunartout, .true. )
            call write_inter_report( iunartout, int(fpush_factor), [de_back] )
 
            ! reverse direction of push
            fpush_factor = -1.0
+           irelax = 0
 
         ELSEIF( .NOT.lend )THEN  !< If already pass before no need to rewrite again
 

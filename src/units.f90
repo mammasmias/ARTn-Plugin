@@ -213,7 +213,7 @@ module units
 
 
     ! ...Define the output units string
-    strg_units = '(27X, "['//cE//']",20X,"-----------['//cE//'/'//   &
+    strg_units = '(27X, "['//cE//']",31X,"-----------['//cE//'/'//   &
                   cL//']-----------",2X,"['//cE//'/'//cL//to2//']   ['//cL//']")'
 
 

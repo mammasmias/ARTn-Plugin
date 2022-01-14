@@ -52,8 +52,9 @@ SUBROUTINE write_initial_report(iunartout, filout)
   WRITE (iunartout,'(/,/)') 
   !WRITE (iunartout,*) " "
   !%! Condition on the engin_units..
-  WRITE (iunartout,'(5X,"istep",4X,"ART_step",4X,"Etot",5x,"init/eig/ip/il","&
-                    "3X," Ftot ",5X," Fperp ",4X," Fpara ",4X,"eigval", 6X, "delr", 2X, "npart", X,"evalf",2X,"a1")')
+  WRITE (iunartout,'(5X,"istep",4X,"ART_step",4X,"Etot",5x,"init/eign/perp/lanc/relx","&
+                    "4X," Ftot ",5X," Fperp ",4X," Fpara ",4X,"eigval", 6X, "delr", 2X, "npart", X,"evalf",2X,"a1")')
+
   !WRITE (iunartout,'(5X,"istep",4X,"ART_step",4X,"Etot",5x,"init/eig/ip/il","&
   !                  "3X," Ftot ",5X," Fperp ",4X," Fpara ",4X,"eigval", 6X, "delr", 2X, "npart", X,"evalf","&
   !                  "2X,"B/S/R|I/P/L/E|P/B/R",4X,"a1")')
@@ -84,7 +85,7 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
   !> @param [in]  iunartout	Channel of output
   !
   USE artn_params, ONLY: push, MOVE  &
-                        ,etot_init, iinit, iperp, ieigen, ilanc, delr, verbose, iartn, a1 &
+                        ,etot_init, iinit, iperp, ieigen, ilanc, irelax, delr, verbose, iartn, a1 &
                         ,old_tau, lat, tau_step &
                         ,lrelax, linit, lbasin, lperp, llanczos, leigen, lsaddle, lpush_final, lbackward, lrestart 
   USE UNITS
@@ -118,14 +119,6 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
   fperp_tot = MAXVAL( ABS(fperp) )
   fpara_tot = MAXVAL( ABS(fpara) )
 
-
-  ! ...Displacement processing
-  !npart = 0
-  !rc2 = 0.1*0.1
-  !do i = 1, nat
-  !   if( norm2(delr(:,i)) > rc2 ) npart = npart + 1
-  !enddo
-  !call sum_force( delr, nat, dr )
 
 
   ! .. Conversion Units
@@ -165,10 +158,10 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
   ENDIF
 
 
-  WRITE(iunartout,5) iartn, Mstep, MOVE(disp), detot, iinit, ieigen, iperp, ilanc,   &
+  WRITE(iunartout,5) iartn, Mstep, MOVE(disp), detot, iinit, ieigen, iperp, ilanc, irelax,  &
                      force_tot, fperp_tot, fpara_tot, lowEig,     &
                      dr, npart, evalf, a1
-  5 format(5x,i4,3x,a,x,a,F10.4,3x,4(x,i2),5(x,f10.4),2(x,i4),3X,f4.2)
+  5 format(5x,i4,3x,a,x,a,F10.4,x,5(x,i4),5(x,f10.4),2(x,i4),3X,f4.2)
   !WRITE(iunartout,5) iartn, Mstep, MOVE(disp), detot, iinit, ieigen, iperp, ilanc,   &
   !                   force_tot, fperp_tot, fpara_tot, lowEig,     &
   !                   dr, npart, evalf,   &
