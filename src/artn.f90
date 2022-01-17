@@ -150,7 +150,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
      ! ...store positions of current step
      lat = at
-     tau_step = tau
+     tau_step(:,:) = tau(:,order(:))
 
      force = convert_force( force )
      force_step = force
@@ -161,7 +161,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
      ! ...store positions of current step
      lat = at
-     tau_step = tau
+     tau_step(:,:) = tau(:,order(:))
 
      ! ...Convert the Energy
      etot = convert_energy( etot_eng )

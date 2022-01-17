@@ -263,7 +263,7 @@ END SUBROUTINE write_end_report
 !------------------------------------------------------------
 subroutine compute_delr( nat, pos, old_pos, lat )
   use artn_params, only : delr, old_tau
-   use units, only : DP
+  use units, only : DP
   implicit none
 
   INTEGER, intent( in ) :: nat

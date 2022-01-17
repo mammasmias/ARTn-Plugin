@@ -51,7 +51,7 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
 
 
   ! .. Convert the force & time
-  force = convert_force( displ_vec )
+  !force = convert_force( displ_vec )
   dt = convert_time( dt_curr )
   dt0 = convert_time( dt_init )   !%! Finally we don't touch dt_init
 
@@ -67,8 +67,6 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
      nsteppos = 0
 
      ! ...Displ_vec should be a Length
-     !force(:,:) = push0(:,:)*amu_ry/dt_curr**2
-     !force(:,:) = force(:,:)*amu_ry/dt**2
      force(:,:) = displ_vec(:,:)*amu_ry/dt**2
 
      !do i = 1,nat
@@ -107,13 +105,7 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
      nsteppos = 0
 
      ! the step performed should be like this now translate it into the correct force
-     !force(:,:) = force(:,:)*dlanc*amu_ry/dt_curr**2
-     !force(:,:) = force(:,:)*dlanc*amu_ry/dt**2
      force(:,:) = displ_vec(:,:)*dlanc*amu_ry/dt**2
-
-     !do i = 1,nat
-     !print*, MOVE(disp), push(:,i)
-     !enddo
 
      !
   CASE( 'eign' )
@@ -124,8 +116,6 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
      !dt_curr = dt_init
      dt = dt0
      nsteppos = 0
-     !force(:,:) = force(:,:)*amu_ry/dt_curr**2
-     !force(:,:) = force(:,:)*amu_ry/dt**2
      force(:,:) = displ_vec(:,:)*amu_ry/dt**2
      !
 
@@ -136,6 +126,7 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
        !dt_curr = dt_init
        dt = dt0
      endif
+     force(:,:) = displ_vec(:,:)
 
   CASE default
      write(*,*) 'Problem with move_mode!'
