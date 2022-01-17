@@ -363,6 +363,37 @@ CONTAINS
 
     !
   END SUBROUTINE initialize_artn
+
+
+  !---------------------------------------------------------------------------
+  !SUBROUTINE Fill_param_step( nat, order, pos, types, etot, force )
+  SUBROUTINE Fill_param_step( nat, order, pos, etot, force )
+    !
+    !> @brief fill the *_step arrays on which ARTn works on.
+    !! For parallel Engine each proc has list from 1 to natproc,
+    !! pos_eng( i ) such as order( i ) = iat means pos( iat ) = pos_eng( i )
+    !! So pos( order(i) ) = pos_eng( i )
+    !
+    !> @param[in]  nat    number of atoms
+    !> @param[in]  order  index order of engine
+    !> @param[in]  pos    atomic position
+    !> @param[in]  etot   energy of the system
+    !> @param[in]  force  atomic force
+    !
+    use units, only : convert_energy, convert_force
+    
+    INTEGER, INTENT(IN) :: nat, order(nat)!, types(nat)
+    REAL(DP), INTENT(IN) :: etot, pos(3,nat), force(3,nat)
+
+
+    tau_step(:,order(:)) = pos(:,:)
+    etot_step = convert_energy( etot )
+    force_step(:,order(:)) = convert_force( force(:,:) )
+
+  END SUBROUTINE Fill_param_step
+
+
+
   !
   !---------------------------------------------------------------------------
   SUBROUTINE write_restart(filnres,nat)

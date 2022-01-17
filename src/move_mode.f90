@@ -5,12 +5,13 @@
 !!  Nicolas Salles
 
 
-SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_init, dt_init, disp, displ_vec )
+SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, alpha_init, dt_init, disp, displ_vec )
   !
   !> @breif
   !!   translate specified move to appropriate force and set FIRE parameters accordingly  
   !
   !> @param [in]    nat		Size of list: Number of atoms
+  !> @param [in]    order	Order of engine atoms list
   !> @param [inout] force	List of force on atoms
   !> @param [inout] vel		List of atomic velicity 
   !> @param [in]    alpha_init	Initial Value of alpha parameter of FIRE algorithm
@@ -28,7 +29,8 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
   IMPLICIT NONE
 
   ! -- Arguments
-  INTEGER, INTENT(IN), value                       :: nat
+  INTEGER, INTENT(IN), value                :: nat
+  INTEGER, INTENT(IN)                       :: order(nat)
 
   REAL(DP), DIMENSION(3,nat), INTENT(IN)    :: displ_vec
   REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: force
@@ -56,6 +58,7 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
   dt0 = convert_time( dt_init )   !%! Finally we don't touch dt_init
 
 
+
   SELECT CASE( MOVE(disp) )
 
   CASE( 'init' )
@@ -67,17 +70,17 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
      nsteppos = 0
 
      ! ...Displ_vec should be a Length
-     force(:,:) = displ_vec(:,:)*amu_ry/dt**2
+     force(:,:) = displ_vec(:,order(:))*amu_ry/dt**2
 
      !do i = 1,nat
-     !print*, MOVE(disp), force(:,i)
+     !1   print*, MOVE(disp), i, order(i), force(:,i), displ_vec(:,i)
      !enddo
 
   CASE( 'perp' )
      !
 
      ! ...Displ_vec is fperp
-     force = displ_vec
+     force(:,:) = displ_vec(:,order(:))
 
      IF( iperp - 1 .eq. 0 ) THEN  !%! Because I increment iperp before to enter in move_mode
         ! for the first step forget previous velocity (prevent P < 0)
@@ -105,7 +108,7 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
      nsteppos = 0
 
      ! the step performed should be like this now translate it into the correct force
-     force(:,:) = displ_vec(:,:)*dlanc*amu_ry/dt**2
+     force(:,:) = displ_vec(:,order(:))*dlanc*amu_ry/dt**2
 
      !
   CASE( 'eign' )
@@ -116,7 +119,7 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
      !dt_curr = dt_init
      dt = dt0
      nsteppos = 0
-     force(:,:) = displ_vec(:,:)*amu_ry/dt**2
+     force(:,:) = displ_vec(:,order(:))*amu_ry/dt**2
      !
 
   CASE( 'relx' )
@@ -126,10 +129,10 @@ SUBROUTINE move_mode( nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_ini
        !dt_curr = dt_init
        dt = dt0
      endif
-     force(:,:) = displ_vec(:,:)
+     force(:,:) = displ_vec(:,order(:))
 
   CASE default
-     write(*,*) 'Problem with move_mode!'
+     write(*,*) 'Problem with move_mode!', MOVE(disp)
 
   END SELECT
 

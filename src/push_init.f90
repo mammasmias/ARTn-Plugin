@@ -23,7 +23,7 @@ SUBROUTINE push_init( nat, tau, order, at, idum, push_ids, dist_thr, add_const, 
   !> @param [in]    at		    Box length
   !> @param [inout] add_const	    list of atomic constrain
   !> @param [in]    mode	    Actual kind displacement 
-  !> @param [out]   push	    list of push applied on the atoms
+  !> @param [out]   push	    list of push applied on the atoms (ORDERED)
   !
   USE artn_params, ONLY : DP, ran3, istep
   IMPLICIT none
@@ -94,7 +94,7 @@ SUBROUTINE push_init( nat, tau, order, at, idum, push_ids, dist_thr, add_const, 
 
   ENDIF
 
-  !%! Convert ADD_CONST
+  !%! Order the ADD_CONST Array: i = order(i)
   !if( istep == 0 )
   add_const(:,:) = add_const(:,order(:))
 
@@ -129,12 +129,14 @@ SUBROUTINE push_init( nat, tau, order, at, idum, push_ids, dist_thr, add_const, 
   !
   push(:,:) = push(:,:)/MAXVAL(ABS(push(:,:)))
 
-  ! scale initial push vector according to step size 
-  push(:,:) = init_step_size*push(:,:)
+  ! scale initial push vector according to step size (ORDERED) 
+  !push(:,:) = init_step_size*push(:,order(:))
+  push(:,order(:)) = init_step_size*push(:,:)
 
 
   !do na =1,nat
-  !   if( ANY(ABS(add_const(:,na)) > 0.D0) )print*, "PUSH_INIT:", na, order(na), push(:,na)
+  !   !if( ANY(ABS(add_const(:,na)) > 0.D0) )print*, "PUSH_INIT:", na, order(na), push(:,na)
+  !   print*, "PUSH_INIT:", na, order(na), push(:,na)
   !enddo
 
 END SUBROUTINE push_init
