@@ -175,9 +175,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !
   ENDIF
 
-  ! ...Convert the Energy
-  !etot = convert_energy( etot_eng )
-  !etot_step = etot
 
   ! ...Initialize the displacement
   disp = VOID
@@ -218,6 +215,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      IF ( iinit >= ninit ) THEN
 
         llanczos = .true.
+        ilanc = 0
+        !write(iunartout,*)"ARTn(linit)::initialize ilanc"
         linit = .false.
         lperp = .false.
 
@@ -287,7 +286,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      smoothing_factor = 1.0_DP*ismooth/nsmooth
      !
      fpara_tot = ddot(3*nat, force(:,:),1,eigenvec(:,:),1)
-     write (*,*) "Debug eigenvec:", eigenvec(:,1)
+     !write(iunartout,*) "Debug eigenvec:", eigenvec(:,1)
      eigenvec(:,:) = (1.0_DP - smoothing_factor)*push(:,:) &
           -SIGN(1.0_DP,fpara_tot)*smoothing_factor*eigenvec(:,:)
      !
@@ -311,8 +310,9 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         ! do a perpendicular relax
         lperp = .true.
         iperp = 0
+
         ! return to initial number of lanczos steps
-        ilanc = 0
+        !ilanc = 0  !< initialize it when turn llanczos  = T
         ! 
      ENDIF
      CALL write_struct( at, nat, tau, order, elements, ityp, force, 1.0_DP, iunstruct, struc_format_out, eigenfname )
@@ -372,9 +372,11 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         ! ...If diff Energy is negative
         IF ( etot - etot_saddle < frelax_ene_thr ) THEN
            ! we started going downhill ...
+           if( .NOT.lrelax )irelax = 0
            lrelax = .true.
-        ELSE
-           !
+           !write(iunartout, *) "ARTn(lsaddle)::IRELAX=0"
+
+        ELSE  !< It is a PUSH_OVER the saddle point  
            disp = EIGN
            !
            CALL write_report( etot,force, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat,  iunartout, noARTnStep )
@@ -404,6 +406,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      CALL write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat, iunartout, ARTnStep )
 
      irelax = irelax + 1
+     !write(iunartout, *) "ARTn(lrelax)::increment IRELAX"
 
      !
      ! check for convergence
@@ -430,6 +433,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            ! reverse direction of push
            fpush_factor = -1.0
            irelax = 0
+           !write(iunartout, *) "ARTn(lrelax)::IRELAX=0"
 
         ELSEIF( .NOT.lend )THEN  !< If already pass before no need to rewrite again
 
@@ -437,6 +441,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            lend = lconv
            de_fwd = etot_saddle - etot
 
+           CALL write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat, iunartout, .true. )
            call write_inter_report( iunartout, int(fpush_factor), [de_back, de_fwd, etot_init, etot_final, etot] )
 
         END IF
@@ -512,7 +517,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         ! max number of lanczos steps exceeded ; reset counters
         !
         nlanc = lanc_mat_size
-        ilanc = 0
+        !ilanc = 0
         !
         llanczos = .false.
         !

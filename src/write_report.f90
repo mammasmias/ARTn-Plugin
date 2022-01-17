@@ -27,7 +27,7 @@ SUBROUTINE write_initial_report(iunartout, filout)
   WRITE (iunartout,'(5X, "               INPUT PARAMETERS                   ")')
   WRITE (iunartout,'(5X, "--------------------------------------------------")')
   WRITE (iunartout,'(5x, "engine_units:", *(x,A))') TRIM(engine_units)
-  WRITE (iunartout,'(5x, "Verbosity Level:", *(x,i2))') iverbose
+  WRITE (iunartout,'(5x, "Verbosity Level:", *(x,i2))') verbose
   WRITE (iunartout,'(5X, "--------------------------------------------------")')
   WRITE (iunartout,'(5X, "Push and perpendicular relax:")')
   WRITE (iunartout,'(5X, "--------------------------------------------------")')
@@ -52,13 +52,13 @@ SUBROUTINE write_initial_report(iunartout, filout)
   WRITE (iunartout,'(/,/)') 
   !WRITE (iunartout,*) " "
   !%! Condition on the engin_units..
-  WRITE (iunartout,'(5X,"istep",4X,"ART_step",4X,"Etot",5x,"init/eign/perp/lanc/relx","&
-                    "4X," Ftot ",5X," Fperp ",4X," Fpara ",4X,"eigval", 6X, "delr", 2X, "npart", X,"evalf",2X,"a1")')
+  !WRITE (iunartout,'(5X,"istep",4X,"ART_step",4X,"Etot",5x,"init/eign/perp/lanc/relx","&
+  !                  "4X," Ftot ",5X," Fperp ",4X," Fpara ",4X,"eigval", 6X, "delr", 2X, "npart", X,"evalf",2X,"a1")')
 
-  !WRITE (iunartout,'(5X,"istep",4X,"ART_step",4X,"Etot",5x,"init/eig/ip/il","&
-  !                  "3X," Ftot ",5X," Fperp ",4X," Fpara ",4X,"eigval", 6X, "delr", 2X, "npart", X,"evalf","&
-  !                  "2X,"B/S/R|I/P/L/E|P/B/R",4X,"a1")')
-  !WRITE (iunartout,'(27X, "[Ry]",17X,"-----------[Ry/a.u.]----------",3X,"Ry/a.u.^2")')
+  WRITE (iunartout,'(5X,"istep",4X,"ART_step",4X,"Etot",5x,"init/eign/perp/lanc/relx","&
+                    "4X," Ftot ",5X," Fperp ",4X," Fpara ",4X,"eigval", 6X, "delr", 2X, "npart", X,"evalf","&
+                    "2X,"B/S/R|I/P/L/E|P/B/R",4X,"a1")')
+  ! -- Units
   WRITE (iunartout, strg_units )
 
 
@@ -158,15 +158,15 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
   ENDIF
 
 
+  !WRITE(iunartout,5) iartn, Mstep, MOVE(disp), detot, iinit, ieigen, iperp, ilanc, irelax,  &
+  !                   force_tot, fperp_tot, fpara_tot, lowEig,     &
+  !                   dr, npart, evalf, a1
+  !5 format(5x,i4,3x,a,x,a,F10.4,x,5(x,i4),5(x,f10.4),2(x,i4),3X,f4.2)
   WRITE(iunartout,5) iartn, Mstep, MOVE(disp), detot, iinit, ieigen, iperp, ilanc, irelax,  &
                      force_tot, fperp_tot, fpara_tot, lowEig,     &
-                     dr, npart, evalf, a1
-  5 format(5x,i4,3x,a,x,a,F10.4,x,5(x,i4),5(x,f10.4),2(x,i4),3X,f4.2)
-  !WRITE(iunartout,5) iartn, Mstep, MOVE(disp), detot, iinit, ieigen, iperp, ilanc,   &
-  !                   force_tot, fperp_tot, fpara_tot, lowEig,     &
-  !                   dr, npart, evalf,   &
-  !    lbasin, lsaddle, lrelax, linit, lperp, llanczos, leigen,  lpush_final, lbackward, lrestart , a1
-  !5 format(5x,i4,3x,a,x,a,F10.4,3x,4(x,i2),5(x,f10.4),2(x,i4),3X,10(L2),3X,f4.2)
+                     dr, npart, evalf,   &
+      lbasin, lsaddle, lrelax, linit, lperp, llanczos, leigen,  lpush_final, lbackward, lrestart , a1
+  5 format(5x,i4,3x,a,x,a,F10.4,x,5(x,i4),5(x,f10.4),2(x,i4),3X,10(L2),3X,f4.2)
 
   IF( ARTnStep )iartn = iartn + 1
 

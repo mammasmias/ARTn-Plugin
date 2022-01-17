@@ -13,7 +13,7 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
   !
   USE units
   USE artn_params, ONLY : linit, lbasin, leigen, llanczos, lperp, lrelax, &
-                          iperp, nperp, istep, INIT, PERP, EIGN, LANC, RELX, &
+                          ilanc, iperp, nperp, istep, INIT, PERP, EIGN, LANC, RELX, &
                           init_forc_thr, forc_thr, fpara_thr, push, &
                           lowest_eigval, iunartout, etot_step
   IMPLICIT NONE
@@ -65,10 +65,12 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
 
         IF( C1 .OR. C2  ) THEN
            lperp = .false.
-           llanczos = .true.
+           llanczos = .true. 
+           !write(iunartout,*)"Check_Force(lperp:leigen)::initialize ilanc"
            leigen = .false. 
            !write(iunartout,*)"Check_force::eigen->Fperp"
             CALL write_report( etot_step, force, fperp, fpara, lowest_eigval, EIGN, if_pos, istep, nat,  iunartout, ArtnStep )
+           ilanc = 0
         ENDIF
 
      ELSE ! ...IN  BASIN
