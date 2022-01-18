@@ -488,10 +488,22 @@ void FixARTn::post_force( int /*vflag*/ ){
   ntot = 0;
   for( int ipc(0); ipc < nproc; ipc++ )ntot += nlresize[ ipc ];
 
+
   // ...One of the local size change
   if( ntot > 0 ){
 
-    oldnloc = nloc[ me ];
+    // PRINT DEBUG 
+    //printf("[%d] RESIZE THE LOCAL SYSTEM (%d ; %d) \n", me, nloc[me], oldnloc);
+
+
+    // ...Array of old local size
+    int *oldloc;
+    memory->create( oldloc, nproc, "fix/artn:oldloc" );
+    MPI_Allgather( &oldnloc, 1, MPI_INT, oldloc, 1, MPI_INT, world );
+    // PRINT DEBUG 
+    //for( int ipc(0); ipc < nproc; ipc++ )
+    //  printf("[%d] oldloc[%d] = %d \n", me, ipc, oldloc[ipc]);
+
 
     // ...Create temporary Arrays
     int *inew;
@@ -500,29 +512,39 @@ void FixARTn::post_force( int /*vflag*/ ){
     memory->create( length, natoms, "fix/artn:length" );
 
 
-    // Use AllGatherv for f_prev to ftot
+    // ---------------------------------- Use AllGatherv for f_prev to ftot
     // ...Starting point:
-    //istart[ 0 ] = 0;
     for( int ipc(0); ipc < nproc; ipc++ )
-      istart[ ipc ] = (ipc > 0) ? istart[ ipc - 1 ] + 3*nloc[ ipc - 1 ] : 0 ;
+      istart[ ipc ] = (ipc > 0) ? istart[ ipc - 1 ] + 3*oldloc[ ipc - 1 ] : 0 ;
     // ...Length of receiv buffer
     for( int ipc(0); ipc < nproc; ipc++ ) 
-      length[ ipc ] = 3*nloc[ ipc ];
+      length[ ipc ] = 3*oldloc[ ipc ];
 
-    MPI_Gatherv( &f_prev[0][0], 3*nlocal, MPI_DOUBLE, 
+    // PRINT DEBUG 
+    //for( int ipc(0); ipc < nproc; ipc++ )
+    //  printf( "[%d] f_prev: length[%d] = %d | istart[%d] = %d \n", me, ipc, length[ipc], ipc, istart[ipc] );
+
+    MPI_Gatherv( &f_prev[0][0], 3*oldnloc, MPI_DOUBLE, 
                    &ftot[0][0], length, istart, MPI_DOUBLE, 0, world );
 
 
-    // Use AllGatherv for order to old
+    // --------------------------------- Use AllGatherv for order to order_tot
     // ...Starting point:
-    //istart[ 0 ] = 0;
     for( int ipc(0); ipc < nproc; ipc++ )
-      istart[ ipc ] = ( ipc > 0 ) ? istart[ ipc - 1 ] + nloc[ ipc - 1 ] : 0 ;
+      istart[ ipc ] = ( ipc > 0 ) ? istart[ ipc - 1 ] + oldloc[ ipc - 1 ] : 0 ;
 
-    //memory->create( old, natoms, "fix/artn:old" );
+    // PRINT DEBUG 
+    //for( int ipc(0); ipc < nproc; ipc++ )
+    //  printf( "[%d] order: istart[%d] = %d \n", me, ipc, istart[ipc] );
 
-    MPI_Gatherv( order, nlocal, MPI_INT, 
-                    order_tot, nloc, istart, MPI_INT, 0, world );
+    MPI_Gatherv( order, oldnloc, MPI_INT, 
+                    order_tot, oldloc, istart, MPI_INT, 0, world );
+
+    // PRINT DEBUG 
+    //if( !me )
+    //for( int i(0); i < natoms; i++ )
+    //  if( order_tot[i] >= natoms || order_tot[i] < 0 )
+    //    printf("[%d] order_tot[%d] = %d \n", me, i, order_tot[i]);
 
 
   
@@ -534,26 +556,42 @@ void FixARTn::post_force( int /*vflag*/ ){
     // ...Fill now order
     for( int i(0); i < nlocal; i++ )order[ i ] = itag[ i ];
 
+
+    // --------------------------------- Use AllGatherv for order to inew
+    // ...Starting point:
+    for( int ipc(0); ipc < nproc; ipc++ )
+      istart[ ipc ] = ( ipc > 0 ) ? istart[ ipc - 1 ] + nloc[ ipc - 1 ] : 0 ;
+
+    // PRINT DEBUG 
+    //for( int ipc(0); ipc < nproc; ipc++ )
+    //  printf( "[%d] inew:  istart[%d] = %d \n", me, ipc, istart[ipc] );
+
     MPI_Gatherv( order, nlocal, MPI_INT,
                     inew, nloc, istart, MPI_INT, 0, world );
+
+    // PRINT DEBUG 
+    //if( !me )
+    //for( int i(0); i < natoms; i++ )
+    //  if( inew[i] > natoms || inew[i] < 0 )
+    //    printf("[%d] inew[%d] = %d \n", me, i, inew[i]);
 
 
 
     // ...Fill f_prev 
     if( !me ){
+      if( !vtot )printf(" ERROR - *VTOT => NULL \n");
+      if( !ftot )printf(" ERROR - *FTOT => NULL \n");
       for( int i(0); i < natoms; i++ ){
 
         int j;
         for( j = 0; j < natoms; j++ )
           if( order_tot[ j ] == inew[ i ] )break;
 
-        //f_prev[i][0] = ftot[j][0];
-        //f_prev[i][1] = ftot[j][1];
-        //f_prev[i][2] = ftot[j][2];
+        //printf("[%d] fill vtot: i %d -> %d ; j %d -> %d \n", me, i, inew[ i ], j, order_tot[ j ] );
         vtot[i][0] = ftot[j][0];
         vtot[i][1] = ftot[j][1];
         vtot[i][2] = ftot[j][2];
-      }
+      }  
     } // ::: ME = 0
 
 
@@ -572,7 +610,11 @@ void FixARTn::post_force( int /*vflag*/ ){
                   &f_prev[0][0], 3*nlocal, MPI_DOUBLE, 0, world );
 
 
+    // ...Save the new value
+    oldnloc = nloc[ me ];
+
     // ...Destroy temporary arrays
+    memory->destroy( oldloc );
     memory->destroy( inew );
     memory->destroy( length );
     memory->destroy( istart );
