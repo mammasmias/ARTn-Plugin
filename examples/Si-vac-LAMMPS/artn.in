@@ -1,0 +1,26 @@
+&ARTN_PARAMETERS
+  !! Units definition::(eV,Ang,ps)  
+  engine_units='lammps/metal'
+  verbose = 1
+
+!  lrestart = .true.
+  ninit = 5
+  lpush_final = .true. 
+  nsmooth = 2
+
+  init_forc_thr = 0.5
+  forc_thr = 0.05
+  fpara_thr = 0.06
+
+  !! parameters for the push
+  push_step_size = 0.01
+  push_mode = 'all'
+
+  !! lanczos parameters
+  dlanc = 0.2D-1
+  lanc_mat_size = 16
+  
+  !! eigenpush parms
+  eigen_step_size = 0.15
+  frelax_ene_thr = -0.005
+/
