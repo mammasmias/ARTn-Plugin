@@ -182,7 +182,7 @@ Engine specific flag:
 
 ###### Ouput:
 
-- `verbose`: Value is integer, by default is `0`. Choose the level of verbose with the minimum verbose, print in output file at each ARTn step, `1` means print at each step: define push, push and perprelax.  
+- `verbose`: Value is integer, by default is `0`. Level `0`  print in output file at each ARTn step without flag information, at `1`  it will add the information flag and at `2`  will print at each step: define push, push and perprelax.  
 
 
 
