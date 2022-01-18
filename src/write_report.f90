@@ -143,6 +143,8 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
   evalf = istep
 
 
+  dr = 0.
+  npart = 0
   IF( ARTnStep )THEN
 
     ! ...Displacement processing

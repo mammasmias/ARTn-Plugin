@@ -126,7 +126,7 @@ MODULE artn_params
        init_forc_thr,forc_thr, fpara_thr, eigval_thr, frelax_ene_thr, &
        push_step_size, dlanc, eigen_step_size, current_step_size, &
        push_ids,add_const, engine_units, zseed, struc_format_out, elements, &
-       push_over, verbose
+       push_over, verbose, nperp
   !
 CONTAINS
   !

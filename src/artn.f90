@@ -206,7 +206,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
       ! ...Overwirte the engine Arrays
       tau(:,:) = tau_step(:,order(:))
-      force(:,:) = force_step(:,order(:))
+      !force(:,:) = force_step(:,order(:))
 
     ELSE 
 
@@ -360,15 +360,19 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !
      !
      disp = EIGN
+
+     !CALL Apply_Smooth_interpol( ismooth, push, eigenvec )
+     !>>>>
      smoothing_factor = 1.0_DP*ismooth/nsmooth
      !
-     fpara_tot = ddot(3*nat, force_step(:,:),1,eigenvec(:,:),1)
+     fpara_tot = ddot(3*nat, force_step(:,:), 1, eigenvec(:,:), 1)
 
      !write(iunartout,*) "Debug eigenvec:", eigenvec(:,1)
      eigenvec(:,:) = (1.0_DP - smoothing_factor)*push(:,:) &
           -SIGN(1.0_DP,fpara_tot)*smoothing_factor*eigenvec(:,:)
      !
      IF ( ismooth < nsmooth) ismooth = ismooth + 1
+     !<<<<<
      !
      ! rescale the eigenvector according to the current force in the parallel direction
      ! see Cances_JCP130: some improvements of the ART technique doi:10.1063/1.3088532
@@ -406,6 +410,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   IF ( lsaddle_conv ) THEN
 
      IF ( etot_step > etot_init ) THEN
+
         ! store the saddle point energy
         etot_saddle = etot_step
         tau_saddle = tau_step
@@ -464,8 +469,11 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            ! 
            displ_vec(:,:) = fpush_factor*eigenvec(:,:)*eigen_step_size
         END IF
+
      ELSE
+
         lconv = .true.
+
      ENDIF
   ENDIF
 

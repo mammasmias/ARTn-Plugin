@@ -180,6 +180,14 @@ Engine specific flag:
 - `dlanc`: Is a real value, by default is `1e-2 bohr`. Step size in the lanczos algorithm. Should not be (`lanc_step_size`)
 - `eigen_step_size`:  Is a real value, by default is `0.2 bohr`. Step size for a step with the lanczos eigenvector (note: the step size is limited by the engine).
 
+###### Ouput:
+
+- `verbose`: Value is integer, by default is `0`. Choose the level of verbose with the minimum verbose, print in output file at each ARTn step, `1` means print at each step: define push, push and perprelax.  
+
+
+
+
+
 
 
 ## The output
@@ -191,9 +199,9 @@ Engine specific flag:
 ## TODO
 
 - nsteppos in ARTn doesn't have the same meaning for QE and LAMMPS in FIRE algo
-- Work on verbose debug mode 
+- Work on verbose debug mode :ok:
 - Work on the parallelization: The convergence change a bit with the number of proc. Maybe the convertion at each step create some numerical noise.
-- Do pARTn output as ARTn output
-- Adapt the Units output with the Engine input
+- Do pARTn output as ARTn output:ok:
+- Adapt the Units output with the Engine input :ok:
 - Verify the parameter NAME
 - Add the output filename custom
