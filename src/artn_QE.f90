@@ -67,7 +67,7 @@ SUBROUTINE artn_QE( force, etot, epsf_qe, nat, ityp, atm, tau, at, alat, istep, 
       INTEGER,          INTENT(OUT) :: disp
       LOGICAL,          INTENT(OUT) :: lconv  
     END SUBROUTINE artn
-    SUBROUTINE move_mode(nat, force, vel, etot, nsteppos, dt_curr, alpha, alpha_init, dt_init, disp, displ_vec )
+    SUBROUTINE move_mode(nat, order, force, vel, etot, nsteppos, dt_curr, alpha, alpha_init, dt_init, disp, displ_vec )
       use units, only : DP
       USE artn_params, ONLY: iperp, push0 => push, push=>eigenvec, dlanc, move
       IMPLICIT NONE
@@ -78,7 +78,7 @@ SUBROUTINE artn_QE( force, etot, epsf_qe, nat, ityp, atm, tau, at, alat, istep, 
       REAL(DP), INTENT(IN)                      :: alpha_init, dt_init
       REAL(DP), INTENT(INOUT)                   :: etot, alpha, dt_curr
       INTEGER,  INTENT(INOUT)                   :: nsteppos
-      INTEGER, INTENT(IN)                       :: disp
+      INTEGER, INTENT(IN)                       :: disp, order(nat)
     END SUBROUTINE move_mode 
   end interface
   !------------------------------------------------------------------------------------------------------------
@@ -135,7 +135,8 @@ SUBROUTINE artn_QE( force, etot, epsf_qe, nat, ityp, atm, tau, at, alat, istep, 
   !print*, " * ARTn_QE::PRE_MOVEMODE "
 
   ! ...Convert the dR given by ARTn to forces
-  call move_mode( nat, force, vel, etot_fire, nsteppos, dt_curr, alpha, fire_alpha_init, dt_init, disp, displ_vec )
+  !call move_mode( nat, force, vel, etot_fire, nsteppos, dt_curr, alpha, fire_alpha_init, dt_init, disp, displ_vec )
+  call move_mode( nat, order, force, vel, etot_fire, nsteppos, dt_curr, alpha, fire_alpha_init, dt_init, disp, displ_vec )
 
 
   !

@@ -3,12 +3,14 @@
 !!   Matic Poberznik,
 !!   Miha Gunde
 SUBROUTINE perpforce( force, if_pos, push, fperp, fpara, nat )
+!SUBROUTINE splitfield( force, if_pos, push, fperp, fpara, nat )
   !
   !> @brief subroutine that subtracts parallel components to push from force
   !
-  !> @param[inout]  force	Force field and become Fperp field following Push field
-  !! @param[in]	    if_pos	Constrain field
+  !> @param[in]     force	Field input
+  !! @param[in]	    if_pos	Constrain in field
   !! @param[in]	    push	Parallel field reference
+  !! @param[out]    fperp	Perpendicular force field following Push field
   !! @param[out]    fpara	Parallel force field following Push field
   !! @param[in]	    nat		number of point in the field 
   !
@@ -35,4 +37,5 @@ SUBROUTINE perpforce( force, if_pos, push, fperp, fpara, nat )
   IF ( ANY(if_pos(:,:) == 0)  ) fperp(:,:) = fperp(:,:)*if_pos(:,:) 
 
 END SUBROUTINE perpforce
+!END SUBROUTINE splitfield
 

@@ -99,6 +99,8 @@ SUBROUTINE write_xsf( at, nat, tau, order, atm, ityp, force, ounit )
      ! -> And the force???
      iloc = order(na)
      WRITE(ounit,'(a3,3x,6f15.9)') atm(ityp(iloc)), unconvert_length( tau(:,iloc) ), force(:,iloc)
+     !Print*, na, atm(ityp(iloc)), unconvert_length( tau(:,iloc) ), unconvert_force( force(:,iloc) )
+     !Print*, na, atm(ityp(iloc)), tau(:,iloc), force(:,iloc)
   ENDDO
 
 END SUBROUTINE write_xsf

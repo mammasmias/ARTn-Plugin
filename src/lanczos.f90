@@ -4,7 +4,7 @@
 !!  Miha Gunde
 
 
-SUBROUTINE lanczos( nat, force, displ_vec,  v_in, dlanc, nlanc, ilanc, lowest_eigval, lowest_eigvec, pushdir)
+SUBROUTINE lanczos( nat, force, displ_vec, v_in, dlanc, nlanc, ilanc, lowest_eigval, lowest_eigvec, pushdir )
   USE artn_params,            ONLY: DP, Vmat, H, force_old
   !
   !> @brief
@@ -187,7 +187,7 @@ SUBROUTINE lanczos( nat, force, displ_vec,  v_in, dlanc, nlanc, ilanc, lowest_ei
      ! check if the obtained eigenvec points in the same direction as the pushing direction
      !
      dir = ddot(3*nat,lowest_eigvec,1, pushdir, 1)
-     write (*,*) "Debug dir:", dir
+     !write (*,*) "Lanczos::Debug dir:", dir
      IF ( dir < 0.D0 ) THEN
         lowest_eigvec(:,:) = -1.D0*lowest_eigvec(:,:)
      ENDIF
