@@ -95,7 +95,6 @@ SUBROUTINE push_init( nat, tau, order, at, idum, push_ids, dist_thr, add_const, 
   ENDIF
 
   !%! Order the ADD_CONST Array: i = order(i)
-  !if( istep == 0 )
   add_const(:,:) = add_const(:,order(:))
 
 
@@ -130,13 +129,16 @@ SUBROUTINE push_init( nat, tau, order, at, idum, push_ids, dist_thr, add_const, 
   push(:,:) = push(:,:)/MAXVAL(ABS(push(:,:)))
 
   ! scale initial push vector according to step size (ORDERED) 
-  !push(:,:) = init_step_size*push(:,order(:))
   push(:,order(:)) = init_step_size*push(:,:)
 
 
-  !do na =1,nat
-  !   !if( ANY(ABS(add_const(:,na)) > 0.D0) )print*, "PUSH_INIT:", na, order(na), push(:,na)
-  !   print*, "PUSH_INIT:", na, order(na), push(:,na)
-  !enddo
+! do na =1,nat
+!    !if( ANY(ABS(add_const(:,na)) > 0.D0) )print*, "PUSH_INIT:", na, order(na), push(:,na)
+!    if( atom_displaced(na) == 1 )print*, "PUSH_INIT:", na, order(na), push(:,order(na))
+!    !print*, "PUSH_INIT:", na, order(na), push(:,na)
+! enddo
+
+
+
 
 END SUBROUTINE push_init

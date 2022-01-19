@@ -39,25 +39,6 @@ using namespace std;
 using namespace LAMMPS_NS;
 using namespace FixConst;
 
-/*extern "C"{
-  void artn_( double *const f, double* etot, const int nat, const int *ityp, const char *elt, double *const tau, const int *order, const double *lat, const int *if_pos, int* disp, bool* lconv );
-  void move_mode_( const int nat, double *const f, double *const vel, double* etot, int* nsteppos, double* dt_curr, double* alpha, const double* alpha_init, const double* dt_init, int* disp );
-  int get_iperp_();
-  int get_perp_();
-  int get_relx_();
-}*/
-
-/*
-#ifdef INTEL 
-extern int __artn_params_mp_iperp;
-extern int __artn_params_mp_perp;
-extern int __artn_params_mp_relx;
-#else
-extern int __artn_params_MOD_iperp;
-extern int __artn_params_MOD_perp;
-extern int __artn_params_MOD_relx;
-#endif
-*/
 
 /* ---------------------------------------------------------------------- */
 
@@ -87,6 +68,7 @@ FixARTn::FixARTn( LAMMPS *lmp, int narg, char **arg ): Fix( lmp, narg, arg )
 
   nextblank = 0;
   f_prev = nullptr;
+  v_prev = nullptr;
   order = nullptr;
   elt = nullptr;
   if_pos = nullptr;
@@ -206,6 +188,7 @@ FixARTn::~FixARTn() {
   memory->destroy( order );
   memory->destroy( elt );
   memory->destroy( f_prev );
+  memory->destroy( v_prev );
   memory->destroy( if_pos );
 
   memory->destroy( nloc );
@@ -357,6 +340,7 @@ void FixARTn::min_setup( int vflag ) {
 
   // ...Allocate the previous force table :: IS LOCAL
   memory->create( f_prev, nlocal, 3, "fix/artn:f_prev" );
+  memory->create( v_prev, nlocal, 3, "fix/artn:v_prev" );
   nextblank = 0;
 
 
@@ -508,6 +492,7 @@ void FixARTn::post_force( int /*vflag*/ ){
 
 
     // ---------------------------------- Use AllGatherv for f_prev to ftot
+    //                                                       v_prev to vtot
     // ...Starting point:
     for( int ipc(0); ipc < nproc; ipc++ )
       istart[ ipc ] = (ipc > 0) ? istart[ ipc - 1 ] + 3*oldloc[ ipc - 1 ] : 0 ;
@@ -518,6 +503,9 @@ void FixARTn::post_force( int /*vflag*/ ){
 
     MPI_Gatherv( &f_prev[0][0], 3*oldnloc, MPI_DOUBLE, 
                  &ftot[0][0], length, istart, MPI_DOUBLE, 0, world );
+
+    MPI_Gatherv( &v_prev[0][0], 3*oldnloc, MPI_DOUBLE, 
+                 &vtot[0][0], length, istart, MPI_DOUBLE, 0, world );
 
 
     // --------------------------------- Use AllGatherv for order to order_tot
@@ -550,7 +538,7 @@ void FixARTn::post_force( int /*vflag*/ ){
 
     // ...Change the order of force 
     if( !me ){
-      if( !vtot )printf(" ERROR - *VTOT => NULL \n");
+      if( !xtot )printf(" ERROR - *XTOT => NULL \n");
       if( !ftot )printf(" ERROR - *FTOT => NULL \n");
       for( int i(0); i < natoms; i++ ){
 
@@ -558,9 +546,9 @@ void FixARTn::post_force( int /*vflag*/ ){
         for( j = 0; j < natoms; j++ )
           if( order_tot[ j ] == inew[ i ] )break;
 
-        vtot[i][0] = ftot[j][0];
-        vtot[i][1] = ftot[j][1];
-        vtot[i][2] = ftot[j][2];
+        xtot[i][0] = ftot[j][0];
+        xtot[i][1] = ftot[j][1];
+        xtot[i][2] = ftot[j][2];
       }  
     } // ::: ME = 0
 
@@ -577,8 +565,38 @@ void FixARTn::post_force( int /*vflag*/ ){
     // ...Length of receiv buffer
     for( int ipc(0); ipc < nproc; ipc++ )length[ ipc ] = 3*nloc[ ipc ];
 
-    MPI_Scatterv( &vtot[0][0], length, istart, MPI_DOUBLE, 
+    MPI_Scatterv( &xtot[0][0], length, istart, MPI_DOUBLE, 
                   &f_prev[0][0], 3*nlocal, MPI_DOUBLE, 0, world );
+
+
+/*-------
+    // ...Change the order of velocity
+    if( !me ){
+      if( !xtot )printf(" ERROR - *XTOT => NULL \n");
+      if( !vtot )printf(" ERROR - *VTOT => NULL \n");
+      for( int i(0); i < natoms; i++ ){
+
+        int j;
+        for( j = 0; j < natoms; j++ )
+          if( order_tot[ j ] == inew[ i ] )break;
+
+        xtot[i][0] = vtot[j][0];
+        xtot[i][1] = vtot[j][1];
+        xtot[i][2] = vtot[j][2];
+      }
+    } // ::: ME = 0
+
+
+    // ...Resize f_prev
+    memory->destroy( v_prev );
+    memory->create( v_prev, nlocal, 3, "fix/artn:v_prev" );
+
+    MPI_Scatterv( &xtot[0][0], length, istart, MPI_DOUBLE, 
+                  &v_prev[0][0], 3*nlocal, MPI_DOUBLE, 0, world );
+------*/
+
+
+
 
 
     // ...Save the new value
@@ -623,6 +641,9 @@ void FixARTn::post_force( int /*vflag*/ ){
       f[i][0] = f_prev[i][0] * rscl*rscl ;
       f[i][1] = f_prev[i][1] * rscl*rscl ;
       f[i][2] = f_prev[i][2] * rscl*rscl ;
+      //vel[i][0] = v_prev[i][0] * rscl ;
+      //vel[i][1] = v_prev[i][1] * rscl ;
+      //vel[i][2] = v_prev[i][2] * rscl ;
       //cout<< me<<" * Rescale Force: "<< i<<" f:"<< f[i][0]<<endl;
     }
 
@@ -822,11 +843,14 @@ void FixARTn::post_force( int /*vflag*/ ){
 
 
 
-  // ...Store the actual force
+  // ...Store the actual force/velocity
   for( int i(0); i < nloc[me]; i++ ){
     f_prev[i][0] = f[i][0];
     f_prev[i][1] = f[i][1];
     f_prev[i][2] = f[i][2];
+   // v_prev[i][0] = vel[i][0];
+   // v_prev[i][1] = vel[i][1];
+   // v_prev[i][2] = vel[i][2];
   }
 
 
@@ -849,19 +873,6 @@ void FixARTn::post_force( int /*vflag*/ ){
 
 
 void FixARTn::Collect_Arrays( int* nloc, double **x, double **v, double **f, int nat, double **xtot, double **vtot, double **ftot, int *order_tot, int *typ_tot ){
-
-
-  tagint *itag = atom->tag;
-  if( oldnloc != nloc[me] ){
-    //cout<< me<< " *** RESIZE ORDER: "<< oldnloc<< " | "<< nloc[me]<<endl;
-    memory->destroy( order );
-    memory->destroy( f_prev );
-    oldnloc = nloc[me];
-    memory->create( order, oldnloc, "fix/artn:order" );
-    memory->create( f_prev, oldnloc, 3, "fix/artn:f_prev" );
-  }
-  for( int i(0); i < nloc[me]; i++ ) order[i] = itag[i];
-
 
 
 

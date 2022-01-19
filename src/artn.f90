@@ -154,6 +154,9 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     END DO
     eigenvec(:,:) = eigenvec(:,:)/dnrm2(3*nat,eigenvec,1) * dnrm2(3*nat,push,1)
 
+    !> Test
+    !eigenvec = push
+
 
     CALL perpforce( force_step, if_pos, push, fperp, fpara, nat)
 
