@@ -204,4 +204,5 @@ Engine specific flag:
 - Do pARTn output as ARTn output:ok:
 - Adapt the Units output with the Engine input :ok:
 - Verify the parameter NAME
-- Add the output filename custom
+- Add the output filename custom :ok:
+- `nperp` parameter it is deactivated when it converge on the saddle point. Should be Activated when the system return in Basin.
