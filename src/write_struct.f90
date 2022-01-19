@@ -98,8 +98,8 @@ SUBROUTINE write_xsf( at, nat, tau, order, atm, ityp, force, ounit )
      ! convert positions are in Engine units length
      ! -> And the force???
      iloc = order(na)
-     !WRITE(ounit,'(a3,3x,6f15.9)') atm(ityp(iloc)), unconvert_length( tau(:,iloc) ), unconvert_force( force(:,iloc) )
-     WRITE(ounit,'(a3,3x,6f15.9)') ityp(iloc), unconvert_length( tau(:,iloc) ), unconvert_force( force(:,iloc) )
+     WRITE(ounit,'(a3,3x,6f15.9)') atm(ityp(iloc)), unconvert_length( tau(:,iloc) ), unconvert_force( force(:,iloc) )
+     !WRITE(ounit,'(a3,3x,6f15.9)') ityp(iloc), unconvert_length( tau(:,iloc) ), unconvert_force( force(:,iloc) )
   ENDDO
 
 END SUBROUTINE write_xsf
@@ -132,8 +132,8 @@ SUBROUTINE write_xyz( at, nat, tau, order, atm, ityp, f, ounit )
      ! convert positions are in Engine units length
      ! -> And the force???
      iloc = order(na)
-     !WRITE( ounit, fmt='(a3,3x,6f15.9)', IOSTAT=ios ) atm(ityp(iloc)), unconvert_length( tau(:,iloc) ), unconvert_force( f(:,iloc) )
-     WRITE( ounit, fmt='(a3,3x,6f15.9)', IOSTAT=ios ) ityp(iloc), unconvert_length( tau(:,iloc) ), unconvert_force( f(:,iloc) )
+     WRITE( ounit, fmt='(a3,3x,6f15.9)', IOSTAT=ios ) atm(ityp(iloc)), unconvert_length( tau(:,iloc) ), unconvert_force( f(:,iloc) )
+     !WRITE( ounit, fmt='(a3,3x,6f15.9)', IOSTAT=ios ) ityp(iloc), unconvert_length( tau(:,iloc) ), unconvert_force( f(:,iloc) )
   ENDDO
 
 END SUBROUTINE write_xyz
