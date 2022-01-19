@@ -206,3 +206,4 @@ Engine specific flag:
 - Verify the parameter NAME
 - Add the output filename custom :ok:
 - `nperp` parameter it is deactivated when it converge on the saddle point. Should be Activated when the system return in Basin.
+- **IMPORTANT**: Fast Restart procedure for lammps
