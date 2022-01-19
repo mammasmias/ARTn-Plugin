@@ -51,13 +51,19 @@ SUBROUTINE write_initial_report(iunartout, filout)
   WRITE (iunartout,'(5X, "--------------------------------------------------")')
   WRITE (iunartout,'(/,/)') 
   !WRITE (iunartout,*) " "
-  !%! Condition on the engin_units..
-  !WRITE (iunartout,'(5X,"istep",4X,"ART_step",4X,"Etot",5x,"init/eign/perp/lanc/relx","&
-  !                  "4X," Ftot ",5X," Fperp ",4X," Fpara ",4X,"eigval", 6X, "delr", 2X, "npart", X,"evalf",2X,"a1")')
 
-  WRITE (iunartout,'(5X,"istep",4X,"ART_step",4X,"Etot",5x,"init/eign/perp/lanc/relx","&
-                    "4X," Ftot ",5X," Fperp ",4X," Fpara ",4X,"eigval", 6X, "delr", 2X, "npart", X,"evalf","&
-                    "2X,"B/S/R|I/P/L/E|P/B/R",4X,"a1")')
+  !%! Condition on the engin_units..
+  select case( verbose )
+    case( 0 )
+    WRITE (iunartout,'(5X,"istep",4X,"ART_step",4X,"Etot",5x,"init/eign/perp/lanc/relx","&
+                      "4X," Ftot ",5X," Fperp ",4X," Fpara ",4X,"eigval", 6X, "delr", 2X, "npart", X,"evalf",2X,"a1")')
+
+    case( 1: )
+    WRITE (iunartout,'(5X,"istep",4X,"ART_step",4X,"Etot",5x,"init/eign/perp/lanc/relx","&
+                      "4X," Ftot ",5X," Fperp ",4X," Fpara ",4X,"eigval", 6X, "delr", 2X, "npart", X,"evalf","&
+                      "2X,"B/S/R|I/P/L/E|P/B/R",4X,"a1")')
+  end select
+
   ! -- Units
   WRITE (iunartout, strg_units )
 
@@ -84,7 +90,7 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
   !> @param [in]  istep		actual step of ARTn 
   !> @param [in]  iunartout	Channel of output
   !
-  USE artn_params, ONLY: push, MOVE  &
+  USE artn_params, ONLY: push, MOVE, verbose  &
                         ,etot_init, iinit, iperp, ieigen, ilanc, irelax, delr, verbose, iartn, a1 &
                         ,old_tau, lat, tau_step &
                         ,lrelax, linit, lbasin, lperp, llanczos, leigen, lsaddle, lpush_final, lbackward, lrestart 
@@ -106,15 +112,12 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
   !
 
   ! ...Print only ARTn-Step
-  if( .NOT.ArtnStep .AND. verbose == 0 )then
+  if( .NOT.ArtnStep .AND. verbose < 2 )then
     RETURN
   endif
 
 
   ! ...Force processing
-  !CALL sum_force( force, nat, force_tot )
-  !CALL sum_force( fperp, nat, fperp_tot )
-  !CALL sum_force( fpara, nat, fpara_tot )
   force_tot = MAXVAL( ABS(force) )
   fperp_tot = MAXVAL( ABS(fperp) )
   fpara_tot = MAXVAL( ABS(fpara) )
@@ -160,15 +163,21 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
   ENDIF
 
 
-  !WRITE(iunartout,5) iartn, Mstep, MOVE(disp), detot, iinit, ieigen, iperp, ilanc, irelax,  &
-  !                   force_tot, fperp_tot, fpara_tot, lowEig,     &
-  !                   dr, npart, evalf, a1
-  !5 format(5x,i4,3x,a,x,a,F10.4,x,5(x,i4),5(x,f10.4),2(x,i4),3X,f4.2)
-  WRITE(iunartout,5) iartn, Mstep, MOVE(disp), detot, iinit, ieigen, iperp, ilanc, irelax,  &
-                     force_tot, fperp_tot, fpara_tot, lowEig,     &
-                     dr, npart, evalf,   &
-      lbasin, lsaddle, lrelax, linit, lperp, llanczos, leigen,  lpush_final, lbackward, lrestart , a1
-  5 format(5x,i4,3x,a,x,a,F10.4,x,5(x,i4),5(x,f10.4),2(x,i4),3X,10(L2),3X,f4.2)
+  select case( verbose )
+    case( 0 )
+      WRITE(iunartout,6) iartn, Mstep, MOVE(disp), detot, iinit, ieigen, iperp, ilanc, irelax,  &
+                         force_tot, fperp_tot, fpara_tot, lowEig,     &
+                         dr, npart, evalf, a1
+      6 format(5x,i4,3x,a,x,a,F10.4,x,5(x,i4),5(x,f10.4),2(x,i4),3X,f4.2)
+
+    case( 1: )
+      WRITE(iunartout,5) iartn, Mstep, MOVE(disp), detot, iinit, ieigen, iperp, ilanc, irelax,  &
+                         force_tot, fperp_tot, fpara_tot, lowEig,     &
+                         dr, npart, evalf,   &
+          lbasin, lsaddle, lrelax, linit, lperp, llanczos, leigen,  lpush_final, lbackward, lrestart , a1
+      5 format(5x,i4,3x,a,x,a,F10.4,x,5(x,i4),5(x,f10.4),2(x,i4),3X,10(L2),3X,f4.2)
+
+  end select
 
   IF( ARTnStep )iartn = iartn + 1
 

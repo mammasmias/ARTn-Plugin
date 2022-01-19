@@ -100,82 +100,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   ! set initial random seed
   IF( zseed .ne. 0 ) idum = zseed
 
-! ! ...Store & convert original force in a.u.
-! IF( istep == 0 ) THEN
-
-!    !CALL ARTn_Setup( nat, filin, order )
-
-!    ! read the input parameters
-!    CALL initialize_artn( nat, iunartin, filin )
-!    ! 
-
-!    CALL push_init(nat, tau, order, at, idum, push_ids, dist_thr, add_const, push_step_size, push , push_mode)
-
-!    ! generate first lanczos eigenvector (NS: Maybe put in push_init)
-!    DO i = 1, nat
-!       eigenvec(:,i) = (/0.5_DP - ran3(idum),0.5_DP - ran3(idum),0.5_DP - ran3(idum)/) * if_pos(:,i)
-!    END DO
-!    eigenvec(:,:) = eigenvec(:,:)/dnrm2(3*nat,eigenvec,1) * dnrm2(3*nat,push,1)
-!    ! 
-!    !
-!    ! check if a restart was requested
-!    !
-!    IF ( lrestart ) THEN
-
-!       ! ...Signal that it is a restart
-!       OPEN ( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'old', POSITION = 'append', IOSTAT = ios )
-!       WRITE (iunartout, *) "Restarted previous ARTn calculation"
-!       CLOSE ( UNIT = iunartout, STATUS = 'KEEP')
-
-!       ! ...Read the FLAGS, FORCES, POSITIONS, ENERGY, ... 
-!       CALL read_restart( restartfname, nat )
-!       !
-!       ! ...Unconvert Energy/Forces because it will be convert just after
-!       lat = at
-!       tau = tau_step
-!       force = unconvert_force( force_step )
-!       etot_eng = unconvert_energy( etot_step )
-!       etot = etot_step
-
-!    ELSE
-
-!       CALL write_initial_report( iunartout, filout )
-!       ! store energy of initial state
-!       etot_init = convert_energy( etot_eng )
-!       ! ...Convert the Energy
-!       etot = etot_init
-!       etot_step = etot
-
-!    ENDIF
-
-!    ! ...store positions of current step
-!    lat = at
-!    tau_step(:,:) = tau(:,order(:))
-
-!    force = convert_force( force )
-!    force_step = force
-!    CALL perpforce( force, if_pos, push, fperp, fpara, nat)
-
-
-! ELSE ! ...ISTEP > 0
-
-!    ! ...store positions of current step
-!    lat = at
-!    tau_step(:,:) = tau(:,order(:))
-
-!    ! ...Convert the Energy
-!    etot = convert_energy( etot_eng )
-!    etot_step = etot
-!    !
-!    force = convert_force( force )
-!    force_step = force
-!    CALL perpforce( force, if_pos, push, fperp, fpara, nat)
-!    !write (*,*) "Debug force:", force(:,1)
-!    CALL check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv, lsaddle_conv )
-!    !
-! ENDIF
-
-
 
   IF( istep == 0 )THEN
 
@@ -532,7 +456,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            de_fwd = etot_saddle - etot_step
 
            CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat, iunartout, .true. )
-           call write_inter_report( iunartout, int(fpush_factor), [de_back, de_fwd, etot_init, etot_final, etot] )
+           call write_inter_report( iunartout, int(fpush_factor), [de_back, de_fwd, etot_init, etot_final, etot_step] )
 
         END IF
         !
