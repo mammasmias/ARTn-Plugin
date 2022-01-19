@@ -23,7 +23,7 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
   !> @param [in]    disp	Kind of actual displacement 
   !> @param [in]    displ_vec	Displacement field (unit lemgth/force/hessian ) 
   !
-  USE artn_params, ONLY:  iperp, irelax, push0 => push, push=>eigenvec, dlanc, MOVE
+  USE artn_params, ONLY:  lbasin, iperp, irelax, push, eigenvec, dlanc, MOVE
   USE UNITS
   !
   IMPLICIT NONE
@@ -43,7 +43,7 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
   INTEGER, INTENT(IN)                       :: disp
   ! 
   ! -- Local Variable
-  REAL(DP) :: dt0, dt
+  REAL(DP) :: dt0, dt, tmp0, tmp1
   REAL(DP), EXTERNAL               :: ddot,dnrm2
   integer :: i
   !
@@ -91,8 +91,17 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
         nsteppos = 5
      ELSE
         ! subtract the components that are parallel
-        vel(:,:) = vel(:,:) - ddot( 3*nat, vel, 1, push, 1 )*push(:,:) / ddot( 3*nat, push(:,:), 1, push(:,:), 1 )
-        !%! vel = 0.D0
+        if( lbasin )then
+          tmp0 = ddot( 3*nat, vel(:,:), 1, push(:,order(:)), 1 )
+          tmp1 = ddot( 3*nat, push(:,:), 1, push(:,:), 1 )  !> Don't need to be ordered
+          vel(:,:) = vel(:,:) - tmp0 / tmp1 * push(:,order(:)) 
+        else
+          tmp0 = ddot( 3*nat, vel(:,:), 1, eigenvec(:,order(:)), 1 )
+          tmp1 = ddot( 3*nat, eigenvec(:,:), 1, eigenvec(:,:), 1 )  !> Don't need to be ordered
+          vel(:,:) = vel(:,:) - tmp0 / tmp1 * eigenvec(:,order(:)) 
+        endif
+        !vel(:,:) = vel(:,:) - ddot( 3*nat, vel, 1, push, 1 )*push(:,:) / ddot( 3*nat, push(:,:), 1, push(:,:), 1 )
+        !vel = 0.D0
         
      ENDIF
         !

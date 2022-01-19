@@ -3,7 +3,7 @@
 
 OBJ  := Obj
 SRC  := .
-F90 := gfortran
+F90 := gfortran #ifort
 #AR := ar
 
 LIB_OBJECTS := \
@@ -19,6 +19,7 @@ LIB_OBJECTS := \
             $(OBJ)/push_init.o \
 	    $(OBJ)/sum_force.o \
             $(OBJ)/perpforce.o \
+            $(OBJ)/smooth_interpol.o \
 	    $(OBJ)/move_mode.o \
 	    $(OBJ)/write_report.o \
 	    $(OBJ)/write_struct.o \
@@ -26,13 +27,13 @@ LIB_OBJECTS := \
             $(OBJ)/artn_QE.o
 
 
-FDEBUG := #-check all  #-fcheck=all
+FDEBUG := -g #-check all  #-fcheck=all
 
 ifeq ($(F90),ifort)
   MOD   := -module $(OBJ)
   FLAGS := $(FFLAGS) $(FDEBUG) $(LAPACK_LIBS) -fPIC
 else #($(F90),gfortran)
-  MOD   := -I$(OBJ) -J$(OBJ) # -module $(OBJ)
+  MOD   := -I$(OBJ) -J$(OBJ) 
   FLAGS := $(FFLAGS) $(FDEBUG) $(LAPACK_LIBS)
 endif
 

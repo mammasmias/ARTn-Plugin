@@ -285,13 +285,12 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !
      disp = EIGN
 
-     !CALL Apply_Smooth_interpol( ismooth, push, eigenvec )
+     !CALL Smooth_interpol( ismooth, nat, force_step, push, eigenvec, fpara_tot )
      !>>>>
      smoothing_factor = 1.0_DP*ismooth/nsmooth
-     !
+     !!
      fpara_tot = ddot(3*nat, force_step(:,:), 1, eigenvec(:,:), 1)
 
-     !write(iunartout,*) "Debug eigenvec:", eigenvec(:,1)
      eigenvec(:,:) = (1.0_DP - smoothing_factor)*push(:,:) &
           -SIGN(1.0_DP,fpara_tot)*smoothing_factor*eigenvec(:,:)
      !
@@ -339,11 +338,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         etot_saddle = etot_step
         tau_saddle = tau_step
         eigen_saddle = eigenvec
-        !DO i = 1, nat
-        !   !tau_saddle(:,order(i)) = tau(:,i) !> The list follows the atomic order
-        !   !eigen_saddle(:,order(i)) = eigenvec(:,i)
-        !   eigen_saddle(:,i) = eigenvec(:,i)
-        !ENDDO
         !
         lsaddle = .true.
         !
@@ -371,7 +365,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         !
         ! normalize eigenvector
         if( lbackward )then
-          !eigenvec(:,:) = eigen_saddle(:,order(:))
           eigenvec(:,:) = eigen_saddle(:,:)
           lbackward = .false.
         else
@@ -384,7 +377,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            ! we started going downhill ...
            if( .NOT.lrelax )irelax = 0
            lrelax = .true.
-           !write(iunartout, *) "ARTn(lsaddle)::IRELAX=0"
 
         ELSE  !< It is a PUSH_OVER the saddle point  
            disp = EIGN
@@ -415,7 +407,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
      !
      ArtnStep = noArtnStep
-     if( mod(irelax,5) == 0 ) ArtnStep = .true.
+     if( mod(irelax,5) == 0 ) ArtnStep = .true.  !> The 5 can be custom parameter : nrprint
      CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat, iunartout, ARTnStep )
 
      irelax = irelax + 1
@@ -430,11 +422,12 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            disp = RELX
 
            ! restart from saddle point
-           DO i = 1,nat
-              tau(:,i) = tau_saddle(:,order(i))
-              !eigenvec(:,i) = eigen_saddle(:,order(i))
-              eigenvec(:,i) = eigen_saddle(:,i)
-           ENDDO
+           tau(:,:) = tau_saddle(:,order(:))
+           eigenvec(:,:) = eigen_saddle(:,:)
+           !DO i = 1,nat
+           !   tau(:,i) = tau_saddle(:,order(i))
+           !   eigenvec(:,i) = eigen_saddle(:,i)
+           !ENDDO
            lbackward = .true.
 
            lrelax = .false.
@@ -447,7 +440,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            ! reverse direction of push
            fpush_factor = -1.0
            irelax = 0
-           !write(iunartout, *) "ARTn(lrelax)::IRELAX=0"
 
         ELSEIF( .NOT.lend )THEN  !< If already pass before no need to rewrite again
 
