@@ -275,7 +275,7 @@ void FixARTn::min_setup( int vflag ) {
 
   class Min *minimize = update-> minimize;
 
-  cout<< " * FIX/ARTn::CHANGE PARAM..."<<endl;
+  if( !me )cout<< " * FIX/ARTn::CHANGE PARAM..."<<endl;
 
   /*
   -- Change & Save the initial Fire Parameter 
@@ -321,10 +321,12 @@ void FixARTn::min_setup( int vflag ) {
   minimize-> setup_style();
 
   // ...Print the Initial Fire Parameters
-  cout<< " * Alpha0->"<< alpha_init<< endl;
-  cout<< " * dt0->"<< dt_init<< endl;
-  cout<< " * dtmin->"<< dtmin<< endl;
-  cout<< " * dtmax->"<< dtmax<< endl;
+  if( !me ){
+    cout<< " * Alpha0->"<< alpha_init<< endl;
+    cout<< " * dt0->"<< dt_init<< endl;
+    cout<< " * dtmin->"<< dtmin<< endl;
+    cout<< " * dtmax->"<< dtmax<< endl;
+  }
 
 
   // ...Copy the order of atom
