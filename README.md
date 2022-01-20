@@ -213,11 +213,13 @@ Engine specific flag:
 - Add the output filename custom :ok:
 
 - `nperp` parameter it is deactivated when you it converge on the saddle point. Should be Activated when the system return in Basin. :ok:
+- `nperp`: Maybe we have to follow the antoine method: progressive increase of nperp after the inflection line. Or maybe to be proportional to the fperp magnitude because happen when the magnitude is too high the perp-relax lead the lost of saddle point.
+- `nperp`: Need an equilibration between fpara and fperp
 
 - **RESTART**: Fast Restart procedure for lammps and binary - Write it only at the end of ARTn-step. :ok:
 
 - **WARNING**: Create a error/warning log file to write all the step does not follow the normal behavior of ARTn.
 	- **Transition INIT/PERP**: If the initial push is not enought, the perp-relax is not activated. So the `iinit` is incremented and can reach the lanczos step without never do perp-relax
 	- **Transition Saddle/Relax**: If the `eigen_step_size` is too small ARTn can be blocked in PUSH_OVER mode.
-	- **Kill the simulation**: We should be able to kill the run when the configuration goes banana!!
+	- **Kill the simulation**: We should be able to kill the run when the configuration goes banana!! Often happen to loose the saddle point because the too much perp-relax.
   
