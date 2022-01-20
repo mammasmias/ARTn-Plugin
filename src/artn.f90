@@ -128,7 +128,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
       CLOSE ( UNIT = iunartout, STATUS = 'KEEP')
 
       ! ...Read the FLAGS, FORCES, POSITIONS, ENERGY, ... 
-      CALL read_restart( restartfname, nat )
+      CALL read_restart( restartfname, nat, order, ityp )
 
       ! ...Overwirte the engine Arrays
       tau(:,:) = tau_step(:,order(:))

@@ -59,7 +59,7 @@ MODULE artn_params
   ! arrays that are needed by ARTn internally !
   !                                           !
   REAL(DP) :: lat(3,3)
-  REAL(DP), ALLOCATABLE :: old_tau(:,:)
+  REAL(DP), ALLOCATABLE :: tau_init(:,:)
   REAL(DP), ALLOCATABLE :: delr(:,:)
   REAL(DP), ALLOCATABLE :: push(:,:)             !> initial push vector
   REAL(DP), ALLOCATABLE, target :: eigenvec(:,:) !> lanczos eigenvector
@@ -375,7 +375,7 @@ CONTAINS
 
   !---------------------------------------------------------------------------
   !SUBROUTINE Fill_param_step( nat, order, pos, types, etot, force )
-  SUBROUTINE Fill_param_step( nat, order, pos, etot, force )
+  SUBROUTINE Fill_param_step( nat, box, order, pos, etot, force )
     !
     !> @brief fill the *_step arrays on which ARTn works on.
     !! For parallel Engine each proc has list from 1 to natproc,
@@ -383,6 +383,7 @@ CONTAINS
     !! So pos( order(i) ) = pos_eng( i )
     !
     !> @param[in]  nat    number of atoms
+    !> @param[in]  box    box parameters
     !> @param[in]  order  index order of engine
     !> @param[in]  pos    atomic position
     !> @param[in]  etot   energy of the system
@@ -391,9 +392,9 @@ CONTAINS
     use units, only : convert_energy, convert_force
     
     INTEGER, INTENT(IN) :: nat, order(nat)!, types(nat)
-    REAL(DP), INTENT(IN) :: etot, pos(3,nat), force(3,nat)
+    REAL(DP), INTENT(IN) :: box(3,3), etot, pos(3,nat), force(3,nat)
 
-
+    lat = box
     tau_step(:,order(:)) = pos(:,:)
     etot_step = convert_energy( etot )
     force_step(:,order(:)) = convert_force( force(:,:) )
@@ -404,14 +405,16 @@ CONTAINS
 
   !
   !---------------------------------------------------------------------------
-  SUBROUTINE write_restart(filnres,nat)
+  SUBROUTINE write_restart( filnres, nat )
     !
     ! Subroutine that writes the minimum parameters required for restart of a calculation
     ! to a file
     !
     ! LOGICAL FLAGS: linit, lperp, leigen, llanczos, lsaddle, lrelax
     ! COUNTERS : istep, iinit, ilanc, ieigen, ismooth, nlanc
-    ! ARRAYS: eigenvec, H, Vmat
+    ! ARRAYS:
+    !  - LANCZOS: eigenvec, H, Vmat, force_old, lowest_eigval
+    !  - (INIT/SADDLE/STEP): etot, tau, force (, current_step_size, fpush_factor)
     !
     CHARACTER (LEN=255), INTENT(IN) :: filnres
     INTEGER, INTENT(IN) :: nat
@@ -419,17 +422,26 @@ CONTAINS
     INTEGER :: i,j
     OPEN( UNIT = iunartres, FILE = filnres, FORM = 'formatted', STATUS = 'unknown', IOSTAT = ios)
 
+    !WRITE ( iunartres, * ) linit, lperp, leigen, llanczos, lsaddle, lrelax, &
+    !     istep, iinit, ilanc, ieigen, ismooth, nlanc, nperp,  &
+    !     etot_init, etot_step, lowest_eigval, etot_saddle, etot_final, de_back, &
+    !     current_step_size, fpush_factor, &
+    !     tau_step, force_step, push, eigenvec, H, Vmat, force_old, tau_saddle, eigen_saddle
     WRITE ( iunartres, * ) linit, lperp, leigen, llanczos, lsaddle, lrelax, &
-         istep, iinit, ilanc, ieigen, ismooth, nlanc,  &
-         etot_init, etot_step, lowest_eigval, etot_saddle, etot_final, de_back, &
-     current_step_size, fpush_factor, &
-         tau_step, force_step, push, eigenvec, H, Vmat, force_old, tau_saddle, eigen_saddle
+         iartn, istep, iinit, ieigen, iperp, ilanc, irelax, ismooth,   &
+         ninit, neigen, nlanc, lanc_mat_size, nperp,  &
+         etot_init, &
+         etot_step, tau_step, force_step, current_step_size, fpush_factor    !> Actual step
+    IF( llanczos )  &
+      WRITE( iunartres, * ) eigenvec, H, Vmat, force_old, lowest_eigval
+    IF( lsaddle )  &
+      WRITE( iunartres, * ) etot_saddle, tau_saddle
     CLOSE ( UNIT = iunartres, STATUS = 'KEEP')
 
   END SUBROUTINE write_restart
   !
   !---------------------------------------------------------------------------
-  SUBROUTINE read_restart(filnres,nat)
+  SUBROUTINE read_restart( filnres, nat, order, ityp )
     !
     ! Subroutine that reads the restart file, if a restart is requested
     !
@@ -440,22 +452,47 @@ CONTAINS
     CHARACTER (LEN=255), INTENT(IN) :: filnres
     LOGICAL :: file_exists
     INTEGER :: ios
-    INTEGER :: i,nat
+    INTEGER :: i,nat, order(nat), ityp(nat)
     INQUIRE ( file = filnres, exist = file_exists)
     IF ( file_exists ) THEN
        OPEN( UNIT = iunartres, FILE = filnres, FORM = 'formatted', STATUS = 'unknown', IOSTAT = ios)
-       READ ( iunartres, * ) linit, lperp, leigen, llanczos, lsaddle, lrelax, &
-            istep, iinit, ilanc, ieigen, ismooth, nlanc , &
-            etot_init, etot_step, lowest_eigval, etot_saddle, etot_final, de_back, &
-            current_step_size, fpush_factor,  &
-            tau_step, force_step, push, eigenvec, H, Vmat, force_old, tau_saddle, eigen_saddle
+       !READ ( iunartres, * ) linit, lperp, leigen, llanczos, lsaddle, lrelax, &
+       !     istep, iinit, ilanc, ieigen, ismooth, nlanc, nperp, &
+       !     etot_init, etot_step, lowest_eigval, etot_saddle, etot_final, de_back, &
+       !     current_step_size, fpush_factor,  &
+       !     tau_step, force_step, push, eigenvec, H, Vmat, force_old, tau_saddle, eigen_saddle
+       READ( iunartres, * ) linit, lperp, leigen, llanczos, lsaddle, lrelax, &
+         iartn, istep, iinit, ieigen, iperp, ilanc, irelax, ismooth,   &
+         ninit, neigen, nlanc, lanc_mat_size, nperp,  &
+         etot_init, &
+         etot_step, tau_step, force_step, current_step_size, fpush_factor    !> Actual step
+       IF( llanczos )  &
+         READ( iunartres, * ) eigenvec, H, Vmat, force_old, lowest_eigval
+       IF( lsaddle )  &
+         READ( iunartres, * ) etot_saddle, tau_saddle
        CLOSE ( UNIT = iunartres, STATUS = 'KEEP')
+
+       !> Maybe initialize de_back if needed
+
+       ! ...Read the initial configuration
+       INQUIRE( file = initpfname, exist = file_exists )
+       IF( file_exists )THEN
+         if( .not.allocated(tau_init) )allocate( tau_init, source=tau_step)
+         SELECT CASE( struc_format_out )
+           CASE( 'xsf' ); CALL read_xsf( lat, nat, tau_init, order, elements, ityp, push, initpfname )
+           CASE( 'xyz' ); CALL read_xyz( lat, nat, tau_init, order, elements, ityp, push, initpfname )
+         END SELECT
+       ENDIF
 
     ELSE
 
        WRITE(iunartout,*) "ARTn: restart file does not exist, exiting ..."
 
     ENDIF
+
+
+    print*,"* RESTART::"
+    print*, nat 
 
   END SUBROUTINE read_restart
   !

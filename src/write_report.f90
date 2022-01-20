@@ -92,7 +92,7 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
   !
   USE artn_params, ONLY: push, MOVE, verbose  &
                         ,etot_init, iinit, iperp, ieigen, ilanc, irelax, delr, verbose, iartn, a1 &
-                        ,old_tau, lat, tau_step &
+                        ,tau_init, lat, tau_step &
                         ,lrelax, linit, lbasin, lperp, llanczos, leigen, lsaddle, lpush_final, lbackward, lrestart 
   USE UNITS
   IMPLICIT NONE
@@ -154,8 +154,8 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
   IF( ARTnStep )THEN
 
     ! ...Displacement processing
-    if( iartn == 0 )allocate( old_tau, source = tau_step )
-    call compute_delr( nat, tau_step, old_tau, lat )
+    if( iartn == 0 )allocate( tau_init, source = tau_step )
+    call compute_delr( nat, tau_step, tau_init, lat )
     npart = 0
     rc2 = 0.1*0.1
     do i = 1, nat
@@ -276,7 +276,7 @@ END SUBROUTINE write_end_report
 
 !------------------------------------------------------------
 subroutine compute_delr( nat, pos, old_pos, lat )
-  use artn_params, only : delr, old_tau
+  use artn_params, only : delr
   use units, only : DP
   implicit none
 
@@ -286,17 +286,13 @@ subroutine compute_delr( nat, pos, old_pos, lat )
 
   integer :: i
   REAL(DP) :: r(3)
-  !REAL(DP), external :: fpbc
   
-  !dr = pos - tau_step
   do i = 1, nat
-     !r = pos(:,i) - tau_step(:,i)
      r = pos(:,i) - old_pos(:,i)
      call pbc( r, lat )
-     !delr(:,i) = delr(:,i) + r(:)
      delr(:,i) = r(:)
   enddo
-  !old_pos = pos
+
 end subroutine compute_delr
 
 

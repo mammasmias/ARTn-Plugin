@@ -37,7 +37,7 @@ class FixARTn : public Fix {
 
 
   // Communication
-  void Collect_Arrays( int*, double**, double**, double**, int, double**, double**, double**, int* );
+  void Collect_Arrays( int*, double**, double**, double**, int, double**, double**, double**, int*, int* );
   void Spread_Arrays( int*, double**, double**, double**, int, double**, double**, double** );
 
 
@@ -60,7 +60,7 @@ class FixARTn : public Fix {
 
   // Store the previous force
   int nextblank;
-  double **f_prev, **ftot, **xtot, **vtot;
+  double **f_prev, **v_prev, **ftot, **xtot, **vtot;
 
   // energy/force tolerance
   double etol, ftol;
