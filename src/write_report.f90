@@ -9,9 +9,9 @@ SUBROUTINE write_initial_report(iunartout, filout)
   use artn_params, ONLY: engine_units, ninit, nperp, neigen, nsmooth,  &
                          init_forc_thr, forc_thr, fpara_thr, eigval_thr, &
                          push_step_size, eigen_step_size, lanc_mat_size, dlanc, &
-                         push_mode, verbose
+                         push_mode, verbose, push_over
   use units, only : strg_units, unconvert_force, &
-                    unconvert_energy, unconvert_hessian, unconvert_length
+                    unconvert_energy, unconvert_hessian, unconvert_length, unit_char
   INTEGER,             INTENT(IN) :: iunartout
   CHARACTER (LEN=255), INTENT(IN) :: filout
   ! -- Local Variables
@@ -36,18 +36,20 @@ SUBROUTINE write_initial_report(iunartout, filout)
   WRITE (iunartout,'(15X,"neigen          = ", I6)') neigen
   WRITE (iunartout,'(15X,"nsmooth         = ", I6)') nsmooth
   WRITE (iunartout,'(15X,"Threshold Parameter: ")')
-  WRITE (iunartout,'(15X,"init_forc_thr   = ", F6.3)') unconvert_force( init_forc_thr )
-  WRITE (iunartout,'(15X,"forc_thr        = ", F6.3)') unconvert_force( forc_thr )
-  WRITE (iunartout,'(15X,"fpara_thr       = ", F6.3)') unconvert_force( fpara_thr )
-  WRITE (iunartout,'(15X,"eigval_thr      = ", F6.3)') unconvert_hessian( eigval_thr )
-  WRITE (iunartout,'(15X,"push_step_size  = ", F6.1)') unconvert_length( push_step_size )
-  WRITE (iunartout,'(15X,"eigen_step_size = ", F6.1)') unconvert_hessian( eigen_step_size )
+  WRITE (iunartout,'(15X,"init_forc_thr   = ", F6.3,2x,A)') unconvert_force( init_forc_thr ), unit_char('force')
+  WRITE (iunartout,'(15X,"forc_thr        = ", F6.3,2x,A)') unconvert_force( forc_thr ), unit_char('force')
+  WRITE (iunartout,'(15X,"fpara_thr       = ", F6.3,2x,A)') unconvert_force( fpara_thr ), unit_char('force')
+  WRITE (iunartout,'(15X,"eigval_thr      = ", F6.3,2x,A)') unconvert_hessian( eigval_thr ), unit_char('hessian')
+  WRITE (iunartout,'(15X,"Step size Parameter: ")')
+  WRITE (iunartout,'(15X,"push_step_size  = ", F6.1,2x,A)') unconvert_length( push_step_size ), unit_char('length')
+  WRITE (iunartout,'(15X,"eigen_step_size = ", F6.1,2x,A)') unconvert_hessian( eigen_step_size ), unit_char('hessian')
+  WRITE (iunartout,'(15X,"push_over       = ", F6.3,2x,A)') push_over, "fraction of eigen_step_size"
   WRITE (iunartout,'(15X,"push_mode       = ", A6)') push_mode
   WRITE (iunartout,'(5X, "--------------------------------------------------")')
   WRITE (iunartout,'(5X, "Lanczos algorithm:")' )
   WRITE (iunartout,'(5X, "--------------------------------------------------")')
   WRITE (iunartout,'(15X,"lanc_mat_size   = ", I6)') lanc_mat_size
-  WRITE (iunartout,'(15X,"dlanc           = ", F6.3)') unconvert_length( dlanc )
+  WRITE (iunartout,'(15X,"dlanc           = ", F6.3,2x,A)') unconvert_length( dlanc ), unit_char('length')
   WRITE (iunartout,'(5X, "--------------------------------------------------")')
   WRITE (iunartout,'(/,/)') 
   !WRITE (iunartout,*) " "
