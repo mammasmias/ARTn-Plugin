@@ -23,6 +23,7 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
   REAL(DP), INTENT(IN) :: fpara(3,nat)
   INTEGER, INTENT(IN) :: if_pos(3,nat)
   INTEGER, INTENT(IN) :: nat
+  !INTEGER, INTENT(IN) :: order(nat)
   REAL(DP) :: fperp_thr
   LOGICAL, INTENT(OUT) :: lforc_conv, lsaddle_conv
   !

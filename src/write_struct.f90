@@ -105,6 +105,46 @@ SUBROUTINE write_xsf( at, nat, tau, order, atm, ityp, force, ounit )
 END SUBROUTINE write_xsf
 
 
+SUBROUTINE read_xsf( lat, nat, tau, order, atm, ityp, force, fname )
+
+  USE UNITS
+  implicit none
+  
+  ! -- ARGUMENTS
+  INTEGER,            INTENT(IN) :: nat            !> number of atoms 
+  INTEGER,            INTENT(IN) :: ityp(nat)      !> atom type
+  INTEGER,            INTENT(IN) :: order(nat)     !> atom type
+  CHARACTER(LEN=3),   INTENT(OUT) :: atm(*)         !> contains information on atomic types 
+  REAL(DP),           INTENT(OUT) :: tau(3,nat)     !> atomic positions 
+  REAL(DP),           INTENT(OUT) :: lat(3,3)        !> lattice parameters in alat units 
+  REAL(DP),           INTENT(OUT) :: force(3,nat)   !> forces
+  CHARACTER(*),       INTENT(IN) :: fname           !> file name
+  ! -- LOCAL VARIABLES
+  INTEGER :: na, u0, ios, iloc
+  REAL(DP) :: at_angs (3,3)
+
+  OPEN( newunit=u0, file=fname)
+
+    READ( u0,* ) 
+    READ( u0,* ) 
+    READ( u0,* ) lat(:,1) 
+    READ( u0,* ) lat(:,2) 
+    READ( u0,* ) lat(:,3) 
+    READ( u0,* ) 
+    READ( u0,* ) na, ios
+
+    IF( na /= nat )print*, "* PROBLEM IN READ_XSF:: Different number of atoms", nat, na 
+
+    DO na=1,nat
+       iloc = order(na)
+       READ( u0,* ) atm(ityp(iloc)), tau(:,iloc), force(:,iloc) 
+    ENDDO
+
+  CLOSE( u0 )
+
+END SUBROUTINE read_xsf
+
+
 
 
 ! .......................................................................................... XYZ
@@ -139,6 +179,39 @@ SUBROUTINE write_xyz( at, nat, tau, order, atm, ityp, f, ounit )
 END SUBROUTINE write_xyz
 
 
+SUBROUTINE read_xyz( lat, nat, tau, order, atm, ityp, force, fname )
+
+  USE UNITS
+  implicit none
+
+  ! -- ARGUMENTS
+  INTEGER,            INTENT(IN) :: nat            !> number of atoms 
+  INTEGER,            INTENT(IN) :: ityp(nat)      !> atom type
+  INTEGER,            INTENT(IN) :: order(nat)     !> atom type
+  CHARACTER(LEN=3),   INTENT(OUT) :: atm(*)         !> contains information on atomic types 
+  REAL(DP),           INTENT(OUT) :: tau(3,nat)     !> atomic positions 
+  REAL(DP),           INTENT(OUT) :: lat(3,3)        !> lattice parameters in alat units 
+  REAL(DP),           INTENT(OUT) :: force(3,nat)   !> forces
+  CHARACTER(*),       INTENT(IN) :: fname           !> file name
+  ! -- LOCAL VARIABLES
+  INTEGER :: na, u0, ios, iloc
+  REAL(DP) :: at_angs (3,3)
+
+  OPEN( newunit=u0, file=fname)
+
+    READ( u0,* ) na
+    READ( u0,* )
+
+    IF( na /= nat )print*, "* PROBLEM IN READ_XYZ:: Different number of atoms", nat, na
+
+    DO na=1,nat
+       iloc = order(na)
+       READ( u0,* ) atm(ityp(iloc)), tau(:,iloc), force(:,iloc)
+    ENDDO
+
+  CLOSE( u0 )
+
+END SUBROUTINE read_xyz
 
 
 
