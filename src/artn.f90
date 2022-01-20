@@ -64,6 +64,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
   integer :: natom
   LOGICAL, PARAMETER :: noARTnStep = .false.
+  REAL(DP) :: z
 
   !
   ! The ARTn algorithm proceeds as follows:
@@ -99,14 +100,22 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   ! initialize artn
   !
 
-  ! set initial random seed
-  IF( zseed .ne. 0 ) idum = zseed
-
 
   IF( istep == 0 )THEN
 
     ! ...Read the input parameters
     CALL initialize_artn( nat, iunartin, filin )
+
+    ! set initial random seed from input (could be moved to initialize_artn)
+    ! value zseed = 0 means generate random seed
+    idum = zseed
+    IF( idum .EQ. 0) THEN
+       !
+       ! generate random seed
+       CALL random_number(z)
+       z = z *1e8
+       idum = INT(z)
+    ENDIF
 
     ! ...Fill the *_step Arrays
     !CALL Fill_param_step( nat, order, tau, etot_eng, force )
