@@ -641,7 +641,9 @@ void FixARTn::post_force( int /*vflag*/ ){
       f[i][0] = f_prev[i][0] * rscl*rscl ;
       f[i][1] = f_prev[i][1] * rscl*rscl ;
       f[i][2] = f_prev[i][2] * rscl*rscl ;
-      //vel[i][0] = v_prev[i][0] * rscl ;
+      //vel[i][0] = 0.0; //v_prev[i][0] * rscl ;
+      //vel[i][1] = 0. ;
+      //vel[i][2] = 0. ;
       //vel[i][1] = v_prev[i][1] * rscl ;
       //vel[i][2] = v_prev[i][2] * rscl ;
       //cout<< me<<" * Rescale Force: "<< i<<" f:"<< f[i][0]<<endl;
