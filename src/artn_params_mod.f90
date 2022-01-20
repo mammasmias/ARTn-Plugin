@@ -431,11 +431,13 @@ CONTAINS
          iartn, istep, iinit, ieigen, iperp, ilanc, irelax, ismooth,   &
          ninit, neigen, nlanc, lanc_mat_size, nperp,  &
          etot_init, &
-         etot_step, tau_step, force_step, current_step_size, fpush_factor    !> Actual step
-    IF( llanczos )  &
-      WRITE( iunartres, * ) eigenvec, H, Vmat, force_old, lowest_eigval
-    IF( lsaddle )  &
-      WRITE( iunartres, * ) etot_saddle, tau_saddle
+         etot_step, tau_step, force_step, current_step_size, fpush_factor, &    !> Actual step
+         eigenvec, H, Vmat, force_old, lowest_eigval, &
+         etot_saddle, tau_saddle 
+    !IF( llanczos )  &
+    !  WRITE( iunartres, * ) eigenvec, H, Vmat, force_old, lowest_eigval
+    !IF( lsaddle )  &
+    !  WRITE( iunartres, * ) etot_saddle, tau_saddle
     CLOSE ( UNIT = iunartres, STATUS = 'KEEP')
 
   END SUBROUTINE write_restart
@@ -465,11 +467,13 @@ CONTAINS
          iartn, istep, iinit, ieigen, iperp, ilanc, irelax, ismooth,   &
          ninit, neigen, nlanc, lanc_mat_size, nperp,  &
          etot_init, &
-         etot_step, tau_step, force_step, current_step_size, fpush_factor    !> Actual step
-       IF( llanczos )  &
-         READ( iunartres, * ) eigenvec, H, Vmat, force_old, lowest_eigval
-       IF( lsaddle )  &
-         READ( iunartres, * ) etot_saddle, tau_saddle
+         etot_step, tau_step, force_step, current_step_size, fpush_factor, &   !> Actual step
+         eigenvec, H, Vmat, force_old, lowest_eigval, &
+         etot_saddle, tau_saddle
+       !IF( llanczos )  &
+       !  READ( iunartres, * ) eigenvec, H, Vmat, force_old, lowest_eigval
+       !IF( lsaddle )  &
+       !  READ( iunartres, * ) etot_saddle, tau_saddle
        CLOSE ( UNIT = iunartres, STATUS = 'KEEP')
 
        !> Maybe initialize de_back if needed

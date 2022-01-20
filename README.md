@@ -217,5 +217,6 @@ Engine specific flag:
 - **RESTART**: Fast Restart procedure for lammps and binary - Write it only at the end of ARTn-step.
 
 - **WARNING**: Create a error/warning log file to write all the step does not follow the normal behavior of ARTn.
-
+	- **Transition INIT/PERP**: If the initial push is not enought, the perp-relax is not activated. So the `iinit` is incremented and can reach the lanczos step without never do perp-relax
+	- **Transition Saddle/Relax**: If the `eigen_step_size` is too small ARTn can be blocked in PUSH_OVER mode.
   
