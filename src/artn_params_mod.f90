@@ -197,6 +197,7 @@ CONTAINS
       ismooth = 1
       if_pos_ct = 0
       irelax = 0
+      zseed = 0
       !
       lowest_eigval = 0.D0
       fpush_factor = 1.0
@@ -517,10 +518,12 @@ REAL(8) FUNCTION ran3( idum )
   !> @brief
   !!   Random number generator.
   !
-  !> @param [in] idum   dummy integer
+  !> @param [in] idum   dummy integer: on first call to ran3, this is the seed,
+  !                                    its value is put to 1 after the first
+  !                                    call. If the calling program modifies it
+  !                                    to a negative number, the generator is
+  !                                    re-seeded.
   !> @return a real(8) ramdom number
-  !
-  !#! WE HAVE TO INITIALIZE THE VARIABLE
   !
   !
   IMPLICIT NONE

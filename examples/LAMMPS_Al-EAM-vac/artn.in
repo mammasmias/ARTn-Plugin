@@ -13,12 +13,12 @@
   fpara_thr = 0.07
 
   !! parameters for the push
-  push_step_size = 0.2
+  push_step_size = 0.3
   push_mode = 'list'
 
   !! define which atoms are to be pushed and the constraints ...
   push_ids = 251
-  add_const(:,251) = 1.0, 1.0, 0.0, 0.0 
+  add_const(:,251) = 1.0, 1.0, 0.0, 45.0 
   
   !! lanczos parameters
   dlanc = 0.2D-1
