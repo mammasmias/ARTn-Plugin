@@ -109,12 +109,15 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
   integer :: macrostep = -1, evalf, i, npart
   REAL(DP) :: force_tot, fperp_tot, fpara_tot, detot, lowEig, dr, rc2
   REAL(DP), EXTERNAL :: ddot
+  LOGICAL :: C1, C2
   !
 
   ! ...Print only ARTn-Step
-  if( .NOT.ArtnStep .AND. verbose < 2 )then
-    RETURN
-  endif
+  C1 = ( .NOT.ARTnStep .AND. verbose < 2) ! When verbose = {0,1}: print only ARTnStep
+  IF( C1 )RETURN
+  !C2 = ( verbose == 2  .AND. ARTnStep )   ! When verbose = 2: print only noARTnStep
+  !IF( C1 .OR. C2 )RETURN
+
 
 
   ! ...Force processing

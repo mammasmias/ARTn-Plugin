@@ -27,7 +27,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
        VOID, INIT, PERP, EIGN, LANC, RELX, zseed, &
        engine_units, struc_format_out, elements, &
        initialize_artn, read_restart, write_restart, &
-       push_over, ran3, a1, old_lanczos_vec, lend, lat, fill_param_step
+       push_over, ran3, a1, old_lanczos_vec, lend, lat, fill_param_step, &
+       filout, sadfname, initpfname, eigenfname, restartfname
   !
   IMPLICIT NONE
   ! -- ARGUMENTS
@@ -58,7 +59,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   REAL(DP)  :: smoothing_factor               ! mixing factor for smooth transition between eigenvec and push
   REAL(DP)  :: etot!, lat(3,3)
   INTEGER   :: ios ,i                         ! file IOSTAT
-  CHARACTER( LEN=255) :: filin, filout, sadfname, initpfname, eigenfname, restartfname
+  CHARACTER( LEN=255) :: filin !, filout, sadfname, initpfname, eigenfname, restartfname
   LOGICAL :: lforc_conv, lsaddle_conv, ArtnStep
 
   integer :: natom
@@ -83,11 +84,12 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   fpara_tot = 0.D0
   !
   filin = 'artn.in'
-  filout = 'artn.out'
-  sadfname = 'saddle'
-  initpfname = 'initp'
-  eigenfname = 'latest_eigenvec'
-  restartfname = 'artn.restart'
+  !> Moved in module: Can be customize
+  !filout = 'artn.out'
+  !sadfname = 'saddle'
+  !initpfname = 'initp'
+  !eigenfname = 'latest_eigenvec'
+  !restartfname = 'artn.restart'
 
 
 

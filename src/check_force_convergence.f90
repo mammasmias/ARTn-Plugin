@@ -1,3 +1,4 @@
+
 SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv, lsaddle_conv) 
   !
   !> @breif 
@@ -9,13 +10,13 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
   !> @param [in]   fperp           Perpendicular Force Field
   !> @param [in]   fpara           Parallel Force Field
   !> @param [out]  lforc_conv      Force Convergence Flag
-  !> @param [out]  lsaddke_conv    Saddle-point Convergence Flag
+  !> @param [out]  lsaddle_conv    Saddle-point Convergence Flag
   !
   USE units
   USE artn_params, ONLY : linit, lbasin, leigen, llanczos, lperp, lrelax, &
-                          ilanc, iperp, nperp, istep, INIT, PERP, EIGN, LANC, RELX, &
+                          ilanc, iperp, nperp, nperp_def, istep, INIT, PERP, EIGN, LANC, RELX, &
                           init_forc_thr, forc_thr, fpara_thr, push, &
-                          lowest_eigval, iunartout, etot_step
+                          lowest_eigval, iunartout, restartfname, etot_step, write_restart
   IMPLICIT NONE
   REAL(DP), INTENT(IN) :: force(3,nat)
   REAL(DP), INTENT(IN) :: fperp(3,nat)
@@ -44,7 +45,8 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         ! 
         IF (MAXVAL( ABS(force*if_pos)) < forc_thr  ) THEN
            lsaddle_conv = .true.
-           !write(iunartout,*)"Check_force::eigen->Force"
+
+           CALL write_restart( restartfname, nat )
            CALL write_report( etot_step, force, fperp, fpara, lowest_eigval, EIGN, if_pos, istep, nat,  iunartout, ArtnStep )
            RETURN
         ENDIF
@@ -53,9 +55,11 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         ! 
         IF ( MAXVAL(ABS(fpara)) <= fpara_thr ) THEN
            fperp_thr = forc_thr
+           nperp_def = nperp
            nperp = 0    ! Remove the Perp-Relax Iteration constrain
         ELSE
            fperp_thr = init_forc_thr
+           nperp =  nperp_def
         ENDIF
         ! 
         ! check perpendicular force convergence 
@@ -66,10 +70,10 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         IF( C1 .OR. C2  ) THEN
            lperp = .false.
            llanczos = .true. 
-           !write(iunartout,*)"Check_Force(lperp:leigen)::initialize ilanc"
            leigen = .false. 
-           !write(iunartout,*)"Check_force::eigen->Fperp"
-            CALL write_report( etot_step, force, fperp, fpara, lowest_eigval, EIGN, if_pos, istep, nat,  iunartout, ArtnStep )
+
+           CALL write_restart( restartfname, nat )
+           CALL write_report( etot_step, force, fperp, fpara, lowest_eigval, EIGN, if_pos, istep, nat,  iunartout, ArtnStep )
            ilanc = 0
         ENDIF
 
@@ -91,6 +95,7 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
            lperp = .false.
            linit = .true.
            !write(iunartout,*)"Check_force::basin->Fperp"
+           CALL write_restart( restartfname, nat )
            CALL write_report( etot_step, force, fperp, fpara, lowest_eigval, INIT, if_pos, istep, nat,  iunartout, ArtnStep )
         ENDIF
 

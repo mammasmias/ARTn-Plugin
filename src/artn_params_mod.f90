@@ -13,13 +13,19 @@ MODULE artn_params
   USE units, ONLY : DP
   IMPLICIT none
   SAVE
-  ! constants
+  ! constants unit pipe
   !INTEGER, PARAMETER ::  DP = selected_real_kind(14,200) ! double precision
   INTEGER, PARAMETER :: iunartin = 52    !> fortran file unit for ARTn input file
   INTEGER, PARAMETER :: iunartout = 53   !> fortran file unit for ARTn output file
   INTEGER, PARAMETER :: iunartres = 54   !> fortran file unit for ARTn restart file
   INTEGER, PARAMETER :: iunstruct = 556  !> fortran file unit for writing the structure
   INTEGER, PARAMETER :: iunrestart = 557 !> fortran file unit for writing the structure
+  ! file names
+  CHARACTER(LEN=255) :: filout = 'artn.out'
+  CHARACTER(LEN=255) :: sadfname = 'saddle'
+  CHARACTER(LEN=255) :: initpfname = 'initp'
+  CHARACTER(LEN=255) :: eigenfname = 'latest_eigenvec'
+  CHARACTER(LEN=255) :: restartfname = 'artn.restart'
   ! Constante move
   INTEGER :: VOID = 1, INIT = 2, PERP = 3, EIGN = 4, LANC = 5, RELX = 6
   CHARACTER(LEN=4) :: MOVE(6)
@@ -38,7 +44,7 @@ MODULE artn_params
   ! counters
   INTEGER :: istep, iartn
   INTEGER, target :: iperp      !> number of steps in perpendicular relaxation
-  INTEGER :: nperp
+  INTEGER :: nperp, nperp_def
   INTEGER :: irelax
   INTEGER :: ieigen     !> number of steps made with eigenvector
   INTEGER :: iinit      !> number of pushes made
@@ -122,11 +128,12 @@ MODULE artn_params
   CHARACTER(LEN=10) :: struc_format_out
   CHARACTER(LEN=3), ALLOCATABLE :: elements(:)
   !
-  NAMELIST/artn_parameters/ lrestart, lrelax, lpush_final, ninit, neigen, lanc_mat_size, nsmooth, push_mode, dist_thr,  &
+  NAMELIST/artn_parameters/ lrestart, lrelax, lpush_final, &
+       ninit, neigen, nperp, lanc_mat_size, nsmooth, push_mode, dist_thr,  &
        init_forc_thr,forc_thr, fpara_thr, eigval_thr, frelax_ene_thr, &
-       push_step_size, dlanc, eigen_step_size, current_step_size, &
-       push_ids,add_const, engine_units, zseed, struc_format_out, elements, &
-       push_over, verbose, nperp
+       push_step_size, dlanc, eigen_step_size, current_step_size, push_over, &
+       push_ids, add_const, engine_units, zseed, struc_format_out, elements, &
+       verbose, filout, sadfname, initpfname, eigenfname, restartfname
   !
 CONTAINS
   !
@@ -198,7 +205,8 @@ CONTAINS
       ! Defaults for input parameters
       !
       ninit = 3
-      nperp = 4
+      nperp_def = 4
+      nperp = nperp_def
       neigen = 1
       nsmooth = 1
       !
