@@ -455,6 +455,8 @@ CONTAINS
     LOGICAL :: file_exists
     INTEGER :: ios
     INTEGER :: i,nat, order(nat), ityp(nat)
+    CHARACTER(LEN=255) :: fname
+
     INQUIRE ( file = filnres, exist = file_exists)
     IF ( file_exists ) THEN
        OPEN( UNIT = iunartres, FILE = filnres, FORM = 'formatted', STATUS = 'unknown', IOSTAT = ios)
@@ -479,14 +481,20 @@ CONTAINS
        !> Maybe initialize de_back if needed
 
        ! ...Read the initial configuration
-       INQUIRE( file = initpfname, exist = file_exists )
-       IF( file_exists )THEN
+       !INQUIRE( file = trim(initpfname), exist = file_exists )
+       !IF( file_exists )THEN
+         print*, "* RESTART:: init_structure file exist: ", trim(initpfname)
          if( .not.allocated(tau_init) )allocate( tau_init, source=tau_step)
          SELECT CASE( struc_format_out )
-           CASE( 'xsf' ); CALL read_xsf( lat, nat, tau_init, order, elements, ityp, push, initpfname )
-           CASE( 'xyz' ); CALL read_xyz( lat, nat, tau_init, order, elements, ityp, push, initpfname )
+           CASE( 'xsf' )
+             fname = TRIM(initpfname)//"."//TRIM(struc_format_out)
+             CALL read_xsf( lat, nat, tau_init, order, elements, ityp, push, fname )
+
+           CASE( 'xyz' )
+             fname = TRIM(initpfname)//"."//TRIM(struc_format_out)
+             CALL read_xyz( lat, nat, tau_init, order, elements, ityp, push, fname )
          END SELECT
-       ENDIF
+       !ENDIF
 
     ELSE
 

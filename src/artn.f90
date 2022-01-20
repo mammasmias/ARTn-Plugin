@@ -116,9 +116,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     force_step(:,order(:)) = convert_force( force(:,:) )
 
 
-    ! ...To be removed!!
-    !tau = tau_step(:,order(:))
-    !force = force_step(:,order(:))
 
     IF( lrestart ) THEN
 
