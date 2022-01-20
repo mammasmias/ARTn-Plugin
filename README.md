@@ -199,11 +199,24 @@ Engine specific flag:
 ## TODO
 
 - nsteppos in ARTn doesn't have the same meaning for QE and LAMMPS in FIRE algo
+
 - Work on verbose debug mode :ok:
-- Work on the parallelization: The convergence change a bit with the number of proc. Maybe the convertion at each step create some numerical noise.
-- Do pARTn output as ARTn output:ok:
+
+- **Interface LAMMPS**: It's work but still have some noise coming from the velocity. Has to be solve but actually I (Nico) do a break...
+
+- Do pARTn output as ARTn output :ok:
+
 - Adapt the Units output with the Engine input :ok:
-- Verify the parameter NAME
+
+- Verify the parameter NAME :ok:
+
 - Add the output filename custom :ok:
-- `nperp` parameter it is deactivated when it converge on the saddle point. Should be Activated when the system return in Basin.
-- **IMPORTANT**: Fast Restart procedure for lammps
+
+- `nperp` parameter it is deactivated when you it converge on the saddle point. Should be Activated when the system return in Basin. :ok:
+
+- **RESTART**: Fast Restart procedure for lammps and binary - Write it only at the end of ARTn-step.
+
+- **WARNING**: Create a error/warning log file to write all the step does not follow the normal behavior of ARTn.
+	- **Transition INIT/PERP**: If the initial push is not enought, the perp-relax is not activated. So the `iinit` is incremented and can reach the lanczos step without never do perp-relax
+	- **Transition Saddle/Relax**: If the `eigen_step_size` is too small ARTn can be blocked in PUSH_OVER mode.
+  
