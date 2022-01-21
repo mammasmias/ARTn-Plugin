@@ -213,13 +213,81 @@ Engine specific flag:
 - Add the output filename custom :ok:
 
 - `nperp` parameter it is deactivated when you it converge on the saddle point. Should be Activated when the system return in Basin. :ok:
+
 - `nperp`: Maybe we have to follow the antoine method: progressive increase of nperp after the inflection line. Or maybe to be proportional to the fperp magnitude because happen when the magnitude is too high the perp-relax lead the lost of saddle point.
+
+  - Antoine method is implemented:
+
+  - ```fortran
+    module artn_param_mod
+    	integer :: nperp_list(5) = [4,8,12,16,0]
+    	integer :: noperp, nperp_step
+    	
+    subroutine check_force()
+    	select case( nperp_step )
+          case(:4); nperp = nperp_list( nperp_step )
+          case(5:); nperp = nperp_list( 5 )
+        end select
+    ```
+
 - `nperp`: Need an equilibration between fpara and fperp
 
 - **RESTART**: Fast Restart procedure for lammps and binary - Write it only at the end of ARTn-step. :ok:
 
-- **WARNING**: Create a error/warning log file to write all the step does not follow the normal behavior of ARTn.
-	- **Transition INIT/PERP**: If the initial push is not enought, the perp-relax is not activated. So the `iinit` is incremented and can reach the lanczos step without never do perp-relax
-	- **Transition Saddle/Relax**: If the `eigen_step_size` is too small ARTn can be blocked in PUSH_OVER mode.
-	- **Kill the simulation**: We should be able to kill the run when the configuration goes banana!! Often happen to loose the saddle point because the too much perp-relax.
+- **WARNING**: Create a error/warning log file to write all the step does not follow the normal behavior of ARTn. :female_detective:
+
+  ```fortran
+  module artn_param_mod
+    interface warning
+      module procedure :: warning_int, warning_real
+    end interface
+   CONTAINS
+    SUBROUTINE warning_int( u0, STEP, text, intv )
+    SUBROUTINE warning_real( u0, STEP, text, realv )
+  ```
+
   
+
+  - **Transition INIT/PERP**: If the initial push is not enought, the perp-relax is not activated. So the `iinit` is incremented and can reach the lanczos step without never do perp-relax :ok:
+
+    ```fortran
+    module artn_param_mod
+    	integer :: noperp
+    
+    subroutine check_force()
+    	IF( lperp )THEN
+    	  IF( leigen )THEN
+    	    ...
+    	  ELSE !> In BASIN
+    	    ...
+    	    IF( C1 )THEN
+              noperp = noperp + 1
+              ! ** WARNING **
+              if( noperp > 2 ) &
+                CALL WARNING( iunartout, "Tansition Push-Init->Perp-Relax",  &
+            "The Fperp is too small after Push-INIT- change push_step_size ", [noperp])
+            ENDIF
+          ELSE IF( lrelax )THEN  
+          ENDIF
+    ```
+
+    
+
+  - **Transition Saddle/Relax**: If the `eigen_step_size` is too small ARTn can be blocked in PUSH_OVER mode. :ok:
+
+    ```fortran
+    SUBROUTINE ARTn()  
+      IF( lsaddle )THEN
+        IF( lpush_final )THEN
+          IF ( etot_step - etot_saddle < frelax_ene_thr ) THEN
+          ELSE
+            iover = iover + 1
+            ! ** WARNING **
+            if( iover > 2 ) &
+              CALL WARNING( iunartout, "PUSH-OVER", &
+              "Too many push over the saddle point - change eigen_step_size ", [iover])
+    ```
+
+    
+
+  - **Kill the simulation**: We should be able to kill the run when the configuration goes banana!! Often happen to loose the saddle point because the too much perp-relax.

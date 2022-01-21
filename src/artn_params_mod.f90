@@ -27,9 +27,9 @@ MODULE artn_params
   CHARACTER(LEN=255) :: eigenfname = 'latest_eigenvec'
   CHARACTER(LEN=255) :: restartfname = 'artn.restart'
   ! Constante move
-  INTEGER :: VOID = 1, INIT = 2, PERP = 3, EIGN = 4, LANC = 5, RELX = 6
-  CHARACTER(LEN=4) :: MOVE(6)
-  PARAMETER( MOVE = [ 'void', 'init', 'perp', 'eign', 'lanc', 'relx' ])
+  INTEGER :: VOID = 1, INIT = 2, PERP = 3, EIGN = 4, LANC = 5, RELX = 6, OVER = 7
+  CHARACTER(LEN=4) :: MOVE(7)
+  PARAMETER( MOVE = [ 'void', 'init', 'perp', 'eign', 'lanc', 'relx', 'over' ])
   ! control flags
   LOGICAL :: linit      !> initial push OF THE MACROSTEP
   LOGICAL :: lperp      !> perpendicular relax
@@ -43,8 +43,10 @@ MODULE artn_params
   INTEGER :: verbose    !> Verbose Level
   ! counters
   INTEGER :: istep, iartn
-  INTEGER, target :: iperp      !> number of steps in perpendicular relaxation
-  INTEGER :: nperp, nperp_def
+  INTEGER :: iperp      !> number of steps in perpendicular relaxation
+  INTEGER :: nperp, nperp_step, noperp
+  INTEGER :: nperp_list(5) = [ 4, 8, 12, 16, 0 ]
+  INTEGER :: iover
   INTEGER :: irelax
   INTEGER :: ieigen     !> number of steps made with eigenvector
   INTEGER :: iinit      !> number of pushes made
@@ -134,6 +136,10 @@ MODULE artn_params
        push_step_size, dlanc, eigen_step_size, current_step_size, push_over, &
        push_ids, add_const, engine_units, zseed, struc_format_out, elements, &
        verbose, filout, sadfname, initpfname, eigenfname, restartfname
+
+  interface warning
+    module procedure :: warning_int, warning_real
+  end interface
   !
 CONTAINS
   !
@@ -197,6 +203,7 @@ CONTAINS
       ismooth = 1
       if_pos_ct = 0
       irelax = 0
+      iover = 0
       zseed = 0
       !
       lowest_eigval = 0.D0
@@ -206,8 +213,9 @@ CONTAINS
       ! Defaults for input parameters
       !
       ninit = 3
-      nperp_def = 4
-      nperp = nperp_def
+      nperp_step = 1
+      nperp = nperp_list( nperp_step )
+      noperp = 0 
       neigen = 1
       nsmooth = 1
       !
@@ -511,50 +519,84 @@ CONTAINS
     print*, nat 
 
   END SUBROUTINE read_restart
-  !
- !---------------------------------------------------------------------------
-REAL(8) FUNCTION ran3( idum )
-  !-------------------------------------------------------------------------
-  !> @brief
-  !!   Random number generator.
-  !
-  !> @param [in] idum   dummy integer: on first call to ran3, this is the seed,
-  !                                    its value is put to 1 after the first
-  !                                    call. If the calling program modifies it
-  !                                    to a negative number, the generator is
-  !                                    re-seeded.
-  !> @return a real(8) ramdom number
-  !
-  !
-  IMPLICIT NONE
-  !
-  SAVE
-  !         implicit real*4(m)
-  !         parameter (mbig=4000000.,mseed=1618033.,mz=0.,fac=2.5e-7)
-  integer :: mbig, mseed, mz
-  real(DP) :: fac
-  parameter (mbig = 1000000000, mseed = 161803398, mz = 0, fac = 1.d-9)
 
-  integer :: ma (55), iff, k, inext, inextp, ii, mj, idum, i, mk
-  !inext = 0
-  !inextp = 0
-  !     common /ranz/ ma,inext,inextp
-  data iff / 0 /
-  if (idum.lt.0.or.iff.eq.0) then
-     iff = 1
-     mj = mseed-iabs (idum)
-     mj = mod (mj, mbig)
-     ma (55) = mj
-     mk = 1
-     do i = 1, 54
-        ii = mod (21 * i, 55)
-        ma (ii) = mk
-        mk = mj - mk
-        if (mk.lt.mz) mk = mk + mbig
-        mj = ma (ii)
-     enddo
-     do k = 1, 4
-        do i = 1, 55
+
+  !
+  !---------------------------------------------------------------------------
+  SUBROUTINE warning_int( u0, STEP, text, intv )
+
+    integer, intent( in ) :: u0, intv(:)
+    character(*), intent( in ) :: STEP, text
+
+    WRITE( u0,1 ) "* WARNING in ", STEP
+    WRITE( u0,1 ) "* => ", text
+    WRITE( u0,2 ) "* => ", intv
+    1 format(*(A))
+    2 format(A,*(x,i0))
+
+  END SUBROUTINE warning_int
+
+
+  SUBROUTINE warning_real( u0, STEP, text, realv )
+
+    integer, intent( in ) :: u0
+    REAL(DP), intent( in ) :: realv(:)
+    character(*), intent( in ) :: STEP, text
+
+    WRITE( u0,1 ) "* WARNING in ", STEP
+    WRITE( u0,1 ) "* => ", text
+    WRITE( u0,2 ) "* => ", realv
+    1 format(*(A))
+    2 format(A,*(x,f8.2))
+
+  END SUBROUTINE warning_real
+
+
+
+
+  !---------------------------------------------------------------------------
+  REAL(8) FUNCTION ran3( idum )
+    !-------------------------------------------------------------------------
+    !> @brief
+    !!   Random number generator.
+    !
+    !> @param [in] idum   dummy integer: on first call to ran3, this is the seed,
+    !                                    its value is put to 1 after the first
+    !                                    call. If the calling program modifies it
+    !                                    to a negative number, the generator is
+    !                                    re-seeded.
+    !> @return a real(8) ramdom number
+    !
+    !
+    IMPLICIT NONE
+    !
+    SAVE
+    !         implicit real*4(m)
+    !         parameter (mbig=4000000.,mseed=1618033.,mz=0.,fac=2.5e-7)
+    integer :: mbig, mseed, mz
+    real(DP) :: fac
+    parameter (mbig = 1000000000, mseed = 161803398, mz = 0, fac = 1.d-9)
+   
+    integer :: ma (55), iff, k, inext, inextp, ii, mj, idum, i, mk
+    !inext = 0
+    !inextp = 0
+    !     common /ranz/ ma,inext,inextp
+    data iff / 0 /
+    if (idum.lt.0.or.iff.eq.0) then
+       iff = 1
+       mj = mseed-iabs (idum)
+       mj = mod (mj, mbig)
+       ma (55) = mj
+       mk = 1
+       do i = 1, 54
+          ii = mod (21 * i, 55)
+          ma (ii) = mk
+          mk = mj - mk
+          if (mk.lt.mz) mk = mk + mbig
+          mj = ma (ii)
+       enddo
+       do k = 1, 4
+          do i = 1, 55
            ma (i) = ma (i) - ma (1 + mod (i + 30, 55) )
            if (ma (i) .lt.mz) ma (i) = ma (i) + mbig
         enddo
@@ -562,21 +604,22 @@ REAL(8) FUNCTION ran3( idum )
      inext = 0
      inextp = 31
      idum = 1
-  endif
-  inext = inext + 1
-  if (inext.eq.56) inext = 1
-  inextp = inextp + 1
-  if (inextp.eq.56) inextp = 1
-  mj = ma (inext) - ma (inextp)
-  if (mj.lt.mz) mj = mj + mbig
-  ma (inext) = mj
-  ran3 = mj * fac
-  return
-END FUNCTION ran3
-
-
+    endif
+    inext = inext + 1
+    if (inext.eq.56) inext = 1
+    inextp = inextp + 1
+    if (inextp.eq.56) inextp = 1
+    mj = ma (inext) - ma (inextp)
+    if (mj.lt.mz) mj = mj + mbig
+    ma (inext) = mj
+    ran3 = mj * fac
+    return
+  END FUNCTION ran3
+    
 END MODULE artn_params
+ 
 
+ 
 
 !......................................................................... FUNCTION
 !> @brief give the parameters IPERP

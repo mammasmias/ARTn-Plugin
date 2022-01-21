@@ -140,6 +140,7 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
      endif
      force(:,:) = displ_vec(:,order(:))
 
+
   CASE default
      write(*,*) 'Problem with move_mode!', MOVE(disp)
 

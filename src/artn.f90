@@ -19,16 +19,16 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   USE units
   USE artn_params, ONLY: iunartin, iunartout, iunstruct, &
        lrelax, linit, lperp, leigen, llanczos, lrestart, lbasin, lsaddle, lpush_final, lbackward, &
-       irelax, istep, iperp, ieigen, iinit, ilanc, ismooth, nlanc, nperp, if_pos_ct, &
+       irelax, istep, iperp, ieigen, iinit, ilanc, ismooth, iover, nlanc, nperp, noperp, nperp_step, if_pos_ct, &
        lowest_eigval, etot_init, etot_step, etot_saddle, etot_final, de_saddle, de_back, de_fwd, &
        ninit, neigen, lanc_mat_size, nsmooth, push_mode, dist_thr, init_forc_thr, forc_thr, &
        fpara_thr, eigval_thr, frelax_ene_thr, push_step_size, current_step_size, dlanc, eigen_step_size, fpush_factor, &
        push_ids, add_const, push, eigenvec, tau_step, force_step, tau_saddle, eigen_saddle, v_in, &
-       VOID, INIT, PERP, EIGN, LANC, RELX, zseed, &
+       VOID, INIT, PERP, EIGN, LANC, RELX, OVER, zseed, &
        engine_units, struc_format_out, elements, &
        initialize_artn, read_restart, write_restart, &
        push_over, ran3, a1, old_lanczos_vec, lend, lat, fill_param_step, &
-       filout, sadfname, initpfname, eigenfname, restartfname
+       filout, sadfname, initpfname, eigenfname, restartfname, warning
   !
   IMPLICIT NONE
   ! -- ARGUMENTS
@@ -391,10 +391,15 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
         ELSE  !< It is a PUSH_OVER the saddle point  
            disp = EIGN
+           iover = iover + 1
+
+           ! ** WARNING **
+           if( iover > 2 ) &
+             CALL WARNING( iunartout, "PUSH-OVER","Too many push over the saddle point-> PARAM: Push_Over ", [iover])
            !
-           CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat,  iunartout, noARTnStep )
+           CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, OVER, if_pos, istep, nat,  iunartout, noARTnStep )
            ! 
-           displ_vec(:,:) = fpush_factor*eigenvec(:,:)*eigen_step_size
+           displ_vec(:,:) = fpush_factor*eigenvec(:,:)*eigen_step_size * push_over
         END IF
 
      ELSE
@@ -571,6 +576,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            linit  = .true.
            lbasin = .true.
            iperp =  0
+           noperp = 0      !> count the init-perp fail
+           nperp_step = 0  !> count the out-basin perp relax step
            iinit = iinit - 1
            !
         ENDIF
