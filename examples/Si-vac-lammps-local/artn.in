@@ -2,6 +2,7 @@
   !! Units definition::(eV,Ang,ps)  
   engine_units='lammps/metal'
   verbose = 2
+  struc_format_out = 'xyz'
 
   !lrestart = .true.
   ninit = 2
@@ -11,10 +12,11 @@
 
   init_forc_thr = 0.5
   forc_thr = 0.05
-  fpara_thr = 0.06
+  fpara_thr = 0.1
 
   !! parameters for the push
-  push_step_size = 0.1
+  push_step_size = 0.2
+  push_over = 1.
   push_mode = 'list'
   push_ids = 4343
 

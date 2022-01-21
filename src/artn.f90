@@ -327,6 +327,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         lperp = .true.
         iperp = 0
 
+        WRITE( iunartout,* ) "* NEXT NPERP ",nperp, nperp_step
+
         ! return to initial number of lanczos steps
         !ilanc = 0  !< initialize it when turn llanczos  = T
         ! 
@@ -555,9 +557,11 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         IF ( lowest_eigval < eigval_thr ) THEN
            !* make a push with the eigenvector
            !! Next Mstep outside the basin
-           leigen = .true.
            lbasin = .false.
+           ! ...push in eigenvector direction
+           leigen = .true.
            ieigen = 0
+           ! ...No yet perp relax
            lperp = .false.
            iperp = 0
 
@@ -570,7 +574,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            lbasin = .true.
            iperp =  0
            noperp = 0      !> count the init-perp fail
-           nperp_step = 0  !> count the out-basin perp relax step
+           nperp_step = 1  !> count the out-basin perp relax step
            iinit = iinit - 1
            !
         ENDIF

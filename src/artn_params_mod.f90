@@ -209,7 +209,7 @@ CONTAINS
       !
       lowest_eigval = 0.D0
       fpush_factor = 1.0
-      push_over = 0.01_DP
+      push_over = 1.0_DP
       !
       ! Defaults for input parameters
       !

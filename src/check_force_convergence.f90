@@ -105,6 +105,7 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
              case(:4); nperp = nperp_list( nperp_step )
              case(5:); nperp = nperp_list( 5 )
            end select
+           WRITE( iunartout,* ) "* NEXT NPERP ",nperp, nperp_step
 
         ENDIF
 
