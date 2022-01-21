@@ -159,10 +159,11 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
     if( iartn == 0 )allocate( tau_init, source = tau_step )
     call compute_delr( nat, tau_step, tau_init, lat )
     npart = 0
-    rc2 = 0.1*0.1
+    rc2 = 0.1!*0.1  !! Miha: Why square?
     do i = 1, nat
        if( norm2(delr(:,i)) > rc2 ) npart = npart + 1
     enddo
+    !! routine sum_force is equivalent to implicit: norm2( delr )
     call sum_force( delr, nat, dr )
 
   ENDIF
