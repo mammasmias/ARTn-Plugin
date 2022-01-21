@@ -394,7 +394,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            iover = iover + 1
 
            ! ** WARNING **
-           if( iover > 2 ) &
+           if( iover > 4 ) &
              CALL WARNING( iunartout, "PUSH-OVER","Too many push over the saddle point-> PARAM: Push_Over ", [iover])
            !
            CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, OVER, if_pos, istep, nat,  iunartout, noARTnStep )
