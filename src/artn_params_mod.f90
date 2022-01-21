@@ -421,7 +421,9 @@ CONTAINS
     INTEGER, INTENT(IN) :: nat
     INTEGER :: ios
     INTEGER :: i,j
-    OPEN( UNIT = iunartres, FILE = filnres, FORM = 'formatted', STATUS = 'unknown', IOSTAT = ios)
+    OPEN( UNIT = iunartres, FILE = filnres, ACTION="WRITE", FORM = 'formatted', STATUS = 'unknown', IOSTAT = ios)
+    !OPEN( UNIT = iunartres, FILE = filnres, FORM = 'unformatted', ACCESS="SEQUENTIAL",  &
+    !      STATUS = 'unknown', ACTION="WRITE", IOSTAT = ios)
 
     !WRITE ( iunartres, * ) linit, lperp, leigen, llanczos, lsaddle, lrelax, &
     !     istep, iinit, ilanc, ieigen, ismooth, nlanc, nperp,  &
@@ -460,7 +462,8 @@ CONTAINS
 
     INQUIRE ( file = filnres, exist = file_exists)
     IF ( file_exists ) THEN
-       OPEN( UNIT = iunartres, FILE = filnres, FORM = 'formatted', STATUS = 'unknown', IOSTAT = ios)
+       OPEN( UNIT = iunartres, FILE = filnres, ACTION="READ", FORM = 'formatted', STATUS = 'old', IOSTAT = ios)
+       !OPEN( UNIT = iunartres, FILE = filnres, FORM = 'unformatted', ACTION="READ", STATUS = 'OLD', IOSTAT = ios)
        !READ ( iunartres, * ) linit, lperp, leigen, llanczos, lsaddle, lrelax, &
        !     istep, iinit, ilanc, ieigen, ismooth, nlanc, nperp, &
        !     etot_init, etot_step, lowest_eigval, etot_saddle, etot_final, de_back, &

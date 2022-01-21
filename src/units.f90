@@ -17,7 +17,7 @@ module units
             convert_force, unconvert_force,     &
             convert_hessian, unconvert_hessian, &
             convert_energy, unconvert_energy,   &
-            convert_time, unconvert_time, strg_units
+            convert_time, unconvert_time, strg_units, unit_char
              
   
 
@@ -216,7 +216,6 @@ module units
     strg_units = '(27X, "['//cE//']",31X,"-----------['//cE//'/'//   &
                   cL//']-----------",2X,"['//cE//'/'//cL//to2//']   ['//cL//']")'
 
-
     if( verbose )then
       write(*,1) " * ARTn::UNITS::E2au::", E2au, "au2E", au2E
       write(*,1) " * ARTn::UNITS::L2au::", L2au, "au2L", au2L
@@ -364,7 +363,30 @@ module units
     t = aut * au2T
   end function unconvert_time
 
+
+  !......................................................................................
+  ! Return UNIT
+  function unit_char( quantity )result( uchar )
+
+    character(*), intent(in) :: quantity
+    character(:), allocatable :: uchar
+
+    select case( quantity )
+      case( 'length' );  uchar = cL
+      case( 'energy' );  uchar = cE
+      case( 'force' );   uchar = cE//'/'//cL
+      case( 'hessian' ); uchar = cE//'/'//cL//to2
+    end select 
+
+  end function
+
+
+
 end module units
+
+
+
+
 
 
 
