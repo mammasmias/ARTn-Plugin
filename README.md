@@ -290,4 +290,6 @@ Engine specific flag:
 
     
 
+  - **`EIGN/LANC` Oscillation:** If `fpara_thr` is too close to `forc_thr` it is possible to enter in condition where `fpara > fpara_thr` => `fperp_thr = init_forc_thr` =>  `fperp < fperp_thr` 
+
   - **Kill the simulation**: We should be able to kill the run when the configuration goes banana!! Often happen to loose the saddle point because the too much perp-relax.

@@ -359,7 +359,10 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         CALL write_end_report( iunartout, lsaddle, lpush_final, etot_step - etot_init )
         ! 
      ELSE
+        ! ...HERE he fails
         CALL write_end_report( iunartout, lsaddle, lpush_final, etot_step )
+        lconv = .true.
+        lpush_final = .false.  
      ENDIF
   ENDIF
   !

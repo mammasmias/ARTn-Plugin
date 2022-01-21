@@ -42,7 +42,7 @@ SUBROUTINE write_initial_report(iunartout, filout)
   WRITE (iunartout,'(15X,"eigval_thr      = ", F6.3,2x,A)') unconvert_hessian( eigval_thr ), unit_char('hessian')
   WRITE (iunartout,'(15X,"Step size Parameter: ")')
   WRITE (iunartout,'(15X,"push_step_size  = ", F6.1,2x,A)') unconvert_length( push_step_size ), unit_char('length')
-  WRITE (iunartout,'(15X,"eigen_step_size = ", F6.1,2x,A)') unconvert_hessian( eigen_step_size ), unit_char('length')
+  WRITE (iunartout,'(15X,"eigen_step_size = ", F6.1,2x,A)') unconvert_length( eigen_step_size ), unit_char('length')
   WRITE (iunartout,'(15X,"push_over       = ", F6.3,2x,A)') push_over, "fraction of eigen_step_size"
   WRITE (iunartout,'(15X,"push_mode       = ", A6)') push_mode
   WRITE (iunartout,'(5X, "--------------------------------------------------")')
