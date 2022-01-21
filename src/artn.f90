@@ -511,6 +511,11 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            ! reset the eigenvalue flag to continue lanczos
            leigen = .false.
         ENDIF
+        !
+        ! allocate memory for previous lanczos vec
+        !
+        if( .not. allocated( old_lanczos_vec ) ) allocate( old_lanczos_vec, source = v_in )
+        a1 = 0.0
      ENDIF
      !
      ! apply constraints from the engine (QE)
@@ -549,24 +554,12 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         !
         IF ( lowest_eigval < eigval_thr ) THEN
            !* make a push with the eigenvector
-           !! Next Mstep outside the basin 
+           !! Next Mstep outside the basin
            leigen = .true.
            lbasin = .false.
            ieigen = 0
            lperp = .false.
            iperp = 0
-
-
-           ! ...Compare the eigenvec with the previous one
-           
-           if( allocated(old_lanczos_vec) )then
-             a1 = ddot( 3*nat, old_lanczos_vec, 1, displ_vec, 1 )
-             old_lanczos_vec = displ_vec
-
-           else
-             a1 = 0.0
-             allocate( old_lanczos_vec, source = displ_vec )
-           endif
 
            !
         ELSE
@@ -581,6 +574,14 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            iinit = iinit - 1
            !
         ENDIF
+        !
+        ! ...Compare the eigenvec with the previous one
+        !
+        a1 = ddot( 3*nat, eigenvec, 1, old_lanczos_vec, 1 )
+        a1 = abs( a1 )
+        ! set current eignevec for comparison in next step
+        old_lanczos_vec = eigenvec
+
      ENDIF
 
   ENDIF LANCZOS_
