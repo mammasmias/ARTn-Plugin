@@ -569,6 +569,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         ELSE
            !* make an initial push
            !! Next Mstep inside the Basin
+           lowest_eigval = 0.D0
            leigen = .false.
            linit  = .true.
            lbasin = .true.

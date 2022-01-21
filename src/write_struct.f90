@@ -172,8 +172,8 @@ SUBROUTINE write_xyz( at, nat, tau, order, atm, ityp, f, ounit )
      ! convert positions are in Engine units length
      ! -> And the force???
      iloc = order(na)
-     WRITE( ounit, fmt='(a3,3x,6f15.9)', IOSTAT=ios ) atm(ityp(iloc)), unconvert_length( tau(:,iloc) ), unconvert_force( f(:,iloc) )
-     !WRITE( ounit, fmt='(a3,3x,6f15.9)', IOSTAT=ios ) ityp(iloc), unconvert_length( tau(:,iloc) ), unconvert_force( f(:,iloc) )
+     !WRITE( ounit, fmt='(a3,3x,6f15.9)', IOSTAT=ios ) atm(ityp(iloc)), unconvert_length( tau(:,iloc) ), unconvert_force( f(:,iloc) )
+     WRITE( ounit, fmt='(i0,3x,6f15.9)', IOSTAT=ios ) iloc, unconvert_length( tau(:,iloc) ), unconvert_force( f(:,iloc) )
   ENDDO
 
 END SUBROUTINE write_xyz
@@ -206,7 +206,8 @@ SUBROUTINE read_xyz( lat, nat, tau, order, atm, ityp, force, fname )
 
     DO na=1,nat
        iloc = order(na)
-       READ( u0,* ) atm(ityp(iloc)), tau(:,iloc), force(:,iloc)
+       !READ( u0,* ) atm(ityp(iloc)), tau(:,iloc), force(:,iloc)
+       READ( u0,* ) ios, tau(:,iloc), force(:,iloc)
     ENDDO
 
   CLOSE( u0 )
