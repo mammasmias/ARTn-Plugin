@@ -36,7 +36,8 @@ SUBROUTINE write_struct( at, nat, tau, order, atm, ityp, force, fscale, ounit, f
   REAL(DP),         INTENT(IN) :: force(3,nat)   !> list of atomic forces
   REAL(DP),         INTENT(IN) :: fscale         !> factor for scaling the force 
   CHARACTER(LEN=3), INTENT(IN) :: form           !> format of the structure file (default xsf)
-  CHARACTER(LEN=255), INTENT(IN) :: fname        !> file name                                        
+  !CHARACTER(LEN=255), INTENT(IN) :: fname        !> file name                                        
+  CHARACTER(*), INTENT(IN) :: fname        !> file name                                        
   ! 
   ! -- Local Variables
   INTEGER :: i, j, na, ios, iloc 
@@ -98,7 +99,8 @@ SUBROUTINE write_xsf( at, nat, tau, order, atm, ityp, force, ounit )
      ! convert positions are in Engine units length
      ! -> And the force???
      iloc = order(na)
-     WRITE(ounit,'(a3,3x,6f15.9)') atm(ityp(iloc)), unconvert_length( tau(:,iloc) ), unconvert_force( force(:,iloc) )
+     WRITE(ounit,'(a3,3x,6f15.9)') atm(ityp(iloc)), tau(:,iloc) , unconvert_force( force(:,iloc) )
+     !WRITE(ounit,'(a3,3x,6f15.9)') atm(ityp(iloc)), unconvert_length( tau(:,iloc) ), unconvert_force( force(:,iloc) )
      !WRITE(ounit,'(a3,3x,6f15.9)') ityp(iloc), unconvert_length( tau(:,iloc) ), unconvert_force( force(:,iloc) )
   ENDDO
 
@@ -139,6 +141,7 @@ SUBROUTINE read_xsf( lat, nat, tau, order, atm, ityp, force, fname )
        iloc = order(na)
        READ( u0,* ) atm(ityp(iloc)), tau(:,iloc), force(:,iloc) 
     ENDDO
+    force = convert_force( force )
 
   CLOSE( u0 )
 
@@ -173,7 +176,9 @@ SUBROUTINE write_xyz( at, nat, tau, order, atm, ityp, f, ounit )
      ! -> And the force???
      iloc = order(na)
      !WRITE( ounit, fmt='(a3,3x,6f15.9)', IOSTAT=ios ) atm(ityp(iloc)), unconvert_length( tau(:,iloc) ), unconvert_force( f(:,iloc) )
-     WRITE( ounit, fmt='(i0,3x,6f15.9)', IOSTAT=ios ) iloc, unconvert_length( tau(:,iloc) ), unconvert_force( f(:,iloc) )
+     !WRITE( ounit, fmt=10, IOSTAT=ios ) iloc, ityp(na), unconvert_length( tau(:,iloc) ), unconvert_force( f(:,iloc) )
+     WRITE( ounit, fmt=10, IOSTAT=ios ) iloc, ityp(na), tau(:,iloc) , unconvert_force( f(:,iloc) )
+     10 format(i0,x,i2,3x,6f15.9)
   ENDDO
 
 END SUBROUTINE write_xyz
@@ -194,7 +199,7 @@ SUBROUTINE read_xyz( lat, nat, tau, order, atm, ityp, force, fname )
   REAL(DP),           INTENT(OUT) :: force(3,nat)   !> forces
   CHARACTER(*),       INTENT(IN) :: fname           !> file name
   ! -- LOCAL VARIABLES
-  INTEGER :: na, u0, ios, iloc
+  INTEGER :: na, u0, ios, iloc, i
   REAL(DP) :: at_angs (3,3)
 
   OPEN( newunit=u0, file=fname)
@@ -207,8 +212,9 @@ SUBROUTINE read_xyz( lat, nat, tau, order, atm, ityp, force, fname )
     DO na=1,nat
        iloc = order(na)
        !READ( u0,* ) atm(ityp(iloc)), tau(:,iloc), force(:,iloc)
-       READ( u0,* ) ios, tau(:,iloc), force(:,iloc)
+       READ( u0,* ) i, ios, tau(:,iloc), force(:,iloc)
     ENDDO
+    force = convert_force( force )
 
   CLOSE( u0 )
 

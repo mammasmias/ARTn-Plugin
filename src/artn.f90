@@ -327,7 +327,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         lperp = .true.
         iperp = 0
 
-        WRITE( iunartout,* ) "* NEXT NPERP ",nperp, nperp_step
+        !WRITE( iunartout,* ) "* NEXT NPERP ",nperp, nperp_step
 
         ! return to initial number of lanczos steps
         !ilanc = 0  !< initialize it when turn llanczos  = T
@@ -440,6 +440,12 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      IF ( lforc_conv ) THEN
         IF ( fpush_factor == 1.0 ) THEN
 
+
+           ! ...It found the adjacent minimum!
+           !   We save it and return to the saddle point
+           CALL write_struct( at, nat, tau, order, elements, ityp, force, 1.0_DP, iunstruct, struc_format_out, 'min0010' )             
+                 
+
            disp = RELX
 
            ! restart from saddle point
@@ -463,6 +469,9 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            irelax = 0
 
         ELSEIF( .NOT.lend )THEN  !< If already pass before no need to rewrite again
+
+           ! ...It found the starting minimum! (should be the initial configuration)
+           CALL write_struct( at, nat, tau, order, elements, ityp, force, 1.0_DP, iunstruct, struc_format_out, 'min0000' )
 
            lconv = .true.
            lend = lconv

@@ -105,9 +105,19 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
              case(:4); nperp = nperp_list( nperp_step )
              case(5:); nperp = nperp_list( 5 )
            end select
-           WRITE( iunartout,* ) "* NEXT NPERP ",nperp, nperp_step
+           !WRITE( iunartout,* ) "* NEXT NPERP ",nperp, nperp_step
 
         ENDIF
+
+
+        ! ...Count if the fperp is always to small
+        !IF( C1 )THEN
+        !  noperp = noperp + 1
+        !  ! ** WARNING **
+        !  if( noperp > 2 ) &
+        !    CALL WARNING( iunartout, "Tansition EIGEN->PERP",  &
+        !         "The Fperp is too small after Push-EUGEN - PB with fpara_thr, init_forc_thr and forc_thr ", [noperp])
+        !ENDIF
 
 
 
@@ -134,7 +144,7 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
            CALL write_report( etot_step, force, fperp, fpara, lowest_eigval, INIT, if_pos, istep, nat,  iunartout, ArtnStep )
         ENDIF
 
-        ! ...Count if the fperp is always to slow
+        ! ...Count if the fperp is always to small
         IF( C1 )THEN
           noperp = noperp + 1
           ! ** WARNING **

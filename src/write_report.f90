@@ -258,7 +258,7 @@ SUBROUTINE write_end_report( iunartout, lsaddle, lpush_final, de )
     !WRITE (iunartout,'(5X, "--------------------------------------------------")')
 
     WRITE (iunartout,'(5X, "--------------------------------------------------")')
-    WRITE (iunartout,'(5X, "|> ARTn found a potential saddle point | E_final - E_initial =", F12.5," eV")') unconvert_energy(de)
+    WRITE (iunartout,'(5X, "|> ARTn found a potential saddle point | E_saddle - E_initial =", F12.5," eV")') unconvert_energy(de)
     WRITE (iunartout,'(5X, "--------------------------------------------------")')
 
     IF ( lpush_final ) THEN
