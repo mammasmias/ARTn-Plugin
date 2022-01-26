@@ -18,7 +18,7 @@ This is a working repo for the current version of the plugin-ARTn; currently it 
 
 
 
-## QE/pARTn Interface 
+## QE-7.0/pARTn Interface 
 
 ### How to patch QE:
 
