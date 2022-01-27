@@ -114,6 +114,9 @@ FixARTn::FixARTn( LAMMPS *lmp, int narg, char **arg ): Fix( lmp, narg, arg )
 
   int iarg(3);
   while( iarg < narg ){
+
+    /* Here we change the min_fire parameter 
+    */
     
     if( strcmp(arg[iarg], "alpha0") == 0 ){
       if (iarg+2 > narg) error->all(FLERR,"Illegal min_modify command");

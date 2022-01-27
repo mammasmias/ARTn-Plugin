@@ -5,3 +5,6 @@ qe-6.6
 *.a
 fort.*
 Makefile
+*.wfc*
+*.out*
+*.restart
