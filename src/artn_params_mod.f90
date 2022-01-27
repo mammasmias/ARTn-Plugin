@@ -132,7 +132,7 @@ MODULE artn_params
   CHARACTER(LEN=10) :: struc_format_out
   CHARACTER(LEN=3), ALLOCATABLE :: elements(:)
   !
-  NAMELIST/artn_parameters/ lrestart, lrelax, lpush_final, &
+  NAMELIST/artn_parameters/ lrestart, lrelax, lpush_final, lmove_nextmin, &
        ninit, neigen, nperp, lanc_mat_size, nsmooth, push_mode, dist_thr,  &
        init_forc_thr,forc_thr, fpara_thr, eigval_thr, frelax_ene_thr, &
        push_step_size, dlanc, eigen_step_size, current_step_size, push_over, &
@@ -168,7 +168,7 @@ CONTAINS
     INTEGER :: ios, mem
 
     verb = .true.
-    !verb = .false.
+    verb = .false.
 
     INQUIRE( file = filnam, exist = file_exists )
 
@@ -192,6 +192,7 @@ CONTAINS
       lpush_final = .false.
       lbackward = .true.
       lrestart = .false.
+      lmove_nextmin = .false.
 
       lend = .false.
       verbose = 0
@@ -271,9 +272,11 @@ CONTAINS
       mem = mem + sizeof( elements  )
       mem = mem + sizeof( delr      )
 
+      IF( verb )THEN
       print*, "* LIB-ARTn MEMORY: ", mem, "Bytes"
       print*, "* LIB-ARTn MEMORY: ", real(mem)/1000., "KB"
       print*, "* LIB-ARTn MEMORY: ", real(mem)/1000000., "MB"
+      ENDIF
       
       !
       ! read the ARTn input file
@@ -298,14 +301,6 @@ CONTAINS
     call make_units( engine_units )
 
 
-    !#! OLD VERSION
-    ! ...Convert push/lanczos/eigenvec step size to bohr (because force units are in Ry/bohr)
-
-    !eigen_step_size = convert_length( eigen_step_size )
-    !push_step_size = convert_length( push_step_size )
-    !dlanc = convert_length( dlanc )
-    !dist_thr = convert_length( dist_thr )
-
     if( verb )then
       write(*,2) repeat("*",50)
       write(*,2) "* Units:          ", trim(engine_units)
@@ -324,7 +319,6 @@ CONTAINS
       2 format(*(x,a))
     endif
 
-    !#! NEW VERSION
     ! ...Convert the default values parameters from Engine_units
     !! For the moment the ARTn units is in a.u. (Ry, L, T)
     !! The default value are in ARTn units but the input values gives by the users
@@ -376,8 +370,6 @@ CONTAINS
       write(*,1) "* eigen_step_size = ", eigen_step_size
       write(*,1) "* dlanc           = ", dlanc
       write(*,2) repeat("*",50)
-      !1 format(x,a,x,g15.5)
-      !2 format(*(x,a))
     endif
 
     !
@@ -385,7 +377,6 @@ CONTAINS
 
 
   !---------------------------------------------------------------------------
-  !SUBROUTINE Fill_param_step( nat, order, pos, types, etot, force )
   SUBROUTINE Fill_param_step( nat, box, order, pos, etot, force )
     !
     !> @brief fill the *_step arrays on which ARTn works on.
@@ -418,9 +409,9 @@ CONTAINS
   !---------------------------------------------------------------------------
   SUBROUTINE write_restart( filnres, nat )
     !
-    ! Subroutine that writes the minimum parameters required for restart of a calculation
-    ! to a file
-    !
+    !> @breif Subroutine that writes the minimum parameters required for restart of a calculation
+    !! to a file
+    !!
     ! LOGICAL FLAGS: linit, lperp, leigen, llanczos, lsaddle, lrelax
     ! COUNTERS : istep, iinit, ilanc, ieigen, ismooth, nlanc
     ! ARRAYS:
@@ -624,25 +615,25 @@ END MODULE artn_params
  
 
 !......................................................................... FUNCTION
-!> @brief give the parameters IPERP
-!> @return the value of iperp
 integer function get_iperp()
+  !> @brief give the parameters IPERP
+  !> @return the value of iperp
   USE artn_params, only : iperp
   get_iperp = iperp
 end function get_iperp
 
 
-!> @brief give the parameters PERP
-!> @return the value of perp
 integer function get_perp()
+  !> @brief give the parameters PERP
+  !> @return the value of perp
   USE artn_params, only : perp
   get_perp = perp
 end function get_perp
 
 
-!> @brief give the parameters RELX
-!> @return the value of RELX
 integer function get_relx()
+  !> @brief give the parameters RELX
+  !> @return the value of RELX
   USE artn_params, only : relx
   get_relx = relx
 end function get_relx

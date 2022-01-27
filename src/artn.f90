@@ -12,6 +12,18 @@
 !------------------------------------------------------------------------------
 SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, displ_vec, lconv )
   !----------------------------------------------------------------------------
+  !> @param[in]     force       force calculated by the engine
+  !> @param[inout]  etot_eng    total energy of the engine
+  !> @param[in]     nat         number of atoms
+  !> @param[in]     ityp        list of type of atoms
+  !> @param[in]     atm         list of the element's name relative to the atomic type
+  !> @param[inout]  tau         atomic position
+  !> @param[in]     order       order of atomic index in the list: force, tau, ityp
+  !> @param[in]     at          lattice parameter 
+  !> @param[in]     if_pos      list of fixed atomic dof (0 or 1)
+  !> @param[out]    disp        stage for move_mode
+  !> @param[out]    displ_vec   displacement vector communicated to move_mode
+  !> @param[out]    lconv       flag for controlling convergence
   !
   ! artn_params for variables and counters that need to be stored in each step
   ! DEFINED IN: artn_params_mod.f90
@@ -138,7 +150,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
       ! ...Overwirte the engine Arrays
       tau(:,:) = tau_step(:,order(:))
-      !force(:,:) = force_step(:,order(:))
 
     ELSE 
 
