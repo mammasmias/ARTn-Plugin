@@ -65,11 +65,11 @@ Finally Quantum ESPRESSO must be launched with the flag -partn as follow:
 
 ### Installation/Compilation
 
-For the moment the pARTn library has to be compiled with **gfortran** only.
+We test this interface only with gnu compiler. 
 
-ARTn, in LAMMPS, is defined as a FIX, `fix_artn.h` and `fix_artn.cpp`. So  you copy and paste these two files in the `LAMMPS/src/`.
+ARTn, in LAMMPS, is defined as a FIX, `fix_artn.h` and `fix_artn.cpp`. So  you copy and paste these two files in the `LAMMPS_PATH/src/`.
 
-In the Makefile, i.e. `LAMMPS/src/MAKE/Makefile.serial`, you need to had the library PATH. For pARTn it needs the openblas library with pthread library and the gfortran library for the C++/fortran interface. Of course the ARTn library is built at ARTn compilation and placed in the `src/` folder.
+In the Makefile of LAMMPS, i.e. `LAMMPS_PATH/src/MAKE/Makefile.serial`, you must had the library PATH. For pARTn it needs the openblas library with pthread library and the gfortran library for the C++/fortran interface. Of course the ARTn library is built at ARTn compilation and placed in the `plugin-ARTn/src/` folder.
 An example:
 
 ```makefile
@@ -80,7 +80,7 @@ ART_PATH := /home/src/artn-plugin-qe
 ART_LIB := $(ART_PATH)/src/libartn.a  $(FORT_LIB) $(BLAS_LIB)
 ```
 
-And the VARIABLE `ART_LIB` should be added at the moment of the executable creation:
+And the VARIABLE `ART_LIB` should be added at the moment of the executable creation, for example at the end of the line as it is shown:
 
 ```makefile
 $(EXE): main.o $(LMPLIB) $(EXTRA_LINK_DEPENDS)
@@ -141,7 +141,7 @@ Flag to push to adjacent minimum along eigenvector. Flag to push to the second m
 Flag for restarting a ARTn calculation.  
 - `ninit`: Value integer, by default is `3`. Number of initial pushes before lanczos start.
 - `neigen`: Value integer, by default is `1`. Number of steps made with eigenvector before perpendicular relax.
-- `npush`: Value integer, by default is `3`. Maximum number of relaxation perpendicular to the move direction 
+- `nperp`: Value integer, by default is `3`. Maximum number of relaxation perpendicular to the move direction after an `init` or `eigen` push.
 - `lanc_mat_size`: Value integer, by default is `16`. Maximum number of Lanczos iterations
 - `nsmooth`: Value integer, by default is `1`. Number of smoothing steps from push to eigenvector.
 - `struc_format_out`: Value character, default is `"xsf"`. Output structure format. Value accepted `"xyz"` .
@@ -183,8 +183,6 @@ Engine specific flag:
 ###### Ouput:
 
 - `verbose`: Value is integer, by default is `0`. Level `0`  print in output file at each ARTn step without flag information, at `1`  it will add the information flag and at `2`  will print at each step: define push, push and perprelax.  
-
-
 
 
 
