@@ -26,6 +26,8 @@ MODULE artn_params
   CHARACTER(LEN=255) :: initpfname = 'initp'
   CHARACTER(LEN=255) :: eigenfname = 'latest_eigenvec'
   CHARACTER(LEN=255) :: restartfname = 'artn.restart'
+  CHARACTER(LEN=255) :: prefix_min = 'min'
+  CHARACTER(LEN=255) :: prefix_sad = 'sad'
   ! Constante move
   INTEGER :: VOID = 1, INIT = 2, PERP = 3, EIGN = 4, LANC = 5, RELX = 6, OVER = 7
   CHARACTER(LEN=4) :: MOVE(7)
@@ -57,6 +59,9 @@ MODULE artn_params
   INTEGER :: ismooth    !> number of smoothing steps
   INTEGER :: if_pos_ct  !> counter used to determine the number of fixed coordinates
   INTEGER :: zseed      !> random number generator seed
+
+  INTEGER :: nmin       !> count the number of minimum found
+  INTEGER :: nsaddle    !> count the number of saddle point found
   ! lanczos variables
   REAL(DP) :: lowest_eigval !> Lowest eigenvalues obtained by lanczos algorithm
   !                                           !
@@ -222,6 +227,8 @@ CONTAINS
       noperp = 0 
       neigen = 1
       nsmooth = 1
+      nmin = 0
+      nsaddle = 0
       !
       dist_thr = NAN
       !
@@ -640,7 +647,19 @@ end function get_relx
 
 
 
+SUBROUTINE make_filename( f, prefix, n )
 
+  character(*), intent(out) :: f
+  character(*), intent(in) :: prefix
+  integer,      intent(inout) :: n
+
+  character(len=4) :: ctmp
+
+  n = n + 10
+  write( ctmp, '(I0.4)') n
+  f = trim(prefix)//trim(ctmp)
+
+END SUBROUTINE make_filename
 
 
 

@@ -40,7 +40,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
        engine_units, struc_format_out, elements, &
        initialize_artn, read_restart, write_restart, &
        push_over, ran3, a1, old_lanczos_vec, lend, lat, fill_param_step, &
-       filout, sadfname, initpfname, eigenfname, restartfname, warning
+       filout, sadfname, initpfname, eigenfname, restartfname, warning,  &
+       prefix_min, nmin, prefix_sad, nsaddle
   !
   IMPLICIT NONE
   ! -- ARGUMENTS
@@ -73,6 +74,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   INTEGER   :: ios ,i                         ! file IOSTAT
   CHARACTER( LEN=255) :: filin !, filout, sadfname, initpfname, eigenfname, restartfname
   LOGICAL :: lforc_conv, lsaddle_conv, ArtnStep
+  !character(:), allocatable :: outfile
+  character(len=256) :: outfile
 
   integer :: natom
   LOGICAL, PARAMETER :: noARTnStep = .false.
@@ -366,8 +369,9 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         !
         lsaddle = .true.
         !
-        !CALL write_struct( at, nat, tau, order, elements, ityp, force, 1.0_DP, iunstruct, struc_format_out, sadfname )
-        CALL write_struct( at, nat, tau, order, elements, ityp, force_step, 1.0_DP, iunstruct, struc_format_out, sadfname )
+        !CALL write_struct( at, nat, tau, order, elements, ityp, force_step, 1.0_DP, iunstruct, struc_format_out, sadfname )
+        call make_filename( outfile, prefix_sad, nsaddle )
+        CALL write_struct( at, nat, tau, order, elements, ityp, force_step, 1.0_DP, iunstruct, struc_format_out, outfile )
         !
         CALL write_end_report( iunartout, lsaddle, lpush_final, etot_step - etot_init )
         ! 
@@ -461,7 +465,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            ! ...It found the adjacent minimum!
            !   We save it and return to the saddle point
            !CALL write_struct( at, nat, tau, order, elements, ityp, force, 1.0_DP, iunstruct, struc_format_out, 'min0010' )             
-           CALL write_struct( at, nat, tau, order, elements, ityp, force_step, 1.0_DP, iunstruct, struc_format_out, 'min0010' )             
+           CALL make_filename( outfile, prefix_min, nmin )
+           CALL write_struct( at, nat, tau, order, elements, ityp, force_step, 1.0_DP, iunstruct, struc_format_out, outfile )             
 
 
            ! ...Save the minimum if it is new
@@ -489,8 +494,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         ELSEIF( .NOT.lend )THEN  !< If already pass before no need to rewrite again
 
            ! ...It found the starting minimum! (should be the initial configuration)
-           !CALL write_struct( at, nat, tau, order, elements, ityp, force, 1.0_DP, iunstruct, struc_format_out, 'min0000' )
-           CALL write_struct( at, nat, tau, order, elements, ityp, force_step, 1.0_DP, iunstruct, struc_format_out, 'min0000' )
+           CALL make_filename( outfile, prefix_min, nmin )
+           CALL write_struct( at, nat, tau, order, elements, ityp, force_step, 1.0_DP, iunstruct, struc_format_out, outfile )
 
            lconv = .true.
            lend = lconv
