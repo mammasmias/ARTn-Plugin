@@ -134,18 +134,31 @@ Depending of the engine the works units changes and it is to the user to be cohe
 **The values gives by the user through the input file should be in engine units**
 
 - `lrelax`: Values `.true./.false`, default is `false.`.
-Flag if we want to relax to adjacent minima from the saddle point.  
+  Flag if we want to relax to adjacent minima from the saddle point.  
+
 - `lpush_final`: Values `.true./.false.`, default is `.true.`.  
-Flag to push to adjacent minimum along eigenvector. Flag to push to the second minimum.
+  Flag to push to adjacent minimum along eigenvector. Flag to push to the second minimum.
+
 - `lrestart`: Values `.true./.false.`, default is `.false.`.
-Flag for restarting a ARTn calculation.  
+  Flag for restarting a ARTn calculation.  
+
+- `lmove_nextmin`: Value .true./.false., default is .false. 
+
+  Flag to leave ARTn with the new minimum found.
+
 - `ninit`: Value integer, by default is `3`. Number of initial pushes before lanczos start.
+
 - `neigen`: Value integer, by default is `1`. Number of steps made with eigenvector before perpendicular relax.
+
 - `nperp`: Value integer, by default is `3`. Maximum number of relaxation perpendicular to the move direction after an `init` or `eigen` push.
+
 - `lanc_mat_size`: Value integer, by default is `16`. Maximum number of Lanczos iterations
+
 - `nsmooth`: Value integer, by default is `1`. Number of smoothing steps from push to eigenvector.
+
 - `struc_format_out`: Value character, default is `"xsf"`. Output structure format. Value accepted `"xyz"` .
-Engine specific flag:
+  Engine specific flag:
+
 - `engine_units`: Value character, default is `qe`. For LAMMPS it is needed to specify `lammps/<units>` where `<units>` correspond to the units keywords in LAMMPS input: (`metal`, `charge`, ...)
 ###### The push mode:
 
