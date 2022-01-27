@@ -9,7 +9,7 @@ SUBROUTINE write_initial_report(iunartout, filout)
   use artn_params, ONLY: engine_units, ninit, nperp, neigen, nsmooth,  &
                          init_forc_thr, forc_thr, fpara_thr, eigval_thr, &
                          push_step_size, eigen_step_size, lanc_mat_size, dlanc, &
-                         push_mode, verbose, push_over
+                         push_mode, verbose, push_over, frelax_ene_thr
   use units, only : strg_units, unconvert_force, &
                     unconvert_energy, unconvert_hessian, unconvert_length, unit_char
   INTEGER,             INTENT(IN) :: iunartout
@@ -40,9 +40,10 @@ SUBROUTINE write_initial_report(iunartout, filout)
   WRITE (iunartout,'(15X,"forc_thr        = ", F6.3,2x,A)') unconvert_force( forc_thr ), unit_char('force')
   WRITE (iunartout,'(15X,"fpara_thr       = ", F6.3,2x,A)') unconvert_force( fpara_thr ), unit_char('force')
   WRITE (iunartout,'(15X,"eigval_thr      = ", F6.3,2x,A)') unconvert_hessian( eigval_thr ), unit_char('hessian')
+  WRITE (iunartout,'(15X,"frelax_ene_thr  = ", F6.3,2x,A)') unconvert_energy( frelax_ene_thr ), unit_char('energy')
   WRITE (iunartout,'(15X,"Step size Parameter: ")')
-  WRITE (iunartout,'(15X,"push_step_size  = ", F6.1,2x,A)') unconvert_length( push_step_size ), unit_char('length')
-  WRITE (iunartout,'(15X,"eigen_step_size = ", F6.1,2x,A)') unconvert_length( eigen_step_size ), unit_char('length')
+  WRITE (iunartout,'(15X,"push_step_size  = ", F6.2,2x,A)') unconvert_length( push_step_size ), unit_char('length')
+  WRITE (iunartout,'(15X,"eigen_step_size = ", F6.2,2x,A)') unconvert_length( eigen_step_size ), unit_char('length')
   WRITE (iunartout,'(15X,"push_over       = ", F6.3,2x,A)') push_over, "fraction of eigen_step_size"
   WRITE (iunartout,'(15X,"push_mode       = ", A6)') push_mode
   WRITE (iunartout,'(5X, "--------------------------------------------------")')
@@ -94,7 +95,7 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
   !
   USE artn_params, ONLY: push, MOVE, verbose  &
                         ,etot_init, iinit, iperp, ieigen, ilanc, irelax, delr, verbose, iartn, a1 &
-                        ,tau_init, lat, tau_step &
+                        ,tau_init, lat, tau_step, delr &
                         ,lrelax, linit, lbasin, lperp, llanczos, leigen, lsaddle, lpush_final, lbackward, lrestart 
   USE UNITS
   IMPLICIT NONE
@@ -157,7 +158,7 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
 
     ! ...Displacement processing
     if( iartn == 0 )allocate( tau_init, source = tau_step )
-    call compute_delr( nat, tau_step, tau_init, lat )
+    call compute_delr( nat, tau_step, tau_init, lat, delr )
     npart = 0
     rc2 = 0.1!*0.1  !! Miha: Why square?
     do i = 1, nat
@@ -267,18 +268,19 @@ END SUBROUTINE write_end_report
 
 
 !------------------------------------------------------------
-subroutine compute_delr( nat, pos, old_pos, lat )
-  use artn_params, only : delr
+subroutine compute_delr( nat, pos, old_pos, lat, delr )
   use units, only : DP
   implicit none
 
   INTEGER, intent( in ) :: nat
   REAL(DP), intent( in ) :: pos(3,nat), lat(3,3)
   REAL(DP), intent( in ) :: old_pos(3,nat)
+  REAL(DP), intent( out ) :: delr(3,nat)
 
   integer :: i
   REAL(DP) :: r(3)
   
+  delr = 0.0
   do i = 1, nat
      r = pos(:,i) - old_pos(:,i)
      call pbc( r, lat )

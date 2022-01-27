@@ -30,7 +30,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   !
   USE units
   USE artn_params, ONLY: iunartin, iunartout, iunstruct, &
-       lrelax, linit, lperp, leigen, llanczos, lrestart, lbasin, lsaddle, lpush_final, lbackward, &
+       lrelax, linit, lperp, leigen, llanczos, lrestart, lbasin, lsaddle, lpush_final, lbackward, lmove_nextmin, &
        irelax, istep, iperp, ieigen, iinit, ilanc, ismooth, iover, nlanc, nperp, noperp, nperp_step, if_pos_ct, &
        lowest_eigval, etot_init, etot_step, etot_saddle, etot_final, de_saddle, de_back, de_fwd, &
        ninit, neigen, lanc_mat_size, nsmooth, push_mode, dist_thr, init_forc_thr, forc_thr, &
@@ -413,7 +413,9 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
            ! ** WARNING **
            if( iover > 4 ) &
-             CALL WARNING( iunartout, "PUSH-OVER","Too many push over the saddle point-> PARAM: Push_Over ", [iover])
+             !CALL WARNING( iunartout, "PUSH-OVER","Too many push over the saddle point-> PARAM: Push_Over ", [iover])
+             CALL WARNING( iunartout, "PUSH-OVER","Too many push over the saddle point-> PARAM: Push_Over ", &
+                 [etot_step, etot_saddle, etot_step - etot_saddle])
            !
            CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, OVER, if_pos, istep, nat,  iunartout, noARTnStep )
            ! 
@@ -423,6 +425,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      ELSE
 
         lconv = .true.
+        ! ...Here we dont load the next minimum because it does not exist
 
      ENDIF
   ENDIF
@@ -451,6 +454,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      ! check for convergence
      !
      IF ( lforc_conv ) THEN
+
         IF ( fpush_factor == 1.0 ) THEN
 
 
@@ -458,6 +462,10 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            !   We save it and return to the saddle point
            !CALL write_struct( at, nat, tau, order, elements, ityp, force, 1.0_DP, iunstruct, struc_format_out, 'min0010' )             
            CALL write_struct( at, nat, tau, order, elements, ityp, force_step, 1.0_DP, iunstruct, struc_format_out, 'min0010' )             
+
+
+           ! ...Save the minimum if it is new
+           call save_min( nat, tau_step )
                  
 
            disp = RELX
@@ -493,6 +501,12 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
         END IF
         !
+        
+        !
+        ! ...Here we ahould load the next minimum if the user ask
+        IF( lmove_nextmin .AND. lconv )CALL move_nextmin( nat, tau )
+      
+
      END IF
      !
   END IF RELAX

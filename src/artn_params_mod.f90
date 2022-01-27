@@ -64,6 +64,7 @@ MODULE artn_params
   !                                           !
   REAL(DP) :: lat(3,3)
   REAL(DP), ALLOCATABLE :: tau_init(:,:)
+  REAL(DP), ALLOCATABLE :: tau_nextmin(:,:)
   REAL(DP), ALLOCATABLE :: delr(:,:)
   REAL(DP), ALLOCATABLE :: push(:,:)             !> initial push vector
   REAL(DP), ALLOCATABLE, target :: eigenvec(:,:) !> lanczos eigenvector
@@ -611,7 +612,6 @@ CONTAINS
     
 END MODULE artn_params
  
-
  
 
 !......................................................................... FUNCTION
@@ -637,15 +637,6 @@ integer function get_relx()
   USE artn_params, only : relx
   get_relx = relx
 end function get_relx
-
-
-
-
-
-
-
-
-
 
 
 

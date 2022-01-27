@@ -23,11 +23,12 @@ LIB_OBJECTS := \
 	    $(OBJ)/move_mode.o \
 	    $(OBJ)/write_report.o \
 	    $(OBJ)/write_struct.o \
+            $(OBJ)/nextmin.o \
             $(OBJ)/artn.o \
             $(OBJ)/artn_QE.o
 
 
-FDEBUG := -g #-check all  #-fcheck=all
+FDEBUG := -g #-fcheck=all #-check all  #-fcheck=all
 
 ifeq ($(F90),ifort)
   MOD   := -module $(OBJ)
