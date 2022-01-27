@@ -195,6 +195,7 @@ END SUBROUTINE write_report
 !------------------------------------------------------------
 SUBROUTINE write_inter_report( u, pushfactor, de )
   use units, only : DP, unconvert_energy
+  use artn_params, only : artn_resume
   implicit none
 
   integer, intent( in ) :: u             !> Ouput Unit 
@@ -222,6 +223,8 @@ SUBROUTINE write_inter_report( u, pushfactor, de )
       WRITE( u,'(15X,"backward E_act =", F12.5," eV")') unconvert_energy(de(1)) 
       WRITE( u,'(15X,"reaction dE    =", F12.5," eV")') unconvert_energy((de(5)-de(4))) 
       WRITE( u,'(15X,"dEinit - dEfinal    =", F12.5," eV")') unconvert_energy((de(3)-de(5))) 
+      WRITE( u,'(5X, "--------------------------------------------------")')
+      WRITE( u,'(5X, "Cofiguration Files:", X,A)') trim(artn_resume)
       WRITE( u,'(5X, "--------------------------------------------------")')
 
 

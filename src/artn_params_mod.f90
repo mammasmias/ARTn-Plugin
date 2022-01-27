@@ -28,6 +28,7 @@ MODULE artn_params
   CHARACTER(LEN=255) :: restartfname = 'artn.restart'
   CHARACTER(LEN=255) :: prefix_min = 'min'
   CHARACTER(LEN=255) :: prefix_sad = 'sad'
+  CHARACTER(LEN=255) :: artn_resume
   ! Constante move
   INTEGER :: VOID = 1, INIT = 2, PERP = 3, EIGN = 4, LANC = 5, RELX = 6, OVER = 7
   CHARACTER(LEN=4) :: MOVE(7)

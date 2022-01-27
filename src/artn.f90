@@ -41,7 +41,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
        initialize_artn, read_restart, write_restart, &
        push_over, ran3, a1, old_lanczos_vec, lend, lat, fill_param_step, &
        filout, sadfname, initpfname, eigenfname, restartfname, warning,  &
-       prefix_min, nmin, prefix_sad, nsaddle
+       prefix_min, nmin, prefix_sad, nsaddle, artn_resume
   !
   IMPLICIT NONE
   ! -- ARGUMENTS
@@ -234,6 +234,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      ! ...The push counter (controls if we should call lanczos or keep pushing)
      IF( iinit == 1 )THEN
        CALL write_struct( at, nat, tau, order, elements, ityp, push, 1.0_DP, iunstruct, struc_format_out, initpfname )
+       artn_resume = '* Start: '//trim(initpfname)
      ENDIF
      
      
@@ -372,6 +373,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         !CALL write_struct( at, nat, tau, order, elements, ityp, force_step, 1.0_DP, iunstruct, struc_format_out, sadfname )
         call make_filename( outfile, prefix_sad, nsaddle )
         CALL write_struct( at, nat, tau, order, elements, ityp, force_step, 1.0_DP, iunstruct, struc_format_out, outfile )
+        artn_resume = trim(artn_resume)//" | "//trim(outfile)
         !
         CALL write_end_report( iunartout, lsaddle, lpush_final, etot_step - etot_init )
         ! 
@@ -467,6 +469,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            !CALL write_struct( at, nat, tau, order, elements, ityp, force, 1.0_DP, iunstruct, struc_format_out, 'min0010' )             
            CALL make_filename( outfile, prefix_min, nmin )
            CALL write_struct( at, nat, tau, order, elements, ityp, force_step, 1.0_DP, iunstruct, struc_format_out, outfile )             
+           artn_resume = trim(artn_resume)//" | "//trim(outfile)
 
 
            ! ...Save the minimum if it is new
@@ -496,10 +499,13 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            ! ...It found the starting minimum! (should be the initial configuration)
            CALL make_filename( outfile, prefix_min, nmin )
            CALL write_struct( at, nat, tau, order, elements, ityp, force_step, 1.0_DP, iunstruct, struc_format_out, outfile )
+           artn_resume = trim(artn_resume)//" | "//trim(outfile)
+
 
            lconv = .true.
            lend = lconv
            de_fwd = etot_saddle - etot_step
+
 
            CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat, iunartout, .true. )
            call write_inter_report( iunartout, int(fpush_factor), [de_back, de_fwd, etot_init, etot_final, etot_step] )
