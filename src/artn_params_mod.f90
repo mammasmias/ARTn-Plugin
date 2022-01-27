@@ -38,6 +38,7 @@ MODULE artn_params
   LOGICAL :: lbasin     !> true while in basin 
   LOGICAL :: lsaddle    !> saddle point obtained
   LOGICAL :: lbackward  !> backward saddle point obtained
+  LOGICAL :: lmove_nextmin  !> backward saddle point obtained
   !
   LOGICAL :: lend
   INTEGER :: verbose    !> Verbose Level
