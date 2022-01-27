@@ -6,11 +6,12 @@
   !! Artn mode
 !  lrestart = .true.
   lpush_final = .true. 
+  lmove_nextmin = .true.
 
   ninit = 3
   nsmooth = 2
   init_forc_thr = 0.5
-  forc_thr = 0.05
+  forc_thr = 0.01
   !force_thr = 0.05
   fpara_thr = 0.07
 
@@ -28,7 +29,7 @@
   !eigval_thr = -0.4 
   
   !! eigenpush params
-  eigen_step_size = 0.15
-  !frelax_ene_thr = -0.005
+  eigen_step_size = 0.2
+  frelax_ene_thr = -0.005
   push_over = 1.5
 /
