@@ -204,12 +204,6 @@ SUBROUTINE write_inter_report( u, pushfactor, de )
 
     CASE( 1 )
       ! de(1) = de_back
-      !WRITE( u, '(5X, "--------------------------------------------------")')
-      !WRITE( u, '(5X, "    *** ARTn found adjacent minimum ***   ")')
-      !WRITE( u, '(5X, "--------------------------------------------------")')
-      !WRITE( u, '(15X,"backward E_act =", F12.5," eV")') unconvert_energy( de(1) )
-      !WRITE( u, '(5X, "--------------------------------------------------")')
-
       WRITE( u, '(5X, "--------------------------------------------------")')
       WRITE( u, '(5X, "|> ARTn found adjacent minimum | backward E_act =", F12.5," eV")') unconvert_energy( de(1) )
       WRITE( u, '(5X, "--------------------------------------------------")')
@@ -251,11 +245,6 @@ SUBROUTINE write_end_report( iunartout, lsaddle, lpush_final, de )
   REAL(DP), intent( in ), value :: de
   
   if( lsaddle )then
-    !WRITE (iunartout,'(5X, "--------------------------------------------------")')
-    !WRITE (iunartout,'(5X, "    *** ARTn found a potential saddle point ***   ")')
-    !WRITE (iunartout,'(5X, "--------------------------------------------------")')
-    !WRITE (iunartout,'(15X,"E_final - E_initial =", F12.5," eV")') unconvert_energy(de)
-    !WRITE (iunartout,'(5X, "--------------------------------------------------")')
 
     WRITE (iunartout,'(5X, "--------------------------------------------------")')
     WRITE (iunartout,'(5X, "|> ARTn found a potential saddle point | E_saddle - E_initial =", F12.5," eV")') unconvert_energy(de)

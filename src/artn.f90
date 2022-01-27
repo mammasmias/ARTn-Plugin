@@ -333,7 +333,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         !ilanc = 0  !< initialize it when turn llanczos  = T
         ! 
      ENDIF
-     CALL write_struct( at, nat, tau, order, elements, ityp, force, 1.0_DP, iunstruct, struc_format_out, eigenfname )
+     !CALL write_struct( at, nat, tau, order, elements, ityp, force, 1.0_DP, iunstruct, struc_format_out, eigenfname )
+     CALL write_struct( at, nat, tau, order, elements, ityp, force_step, 1.0_DP, iunstruct, struc_format_out, eigenfname )
      CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat,  iunartout, noARTnStep )
       
   END IF
@@ -354,7 +355,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         !
         lsaddle = .true.
         !
-        CALL write_struct( at, nat, tau, order, elements, ityp, force, 1.0_DP, iunstruct, struc_format_out, sadfname )
+        !CALL write_struct( at, nat, tau, order, elements, ityp, force, 1.0_DP, iunstruct, struc_format_out, sadfname )
+        CALL write_struct( at, nat, tau, order, elements, ityp, force_step, 1.0_DP, iunstruct, struc_format_out, sadfname )
         !
         CALL write_end_report( iunartout, lsaddle, lpush_final, etot_step - etot_init )
         ! 
@@ -443,7 +445,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
            ! ...It found the adjacent minimum!
            !   We save it and return to the saddle point
-           CALL write_struct( at, nat, tau, order, elements, ityp, force, 1.0_DP, iunstruct, struc_format_out, 'min0010' )             
+           !CALL write_struct( at, nat, tau, order, elements, ityp, force, 1.0_DP, iunstruct, struc_format_out, 'min0010' )             
+           CALL write_struct( at, nat, tau, order, elements, ityp, force_step, 1.0_DP, iunstruct, struc_format_out, 'min0010' )             
                  
 
            disp = RELX
@@ -451,10 +454,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            ! restart from saddle point
            tau(:,:) = tau_saddle(:,order(:))
            eigenvec(:,:) = eigen_saddle(:,:)
-           !DO i = 1,nat
-           !   tau(:,i) = tau_saddle(:,order(i))
-           !   eigenvec(:,i) = eigen_saddle(:,i)
-           !ENDDO
            lbackward = .true.
 
            lrelax = .false.
@@ -471,7 +470,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         ELSEIF( .NOT.lend )THEN  !< If already pass before no need to rewrite again
 
            ! ...It found the starting minimum! (should be the initial configuration)
-           CALL write_struct( at, nat, tau, order, elements, ityp, force, 1.0_DP, iunstruct, struc_format_out, 'min0000' )
+           !CALL write_struct( at, nat, tau, order, elements, ityp, force, 1.0_DP, iunstruct, struc_format_out, 'min0000' )
+           CALL write_struct( at, nat, tau, order, elements, ityp, force_step, 1.0_DP, iunstruct, struc_format_out, 'min0000' )
 
            lconv = .true.
            lend = lconv
@@ -614,9 +614,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
 
   ! ...Unconvert the Force and position
-  force = unconvert_force( force )
-  !tau = unconvert_length( tau )
-  !at = unconvert_length( at )
+  !force = unconvert_force( force )
 
 
 END SUBROUTINE artn

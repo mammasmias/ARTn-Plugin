@@ -493,7 +493,7 @@ CONTAINS
 
        !> Maybe initialize de_back if needed
 
-       ! ...Read the initial configuration
+       ! ...Read the initial configuration => push, tau_init
        !INQUIRE( file = trim(initpfname), exist = file_exists )
        !IF( file_exists )THEN
          print*, "* RESTART:: init_structure file exist: ", trim(initpfname)
