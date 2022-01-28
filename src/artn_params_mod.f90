@@ -653,7 +653,7 @@ SUBROUTINE make_filename( f, prefix, n )
 
   character(len=4) :: ctmp
 
-  n = n + 10
+  n = n + 1
   write( ctmp, '(I0.4)') n
   f = trim(prefix)//trim(ctmp)
 
