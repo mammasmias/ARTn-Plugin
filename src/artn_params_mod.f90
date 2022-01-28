@@ -442,7 +442,7 @@ CONTAINS
     !     tau_step, force_step, push, eigenvec, H, Vmat, force_old, tau_saddle, eigen_saddle
     WRITE ( iunartres, * ) linit, lperp, leigen, llanczos, lsaddle, lrelax, &
          iartn, istep, iinit, ieigen, iperp, ilanc, irelax, ismooth,   &
-         ninit, neigen, nlanc, lanc_mat_size, nperp,  &
+         ninit, neigen, nlanc, lanc_mat_size, nperp, nmin, nsaddle, &
          etot_init, &
          etot_step, tau_step, force_step, current_step_size, fpush_factor, &    !> Actual step
          eigenvec, H, Vmat, force_old, lowest_eigval, &
@@ -481,7 +481,7 @@ CONTAINS
        !     tau_step, force_step, push, eigenvec, H, Vmat, force_old, tau_saddle, eigen_saddle
        READ( iunartres, * ) linit, lperp, leigen, llanczos, lsaddle, lrelax, &
          iartn, istep, iinit, ieigen, iperp, ilanc, irelax, ismooth,   &
-         ninit, neigen, nlanc, lanc_mat_size, nperp,  &
+         ninit, neigen, nlanc, lanc_mat_size, nperp, nmin, nsaddle, &
          etot_init, &
          etot_step, tau_step, force_step, current_step_size, fpush_factor, &   !> Actual step
          eigenvec, H, Vmat, force_old, lowest_eigval, &
@@ -495,20 +495,17 @@ CONTAINS
        !> Maybe initialize de_back if needed
 
        ! ...Read the initial configuration => push, tau_init
-       !INQUIRE( file = trim(initpfname), exist = file_exists )
-       !IF( file_exists )THEN
-         print*, "* RESTART:: init_structure file exist: ", trim(initpfname)
-         if( .not.allocated(tau_init) )allocate( tau_init, source=tau_step)
-         SELECT CASE( struc_format_out )
-           CASE( 'xsf' )
-             fname = TRIM(initpfname)//"."//TRIM(struc_format_out)
-             CALL read_xsf( lat, nat, tau_init, order, elements, ityp, push, fname )
+       print*, "* RESTART:: init_structure file exist: ", trim(initpfname)
+       if( .not.allocated(tau_init) )allocate( tau_init, source=tau_step)
+       SELECT CASE( struc_format_out )
+         CASE( 'xsf' )
+           fname = TRIM(initpfname)//"."//TRIM(struc_format_out)
+           CALL read_xsf( lat, nat, tau_init, order, elements, ityp, push, fname )
 
-           CASE( 'xyz' )
-             fname = TRIM(initpfname)//"."//TRIM(struc_format_out)
-             CALL read_xyz( lat, nat, tau_init, order, elements, ityp, push, fname )
-         END SELECT
-       !ENDIF
+         CASE( 'xyz' )
+           fname = TRIM(initpfname)//"."//TRIM(struc_format_out)
+           CALL read_xyz( lat, nat, tau_init, order, elements, ityp, push, fname )
+       END SELECT
 
     ELSE
 
@@ -517,8 +514,8 @@ CONTAINS
     ENDIF
 
 
-    print*,"* RESTART::"
-    print*, nat 
+    !print*,"* RESTART::"
+    !print*, nat 
 
   END SUBROUTINE read_restart
 
