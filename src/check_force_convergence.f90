@@ -83,7 +83,7 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         ENDIF
 
         ! 
-        ! -- check perpendicular force convergence 
+        ! -- check perpendicular force convergence for the perp-relax 
         ! 
         C1 = ( MAXVAL( ABS(fperp)) < fperp_thr ) ! check on the fperp field
         C2 = ( nperp > 0.AND.iperp >= nperp )    ! check on the perp-relax iteration
@@ -111,13 +111,13 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
 
 
         ! ...Count if the fperp is always to small
-        !IF( C1 )THEN
+        IF( C1.AND.iperp == 0 )THEN
         !  noperp = noperp + 1
         !  ! ** WARNING **
         !  if( noperp > 2 ) &
-        !    CALL WARNING( iunartout, "Tansition EIGEN->PERP",  &
-        !         "The Fperp is too small after Push-EUGEN - PB with fpara_thr, init_forc_thr and forc_thr ", [noperp])
-        !ENDIF
+            CALL WARNING( iunartout, "No PERP-RELAX",  &
+                 "Fperp is aready lower than fperp_thr", [fperp_thr])
+        ENDIF
 
 
 
