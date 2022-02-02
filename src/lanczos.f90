@@ -106,7 +106,8 @@ SUBROUTINE lanczos( nat, force, displ_vec, v_in, dlanc, nlanc, ilanc, lowest_eig
      eigval_diff = (lowest_eigval - lowest_eigval_old)/lowest_eigval_old
      ! write(785,*) 1, lowest_eigval_old, lowest_eigval, abs(eigval_diff)
      !
-     IF ( abs(lowest_eigval_old) > 0.0_DP ) THEN
+     !#! WARNING::Here you take a vector perpendicular to the previous
+     IF ( .false..AND.abs(lowest_eigval_old) > 0.0_DP ) THEN
         !write (*,*) "DEBUG", ilanc, eigval_diff, eigval_thr
         IF ( ABS(eigval_diff) <= eigval_thr ) THEN
            !

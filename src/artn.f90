@@ -241,9 +241,10 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      ! ...Start lanczos when number of init steps is reached
      IF ( iinit >= ninit ) THEN
 
+        ! ...For actual step
         llanczos = .true.
         ilanc = 0
-        !write(iunartout,*)"ARTn(linit)::initialize ilanc"
+        ! ...For next Step
         linit = .false.
         lperp = .false.
 
@@ -384,7 +385,9 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         lpush_final = .false.  
      ENDIF
   ENDIF
+
   !
+  ! ...If saddle point is reached
   ! Push to adjacent minima after the saddle point
   !
   IF ( lsaddle ) THEN
@@ -454,7 +457,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat, iunartout, ARTnStep )
 
      irelax = irelax + 1
-     !write(iunartout, *) "ARTn(lrelax)::increment IRELAX"
 
      !
      ! check for convergence
@@ -466,7 +468,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
            ! ...It found the adjacent minimum!
            !   We save it and return to the saddle point
-           !CALL write_struct( at, nat, tau, order, elements, ityp, force, 1.0_DP, iunstruct, struc_format_out, 'min0010' )             
            CALL make_filename( outfile, prefix_min, nmin )
            CALL write_struct( at, nat, tau, order, elements, ityp, force_step, 1.0_DP, iunstruct, struc_format_out, outfile )             
            artn_resume = trim(artn_resume)//" | "//trim(outfile)
@@ -514,7 +515,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         !
         
         !
-        ! ...Here we ahould load the next minimum if the user ask
+        ! ...Here we should load the next minimum if the user ask
         IF( lmove_nextmin .AND. lconv )CALL move_nextmin( nat, tau )
       
 
@@ -529,6 +530,9 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   ! does not come back to initial point properly.
   !
   !CALL write_restart(restartfname,nat)
+
+
+
   !
   ! check if we should perform the lanczos algorithm
   !
