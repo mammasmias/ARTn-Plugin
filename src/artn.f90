@@ -213,6 +213,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   if( istep == 0 )then
      ! ...Write Zero step  
      CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, VOID, if_pos, istep, nat, iunartout, .true. )
+       CALL write_struct( at, nat, tau, order, elements, ityp, push, 1.0_DP, iunstruct, struc_format_out, initpfname )
+       artn_resume = '* Start: '//trim(initpfname)
   endif
 
 
@@ -232,10 +234,10 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      
 
      ! ...The push counter (controls if we should call lanczos or keep pushing)
-     IF( iinit == 1 )THEN
-       CALL write_struct( at, nat, tau, order, elements, ityp, push, 1.0_DP, iunstruct, struc_format_out, initpfname )
-       artn_resume = '* Start: '//trim(initpfname)
-     ENDIF
+     !IF( iinit == 1 )THEN
+     !  CALL write_struct( at, nat, tau, order, elements, ityp, push, 1.0_DP, iunstruct, struc_format_out, initpfname )
+     !  artn_resume = '* Start: '//trim(initpfname)
+     !ENDIF
      
      
      ! ...Start lanczos when number of init steps is reached
@@ -362,7 +364,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   !
   IF ( lsaddle_conv ) THEN
 
-     IF ( etot_step > etot_init ) THEN
+     !IF ( etot_step > etot_init ) THEN
 
         ! store the saddle point energy
         etot_saddle = etot_step
@@ -378,12 +380,17 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         !
         CALL write_end_report( iunartout, lsaddle, lpush_final, etot_step - etot_init )
         ! 
-     ELSE
-        ! ...HERE he fails
-        CALL write_end_report( iunartout, lsaddle, lpush_final, etot_step )
-        lconv = .true.
-        lpush_final = .false.  
+     !ELSE
+     !> If the saddle point is lower in energy 
+     !!  than the initial point: Mode refine
+     IF ( etot_step < etot_init ) THEN
+        ! ...HERE Warning to says we should be in refine saddle mode
+        write( iunartout, '(5x,a)' ) "!> WARNING::E_Saddle < E_init => Should be a saddle refine mode"
+        !CALL write_end_report( iunartout, lsaddle, lpush_final, etot_step )
+        !lconv = .true.
+        !lpush_final = .false.  
      ENDIF
+
   ENDIF
 
   !
