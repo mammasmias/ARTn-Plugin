@@ -19,7 +19,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   !> @param[in]     atm         list of the element's name relative to the atomic type
   !> @param[inout]  tau         atomic position
   !> @param[in]     order       order of atomic index in the list: force, tau, ityp
-  !> @param[in]     at          lattice parameter 
+  !> @param[in]     at          lattice parameter
   !> @param[in]     if_pos      list of fixed atomic dof (0 or 1)
   !> @param[out]    disp        stage for move_mode
   !> @param[out]    displ_vec   displacement vector communicated to move_mode
@@ -57,7 +57,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   REAL(DP), INTENT(INOUT) :: force(3,nat)     !> force calculated by the engine
   REAL(DP), INTENT(INOUT) :: tau(3,nat)       !> atomic positions (needed for output only)
 
-  REAL(DP), INTENT(OUT)  :: displ_vec(3,nat)  !> displacement vector communicated to move mode  
+  REAL(DP), INTENT(OUT)  :: displ_vec(3,nat)  !> displacement vector communicated to move mode
   INTEGER,          INTENT(OUT) :: disp       !> Stage for move_mode
   LOGICAL,          INTENT(OUT) :: lconv      !> flag for controlling convergence
 
@@ -93,7 +93,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   !
   lconv = .false.
   lforc_conv = .false.
-  lsaddle_conv = .false. 
+  lsaddle_conv = .false.
   !
   ! fpara_tot is used to scale the magnitude of the eigenvector
   !
@@ -148,13 +148,13 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
       WRITE (iunartout, *) "Restarted previous ARTn calculation"
       CLOSE ( UNIT = iunartout, STATUS = 'KEEP')
 
-      ! ...Read the FLAGS, FORCES, POSITIONS, ENERGY, ... 
+      ! ...Read the FLAGS, FORCES, POSITIONS, ENERGY, ...
       CALL read_restart( restartfname, nat, order, ityp )
 
       ! ...Overwirte the engine Arrays
       tau(:,:) = tau_step(:,order(:))
 
-    ELSE 
+    ELSE
 
       CALL write_initial_report( iunartout, filout )
       ! ...Initial parameter
@@ -168,6 +168,9 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
     ! ...Define the Initial Push
     CALL push_init(nat, tau, order, lat, idum, push_ids, dist_thr, add_const, push_step_size, push , push_mode)
+
+    ! add_const(:,:) = 0.0
+    ! CALL push_init(nat, tau, order, lat, idum, push_ids, dist_thr, add_const, eigen_step_size, eigenvec , 'all ')
 
 
     ! ...Generate first lanczos eigenvector (NS: Maybe put in push_init)
@@ -183,7 +186,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     CALL perpforce( force_step, if_pos, push, fperp, fpara, nat)
 
 
-    
+
   ELSE !>     ISTEP > 0
 
     ! ...Fill the *_step Arrays
@@ -211,7 +214,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   OPEN ( UNIT = iunartout, FILE = filout, FORM = 'formatted', ACCESS = 'append', STATUS = 'unknown', IOSTAT = ios )
 
   if( istep == 0 )then
-     ! ...Write Zero step  
+     ! ...Write Zero step
      CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, VOID, if_pos, istep, nat, iunartout, .true. )
        CALL write_struct( at, nat, tau, order, elements, ityp, push, 1.0_DP, iunstruct, struc_format_out, initpfname )
        artn_resume = '* Start: '//trim(initpfname)
@@ -226,20 +229,20 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !=============================
      ! generate initial push vector
      !=============================
-     ! linit is touched by: 
-     !   - initialize_artn(), 
-     !   - check_force_convergence() 
+     ! linit is touched by:
+     !   - initialize_artn(),
+     !   - check_force_convergence()
      !   - here
      !.............................
-     
+
 
      ! ...The push counter (controls if we should call lanczos or keep pushing)
      !IF( iinit == 1 )THEN
      !  CALL write_struct( at, nat, tau, order, elements, ityp, push, 1.0_DP, iunstruct, struc_format_out, initpfname )
      !  artn_resume = '* Start: '//trim(initpfname)
      !ENDIF
-     
-     
+
+
      ! ...Start lanczos when number of init steps is reached
      IF ( iinit >= ninit ) THEN
 
@@ -260,7 +263,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         ! ...modify the force to be equal to the push
         displ_vec = push
 
-        CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat, iunartout, noARTnStep )
+        CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, &
+             disp, if_pos, istep, nat, iunartout, noARTnStep )
 
 
         ! ...set up the flags (we did an initial push, now we need to relax perpendiculary)
@@ -275,9 +279,9 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !===============================================
      ! Relax forces perpendicular to eigenvector/push
      !===============================================
-     ! lperp is touched by: 
-     !   - initialize_artn(), 
-     !   - check_force_convergence() 
+     ! lperp is touched by:
+     !   - initialize_artn(),
+     !   - check_force_convergence()
      !   - here
      !.............................
      !
@@ -297,7 +301,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      ! to push
      !
      displ_vec(:,:) = fperp(:,:)
-     CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat, iunartout, noARTnStep )
+     CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, disp, &
+          if_pos, istep, nat, iunartout, noARTnStep )
      !
      iperp = iperp + 1
      !
@@ -307,8 +312,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      ! Push in the direction of the lowest eigenvector
      !================================================
      !
-     ! leigen is always .true. after we obtain a good eigenvector
-     ! except during lanczos iterations
+     ! leigen is .true. after we obtain a good eigenvector
      !
      ! if we have a good lanczos eigenvector use it as push vector
      !
@@ -335,9 +339,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !
      current_step_size = MIN(eigen_step_size,ABS(fpara_tot)/MAX( ABS(lowest_eigval), 0.01_DP ))
      !
-     eigenvec(:,:) = eigenvec(:,:)*current_step_size
 
-     displ_vec(:,:) = eigenvec(:,:)
+     displ_vec(:,:) = eigenvec(:,:)*current_step_size
      ! count the number of steps made with the eigenvector
      !
      ieigen = ieigen + 1
@@ -350,12 +353,12 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
         ! return to initial number of lanczos steps
         !ilanc = 0  !< initialize it when turn llanczos  = T
-        ! 
+        !
      ENDIF
      !CALL write_struct( at, nat, tau, order, elements, ityp, force, 1.0_DP, iunstruct, struc_format_out, eigenfname )
      CALL write_struct( at, nat, tau, order, elements, ityp, force_step, 1.0_DP, iunstruct, struc_format_out, eigenfname )
      CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat,  iunartout, noARTnStep )
-      
+
   END IF
 
 
@@ -380,16 +383,16 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         artn_resume = trim(artn_resume)//" | "//trim(outfile)
         !
         CALL write_end_report( iunartout, lsaddle, lpush_final, etot_step - etot_init )
-        ! 
+        !
      !ELSE
-     !> If the saddle point is lower in energy 
+     !> If the saddle point is lower in energy
      !!  than the initial point: Mode refine
      IF ( etot_step < etot_init ) THEN
         ! ...HERE Warning to says we should be in refine saddle mode
         write( iunartout, '(5x,a)' ) "!> WARNING::E_Saddle < E_init => Should be a saddle refine mode"
         !CALL write_end_report( iunartout, lsaddle, lpush_final, etot_step )
         !lconv = .true.
-        !lpush_final = .false.  
+        !lpush_final = .false.
      ENDIF
 
   ENDIF
@@ -424,18 +427,20 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            if( .NOT.lrelax )irelax = 0
            lrelax = .true.
 
-        ELSE  !< It is a PUSH_OVER the saddle point  
+        ELSE  !< It is a PUSH_OVER the saddle point
            disp = EIGN
            iover = iover + 1
 
            ! ** WARNING **
            if( iover > 4 ) &
              !CALL WARNING( iunartout, "PUSH-OVER","Too many push over the saddle point-> PARAM: Push_Over ", [iover])
-             CALL WARNING( iunartout, "PUSH-OVER","Too many push over the saddle point-> PARAM: Push_Over ", &
+                CALL WARNING( iunartout, "PUSH-OVER",&
+                "Too many push over the saddle point-> PARAM: Push_Over ", &
                  [etot_step, etot_saddle, etot_step - etot_saddle])
            !
-           CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, OVER, if_pos, istep, nat,  iunartout, noARTnStep )
-           ! 
+           CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, &
+                OVER, if_pos, istep, nat,  iunartout, noARTnStep )
+           !
            displ_vec(:,:) = fpush_factor*eigenvec(:,:)*eigen_step_size * push_over
         END IF
 
@@ -462,7 +467,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !
      ArtnStep = noArtnStep
      if( mod(irelax,5) == 0 ) ArtnStep = .true.  !> The 5 can be custom parameter : nrprint
-     CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat, iunartout, ARTnStep )
+     CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, disp, &
+          if_pos, istep, nat, iunartout, ARTnStep )
 
      irelax = irelax + 1
 
@@ -477,13 +483,14 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            ! ...It found the adjacent minimum!
            !   We save it and return to the saddle point
            CALL make_filename( outfile, prefix_min, nmin )
-           CALL write_struct( at, nat, tau, order, elements, ityp, force_step, 1.0_DP, iunstruct, struc_format_out, outfile )             
+           CALL write_struct( at, nat, tau, order, elements, ityp, force_step, &
+                1.0_DP, iunstruct, struc_format_out, outfile )
            artn_resume = trim(artn_resume)//" | "//trim(outfile)
 
 
            ! ...Save the minimum if it is new
            call save_min( nat, tau_step )
-                 
+
 
            disp = RELX
 
@@ -496,7 +503,9 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            etot_final = etot_step
            de_back = etot_saddle - etot_final
 
-           CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat, iunartout, .true. )
+           CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, &
+                disp, if_pos, istep, nat, iunartout, .true. )
+
            call write_inter_report( iunartout, int(fpush_factor), [de_back] )
 
            ! reverse direction of push
@@ -507,7 +516,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
            ! ...It found the starting minimum! (should be the initial configuration)
            CALL make_filename( outfile, prefix_min, nmin )
-           CALL write_struct( at, nat, tau, order, elements, ityp, force_step, 1.0_DP, iunstruct, struc_format_out, outfile )
+           CALL write_struct( at, nat, tau, order, elements, ityp, &
+                force_step, 1.0_DP, iunstruct, struc_format_out, outfile )
            artn_resume = trim(artn_resume)//" | "//trim(outfile)
 
 
@@ -516,16 +526,19 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            de_fwd = etot_saddle - etot_step
 
 
-           CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat, iunartout, .true. )
-           call write_inter_report( iunartout, int(fpush_factor), [de_back, de_fwd, etot_init, etot_final, etot_step] )
+           CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, &
+                disp, if_pos, istep, nat, iunartout, .true. )
+
+           call write_inter_report( iunartout, int(fpush_factor), &
+                [de_back, de_fwd, etot_init, etot_final, etot_step] )
 
         END IF
         !
-        
+
         !
         ! ...Here we should load the next minimum if the user ask
         IF( lmove_nextmin .AND. lconv )CALL move_nextmin( nat, tau )
-      
+
 
      END IF
      !
@@ -554,25 +567,19 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !==========================================
      !
      disp = LANC
-     CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat,  iunartout, noARTnStep )
+     CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, disp, &
+          if_pos, istep, nat,  iunartout, noARTnStep )
 
      IF (ilanc == 0 ) THEN
-        IF ( .not. leigen ) THEN
-           !
-           ! add_const is set to zero so no constraints are put on the atoms
-           !
-           ! add_const(:,:) = 0.D0
-           ! CALL push_init(nat,idum,push_ids,add_const,1.D0,v_in,'all ')
-           ! the push vector is already centered within the push_init subroutine
-           ! note push vector is normalized inside lanczos
-           v_in(:,:) = eigenvec(:,:)
-           ! input a different vector for testing purposes
-        ELSE
-           ! rescale the lanczos eigenvec back to original size
-           v_in(:,:) = eigenvec(:,:)/current_step_size
-           ! reset the eigenvalue flag to continue lanczos
-           leigen = .false.
-        ENDIF
+        !
+        ! first iternation of current lanczos call
+        !
+        ! use current eigenvector as initial lanczos vector
+        v_in(:,:) = eigenvec(:,:)
+        !
+        ! reset the eigenvalue flag
+        !
+        leigen = .false.
         !
         ! allocate memory for previous lanczos vec
         !
@@ -595,27 +602,24 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      ENDIF
      !
      !
-     CALL lanczos( nat, force_step, displ_vec, v_in, dlanc, nlanc, ilanc, lowest_eigval,  eigenvec, push)
+     CALL lanczos( nat, v_in, push, force_step, &
+          ilanc, nlanc, lowest_eigval, eigenvec, displ_vec)
+     !
      ilanc = ilanc + 1
      iperp = 0
 
      !
-     ! when lanczos converges, nlanc = number of steps it took to converge,
+     ! Lanczos has converged:
+     ! nlanc = number of steps it took to converge,
      ! and ilanc = ilanc + 1
      !
      IF ( ilanc > nlanc ) THEN
         !
-        ! max number of lanczos steps exceeded ; reset counters
-        !
-        nlanc = lanc_mat_size
-        !ilanc = 0
-        !
-        llanczos = .false.
-        !
-        ! check the eigenvalue, if it's lower than threshold use the eigenvector, otherwise push again ...
+        ! check lowest eigenvalue, decide what to do in next step
         !
         IF ( lowest_eigval < eigval_thr ) THEN
-           !* make a push with the eigenvector
+           ! structure is out of the basin (above inflection),
+           ! in next step make a push with the eigenvector
            !! Next Mstep outside the basin
            lbasin = .false.
            ! ...push in eigenvector direction
@@ -624,10 +628,10 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            ! ...No yet perp relax
            lperp = .false.
            iperp = 0
-
            !
         ELSE
-           !* make an initial push
+           ! structure is still in basin (under unflection),
+           ! in next step make an initial push
            !! Next Mstep inside the Basin
            lowest_eigval = 0.D0
            leigen = .false.
@@ -646,6 +650,17 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         a1 = abs( a1 )
         ! set current eignevec for comparison in next step
         old_lanczos_vec = eigenvec
+        ! deallocate( old_lanczos_vec )
+
+        !
+        ! finish lanczos for now
+        !
+        llanczos = .false.
+
+        !
+        ! reset lanczos size for next call
+        !
+        nlanc = lanc_mat_size
 
      ENDIF
 
