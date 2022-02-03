@@ -4,10 +4,11 @@
 !!  Miha Gunde
 
 
-SUBROUTINE lanczos( nat, v_in, pushdir, dlanc, force, &
-     ilanc, nlanc, lowest_eigval, lowest_eigvec, displ_vec )
+SUBROUTINE lanczos( nat, v_in, pushdir, force, &
+     ilanc, lowest_eigval, lowest_eigvec, displ_vec )
 
-  USE artn_params,            ONLY: DP, Vmat, H, force_old
+  USE artn_params,            ONLY: DP, Vmat, H, force_old, dlanc, nlanc
+  USE units, ONLY: unconvert_length, unconvert_hessian
   !
   !> @brief
   !!   Lanczos subroutine for the ARTn algorithm;
@@ -32,10 +33,10 @@ SUBROUTINE lanczos( nat, v_in, pushdir, dlanc, force, &
   INTEGER,                    INTENT(IN) :: nat
   REAL(DP), DIMENSION(3,nat), INTENT(IN) :: v_in
   REAL(DP), DIMENSION(3,nat), INTENT(IN) :: pushdir
-  REAL(DP),                   INTENT(IN) :: dlanc
+  ! REAL(DP),                   INTENT(IN) :: dlanc_in
   REAL(DP), DIMENSION(3,nat), INTENT(IN) :: force
   INTEGER,                    INTENT(INOUT) :: ilanc
-  INTEGER,                    INTENT(INOUT) :: nlanc
+  ! INTEGER,                    INTENT(INOUT) :: nlanc
   REAL(DP),                   INTENT(INOUT) :: lowest_eigval
   REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: lowest_eigvec
   REAL(DP), DIMENSION(3,nat), INTENT(OUT) :: displ_vec
@@ -68,7 +69,7 @@ SUBROUTINE lanczos( nat, v_in, pushdir, dlanc, force, &
      ! initialization of the lanczos: save the original force, and
      ! the initial lanczos vector
      !
-     write(785,*) 'entering lanc with size:',nlanc
+     write(785,*) 'entering lanc with size:',nlanc, unconvert_length(dlanc)
      !
      ! store the force of the initial position
      !
