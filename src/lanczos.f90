@@ -4,7 +4,9 @@
 !!  Miha Gunde
 
 
-SUBROUTINE lanczos( nat, force, displ_vec, v_in, dlanc, nlanc, ilanc, lowest_eigval, lowest_eigvec, pushdir )
+SUBROUTINE lanczos( nat, v_in, pushdir, dlanc, force, &
+     ilanc, nlanc, lowest_eigval, lowest_eigvec, displ_vec )
+
   USE artn_params,            ONLY: DP, Vmat, H, force_old
   !
   !> @brief
@@ -31,15 +33,15 @@ SUBROUTINE lanczos( nat, force, displ_vec, v_in, dlanc, nlanc, ilanc, lowest_eig
   REAL(DP), DIMENSION(3,nat), INTENT(IN) :: v_in
   REAL(DP), DIMENSION(3,nat), INTENT(IN) :: pushdir
   REAL(DP),                   INTENT(IN) :: dlanc
-  REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: force
-  REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: lowest_eigvec
-  REAL(DP),                   INTENT(INOUT) :: lowest_eigval
-  INTEGER,                    INTENT(INOUT) :: nlanc
+  REAL(DP), DIMENSION(3,nat), INTENT(IN) :: force
   INTEGER,                    INTENT(INOUT) :: ilanc
+  INTEGER,                    INTENT(INOUT) :: nlanc
+  REAL(DP),                   INTENT(INOUT) :: lowest_eigval
+  REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: lowest_eigvec
   REAL(DP), DIMENSION(3,nat), INTENT(OUT) :: displ_vec
   ! -- LOCAL VARIABLES
   INTEGER :: i, j, io, id_min
-  REAL(DP), PARAMETER :: eigval_thr = 1.0D-2
+  REAL(DP), PARAMETER :: eval_conv_thr = 1.0D-2
   REAL(DP), ALLOCATABLE :: v1(:,:), q(:,:), eigvals(:)
   REAL(DP) :: dir
   REAL(DP), EXTERNAL :: ran3,dnrm2,ddot
@@ -52,28 +54,38 @@ SUBROUTINE lanczos( nat, force, displ_vec, v_in, dlanc, nlanc, ilanc, lowest_eig
   ALLOCATE( q(3,nat), source=0.D0 )
   ALLOCATE( v1(3,nat), source=0.D0)
 
-  ! allocate matrices and put to zero
-  !%! NS:Maybe it is not needed to dynamic allocate Hstep
-  !%! We can directly declare a matrix Hstep(nlanc,nlanc)
-  !ALLOCATE( Hstep(1:nlanc,1:nlanc), source=0.D0 )
   !
   ! store the eigenvalue of the previous iteration
+  !
   lowest_eigval_old = lowest_eigval
+
+
+  !
+  ! decide what to do based on which step ilanc we are in
   !
   IF ( ilanc  == 0 ) THEN
-     ! write(785,*) 'entering lanc with size:',nlanc
+     !
+     ! initialization of the lanczos: save the original force, and
+     ! the initial lanczos vector
+     !
+     write(785,*) 'entering lanc with size:',nlanc
+     !
      ! store the force of the initial position
+     !
      force_old = force(:,:)
      !
      ! normalize initial vector
      !
      v1(:,:) = v_in(:,:) / dnrm2( 3*nat, v_in, 1 )
      !
-     ! store this vector
+     ! store this vector in matrix of Lanczos vectors
      !
      Vmat(:,:,1) = v1(:,:)
      !
   ELSEIF (ilanc == 1 ) THEN
+     !
+     ! First step of the lanczos algorithm:
+     !
      ! Generate lanczos vector, v = q - alpha*v0
      !
      ! q(:,:) now represents {Force} = -[Hessian]{R_1}, where {R_1} = {R} + {dR} = {R} + {v0}*d_lanc,
@@ -104,20 +116,21 @@ SUBROUTINE lanczos( nat, force, displ_vec, v_in, dlanc, nlanc, ilanc, lowest_eig
      ! check for convergence in this step
      !
      eigval_diff = (lowest_eigval - lowest_eigval_old)/lowest_eigval_old
-     ! write(785,*) 1, lowest_eigval_old, lowest_eigval, abs(eigval_diff)
+     write(785,*) 1, lowest_eigval_old, lowest_eigval, abs(eigval_diff)
      !
      !#! WARNING::Here you take a vector perpendicular to the previous
-     IF ( .false..AND.abs(lowest_eigval_old) > 0.0_DP ) THEN
-        !write (*,*) "DEBUG", ilanc, eigval_diff, eigval_thr
-        IF ( ABS(eigval_diff) <= eigval_thr ) THEN
+     IF ( abs(lowest_eigval_old) > 0.0_DP ) THEN
+        !write (*,*) "DEBUG", ilanc, eigval_diff, eval_conv_thr
+        IF ( ABS(eigval_diff) <= eval_conv_thr ) THEN
            !
            ! lanczos has converged
            ! set max number of iternations to current iteration
            !
            ! write (*,*) "DEBUG: converged at first step"
-           ! write(785,*) 'converged step1'
+           write(785,*) 'converged step1'
            nlanc = ilanc
            ! increase lanczos counter for last step
+           ! lowest_eigvec(:,:) = v_in(:,:)
            !
         ENDIF
      ENDIF
@@ -199,10 +212,11 @@ SUBROUTINE lanczos( nat, force, displ_vec, v_in, dlanc, nlanc, ilanc, lowest_eig
      !
      eigval_diff = (lowest_eigval - lowest_eigval_old)/lowest_eigval_old
      !write (*,*) "Debug eigval:", ilanc, lowest_eigval_old, lowest_eigval, abs(eigval_diff)
+     write(785,*) ilanc, lowest_eigval_old, lowest_eigval, abs(eigval_diff)
      !
-     IF ( ABS(eigval_diff) <= eigval_thr ) THEN
+     IF ( ABS(eigval_diff) <= eval_conv_thr ) THEN
         ! write(*,*) 'converged! in:',ilanc
-        ! write(785,*) 'converged! in:',ilanc
+        write(785,*) 'converged! in:',ilanc
         !
         ! lanczos has converged
         ! set max number of iternations to current iteration
@@ -273,6 +287,6 @@ SUBROUTINE lanczos( nat, force, displ_vec, v_in, dlanc, nlanc, ilanc, lowest_eig
 
   DEALLOCATE( q, v1 )
 
-  ! flush(785)
+  flush(785)
 
 END SUBROUTINE lanczos

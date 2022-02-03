@@ -594,7 +594,9 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      ENDIF
      !
      !
-     CALL lanczos( nat, force_step, displ_vec, v_in, dlanc, nlanc, ilanc, lowest_eigval,  eigenvec, push)
+     CALL lanczos( nat, v_in, push, dlanc, force_step, &
+          ilanc, nlanc, lowest_eigval, eigenvec, displ_vec)
+     !
      ilanc = ilanc + 1
      iperp = 0
 
