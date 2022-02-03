@@ -31,7 +31,7 @@ SUBROUTINE lanczos( nat, force, displ_vec, v_in, dlanc, nlanc, ilanc, lowest_eig
   REAL(DP), DIMENSION(3,nat), INTENT(IN) :: v_in
   REAL(DP), DIMENSION(3,nat), INTENT(IN) :: pushdir
   REAL(DP),                   INTENT(IN) :: dlanc
-  REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: force
+  REAL(DP), DIMENSION(3,nat), INTENT(IN) :: force
   REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: lowest_eigvec
   REAL(DP),                   INTENT(INOUT) :: lowest_eigval
   INTEGER,                    INTENT(INOUT) :: nlanc
@@ -108,6 +108,7 @@ SUBROUTINE lanczos( nat, force, displ_vec, v_in, dlanc, nlanc, ilanc, lowest_eig
      !
      !#! WARNING::Here you take a vector perpendicular to the previous
      IF ( .false..AND.abs(lowest_eigval_old) > 0.0_DP ) THEN
+     !IF ( abs(lowest_eigval_old) > 0.0_DP ) THEN
         !write (*,*) "DEBUG", ilanc, eigval_diff, eigval_thr
         IF ( ABS(eigval_diff) <= eigval_thr ) THEN
            !
@@ -267,7 +268,7 @@ SUBROUTINE lanczos( nat, force, displ_vec, v_in, dlanc, nlanc, ilanc, lowest_eig
   ! ENDIF
 
   !
-  ! overwrite force with desired move vector
+  ! Overwrite displ_vec by the next vector displacement 
   !
   displ_vec(:,:) = v1(:,:)
 

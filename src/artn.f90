@@ -282,6 +282,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !.............................
      !
      ! If eigenvalue is good, overwrite push with eigenvec (NS: Why?!)
+     !  If we come back in bassin we use this eigenvec and not push_init
      !
      IF( leigen ) THEN
         push(:,:) = eigenvec(:,:)
