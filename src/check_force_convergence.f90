@@ -27,7 +27,7 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
   REAL(DP) :: fperp_thr
   LOGICAL, INTENT(OUT) :: lforc_conv, lsaddle_conv
   !
-  LOGICAL :: C1, C2
+  LOGICAL :: C1, C2, C3
   LOGICAL, parameter :: ARTnStep = .true.
   integer :: ios
 
@@ -87,8 +87,8 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         ! 
         C1 = ( MAXVAL( ABS(fperp)) < fperp_thr ) ! check on the fperp field
         C2 = ( nperp > 0.AND.iperp >= nperp )    ! check on the perp-relax iteration
-
-        IF( C1 .OR. C2  ) THEN
+        C3 = ( MAXVAL( ABS(fperp)) < MAXVAL( ABS(fpara))) ! check wheter fperp is lower than fpara
+        IF( C1 .OR. C2 .OR. C3 ) THEN
            lperp = .false.
            llanczos = .true. 
            leigen = .false. 
