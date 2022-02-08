@@ -209,6 +209,12 @@ Depending of the engine the works units changes and it is to the user to be cohe
 
 ## TODO
 
+- **BUGS**
+
+  - LANCZOS: Go out without and eigenvector before to do `lanc_mat_size` step
+  - Stay stuck between 2 state sometime
+  - `PUSH_OVER` has to be adjusted
+
 - nsteppos in ARTn doesn't have the same meaning for QE and LAMMPS in FIRE algo
 
 - Work on verbose debug mode :ok:

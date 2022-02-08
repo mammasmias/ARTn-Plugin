@@ -121,6 +121,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     ! ...Read the input parameters
     CALL initialize_artn( nat, iunartin, filin )
 
+
     ! set initial random seed from input (could be moved to initialize_artn)
     ! value zseed = 0 means generate random seed
     idum = zseed
@@ -131,6 +132,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
        z = z *1e8
        idum = INT(z)
     ENDIF
+    write(123456789,*)"  zseed = ", int(z)
+
 
     ! ...Fill the *_step Arrays
     !CALL Fill_param_step( nat, order, tau, etot_eng, force )
