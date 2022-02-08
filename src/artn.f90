@@ -337,10 +337,12 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      ! 0.13 is taken from ARTn, 0.5 eV/Angs^2 corresponds roughly to 0.01 Ry/Bohr^2
      !%! Should be a parameter: push_over?
      !
-     current_step_size = MIN(eigen_step_size,ABS(fpara_tot)/MAX( ABS(lowest_eigval), 0.01_DP ))
+     !current_step_size = MIN(eigen_step_size,ABS(fpara_tot)/MAX( ABS(lowest_eigval), 0.01_DP ))
+     current_step_size = MIN(eigen_step_size,ABS(MAXVAL(fpara))/MAX( ABS(lowest_eigval), 0.01_DP ))
      !
 
      displ_vec(:,:) = eigenvec(:,:)*current_step_size
+     !write (iunartout,*) "DEBUG:current_step_size:", current_step_size, MAXVAL(fpara), fpara_tot, ABS(lowest_eigval)
      ! count the number of steps made with the eigenvector
      !
      ieigen = ieigen + 1
@@ -437,6 +439,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
                 CALL WARNING( iunartout, "PUSH-OVER",&
                 "Too many push over the saddle point-> PARAM: Push_Over ", &
                  [etot_step, etot_saddle, etot_step - etot_saddle])
+           IF( iover > 20 )STOP "ERROR PUSH OVER"
            !
            CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, &
                 OVER, if_pos, istep, nat,  iunartout, noARTnStep )
