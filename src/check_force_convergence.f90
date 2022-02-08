@@ -30,6 +30,7 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
   LOGICAL :: C1, C2, C3
   LOGICAL, parameter :: ARTnStep = .true.
   integer :: ios
+  REAL(DP) :: mfperp, mfpara
 
   lforc_conv = .false.
   lsaddle_conv = .false.
@@ -52,6 +53,12 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
            CALL write_report( etot_step, force, fperp, fpara, lowest_eigval, EIGN, if_pos, istep, nat,  iunartout, ArtnStep )
            RETURN
         ENDIF
+
+
+        ! ...Compute the variable
+        mfpara = MAXVAL(ABS(fpara))
+        mfperp = MAXVAL(ABS(fperp))
+
 
         !
         ! check whether the fperp criterion should be tightened
@@ -88,6 +95,10 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         C1 = ( MAXVAL( ABS(fperp)) < fperp_thr ) ! check on the fperp field
         C2 = ( nperp > 0.AND.iperp >= nperp )    ! check on the perp-relax iteration
         C3 = ( MAXVAL( ABS(fperp)) < MAXVAL( ABS(fpara))) ! check wheter fperp is lower than fpara
+
+        IF( C1 .and. iperp == 0 )C1 = .false.
+        IF( C1.and. ABS(mfperp - mfpara) < mfpara*1.20 ) C1 = .false.
+
         IF( C1 .OR. C2 .OR. C3 ) THEN
            lperp = .false.
            llanczos = .true. 

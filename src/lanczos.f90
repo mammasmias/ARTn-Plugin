@@ -67,7 +67,7 @@ SUBROUTINE lanczos( nat, v_in, pushdir, force, &
      ! initialization of the lanczos: save the original force, and
      ! the initial lanczos vector
      !
-     write(785,*) 'entering lanc with size:',nlanc, unconvert_length(dlanc)
+     !write(785,*) 'entering lanc with size:',nlanc, unconvert_length(dlanc)
      !
      ! store the force of the initial position
      !
@@ -118,15 +118,15 @@ SUBROUTINE lanczos( nat, v_in, pushdir, force, &
      ! check for convergence in this step
      !
      eigval_diff = (lowest_eigval - lowest_eigval_old)/lowest_eigval_old
-     write(785,*) 1, lowest_eigval_old, lowest_eigval, abs(eigval_diff)
+     !write(785,*) 1, lowest_eigval_old, lowest_eigval, abs(eigval_diff)
      !
-     IF ( abs(lowest_eigval_old) > 0.0_DP ) THEN
+     IF ( .false..and.abs(lowest_eigval_old) > 0.0_DP ) THEN
         IF ( ABS(eigval_diff) <= eval_conv_thr ) THEN
            !
            ! lanczos has converged
            ! set max number of iternations to current iteration
            !
-           write(785,*) 'converged step1'
+           !write(785,*) 'converged step1'
            nlanc = ilanc
            ! increase lanczos counter for last step
            ! lowest_eigvec(:,:) = v_in(:,:)
@@ -213,11 +213,11 @@ SUBROUTINE lanczos( nat, v_in, pushdir, force, &
      !
      eigval_diff = (lowest_eigval - lowest_eigval_old)/lowest_eigval_old
      !write (*,*) "Debug eigval:", ilanc, lowest_eigval_old, lowest_eigval, abs(eigval_diff)
-     write(785,*) ilanc, lowest_eigval_old, lowest_eigval, abs(eigval_diff)
+     !write(785,*) ilanc, lowest_eigval_old, lowest_eigval, abs(eigval_diff)
      !
      IF ( ABS(eigval_diff) <= eval_conv_thr ) THEN
         ! write(*,*) 'converged! in:',ilanc
-        write(785,*) 'converged! in:',ilanc
+        !write(785,*) 'converged! in:',ilanc
         !
         ! lanczos has converged
         ! set max number of iternations to current iteration
@@ -287,6 +287,6 @@ SUBROUTINE lanczos( nat, v_in, pushdir, force, &
 
   DEALLOCATE( q, v1 )
 
-  flush(785)
+  !flush(785)
 
 END SUBROUTINE lanczos
