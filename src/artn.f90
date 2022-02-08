@@ -169,15 +169,15 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     ! ...Define the Initial Push
     CALL push_init(nat, tau, order, lat, idum, push_ids, dist_thr, add_const, push_step_size, push , push_mode)
 
-    ! add_const(:,:) = 0.0
-    ! CALL push_init(nat, tau, order, lat, idum, push_ids, dist_thr, add_const, eigen_step_size, eigenvec , 'all ')
+    add_const(:,:) = 0.0
+    CALL push_init(nat, tau, order, lat, idum, push_ids, dist_thr, add_const, eigen_step_size, eigenvec , 'all ')
 
 
     ! ...Generate first lanczos eigenvector (NS: Maybe put in push_init)
-    DO i = 1, nat
-       eigenvec(:,i) = (/0.5_DP - ran3(idum),0.5_DP - ran3(idum),0.5_DP - ran3(idum)/) * if_pos(:,i)
-    END DO
-    eigenvec(:,:) = eigenvec(:,:)/dnrm2(3*nat,eigenvec,1) * dnrm2(3*nat,push,1)
+    !DO i = 1, nat
+    !   eigenvec(:,i) = (/0.5_DP - ran3(idum),0.5_DP - ran3(idum),0.5_DP - ran3(idum)/) * if_pos(:,i)
+    !END DO
+    !eigenvec(:,:) = eigenvec(:,:)/dnrm2(3*nat,eigenvec,1) * dnrm2(3*nat,push,1)
 
     !> Test
     !eigenvec = push
@@ -338,7 +338,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !
      current_step_size = MIN(eigen_step_size,ABS(fpara_tot)/MAX( ABS(lowest_eigval), 0.01_DP ))
      !
-
      displ_vec(:,:) = eigenvec(:,:)*current_step_size
      ! count the number of steps made with the eigenvector
      !
@@ -354,14 +353,10 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         !ilanc = 0  !< initialize it when turn llanczos  = T
         !
      ENDIF
-     !CALL write_struct( at, nat, tau, order, elements, ityp, force, 1.0_DP, iunstruct, struc_format_out, eigenfname )
      CALL write_struct( at, nat, tau, order, elements, ityp, force_step, 1.0_DP, iunstruct, struc_format_out, eigenfname )
      CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat,  iunartout, noARTnStep )
 
   END IF
-
-
-
   !
   ! check for convergence of total forces (only after eigevec was obtained)
   !
@@ -395,7 +390,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      ENDIF
 
   ENDIF
-
   !
   ! ...If saddle point is reached
   ! Push to adjacent minima after the saddle point
@@ -573,7 +567,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         !
         ! first iternation of current lanczos call
         !
-        ! use current eigenvector as initial lanczos vector
         v_in(:,:) = eigenvec(:,:)
         !
         ! reset the eigenvalue flag
