@@ -10,7 +10,7 @@ SUBROUTINE write_initial_report(iunartout, filout)
   use artn_params, ONLY: engine_units, ninit, nperp, neigen, nsmooth,  &
                          init_forc_thr, forc_thr, fpara_thr, eigval_thr, &
                          push_step_size, eigen_step_size, lanc_mat_size, dlanc, &
-                         push_mode, verbose, push_over, frelax_ene_thr
+                         push_mode, verbose, push_over, frelax_ene_thr, zseed
   use units, only : strg_units, unconvert_force, &
                     unconvert_energy, unconvert_hessian, unconvert_length, unit_char
   INTEGER,             INTENT(IN) :: iunartout
@@ -30,19 +30,21 @@ SUBROUTINE write_initial_report(iunartout, filout)
   WRITE (iunartout,'(5x, "engine_units:", *(x,A))') TRIM(engine_units)
   WRITE (iunartout,'(5x, "Verbosity Level:", *(x,i2))') verbose
   WRITE (iunartout,'(5X, "--------------------------------------------------")')
-  WRITE (iunartout,'(5X, "Push and perpendicular relax:")')
+  WRITE (iunartout,'(5X, "Simulation Parameters:")')
   WRITE (iunartout,'(5X, "--------------------------------------------------")')
+  WRITE (iunartout,'(13X,"* Iterators Parameter: ")')
+  !WRITE (iunartout,'(15X,"Zseed           = ", I6)') zseed
   WRITE (iunartout,'(15X,"ninit           = ", I6)') ninit
   WRITE (iunartout,'(15X,"nperp           = ", I6)') nperp
   WRITE (iunartout,'(15X,"neigen          = ", I6)') neigen
   WRITE (iunartout,'(15X,"nsmooth         = ", I6)') nsmooth
-  WRITE (iunartout,'(15X,"Threshold Parameter: ")')
+  WRITE (iunartout,'(13X,"* Threshold Parameter: ")')
   WRITE (iunartout,'(15X,"init_forc_thr   = ", F6.3,2x,A)') unconvert_force( init_forc_thr ), unit_char('force')
   WRITE (iunartout,'(15X,"forc_thr        = ", F6.3,2x,A)') unconvert_force( forc_thr ), unit_char('force')
   WRITE (iunartout,'(15X,"fpara_thr       = ", F6.3,2x,A)') unconvert_force( fpara_thr ), unit_char('force')
   WRITE (iunartout,'(15X,"eigval_thr      = ", F6.3,2x,A)') unconvert_hessian( eigval_thr ), unit_char('hessian')
   WRITE (iunartout,'(15X,"frelax_ene_thr  = ", F6.3,2x,A)') unconvert_energy( frelax_ene_thr ), unit_char('energy')
-  WRITE (iunartout,'(15X,"Step size Parameter: ")')
+  WRITE (iunartout,'(13X,"* Step size Parameter: ")')
   WRITE (iunartout,'(15X,"push_step_size  = ", F6.2,2x,A)') unconvert_length( push_step_size ), unit_char('length')
   WRITE (iunartout,'(15X,"eigen_step_size = ", F6.2,2x,A)') unconvert_length( eigen_step_size ), unit_char('length')
   WRITE (iunartout,'(15X,"push_over       = ", F6.3,2x,A)') push_over, "fraction of eigen_step_size"
@@ -281,7 +283,7 @@ SUBROUTINE write_fail_report( iunartout, disp, estep )
   REAL(DP), intent( in ):: estep
 
   WRITE (iunartout,'(5X, "--------------------------------------------------")')
-  WRITE (iunartout,'(5X, "        *** ARTn search failed at ",a," ***        ")'), MOVE(DISP)
+  WRITE (iunartout,'(5X, "        *** ARTn search failed at ",a," ***        ")') MOVE(DISP)
   WRITE (iunartout,'(5X, "Step Params:",f10.4)') unconvert_energy(estep)
   WRITE (iunartout,'(5X, "--------------------------------------------------")')
 

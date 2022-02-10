@@ -544,8 +544,15 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         !
 
         !
-        ! ...Here we should load the next minimum if the user ask
-        IF( lmove_nextmin .AND. lconv )CALL move_nextmin( nat, tau )
+        ! ...FINALIZATION
+        IF( lconv )THEN
+
+          ! ...Here we should load the next minimum if the user ask
+          IF( lmove_nextmin )CALL move_nextmin( nat, tau )
+
+          CALL clean_artn()
+
+        ENDIF
 
 
      END IF

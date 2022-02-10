@@ -4,7 +4,7 @@
 OBJ  := Obj
 SRC  := .
 F90 := gfortran #ifort
-#AR := ar
+AR := ar
 
 LIB_OBJECTS := \
 	    $(OBJ)/units.o \
@@ -24,11 +24,12 @@ LIB_OBJECTS := \
 	    $(OBJ)/write_report.o \
 	    $(OBJ)/write_struct.o \
             $(OBJ)/nextmin.o \
+            $(OBJ)/clean_artn.o \
             $(OBJ)/artn.o \
             $(OBJ)/artn_QE.o
 
 
-FDEBUG := -g #-fcheck=all #-check all  #-fcheck=all
+FDEBUG := -g -fcheck=all #-check all  #-fcheck=all
 
 ifeq ($(F90),ifort)
   MOD   := -module $(OBJ)
