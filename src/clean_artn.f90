@@ -4,7 +4,7 @@ SUBROUTINE clean_artn()
   use artn_params, only : lrelax, linit, lbasin, lperp, &
            llanczos, leigen, lsaddle, lbackward, lend, &
            iartn, istep, iinit, iperp, ilanc, ieigen,   &
-           irelax, iover
+           irelax, iover, fpush_factor
   implicit none
 
   write(*,*) " !> CLEANING PROCEDURE"
@@ -24,6 +24,7 @@ SUBROUTINE clean_artn()
 
   !> Internal param
   lbackward = .true.
+  fpush_factor = 1.0
 
   lend = .false.
   !verbose = 0

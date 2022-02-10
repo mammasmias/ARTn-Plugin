@@ -161,7 +161,13 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
   IF( ARTnStep )THEN
 
     ! ...Displacement processing
-    if( iartn == 0 )allocate( tau_init, source = tau_step )
+    if( iartn == 0 )then
+      if( .not.allocated(tau_init) )then
+        allocate( tau_init, source = tau_step )
+      else
+        tau_init = tau_step
+      endif
+    endif
     call compute_delr( nat, tau_step, tau_init, lat, delr )
     npart = 0
     rc2 = 0.1!*0.1  !! Miha: Why square? NS: Why not!

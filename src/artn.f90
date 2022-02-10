@@ -282,9 +282,9 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      ! If eigenvalue is good, overwrite push with eigenvec (NS: Why?!)
      !  If we come back in bassin we use this eigenvec and not push_init
      !
-     IF( leigen ) THEN
-        push(:,:) = eigenvec(:,:)
-     ENDIF
+     !IF( leigen ) THEN
+     !   push(:,:) = eigenvec(:,:)
+     !ENDIF
      !
      ! Subtract parrallel components to push from force.
      !
@@ -331,10 +331,14 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      ! 0.13 is taken from ARTn, 0.5 eV/Angs^2 corresponds roughly to 0.01 Ry/Bohr^2
      !%! Should be a parameter: push_over?
      !
-     !current_step_size = MIN(eigen_step_size,ABS(fpara_tot)/MAX( ABS(lowest_eigval), 0.01_DP ))
-     current_step_size = MIN(eigen_step_size,ABS(MAXVAL(fpara))/MAX( ABS(lowest_eigval), 0.01_DP ))
+     ! ...Recompute the norm of fpara because eigenvec change a bit
+     fpara_tot = ddot(3*nat, force_step(:,:), 1, eigenvec(:,:), 1)
+     current_step_size = MIN(eigen_step_size,ABS(fpara_tot)/MAX( ABS(lowest_eigval), 0.01_DP ))
+     !current_step_size = MIN(eigen_step_size,ABS(MAXVAL(fpara))/MAX( ABS(lowest_eigval), 0.01_DP ))
      !
      displ_vec(:,:) = eigenvec(:,:)*current_step_size
+     !write (iunartout,*) "DEBUG:current_step_size:", current_step_size, MAXVAL(fpara), fpara_tot, ABS(lowest_eigval)
+     !CALL perpforce( force_step, if_pos, eigenvec, fperp, fpara, nat)
      !write (iunartout,*) "DEBUG:current_step_size:", current_step_size, MAXVAL(fpara), fpara_tot, ABS(lowest_eigval)
 
      ! count the number of steps made with the eigenvector
@@ -639,6 +643,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            ! ...push in eigenvector direction
            leigen = .true.
            ieigen = 0
+           ! ...Save the eigenvector
+           push(:,:) = eigenvec(:,:)
            ! ...No yet perp relax
            lperp = .false.
            iperp = 0
