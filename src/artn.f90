@@ -132,7 +132,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
        z = z *1e8
        idum = INT(z)
     ENDIF
-    write(123456789,*)"  zseed = ", int(z)
+    !> Save the seed for DEBUG
+    write(123456789,*)" zseed = ", int(z)
 
 
     ! ...Fill the *_step Arrays
@@ -172,15 +173,11 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     ! ...Define the Initial Push
     CALL push_init(nat, tau, order, lat, idum, push_ids, dist_thr, add_const, push_step_size, push , push_mode)
 
+
+    ! ...Generate first lanczos eigenvector 
     add_const(:,:) = 0.0
     CALL push_init(nat, tau, order, lat, idum, push_ids, dist_thr, add_const, eigen_step_size, eigenvec , 'all ')
 
-
-    ! ...Generate first lanczos eigenvector (NS: Maybe put in push_init)
-    !DO i = 1, nat
-    !   eigenvec(:,i) = (/0.5_DP - ran3(idum),0.5_DP - ran3(idum),0.5_DP - ran3(idum)/) * if_pos(:,i)
-    !END DO
-    !eigenvec(:,:) = eigenvec(:,:)/dnrm2(3*nat,eigenvec,1) * dnrm2(3*nat,push,1)
 
     !> Test
     !eigenvec = push
