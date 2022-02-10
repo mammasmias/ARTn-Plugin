@@ -100,13 +100,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   fpara_tot = 0.D0
   !
   filin = 'artn.in'
-  !> Moved in module: Can be customize
-  !filout = 'artn.out'
-  !sadfname = 'saddle'
-  !initpfname = 'initp'
-  !eigenfname = 'latest_eigenvec'
-  !restartfname = 'artn.restart'
-
+  !> Move output file name in module : Can be customize
 
 
 
@@ -360,28 +354,28 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat,  iunartout, noARTnStep )
 
   END IF
+
+
+
   !
   ! check for convergence of total forces (only after eigevec was obtained)
   !
   IF ( lsaddle_conv ) THEN
 
-     !IF ( etot_step > etot_init ) THEN
+     !> store the saddle point energy
+     etot_saddle = etot_step
+     tau_saddle = tau_step
+     eigen_saddle = eigenvec
+     !
+     lsaddle = .true.
+     !
+     !CALL write_struct( at, nat, tau, order, elements, ityp, force_step, 1.0_DP, iunstruct, struc_format_out, sadfname )
+     call make_filename( outfile, prefix_sad, nsaddle )
+     CALL write_struct( at, nat, tau, order, elements, ityp, force_step, 1.0_DP, iunstruct, struc_format_out, outfile )
+     artn_resume = trim(artn_resume)//" | "//trim(outfile)
+     !
 
-        ! store the saddle point energy
-        etot_saddle = etot_step
-        tau_saddle = tau_step
-        eigen_saddle = eigenvec
-        !
-        lsaddle = .true.
-        !
-        !CALL write_struct( at, nat, tau, order, elements, ityp, force_step, 1.0_DP, iunstruct, struc_format_out, sadfname )
-        call make_filename( outfile, prefix_sad, nsaddle )
-        CALL write_struct( at, nat, tau, order, elements, ityp, force_step, 1.0_DP, iunstruct, struc_format_out, outfile )
-        artn_resume = trim(artn_resume)//" | "//trim(outfile)
-        !
-        CALL write_end_report( iunartout, lsaddle, lpush_final, etot_step - etot_init )
-        !
-     !ELSE
+
      !> If the saddle point is lower in energy
      !!  than the initial point: Mode refine
      IF ( etot_step < etot_init ) THEN
@@ -392,7 +386,12 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         !lpush_final = .false.
      ENDIF
 
+     CALL write_end_report( iunartout, lsaddle, lpush_final, etot_step - etot_init )
+
   ENDIF
+
+
+
   !
   ! ...If saddle point is reached
   ! Push to adjacent minima after the saddle point

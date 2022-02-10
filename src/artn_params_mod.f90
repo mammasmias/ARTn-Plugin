@@ -161,9 +161,7 @@ CONTAINS
     !
     !> @param[in] nat Number of Atoms
     !> @param[in] iunartin Channel of input
-    !> @param[in] iunartout Channel of Output
     !> @param[in] filnam Input file name
-    !> @param[in] filout Ouput file name
     !
     USE units
     IMPLICIT none
@@ -173,6 +171,7 @@ CONTAINS
     ! -- Local Variables
     LOGICAL :: file_exists, verb
     INTEGER :: ios, mem
+    character(len=256) :: ftmp, ctmp
 
     verb = .true.
     verb = .false.
@@ -306,7 +305,31 @@ CONTAINS
     ENDIF
 
 
-    ! Define the Units conversion
+    !
+    ! --- Read the counter file
+    !
+    !> min counter file
+    ftmp = trim(prefix_min)//"counter"
+    inquire( file=trim(ftmp), exist=file_exists )
+    IF( file_exists )then
+      open( newunit=ios, file=trim(ftmp), action="read" )
+      read(ios,*) ctmp, ctmp, nmin 
+      close( ios )
+    endif
+
+    !> saddle counter file
+    ftmp = trim(prefix_sad)//"counter"
+    inquire( file=trim(ftmp), exist=file_exists )
+    IF( file_exists )then
+      open( newunit=ios, file=trim(ftmp), action="read" )
+      read(ios,*) ctmp, ctmp, nsaddle
+      close( ios )
+    endif
+
+
+    !
+    ! --- Define the Units conversion
+    !
     call make_units( engine_units )
 
 
@@ -652,10 +675,17 @@ SUBROUTINE make_filename( f, prefix, n )
   integer,      intent(inout) :: n
 
   character(len=4) :: ctmp
+  character(len=256) :: fcounter
+  integer :: o0
 
   n = n + 1
   write( ctmp, '(I0.4)') n
   f = trim(prefix)//trim(ctmp)
+
+  fcounter = trim(prefix)//"counter"
+  open( newunit=o0, file=fcounter, action="write" )
+    write( o0, '(x,"counter:",2(x,a))' ) trim(prefix), trim(ctmp)
+  close( o0 )
 
 END SUBROUTINE make_filename
 
