@@ -336,20 +336,16 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !
      displ_vec(:,:) = eigenvec(:,:)*current_step_size
      !write (iunartout,*) "DEBUG:current_step_size:", current_step_size, MAXVAL(fpara), fpara_tot, ABS(lowest_eigval)
+
      ! count the number of steps made with the eigenvector
-     !
      ieigen = ieigen + 1
+
      IF ( ieigen == neigen  ) THEN
         ! do a perpendicular relax
         lperp = .true.
         iperp = 0
-
-        !WRITE( iunartout,* ) "* NEXT NPERP ",nperp, nperp_step
-
-        ! return to initial number of lanczos steps
-        !ilanc = 0  !< initialize it when turn llanczos  = T
-        !
      ENDIF
+
      CALL write_struct( at, nat, tau, order, elements, ityp, force_step, 1.0_DP, iunstruct, struc_format_out, eigenfname )
      CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat,  iunartout, noARTnStep )
 
@@ -418,26 +414,42 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         !
         ! ...If diff Energy is negative
         IF ( etot_step - etot_saddle < frelax_ene_thr ) THEN
+        !IF ( etot_step - etot_saddle < 0.0_DP ) THEN
+
            ! we started going downhill ...
            if( .NOT.lrelax )irelax = 0
            lrelax = .true.
 
         ELSE  !< It is a PUSH_OVER the saddle point
            disp = EIGN
+
+           ! CALL PUSH_OVER_PROCEDURE( nat, etot_step, etot_saddle, push_factor, displ_vec )
+           !>>>>>>>>>>>>>>>>>>>>>> push_over_procedure()
+           !! Idea: Push over first time and if does not work return to the saddle 
+           !!  and do a smaller push. Doing that one or two times and stop the research
+           !
            iover = iover + 1
 
            ! ** WARNING **
            if( iover > 4 ) &
-             !CALL WARNING( iunartout, "PUSH-OVER","Too many push over the saddle point-> PARAM: Push_Over ", [iover])
-                CALL WARNING( iunartout, "PUSH-OVER",&
-                "Too many push over the saddle point-> PARAM: Push_Over ", &
-                 [etot_step, etot_saddle, etot_step - etot_saddle])
-           IF( iover > 20 )STOP "ERROR PUSH OVER"
+                CALL WARNING( iunartout, "PUSH_OVER_PROCEDURE()",&
+                "Too many push over at saddle point: frelax_ene_thr can be too big or push_over", &
+                 [etot_step, etot_saddle, etot_step - etot_saddle, frelax_ene_thr, push_over])
+           ! ** ERROR **
+           IF( iover > 10 )STOP "ERROR PUSH OVER"
            !
-           CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, &
-                OVER, if_pos, istep, nat,  iunartout, noARTnStep )
+           IF( iover > 2 )THEN
+             tau(:,:) = tau_saddle(:,order(:))  ! no convertion needed
+             push_over = push_over * 0.80  
+           ENDIF
+
            !
            displ_vec(:,:) = fpush_factor*eigenvec(:,:)*eigen_step_size * push_over
+           !<<<<<<<<<<<<<<<<<<<<<<
+
+           CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, &
+                OVER, if_pos, istep, nat,  iunartout, noARTnStep )
+
         END IF
 
      ELSE

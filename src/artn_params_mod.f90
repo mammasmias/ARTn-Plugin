@@ -128,7 +128,7 @@ MODULE artn_params
   REAL(DP), PARAMETER :: NAN = HUGE( dlanc )  !! Biggest number in DP representation
   REAL(DP), PARAMETER :: def_dist_thr = 0.0_DP,       def_init_forc_thr = 1.0d-2,   &
                          def_forc_thr = 1.0d-3,       def_fpara_thr = 0.5d-2,  &
-                         def_eigval_thr = -0.01_DP,   def_frelax_ene_thr  = -0.01_DP,    &
+                         def_eigval_thr = -0.01_DP,   def_frelax_ene_thr  = 0.00_DP,    &
                          def_push_step_size = 0.3,    def_eigen_step_size = 0.2,    &
                          def_dlanc = 1.D-2
   ! arrays related to constraints
@@ -569,7 +569,7 @@ CONTAINS
     WRITE( u0,1 ) "* => ", text
     WRITE( u0,2 ) "* => ", realv
     1 format(*(A))
-    2 format(A,*(x,f8.2))
+    2 format(A,*(x,f12.6))
 
   END SUBROUTINE warning_real
 
