@@ -215,6 +215,8 @@ Depending of the engine the works units changes and it is to the user to be cohe
   - Stay stuck between 2 state sometime
   - `PUSH_OVER` has to be adjusted
 
+- Create a Clean procedure at the end of research to have to possibility to do many research in one launch 
+
 - nsteppos in ARTn doesn't have the same meaning for QE and LAMMPS in FIRE algo
 
 - Work on verbose debug mode :ok:
