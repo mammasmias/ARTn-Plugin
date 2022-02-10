@@ -35,7 +35,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
        lowest_eigval, etot_init, etot_step, etot_saddle, etot_final, de_saddle, de_back, de_fwd, &
        ninit, neigen, lanc_mat_size, nsmooth, push_mode, dist_thr, init_forc_thr, forc_thr, &
        fpara_thr, eigval_thr, frelax_ene_thr, push_step_size, current_step_size, dlanc, eigen_step_size, fpush_factor, &
-       push_ids, add_const, push, eigenvec, tau_step, force_step, tau_saddle, eigen_saddle, v_in, &
+       push_ids, add_const, push, eigenvec, tau_step, force_step, tau_init, tau_saddle, eigen_saddle, v_in, &
        VOID, INIT, PERP, EIGN, LANC, RELX, OVER, zseed, &
        engine_units, struc_format_out, elements, &
        initialize_artn, read_restart, write_restart, &
@@ -329,7 +329,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      ! see Cances_JCP130: some improvements of the ART technique doi:10.1063/1.3088532
      !
      ! 0.13 is taken from ARTn, 0.5 eV/Angs^2 corresponds roughly to 0.01 Ry/Bohr^2
-     !%! Should be a parameter: push_over?
      !
      ! ...Recompute the norm of fpara because eigenvec change a bit
      fpara_tot = ddot(3*nat, force_step(:,:), 1, eigenvec(:,:), 1)
@@ -337,6 +336,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !current_step_size = MIN(eigen_step_size,ABS(MAXVAL(fpara))/MAX( ABS(lowest_eigval), 0.01_DP ))
      !
      displ_vec(:,:) = eigenvec(:,:)*current_step_size
+
      !write (iunartout,*) "DEBUG:current_step_size:", current_step_size, MAXVAL(fpara), fpara_tot, ABS(lowest_eigval)
      !CALL perpforce( force_step, if_pos, eigenvec, fperp, fpara, nat)
      !write (iunartout,*) "DEBUG:current_step_size:", current_step_size, MAXVAL(fpara), fpara_tot, ABS(lowest_eigval)
@@ -439,10 +439,14 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            ! ** ERROR **
            IF( iover > 10 )THEN
              call write_fail_report( iunartout, OVER, etot_step )
-             STOP "ERROR PUSH OVER"
+             call clean_artn()
+             tau(:,:) = tau_init(:,order(:))
+             lconv = .true.
+             return
+             !STOP "ERROR PUSH OVER"
            ENDIF
            !
-           IF( iover > 2 )THEN
+           IF( iover > 1 )THEN
              tau(:,:) = tau_saddle(:,order(:))  ! no convertion needed
              push_over = push_over * 0.80  
            ENDIF
@@ -456,7 +460,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
         END IF
 
-     ELSE
+
+     ELSE  ! --- NO FINAL_PUSH
 
         lconv = .true.
         ! ...Here we dont load the next minimum because it does not exist

@@ -1,10 +1,12 @@
 
 
 SUBROUTINE clean_artn()
+  use units, only : DP
   use artn_params, only : lrelax, linit, lbasin, lperp, &
            llanczos, leigen, lsaddle, lbackward, lend, &
            iartn, istep, iinit, iperp, ilanc, ieigen,   &
-           irelax, iover, fpush_factor
+           irelax, iover, fpush_factor, lowest_eigval,  &
+           artn_resume
   implicit none
 
   write(*,*) " !> CLEANING PROCEDURE"
@@ -40,6 +42,9 @@ SUBROUTINE clean_artn()
   irelax = 0
   iover = 0
 
+  
+  lowest_eigval = 0.0_DP
+  artn_resume = ""
 
 
 END SUBROUTINE clean_artn
