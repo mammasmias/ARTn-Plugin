@@ -2,6 +2,7 @@
 !> @author
 !!   Matic Poberznik,
 !!   Miha Gunde
+!!   Nicolas Salles
 
 
 !------------------------------------------------------------
@@ -92,6 +93,7 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
   !> @param [in]  if_pos	Fix the atom or not	
   !> @param [in]  istep		actual step of ARTn 
   !> @param [in]  iunartout	Channel of output
+  !> @param [in]  ARTnStep	Flag to print at ARTn step
   !
   USE artn_params, ONLY: push, MOVE, verbose  &
                         ,etot_init, iinit, iperp, ieigen, ilanc, irelax, delr, verbose, iartn, a1 &
@@ -160,7 +162,7 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
     if( iartn == 0 )allocate( tau_init, source = tau_step )
     call compute_delr( nat, tau_step, tau_init, lat, delr )
     npart = 0
-    rc2 = 0.1!*0.1  !! Miha: Why square?
+    rc2 = 0.1!*0.1  !! Miha: Why square? NS: Why not!
     do i = 1, nat
        if( norm2(delr(:,i)) > rc2 ) npart = npart + 1
     enddo
@@ -268,6 +270,22 @@ SUBROUTINE write_end_report( iunartout, lsaddle, lpush_final, de )
 END SUBROUTINE write_end_report
 
 
+!------------------------------------------------------------
+SUBROUTINE write_fail_report( iunartout, disp, estep )
+
+  use units, only : DP, unconvert_energy
+  use artn_params, only : MOVE
+  implicit none
+
+  integer, intent( in ) :: iunartout, disp
+  REAL(DP), intent( in ):: estep
+
+  WRITE (iunartout,'(5X, "--------------------------------------------------")')
+  WRITE (iunartout,'(5X, "        *** ARTn search failed at ",a," ***        ")'), MOVE(DISP)
+  WRITE (iunartout,'(5X, "Step Params:",f10.4)') unconvert_energy(estep)
+  WRITE (iunartout,'(5X, "--------------------------------------------------")')
+
+END SUBROUTINE write_fail_report
 
 
 !------------------------------------------------------------

@@ -314,7 +314,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      disp = EIGN
 
      !CALL Smooth_interpol( ismooth, nat, force_step, push, eigenvec, fpara_tot )
-     !>>>>
+     !>>>>>>>>>>>>>>>
      smoothing_factor = 1.0_DP*ismooth/nsmooth
      !!
      fpara_tot = ddot(3*nat, force_step(:,:), 1, eigenvec(:,:), 1)
@@ -323,7 +323,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
           -SIGN(1.0_DP,fpara_tot)*smoothing_factor*eigenvec(:,:)
      !
      IF ( ismooth < nsmooth) ismooth = ismooth + 1
-     !<<<<<
+     !<<<<<<<<<<<<<<<
      !
      ! rescale the eigenvector according to the current force in the parallel direction
      ! see Cances_JCP130: some improvements of the ART technique doi:10.1063/1.3088532
@@ -377,9 +377,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      IF ( etot_step < etot_init ) THEN
         ! ...HERE Warning to says we should be in refine saddle mode
         write( iunartout, '(5x,a)' ) "!> WARNING::E_Saddle < E_init => Should be a saddle refine mode"
-        !CALL write_end_report( iunartout, lsaddle, lpush_final, etot_step )
-        !lconv = .true.
-        !lpush_final = .false.
      ENDIF
 
      CALL write_end_report( iunartout, lsaddle, lpush_final, etot_step - etot_init )
@@ -423,7 +420,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         ELSE  !< It is a PUSH_OVER the saddle point
            disp = EIGN
 
-           ! CALL PUSH_OVER_PROCEDURE( nat, etot_step, etot_saddle, push_factor, displ_vec )
+           ! CALL PUSH_OVER_PROCEDURE( nat, iover, etot_step, etot_saddle, push_factor, displ_vec )
            !>>>>>>>>>>>>>>>>>>>>>> push_over_procedure()
            !! Idea: Push over first time and if does not work return to the saddle 
            !!  and do a smaller push. Doing that one or two times and stop the research
@@ -436,7 +433,10 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
                 "Too many push over at saddle point: frelax_ene_thr can be too big or push_over", &
                  [etot_step, etot_saddle, etot_step - etot_saddle, frelax_ene_thr, push_over])
            ! ** ERROR **
-           IF( iover > 10 )STOP "ERROR PUSH OVER"
+           IF( iover > 10 )THEN
+             call write_fail_report( iunartout, OVER, etot_step )
+             STOP "ERROR PUSH OVER"
+           ENDIF
            !
            IF( iover > 2 )THEN
              tau(:,:) = tau_saddle(:,order(:))  ! no convertion needed
