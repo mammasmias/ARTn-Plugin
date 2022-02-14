@@ -5,42 +5,44 @@
 !!   Nicolas Salles
 
 
-SUBROUTINE write_struct( at, nat, tau, order, atm, ityp, force, fscale, ounit, form, fname)
+SUBROUTINE write_struct( at, nat, tau, order, atm, ityp, force, ener, fscale, ounit, form, fname )
   !
   !> @brief
-  !!   A subroutine that writes the structure to a file (based on xsf_struct of QE)  
+  !!   A subroutine that writes the structure to a file (based on xsf_struct of QE)
   !
-  !> @param [in]  nat       number of atoms 
+  !> @param [in]  nat       number of atoms
   !> @param [in]  ityp      atom type
   !> @param [in]  order     atom type
-  !> @param [in]  atm       contains information on atomic types 
-  !> @param [in]  ounit     output fortran unit 
-  !> @param [in]  tau       atomic positions 
-  !> @param [in]  at        lattice parameters in alat units 
+  !> @param [in]  atm       contains information on atomic types
+  !> @param [in]  ounit     output fortran unit
+  !> @param [in]  tau       atomic positions
+  !> @param [in]  at        lattice parameters in alat units
   !> @param [in]  force     list of atomic forces
-  !> @param [in]  fscale    factor for scaling the force 
+  !> @param [in]  ene       energy of the current structure, in engine units
+  !> @param [in]  fscale    factor for scaling the force
   !> @param [in]  form      format of the structure file (default xsf)
-  !> @param [in]  fname     file name                                        
+  !> @param [in]  fname     file name
   !
-  !USE artn_params, ONLY: DP 
+  !USE artn_params, ONLY: DP
   USE UNITS
-  IMPLICIT NONE 
+  IMPLICIT NONE
   ! -- Arguments
-  INTEGER,          INTENT(IN) :: nat            !> number of atoms 
+  INTEGER,          INTENT(IN) :: nat            !> number of atoms
   INTEGER,          INTENT(IN) :: ityp(nat)      !> atom type
   INTEGER,          INTENT(IN) :: order(nat)     !> atom type
-  CHARACTER(LEN=3), INTENT(IN) :: atm(*)         !> contains information on atomic types 
-  INTEGER,          INTENT(IN) :: ounit          !> output fortran unit 
-  REAL(DP),         INTENT(IN) :: tau(3,nat)     !> atomic positions 
-  REAL(DP),         INTENT(IN) :: at(3,3)        !> lattice parameters in alat units 
+  CHARACTER(LEN=3), INTENT(IN) :: atm(*)         !> contains information on atomic types
+  INTEGER,          INTENT(IN) :: ounit          !> output fortran unit
+  REAL(DP),         INTENT(IN) :: tau(3,nat)     !> atomic positions
+  REAL(DP),         INTENT(IN) :: at(3,3)        !> lattice parameters in alat units
   REAL(DP),         INTENT(IN) :: force(3,nat)   !> list of atomic forces
-  REAL(DP),         INTENT(IN) :: fscale         !> factor for scaling the force 
+  REAL(DP),         INTENT(IN) :: ener           !> energy of the structure, in engine units
+  REAL(DP),         INTENT(IN) :: fscale         !> factor for scaling the force
   CHARACTER(LEN=3), INTENT(IN) :: form           !> format of the structure file (default xsf)
-  !CHARACTER(LEN=255), INTENT(IN) :: fname        !> file name                                        
-  CHARACTER(*), INTENT(IN) :: fname        !> file name                                        
-  ! 
+  !CHARACTER(LEN=255), INTENT(IN) :: fname        !> file name
+  CHARACTER(*), INTENT(IN) :: fname        !> file name
+  !
   ! -- Local Variables
-  INTEGER :: i, j, na, ios, iloc 
+  INTEGER :: i, j, na, ios, iloc
   CHARACTER(:), ALLOCATABLE :: output
 
   ! ... Open the file with the good extention
@@ -55,7 +57,7 @@ SUBROUTINE write_struct( at, nat, tau, order, atm, ityp, force, fscale, ounit, f
       CALL write_xsf( at, nat, tau, order, atm, ityp, force*fscale, ounit )
 
     CASE( 'xyz')
-      CALL write_xyz( at, nat, tau, order, atm, ityp, force*fscale, ounit )
+      CALL write_xyz( at, nat, tau, order, atm, ityp, force*fscale, ounit, ener )
 
     CASE DEFAULT
       WRITE (ounit,*) " ** LIB::ARTn::WRITE_STRUC::Specified structure format not supported"
@@ -72,16 +74,16 @@ END SUBROUTINE write_struct
 SUBROUTINE write_xsf( at, nat, tau, order, atm, ityp, force, ounit )
 
   USE UNITS
-  !USE artn_params, ONLY: DP 
+  !USE artn_params, ONLY: DP
   IMPLICIT NONE
   ! -- ARGUMENTS
-  INTEGER,            INTENT(IN) :: nat            !> number of atoms 
+  INTEGER,            INTENT(IN) :: nat            !> number of atoms
   INTEGER,            INTENT(IN) :: ityp(nat)      !> atom type
   INTEGER,            INTENT(IN) :: order(nat)     !> atom type
-  CHARACTER(LEN=3),   INTENT(IN) :: atm(*)         !> contains information on atomic types 
-  INTEGER,            INTENT(IN) :: ounit          !> output fortran unit 
-  REAL(DP),           INTENT(IN) :: tau(3,nat)     !> atomic positions 
-  REAL(DP),           INTENT(IN) :: at(3,3)        !> lattice parameters in alat units 
+  CHARACTER(LEN=3),   INTENT(IN) :: atm(*)         !> contains information on atomic types
+  INTEGER,            INTENT(IN) :: ounit          !> output fortran unit
+  REAL(DP),           INTENT(IN) :: tau(3,nat)     !> atomic positions
+  REAL(DP),           INTENT(IN) :: at(3,3)        !> lattice parameters in alat units
   REAL(DP),           INTENT(IN) :: force(3,nat)   !> forces
   ! -- LOCAL VARIABLES
   INTEGER :: na, u0, ios, iloc
@@ -111,14 +113,14 @@ SUBROUTINE read_xsf( lat, nat, tau, order, atm, ityp, force, fname )
 
   USE UNITS
   implicit none
-  
+
   ! -- ARGUMENTS
-  INTEGER,            INTENT(IN) :: nat            !> number of atoms 
+  INTEGER,            INTENT(IN) :: nat            !> number of atoms
   INTEGER,            INTENT(IN) :: ityp(nat)      !> atom type
   INTEGER,            INTENT(IN) :: order(nat)     !> atom type
-  CHARACTER(LEN=3),   INTENT(OUT) :: atm(*)         !> contains information on atomic types 
-  REAL(DP),           INTENT(OUT) :: tau(3,nat)     !> atomic positions 
-  REAL(DP),           INTENT(OUT) :: lat(3,3)        !> lattice parameters in alat units 
+  CHARACTER(LEN=3),   INTENT(OUT) :: atm(*)         !> contains information on atomic types
+  REAL(DP),           INTENT(OUT) :: tau(3,nat)     !> atomic positions
+  REAL(DP),           INTENT(OUT) :: lat(3,3)        !> lattice parameters in alat units
   REAL(DP),           INTENT(OUT) :: force(3,nat)   !> forces
   CHARACTER(*),       INTENT(IN) :: fname           !> file name
   ! -- LOCAL VARIABLES
@@ -127,19 +129,19 @@ SUBROUTINE read_xsf( lat, nat, tau, order, atm, ityp, force, fname )
 
   OPEN( newunit=u0, file=fname)
 
-    READ( u0,* ) 
-    READ( u0,* ) 
-    READ( u0,* ) lat(:,1) 
-    READ( u0,* ) lat(:,2) 
-    READ( u0,* ) lat(:,3) 
-    READ( u0,* ) 
+    READ( u0,* )
+    READ( u0,* )
+    READ( u0,* ) lat(:,1)
+    READ( u0,* ) lat(:,2)
+    READ( u0,* ) lat(:,3)
+    READ( u0,* )
     READ( u0,* ) na, ios
 
-    IF( na /= nat )print*, "* PROBLEM IN READ_XSF:: Different number of atoms", nat, na 
+    IF( na /= nat )print*, "* PROBLEM IN READ_XSF:: Different number of atoms", nat, na
 
     DO na=1,nat
        iloc = order(na)
-       READ( u0,* ) atm(ityp(iloc)), tau(:,iloc), force(:,iloc) 
+       READ( u0,* ) atm(ityp(iloc)), tau(:,iloc), force(:,iloc)
     ENDDO
     force = convert_force( force )
 
@@ -151,25 +153,28 @@ END SUBROUTINE read_xsf
 
 
 ! .......................................................................................... XYZ
-SUBROUTINE write_xyz( at, nat, tau, order, atm, ityp, f, ounit )
+SUBROUTINE write_xyz( at, nat, tau, order, atm, ityp, f, ounit, ener )
 
   USE UNITS
-  !USE artn_params, ONLY: DP 
+  !USE artn_params, ONLY: DP
   IMPLICIT NONE
   ! -- ARGUMENTS
-  INTEGER,            INTENT(IN) :: nat            !> number of atoms 
+  INTEGER,            INTENT(IN) :: nat            !> number of atoms
   INTEGER,            INTENT(IN) :: ityp(nat)      !> atom type
   INTEGER,            INTENT(IN) :: order(nat)     !> atom type
-  CHARACTER(LEN=3),   INTENT(IN) :: atm(*)         !> contains information on atomic types 
-  INTEGER,            INTENT(IN) :: ounit          !> output fortran unit 
-  REAL(DP),           INTENT(IN) :: tau(3,nat)     !> atomic positions 
-  REAL(DP),           INTENT(IN) :: at(3,3)        !> lattice parameters in alat units 
+  CHARACTER(LEN=3),   INTENT(IN) :: atm(*)         !> contains information on atomic types
+  INTEGER,            INTENT(IN) :: ounit          !> output fortran unit
+  REAL(DP),           INTENT(IN) :: tau(3,nat)     !> atomic positions
+  REAL(DP),           INTENT(IN) :: at(3,3)        !> lattice parameters in alat units
   REAL(DP),           INTENT(IN) :: f(3,nat)       !> forces
+  REAL(DP),           INTENT(IN) :: ener
   ! -- LOCAL VARIABLES
   INTEGER :: na, u0, ios, iloc
 
   WRITE(ounit,*) nat
-  WRITE(ounit,*) ""
+  WRITE(ounit,fmt=11) 'Lattice="',at(:,:),'"', &
+       ' properties=species:S:1:pos:R:3:force:R:3:id:I:1',' energy:',ener
+  11 format(a,x,9(f10.4,x),a,a,a,f15.9)
 
   DO na=1,nat
      ! convert positions are in Engine units length
@@ -177,8 +182,8 @@ SUBROUTINE write_xyz( at, nat, tau, order, atm, ityp, f, ounit )
      iloc = order(na)
      !WRITE( ounit, fmt='(a3,3x,6f15.9)', IOSTAT=ios ) atm(ityp(iloc)), unconvert_length( tau(:,iloc) ), unconvert_force( f(:,iloc) )
      !WRITE( ounit, fmt=10, IOSTAT=ios ) iloc, ityp(na), unconvert_length( tau(:,iloc) ), unconvert_force( f(:,iloc) )
-     WRITE( ounit, fmt=10, IOSTAT=ios ) iloc, ityp(na), tau(:,iloc) , unconvert_force( f(:,iloc) )
-     10 format(i0,x,i2,3x,6f15.9)
+     WRITE( ounit, fmt=10, IOSTAT=ios ) ityp(na), tau(:,iloc) , unconvert_force( f(:,iloc) ), iloc
+     10 format(i2,3x,6f15.9,x,i0)
   ENDDO
 
 END SUBROUTINE write_xyz
@@ -190,12 +195,12 @@ SUBROUTINE read_xyz( lat, nat, tau, order, atm, ityp, force, fname )
   implicit none
 
   ! -- ARGUMENTS
-  INTEGER,            INTENT(IN) :: nat            !> number of atoms 
+  INTEGER,            INTENT(IN) :: nat            !> number of atoms
   INTEGER,            INTENT(IN) :: ityp(nat)      !> atom type
   INTEGER,            INTENT(IN) :: order(nat)     !> atom type
-  CHARACTER(LEN=3),   INTENT(OUT) :: atm(*)         !> contains information on atomic types 
-  REAL(DP),           INTENT(OUT) :: tau(3,nat)     !> atomic positions 
-  REAL(DP),           INTENT(OUT) :: lat(3,3)        !> lattice parameters in alat units 
+  CHARACTER(LEN=3),   INTENT(OUT) :: atm(*)         !> contains information on atomic types
+  REAL(DP),           INTENT(OUT) :: tau(3,nat)     !> atomic positions
+  REAL(DP),           INTENT(OUT) :: lat(3,3)        !> lattice parameters in alat units
   REAL(DP),           INTENT(OUT) :: force(3,nat)   !> forces
   CHARACTER(*),       INTENT(IN) :: fname           !> file name
   ! -- LOCAL VARIABLES

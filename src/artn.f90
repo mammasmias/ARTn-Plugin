@@ -211,8 +211,9 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      ! ...Write Zero step
      CALL write_header_report( iunartout )
      CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, VOID, if_pos, istep, nat, iunartout, .true. )
-     CALL write_struct( at, nat, tau, order, elements, ityp, push, 1.0_DP, iunstruct, struc_format_out, initpfname )
-     artn_resume = '* Start: '//trim(initpfname)
+     CALL write_struct( at, nat, tau, order, elements, ityp, push, etot_eng, &
+          1.0_DP, iunstruct, struc_format_out, initpfname )
+       artn_resume = '* Start: '//trim(initpfname)
   endif
 
 
@@ -351,7 +352,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         iperp = 0
      ENDIF
 
-     CALL write_struct( at, nat, tau, order, elements, ityp, force_step, 1.0_DP, iunstruct, struc_format_out, eigenfname )
+     CALL write_struct( at, nat, tau, order, elements, ityp, force_step, &
+          etot_eng, 1.0_DP, iunstruct, struc_format_out, eigenfname )
      CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat,  iunartout, noARTnStep )
 
   END IF
@@ -372,7 +374,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !
      !CALL write_struct( at, nat, tau, order, elements, ityp, force_step, 1.0_DP, iunstruct, struc_format_out, sadfname )
      call make_filename( outfile, prefix_sad, nsaddle )
-     CALL write_struct( at, nat, tau, order, elements, ityp, force_step, 1.0_DP, iunstruct, struc_format_out, outfile )
+     CALL write_struct( at, nat, tau, order, elements, ityp, force_step, &
+          etot_eng, 1.0_DP, iunstruct, struc_format_out, outfile )
      artn_resume = trim(artn_resume)//" | "//trim(outfile)
      !
 
@@ -502,7 +505,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            !   We save it and return to the saddle point
            CALL make_filename( outfile, prefix_min, nmin )
            CALL write_struct( at, nat, tau, order, elements, ityp, force_step, &
-                1.0_DP, iunstruct, struc_format_out, outfile )
+                etot_eng, 1.0_DP, iunstruct, struc_format_out, outfile )
            artn_resume = trim(artn_resume)//" | "//trim(outfile)
 
 
@@ -535,7 +538,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            ! ...It found the starting minimum! (should be the initial configuration)
            CALL make_filename( outfile, prefix_min, nmin )
            CALL write_struct( at, nat, tau, order, elements, ityp, &
-                force_step, 1.0_DP, iunstruct, struc_format_out, outfile )
+                force_step, etot_eng, 1.0_DP, iunstruct, struc_format_out, outfile )
            artn_resume = trim(artn_resume)//" | "//trim(outfile)
 
 
