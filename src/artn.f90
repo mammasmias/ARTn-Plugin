@@ -209,9 +209,10 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
   if( istep == 0 )then
      ! ...Write Zero step
+     CALL write_header_report( iunartout )
      CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, VOID, if_pos, istep, nat, iunartout, .true. )
-       CALL write_struct( at, nat, tau, order, elements, ityp, push, 1.0_DP, iunstruct, struc_format_out, initpfname )
-       artn_resume = '* Start: '//trim(initpfname)
+     CALL write_struct( at, nat, tau, order, elements, ityp, push, 1.0_DP, iunstruct, struc_format_out, initpfname )
+     artn_resume = '* Start: '//trim(initpfname)
   endif
 
 

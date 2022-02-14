@@ -3,7 +3,7 @@
 SUBROUTINE move_nextmin( nat, pos )
 
   USE UNITS
-  USE artn_params, only : tau_init, tau_nextmin
+  USE artn_params, only : tau_init, tau_nextmin, etot_init, etot_final
   implicit none
 
   INTEGER, INTENT(in) :: nat
@@ -19,6 +19,7 @@ SUBROUTINE move_nextmin( nat, pos )
 
     !pos = unconvert_length( tau_nextmin )
     pos = tau_nextmin
+    etot_init = etot_final
     write(*,*) " *** ARTn:: Next minimum loaded "
 
   endif

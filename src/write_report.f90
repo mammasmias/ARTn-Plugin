@@ -58,25 +58,59 @@ SUBROUTINE write_initial_report(iunartout, filout)
   WRITE (iunartout,'(/,/)') 
   !WRITE (iunartout,*) " "
 
-  !%! Condition on the engin_units..
-  select case( verbose )
-    case( 0 )
-    WRITE (iunartout,'(5X,"istep",4X,"ART_step",4X,"Etot",5x,"init/eign/perp/lanc/relx","&
-                      "4X," Ftot ",5X," Fperp ",4X," Fpara ",4X,"eigval", 6X, "delr", 2X, "npart", X,"evalf",2X,"a1")')
+! !%! Condition on the engin_units..
+! select case( verbose )
+!   case( 0 )
+!   WRITE (iunartout,'(5X,"istep",4X,"ART_step",4X,"Etot",5x,"init/eign/perp/lanc/relx","&
+!                     "4X," Ftot ",5X," Fperp ",4X," Fpara ",4X,"eigval", 6X, "delr", 2X, "npart", X,"evalf",2X,"a1")')
 
-    case( 1: )
-    WRITE (iunartout,'(5X,"istep",4X,"ART_step",4X,"Etot",5x,"init/eign/perp/lanc/relx","&
-                      "4X," Ftot ",5X," Fperp ",4X," Fpara ",4X,"eigval", 6X, "delr", 2X, "npart", X,"evalf","&
-                      "2X,"B/S/R|I/P/L/E|P/B/R",4X,"a1")')
-  end select
+!   case( 1: )
+!   WRITE (iunartout,'(5X,"istep",4X,"ART_step",4X,"Etot",5x,"init/eign/perp/lanc/relx","&
+!                     "4X," Ftot ",5X," Fperp ",4X," Fpara ",4X,"eigval", 6X, "delr", 2X, "npart", X,"evalf","&
+!                     "2X,"B/S/R|I/P/L/E|P/B/R",4X,"a1")')
+! end select
 
-  ! -- Units
-  WRITE (iunartout, strg_units )
+! ! -- Units
+! WRITE (iunartout, strg_units )
 
 
   CLOSE ( UNIT = iunartout, STATUS = 'KEEP')
 
 END SUBROUTINE write_initial_report
+
+
+
+
+!------------------------------------------------------------
+SUBROUTINE write_header_report( u0 )
+  use artn_params, only : verbose
+  use units, only :  strg_units
+  implicit none
+
+  integer, intent( in ) :: u0
+
+  integer :: ios
+
+
+
+  !%! Condition on the engin_units..
+  select case( verbose )
+    case( 0 )
+    WRITE( u0,'(5X,"istep",4X,"ART_step",4X,"Etot",5x,"init/eign/perp/lanc/relx","&
+               "4X," Ftot ",5X," Fperp ",4X," Fpara ",4X,"eigval", 6X, "delr", 2X, "npart", X,"evalf",2X,"a1")')
+
+    case( 1: )
+    WRITE( u0,'(5X,"istep",4X,"ART_step",4X,"Etot",5x,"init/eign/perp/lanc/relx","&
+               "4X," Ftot ",5X," Fperp ",4X," Fpara ",4X,"eigval", 6X, "delr", 2X, "npart", X,"evalf","&
+               "2X,"B/S/R|I/P/L/E|P/B/R",4X,"a1")')
+  end select
+
+  ! -- Units
+  WRITE( u0, strg_units )
+
+
+
+END SUBROUTINE write_header_report
 
 
 
@@ -236,6 +270,7 @@ SUBROUTINE write_inter_report( u, pushfactor, de )
       WRITE( u,'(5X, "--------------------------------------------------")')
       WRITE( u,'(5X, "Cofiguration Files:", X,A)') trim(artn_resume)
       WRITE( u,'(5X, "--------------------------------------------------")')
+      WRITE( u,'(/)')
 
 
     CASE DEFAULT
