@@ -5,8 +5,8 @@ SUBROUTINE clean_artn()
   use artn_params, only : lrelax, linit, lbasin, lperp, &
            llanczos, leigen, lsaddle, lbackward, lend, &
            iartn, istep, iinit, iperp, ilanc, ieigen,   &
-           irelax, iover, fpush_factor, lowest_eigval,  &
-           artn_resume
+           irelax, iover, istep, fpush_factor, lowest_eigval,  &
+           artn_resume, old_lanczos_vec
   implicit none
 
   write(*,*) " !> CLEANING PROCEDURE"
@@ -32,7 +32,7 @@ SUBROUTINE clean_artn()
   !verbose = 0
   !
   iartn = 0
-  !istep = 0
+  istep = 0
   iinit = 0
   iperp = 0
   ilanc = 0
@@ -45,6 +45,8 @@ SUBROUTINE clean_artn()
   
   lowest_eigval = 0.0_DP
   artn_resume = ""
+
+  if( allocated(old_lanczos_vec) )old_lanczos_vec = 0.0_DP
 
 
 END SUBROUTINE clean_artn

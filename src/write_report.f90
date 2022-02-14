@@ -20,7 +20,7 @@ SUBROUTINE write_initial_report(iunartout, filout)
   !
   ! Writes the header to the artn output file
   !
-  OPEN ( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'unknown', IOSTAT = ios )
+  OPEN( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'unknown', POSITION='rewind', IOSTAT = ios )
   WRITE (iunartout,'(5X, "--------------------------------------------------")')
   WRITE (iunartout,'(5X, "                ARTn plugin                       ")')
   WRITE (iunartout,'(5X, "--------------------------------------------------")')
@@ -238,7 +238,7 @@ END SUBROUTINE write_report
 
 !------------------------------------------------------------
 SUBROUTINE write_inter_report( u, pushfactor, de )
-  use units, only : DP, unconvert_energy
+  use units, only : DP, unconvert_energy, unit_char
   use artn_params, only : artn_resume
   implicit none
 
@@ -251,7 +251,8 @@ SUBROUTINE write_inter_report( u, pushfactor, de )
     CASE( 1 )
       ! de(1) = de_back
       WRITE( u, '(5X, "--------------------------------------------------")')
-      WRITE( u, '(5X, "|> ARTn found adjacent minimum | backward E_act =", F12.5," eV")') unconvert_energy( de(1) )
+      WRITE( u, '(5X, "|> ARTn found adjacent minimum | backward E_act =", F12.5,x,a)') &
+          unconvert_energy( de(1) ), unit_char('energy')
       WRITE( u, '(5X, "--------------------------------------------------")')
 
     CASE( -1 )
@@ -263,12 +264,13 @@ SUBROUTINE write_inter_report( u, pushfactor, de )
       WRITE( u,'(5X, "--------------------------------------------------")')
       WRITE( u,'(5X, "    *** ARTn converged to initial minimum ***   ")')
       WRITE( u,'(5X, "--------------------------------------------------")')
-      WRITE( u,'(15X,"forward  E_act =", F12.5," eV")') unconvert_energy(de(2)) 
-      WRITE( u,'(15X,"backward E_act =", F12.5," eV")') unconvert_energy(de(1)) 
-      WRITE( u,'(15X,"reaction dE    =", F12.5," eV")') unconvert_energy((de(5)-de(4))) 
-      WRITE( u,'(15X,"dEinit - dEfinal    =", F12.5," eV")') unconvert_energy((de(3)-de(5))) 
+      WRITE( u,'(15X,"forward  E_act =", F12.5,x,a)') unconvert_energy(de(2)), unit_char('energy')
+      WRITE( u,'(15X,"backward E_act =", F12.5,x,a)') unconvert_energy(de(1)), unit_char('energy') 
+      WRITE( u,'(15X,"reaction dE    =", F12.5,x,a)') unconvert_energy((de(5)-de(4))), unit_char('energy')
+      WRITE( u,'(15X,"dEinit - dEfinal    =", F12.5,x,a)') unconvert_energy((de(3)-de(5))), unit_char('energy') 
       WRITE( u,'(5X, "--------------------------------------------------")')
-      WRITE( u,'(5X, "Cofiguration Files:", X,A)') trim(artn_resume)
+      WRITE( u,'(5X, "|> Configuration Files:", X,A)') trim(artn_resume)
+      WRITE( *,'("|> Configuration Files:", X,A)') trim(artn_resume)
       WRITE( u,'(5X, "--------------------------------------------------")')
       WRITE( u,'(/)')
 
@@ -286,7 +288,8 @@ END SUBROUTINE write_inter_report
 !------------------------------------------------------------
 SUBROUTINE write_end_report( iunartout, lsaddle, lpush_final, de )
  
-  use units, only : DP, unconvert_energy
+  use units, only : DP, unconvert_energy, unit_char
+  use artn_params, only : artn_resume
   implicit none
 
   integer, intent( in ) :: iunartout
@@ -296,12 +299,18 @@ SUBROUTINE write_end_report( iunartout, lsaddle, lpush_final, de )
   if( lsaddle )then
 
     WRITE (iunartout,'(5X, "--------------------------------------------------")')
-    WRITE (iunartout,'(5X, "|> ARTn found a potential saddle point | E_saddle - E_initial =", F12.5," eV")') unconvert_energy(de)
+    WRITE (iunartout,'(5X, "|> ARTn found a potential saddle point | E_saddle - E_initial =", F12.5,x,a)') &
+      unconvert_energy(de), unit_char('energy')
     WRITE (iunartout,'(5X, "--------------------------------------------------")')
 
-    IF ( lpush_final ) THEN
-       WRITE (iunartout, '(5X,"       *** Pushing to adjacent minima  ***      ")')
-       WRITE (iunartout,'(5X, "------------------------------------------------")')
+    IF( lpush_final ) THEN
+      WRITE(iunartout,'(5X,"       *** Pushing to adjacent minima  ***      ")')
+      WRITE(iunartout,'(5X, "------------------------------------------------")')
+    ELSE
+      WRITE(iunartout,'(5X,"       *** ARTn search finished ***")')
+      WRITE(iunartout,'(5X,"       *** no push_final minimal ***")')
+      WRITE(iunartout,'(5X, "|> Configuration Files:", X,A)') trim(artn_resume)
+      WRITE(iunartout,'(5X, "------------------------------------------------"//)')
     ENDIF
 
   else
@@ -316,17 +325,19 @@ END SUBROUTINE write_end_report
 !------------------------------------------------------------
 SUBROUTINE write_fail_report( iunartout, disp, estep )
 
-  use units, only : DP, unconvert_energy
-  use artn_params, only : MOVE
+  use units, only : DP, unconvert_energy, unit_char
+  use artn_params, only : MOVE, ifails
   implicit none
 
   integer, intent( in ) :: iunartout, disp
   REAL(DP), intent( in ):: estep
 
+  ifails = ifails + 1
+
   WRITE (iunartout,'(5X, "--------------------------------------------------")')
-  WRITE (iunartout,'(5X, "        *** ARTn search failed at ",a," ***        ")') MOVE(DISP)
-  WRITE (iunartout,'(5X, "Step Params:",f10.4)') unconvert_energy(estep)
-  WRITE (iunartout,'(5X, "--------------------------------------------------")')
+  WRITE (iunartout,'(5X, "        *** ARTn search failed ( ",i0," ) at ",a," *** ")') ifails, MOVE(DISP)
+  WRITE (iunartout,'(5X, "Step Params: Etot = ",f10.4,x,a)') unconvert_energy(estep), unit_char('energy')
+  WRITE (iunartout,'(5X, "--------------------------------------------------"//)')
 
 END SUBROUTINE write_fail_report
 

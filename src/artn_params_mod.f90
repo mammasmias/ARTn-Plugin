@@ -42,17 +42,18 @@ MODULE artn_params
   LOGICAL :: lsaddle    !> saddle point obtained
   LOGICAL :: lbackward  !> backward saddle point obtained
   LOGICAL :: lmove_nextmin  !> backward saddle point obtained
+  LOGICAL :: lread_param  !> flag read artn params
   !
   LOGICAL :: lend
   INTEGER :: verbose    !> Verbose Level
   ! counters
-  INTEGER :: istep, iartn
+  INTEGER :: istep, iartn, ifails
   INTEGER :: iperp      !> number of steps in perpendicular relaxation
   INTEGER :: nperp, nperp_step, noperp
   INTEGER :: nperp_list(5) = [ 4, 8, 12, 16, 0 ]
   !INTEGER :: nperp_list(5) = [ 4, 0, 0, 0, 0 ]
   INTEGER :: iover
-  INTEGER :: irelax
+  INTEGER :: irelax     !> Number of relaxation iteration
   INTEGER :: ieigen     !> number of steps made with eigenvector
   INTEGER :: iinit      !> number of pushes made
   INTEGER :: ilanc      !> current lanczos iteration
@@ -199,10 +200,12 @@ CONTAINS
       lbackward = .true.
       lrestart = .false.
       lmove_nextmin = .false.
+      lread_param = .false.
 
       lend = .false.
       verbose = 0
       !
+      ifails = 0
       iartn = 0
       istep = 0
       iinit = 0
@@ -291,6 +294,7 @@ CONTAINS
       OPEN( UNIT = iunartin, FILE = filnam, FORM = 'formatted', STATUS = 'unknown', IOSTAT = ios)
       READ( NML = artn_parameters, UNIT = iunartin)
       CLOSE ( UNIT = iunartin, STATUS = 'KEEP')
+      lread_param = .true.
       !
       ! inital number of lanczos iterations
       !

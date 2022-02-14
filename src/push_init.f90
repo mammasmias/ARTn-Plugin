@@ -25,7 +25,7 @@ SUBROUTINE push_init( nat, tau, order, at, idum, push_ids, dist_thr, add_const, 
   !> @param [in]    mode	    Actual kind displacement 
   !> @param [out]   push	    list of push applied on the atoms (ORDERED)
   !
-  USE artn_params, ONLY : DP, ran3, istep
+  USE artn_params, ONLY : DP, ran3, istep, iunartout
   IMPLICIT none
   ! -- ARGUMENTS
   INTEGER,          INTENT(IN)  :: nat,idum
@@ -50,6 +50,9 @@ SUBROUTINE push_init( nat, tau, order, at, idum, push_ids, dist_thr, add_const, 
   push(:,:) = 0.d0
   atom_displaced(:) = 0
   lvalid = .false.
+
+  !write(iunartout,*)" PUSH_INIT"
+  write(*,*)" PUSH_INIT"
 
 
   !

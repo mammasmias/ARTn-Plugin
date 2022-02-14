@@ -30,8 +30,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   !
   USE units
   USE artn_params, ONLY: iunartin, iunartout, iunstruct, &
-       lrelax, linit, lperp, leigen, llanczos, lrestart, lbasin, lsaddle, lpush_final, lbackward, lmove_nextmin, &
-       irelax, istep, iperp, ieigen, iinit, ilanc, ismooth, iover, nlanc, nperp, noperp, nperp_step, if_pos_ct, &
+       lrelax, linit, lperp, leigen, llanczos, lrestart, lbasin, lsaddle, lpush_final, lbackward, lmove_nextmin, lread_param,  &
+       irelax, istep, iperp, ieigen, iinit, ilanc, ismooth, iover, ifails, nlanc, nperp, noperp, nperp_step, if_pos_ct, &
        lowest_eigval, etot_init, etot_step, etot_saddle, etot_final, de_saddle, de_back, de_fwd, &
        ninit, neigen, lanc_mat_size, nsmooth, push_mode, dist_thr, init_forc_thr, forc_thr, &
        fpara_thr, eigval_thr, frelax_ene_thr, push_step_size, current_step_size, dlanc, eigen_step_size, fpush_factor, &
@@ -112,26 +112,33 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
   IF( istep == 0 )THEN
 
-    ! ...Read the input parameters
-    CALL initialize_artn( nat, iunartin, filin )
+    write(*,*) "ISTEP = 0: lread_param; ifails", lread_param, ifails, ( .NOT.lread_param.AND.ifails == 0 )
+
+    !> Don't initialize ARTn if it fails before
+    NOFAILS: if( .NOT.lread_param.AND.ifails == 0 )then  
+
+      ! ...Read the input parameters
+      CALL initialize_artn( nat, iunartin, filin )
 
 
-    ! set initial random seed from input (could be moved to initialize_artn)
-    ! value zseed = 0 means generate random seed
-    idum = zseed
-    IF( idum .EQ. 0) THEN
-       !
-       ! generate random seed
-       CALL random_number(z)
-       z = z *1e8
-       idum = INT(z)
-    ENDIF
-    !> Save the seed for DEBUG
-    write(123456789,*)" zseed = ", int(z)
+      ! set initial random seed from input (could be moved to initialize_artn)
+      ! value zseed = 0 means generate random seed
+      idum = zseed
+      IF( idum .EQ. 0) THEN
+        !
+        ! generate random seed
+        CALL random_number(z)
+        z = z *1e8
+        idum = INT(z)
+      ENDIF
+      !> Save the seed for DEBUG
+      write(123456789,*)" zseed = ", int(z)
+
+    endif NOFAILS
 
 
     ! ...Fill the *_step Arrays
-    !CALL Fill_param_step( nat, order, tau, etot_eng, force )
+    !CALL Fill_param_step( nat, at, order, tau, etot_eng, force )
     lat = at
     tau_step(:,order(:)) = tau(:,:)
     etot_step = convert_energy( etot_eng )
@@ -154,7 +161,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
     ELSE
 
-      CALL write_initial_report( iunartout, filout )
+      if( ifails == 0 )CALL write_initial_report( iunartout, filout )
       ! ...Initial parameter
       etot_init = etot_step
 
@@ -184,7 +191,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   ELSE !>     ISTEP > 0
 
     ! ...Fill the *_step Arrays
-    !CALL Fill_param_step( nat, order, tau, etot_eng, force )
+    !CALL Fill_param_step( nat, at, order, tau, etot_eng, force )
     lat = at
     tau_step(:,order(:)) = tau(:,:)
     etot_step = convert_energy( etot_eng )
@@ -207,6 +214,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   !
   OPEN ( UNIT = iunartout, FILE = filout, FORM = 'formatted', ACCESS = 'append', STATUS = 'unknown', IOSTAT = ios )
 
+  !write( iunartout,*)"|> test print: istep", istep
   if( istep == 0 )then
      ! ...Write Zero step
      CALL write_header_report( iunartout )
@@ -445,7 +453,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
              call write_fail_report( iunartout, OVER, etot_step )
              call clean_artn()
              tau(:,:) = tau_init(:,order(:))
-             lconv = .true.
+             displ_vec = 0.0_DP
+             !lconv = .true.
              return
              !STOP "ERROR PUSH OVER"
            ENDIF
@@ -467,7 +476,22 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
      ELSE  ! --- NO FINAL_PUSH
 
+        !> At this point the saddle point is already wrote by write_struct before
+        !! Here we finish the ARTn search.
+        !! Preparation of the possible new ARTn search following this step.
+        !! - Cleaning the flag/parameter
+        !! - write in output saying no more research
+        !! - return a configuration in which a new ARTn search can start
+
+        write(iunartout,*) "--- NO FINAL_PUSH"
+        call clean_artn()
+        !call write_end_report( iunartout, lsaddle, lpush_final, 0.0_DP )
+        !tau(:,:) = tau_init(:,order(:))
         lconv = .true.
+        ! ...Set the force to zero 
+        displ_vec = 0.0_DP
+        return
+
         ! ...Here we dont load the next minimum because it does not exist
 
      ENDIF
@@ -560,10 +584,15 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         ! ...FINALIZATION
         IF( lconv )THEN
 
+
           ! ...Here we should load the next minimum if the user ask
           IF( lmove_nextmin )CALL move_nextmin( nat, tau )
 
+
+          ! ...The research IS FINISHED
           CALL clean_artn()
+          !CLOSE (UNIT = iunartout, STATUS = 'KEEP')
+          return
 
         ENDIF
 
@@ -699,6 +728,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
   ! ...Increment the ARTn-step
   istep = istep + 1
+
   ! CALL write_restart(restartfname,nat)
   ! ...Close the output file
   CLOSE (UNIT = iunartout, STATUS = 'KEEP')
