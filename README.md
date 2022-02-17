@@ -209,13 +209,19 @@ Depending of the engine the works units changes and it is to the user to be cohe
 
 ## TODO
 
+- Add an `artn.h` to include the `artn_()`, `move_mode_()` and other function of pARTn
+
 - **BUGS**
 
   - LANCZOS: Go out without and eigenvector before to do `lanc_mat_size` step
   - Stay stuck between 2 state sometime
   - `PUSH_OVER` has to be adjusted
 
-- Create a Clean procedure at the end of research to have to possibility to do many research in one launch 
+- **END PROCEDURE**:
+
+  - Create a Clean procedure at the end of research to have to possibility to do many research in one launch
+  - `lpush_final = .false.` : no output indication 
+  - General procedure: 
 
 - nsteppos in ARTn doesn't have the same meaning for QE and LAMMPS in FIRE algo
 
@@ -229,7 +235,7 @@ Depending of the engine the works units changes and it is to the user to be cohe
 
 - Verify the parameter NAME :ok:
 
-- Add the output filename custom :ok:
+- Add the output filename custom 
 
 - `nperp` parameter it is deactivated when you it converge on the saddle point. Should be Activated when the system return in Basin. :ok:
 
