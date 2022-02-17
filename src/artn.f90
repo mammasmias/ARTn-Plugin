@@ -214,6 +214,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   !
   OPEN ( UNIT = iunartout, FILE = filout, FORM = 'formatted', ACCESS = 'append', STATUS = 'unknown', IOSTAT = ios )
 
+
+  ! -- Start a ARTn search
   !write( iunartout,*)"|> test print: istep", istep
   if( istep == 0 )then
      ! ...Write Zero step
@@ -433,6 +435,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            if( .NOT.lrelax )irelax = 0
            lrelax = .true.
 
+
+
         ELSE  !< It is a PUSH_OVER the saddle point
            disp = EIGN
 
@@ -563,9 +567,10 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            CALL make_filename( outfile, prefix_min, nmin )
            CALL write_struct( at, nat, tau, order, elements, ityp, &
                 force_step, etot_eng, 1.0_DP, iunstruct, struc_format_out, outfile )
+           ! ...Save the structure name file to print it
            artn_resume = trim(artn_resume)//" | "//trim(outfile)
 
-
+           ! ...Turn on the convergence flag
            lconv = .true.
            lend = lconv
            de_fwd = etot_saddle - etot_step
@@ -584,14 +589,19 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         ! ...FINALIZATION
         IF( lconv )THEN
 
-
           ! ...Here we should load the next minimum if the user ask
-          IF( lmove_nextmin )CALL move_nextmin( nat, tau )
+          IF( lmove_nextmin )THEN
+            CALL move_nextmin( nat, tau )
+          ELSE
+            tau(:,:) = tau_init(:,order(:))
+          ENDIF
 
+          ! ...Force = 0.0
+          displ_vec = 0.0_DP
 
           ! ...The research IS FINISHED
           CALL clean_artn()
-          !CLOSE (UNIT = iunartout, STATUS = 'KEEP')
+          !CLOSE( UNIT = iunartout, STATUS = 'KEEP' )
           return
 
         ENDIF

@@ -2,12 +2,14 @@
 
 SUBROUTINE move_nextmin( nat, pos )
 
-  USE UNITS
+  USE UNITS, only : DP
   USE artn_params, only : tau_init, tau_nextmin, etot_init, etot_final
   implicit none
 
   INTEGER, INTENT(in) :: nat
   REAL(DP), INTENT(inout) :: pos(3,nat)
+  !LOGICAL, intent(in) :: lnext
+
 
 
   if( .not.allocated(tau_nextmin) )then
@@ -24,8 +26,8 @@ SUBROUTINE move_nextmin( nat, pos )
 
   endif
 
-
 END SUBROUTINE move_nextmin
+
 
 
 SUBROUTINE save_min( nat, pos )

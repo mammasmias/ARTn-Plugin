@@ -25,7 +25,7 @@ SUBROUTINE push_init( nat, tau, order, at, idum, push_ids, dist_thr, add_const, 
   !> @param [in]    mode	    Actual kind displacement 
   !> @param [out]   push	    list of push applied on the atoms (ORDERED)
   !
-  USE artn_params, ONLY : DP, ran3, istep, iunartout
+  USE artn_params, ONLY : DP, ran3, istep, iunartout, warning
   IMPLICIT none
   ! -- ARGUMENTS
   INTEGER,          INTENT(IN)  :: nat,idum
@@ -52,7 +52,7 @@ SUBROUTINE push_init( nat, tau, order, at, idum, push_ids, dist_thr, add_const, 
   lvalid = .false.
 
   !write(iunartout,*)" PUSH_INIT"
-  write(*,*)" PUSH_INIT"
+  !write(*,*)" PUSH_INIT"
 
 
   !
@@ -73,6 +73,9 @@ SUBROUTINE push_init( nat, tau, order, at, idum, push_ids, dist_thr, add_const, 
      ENDDO
 
   ELSE IF ( mode == 'rad' ) THEN 
+     if( sum(push_ids) == 0) &
+       call warning( iunartout, "PUSH_INIT()",&
+            "push_mode = 'rad' need a list of atoms: define push_ids keyword ", push_ids )
      ! displace only atoms in list and all atoms within chosen a cutoff radius ...
      DO na=1,nat
         !IF (ANY(push_ids == na)) THEN
