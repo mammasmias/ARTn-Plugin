@@ -42,7 +42,7 @@ SUBROUTINE push_init( nat, tau, order, at, idum, push_ids, dist_thr, add_const, 
   ! -- LOCAL VARIABLE
   INTEGER :: na, ia , iglob
   REAL(DP) :: dr2, pushat(3)
-  REAL(DP) :: dist(3), tau0(3) 
+  REAL(DP) :: dist(3), tau0(3), vmax
   LOGICAL :: lvalid
   INTEGER :: atom_displaced(nat)
   REAL(DP), EXTERNAL :: dnrm2, fpbc
@@ -132,7 +132,12 @@ SUBROUTINE push_init( nat, tau, order, at, idum, push_ids, dist_thr, add_const, 
   !
   ! normalize so that maxval of the vector is 1.0
   !
-  push(:,:) = push(:,:)/MAXVAL(ABS(push(:,:)))
+  vmax = 0.0_DP
+  do na = 1,nat
+     vmax = max( vmax, norm2(push(:,na)) )
+  enddo
+  push(:,:) = push(:,:)/ vmax
+  !push(:,:) = push(:,:)/MAXVAL(ABS(push(:,:)))
 
   ! scale initial push vector according to step size (ORDERED) 
   push(:,order(:)) = init_step_size*push(:,:)

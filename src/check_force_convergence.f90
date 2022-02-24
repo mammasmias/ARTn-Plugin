@@ -1,5 +1,5 @@
 
-SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv, lsaddle_conv) 
+SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv, lsaddle_conv ) 
   !
   !> @breif 
   !!   A subroutine that checks the force convergence of a particular step in the artn algorithm 
@@ -30,13 +30,19 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
   LOGICAL :: C1, C2, C3
   LOGICAL, parameter :: ARTnStep = .true.
   integer :: ios
-  REAL(DP) :: mfperp, mfpara
+  REAL(DP) :: maxforce, maxfperp, maxfpara
 
   lforc_conv = .false.
   lsaddle_conv = .false.
   !
 
+  ! ...Open the output file
   OPEN( UNIT = iunartout, FILE = 'artn.out', FORM = 'formatted', ACCESS = 'append', STATUS = 'unknown', IOSTAT = ios )
+
+  ! ...Compute the variable
+  maxforce = MAXVAL(ABS(force*if_pos))
+  maxfpara = MAXVAL(ABS(fpara))
+  maxfperp = MAXVAL(ABS(fperp))
 
   !
   IF ( lperp ) THEN 
@@ -46,7 +52,8 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         !
         ! We are outside of the basin check both perpendicular and total force convergence
         ! 
-        IF (MAXVAL( ABS(force*if_pos)) < forc_thr  ) THEN
+        !IF (MAXVAL( ABS(force*if_pos)) < forc_thr  ) THEN
+        IF( maxforce < forc_thr  ) THEN
            lsaddle_conv = .true.
 
            CALL write_restart( restartfname, nat )
@@ -55,15 +62,12 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         ENDIF
 
 
-        ! ...Compute the variable
-        mfpara = MAXVAL(ABS(fpara))
-        mfperp = MAXVAL(ABS(fperp))
-
 
         !
         ! check whether the fperp criterion should be tightened
         ! 
-        IF ( MAXVAL(ABS(fpara)) <= fpara_thr ) THEN !> We are close to the saddle point 
+        !IF ( MAXVAL(ABS(fpara)) <= fpara_thr ) THEN !> We are close to the saddle point 
+        IF( maxfpara <= fpara_thr )THEN !> We are close to the saddle point 
            fperp_thr = forc_thr
 
            ! ...Perp-relax managment
@@ -92,12 +96,14 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         ! 
         ! -- check perpendicular force convergence for the perp-relax 
         ! 
-        C1 = ( MAXVAL( ABS(fperp)) < fperp_thr ) ! check on the fperp field
+        !C1 = ( MAXVAL( ABS(fperp)) < fperp_thr ) ! check on the fperp field
+        C1 = ( maxfperp < fperp_thr ) ! check on the fperp field
         C2 = ( nperp > 0.AND.iperp >= nperp )    ! check on the perp-relax iteration
-        C3 = ( MAXVAL( ABS(fperp)) < MAXVAL( ABS(fpara))) ! check wheter fperp is lower than fpara
+        !C3 = ( MAXVAL( ABS(fperp)) < MAXVAL( ABS(fpara))) ! check wheter fperp is lower than fpara
+        C3 = ( MAXfperp < MAXfpara ) ! check wheter fperp is lower than fpara
 
         IF( C1 .and. iperp == 0 )C1 = .false.
-        IF( C1.and. ABS(mfperp - mfpara) < mfpara*1.20 ) C1 = .false.
+        IF( C1.and. ABS(maxfperp - maxfpara) < maxfpara*1.20 ) C1 = .false.
 
         IF( C1 .OR. C2 .OR. C3 ) THEN
            lperp = .false.
@@ -144,7 +150,8 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         ! && Max Iteration of Perp-Relax
         !    nperp = 0 means no nperp constrain
 
-        C1 = ( MAXVAL( ABS(fperp)) < fperp_thr ) ! check on the fperp field
+        !C1 = ( MAXVAL( ABS(fperp)) < fperp_thr ) ! check on the fperp field
+        C1 = ( MAXfperp < fperp_thr ) ! check on the fperp field
         C2 = ( nperp > 0.AND.iperp >= nperp )    ! check on the perp-relax iteration
 
         IF( C1 .OR. C2 ) THEN
@@ -172,7 +179,8 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
      ! 
   ELSE IF ( lrelax ) THEN  
      !
-     IF( MAXVAL( ABS(force*if_pos)) < forc_thr  )then
+     !IF( MAXVAL( ABS(force*if_pos)) < forc_thr  )then
+     IF( MAXforce < forc_thr  )then
        lforc_conv = .true.
        !write(iunartout,*)"Check_force::Relax->Force"
        CALL write_report( etot_step, force, fperp, fpara, lowest_eigval, RELX, if_pos, istep, nat,  iunartout, ArtnStep )

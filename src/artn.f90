@@ -371,8 +371,10 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
 
   !
-  ! check for convergence of total forces (only after eigevec was obtained)
+  ! The saddle point is reached -> confirmed by check_force_convergence()
   !
+  !> SHOULD BE A ROUTINE but is not because we call write_struct() that needs 
+  !!  arguments exist only in artn() 
   IF ( lsaddle_conv ) THEN
 
      !> store the saddle point energy
@@ -405,7 +407,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
   !
   ! ...If saddle point is reached
-  ! Push to adjacent minima after the saddle point
+  ! This block do only Push to adjacent minima after the saddle point
   !
   IF ( lsaddle ) THEN
      !
@@ -427,7 +429,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         endif
         !
         !
-        ! ...If diff Energy is negative
+        ! ...PUSH_OVER works => If diff Energy is negative
         IF ( etot_step - etot_saddle < frelax_ene_thr ) THEN
         !IF ( etot_step - etot_saddle < 0.0_DP ) THEN
 
@@ -490,8 +492,13 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         write(iunartout,*) "--- NO FINAL_PUSH"
         call clean_artn()
         !call write_end_report( iunartout, lsaddle, lpush_final, 0.0_DP )
-        !tau(:,:) = tau_init(:,order(:))
+
+        ! ...Return to the initial comfiguration
+        tau(:,:) = tau_init(:,order(:))
+
+        ! ...Tell to the engine it is finished
         lconv = .true.
+
         ! ...Set the force to zero 
         displ_vec = 0.0_DP
         return
@@ -513,7 +520,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      disp = RELX
      displ_vec = force_step
 
-     !
+     ! ...Print the relaxation state
      ArtnStep = noArtnStep
      if( mod(irelax,5) == 0 ) ArtnStep = .true.  !> The 5 can be custom parameter : nrprint
      CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, disp, &
@@ -521,8 +528,11 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
      irelax = irelax + 1
 
+
      !
-     ! check for convergence
+     ! The convergence is reached: 
+     !  - Switch the push_over or
+     !  - Finish the ARTn search
      !
      IF ( lforc_conv ) THEN
 
@@ -543,7 +553,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
            disp = RELX
 
-           ! restart from saddle point
+           ! ...restart from saddle point
            tau(:,:) = tau_saddle(:,order(:))
            eigenvec(:,:) = eigen_saddle(:,:)
            lbackward = .true.
@@ -557,9 +567,10 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
            call write_inter_report( iunartout, int(fpush_factor), [de_back] )
 
-           ! reverse direction of push
+           ! ...reverse direction for the push_over
            fpush_factor = -1.0
            irelax = 0
+
 
         ELSEIF( .NOT.lend )THEN  !< If already pass before no need to rewrite again
 
