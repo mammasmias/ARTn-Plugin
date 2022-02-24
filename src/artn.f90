@@ -712,7 +712,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            ! structure is still in basin (under unflection),
            ! in next step make an initial push
            !! Next Mstep inside the Basin
-           lowest_eigval = 0.D0
+           !lowest_eigval = 0.D0
            leigen = .false.
            linit  = .true.
            lbasin = .true.

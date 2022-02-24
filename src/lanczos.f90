@@ -56,7 +56,11 @@ SUBROUTINE lanczos( nat, v_in, pushdir, force, &
   !
   ! store the eigenvalue of the previous iteration
   !
-  lowest_eigval_old = lowest_eigval
+  IF( ilanc > 0 )THEN
+    lowest_eigval_old = lowest_eigval
+  ELSE
+    lowest_eigval_old = 0.0_DP
+  ENDIF
 
 
   !
