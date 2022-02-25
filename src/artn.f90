@@ -112,7 +112,9 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
   IF( istep == 0 )THEN
 
-    write(*,*) "ISTEP = 0: lread_param; ifails", lread_param, ifails, ( .NOT.lread_param.AND.ifails == 0 )
+    !write(*,*) "ISTEP = 0: lread_param; ifails", lread_param, ifails, ( .NOT.lread_param.AND.ifails == 0 )
+    !> @brief lread_param and ifail are there to not read input multiple time
+    !!  we need 2 parameter to be able to write the output header once 
 
     !> Don't initialize ARTn if it fails before
     NOFAILS: if( .NOT.lread_param.AND.ifails == 0 )then  
@@ -132,7 +134,9 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         idum = INT(z)
       ENDIF
       !> Save the seed for DEBUG
-      write(123456789,*)" zseed = ", int(z)
+      open( newunit=zseed, file="random_seed.dat" )
+      write( zseed, * )" zseed = ", int(z)
+      close( zseed )
 
     endif NOFAILS
 
@@ -242,12 +246,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !.............................
 
 
-     ! ...The push counter (controls if we should call lanczos or keep pushing)
-     !IF( iinit == 1 )THEN
-     !  CALL write_struct( at, nat, tau, order, elements, ityp, push, 1.0_DP, iunstruct, struc_format_out, initpfname )
-     !  artn_resume = '* Start: '//trim(initpfname)
-     !ENDIF
-
 
      ! ...Start lanczos when number of init steps is reached
      IF ( iinit >= ninit ) THEN
@@ -268,9 +266,12 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
         ! ...modify the force to be equal to the push
         displ_vec = push
+ 
 
         CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, &
              disp, if_pos, istep, nat, iunartout, noARTnStep )
+
+        !call info_field( iunartout, nat, displ_vec, "init::displ_vec" )
 
 
         ! ...set up the flags (we did an initial push, now we need to relax perpendiculary)
@@ -312,6 +313,40 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !
      iperp = iperp + 1
      !
+
+     !> Here we do a last verification on displ_vec to prevent 
+     !! the box explosion
+     !! -> Stop the search if one of displacement has 5 number
+     z = 0.0_DP
+     do i = 1,nat
+        z = max( z, norm2(displ_vec(:,i)) )
+     enddo
+     IF( z > 1.0e4 )THEN
+
+       write(*,'(5x,"|> BOX EXPLOSION - STEP",x,i0," - STOP ARTn RESEARCH ")') istep
+       write(iunartout,'(5x,"|> BOX EXPLOSION - STEP",x,i0," - STOP ARTn RESEARCH ")') istep
+       write(iunartout,'(5x,150("-")/)') 
+      
+
+       !> SCHEMA FINILIZATION
+       ! ...Laod the start configuration
+       tau(:,:) = tau_init(:,order(:))
+
+       ! ...Force = 0.0
+       displ_vec = 0.0_DP
+
+       ! ...The research IS FINISHED
+       CALL clean_artn()
+
+       disp = RELX
+       lconv = .true.  !! Stop the research 
+       return
+
+       
+     ENDIF
+
+     !call info_field( iunartout, nat, displ_vec, "perp::displ_vec" )
+
      !
   ELSE IF ( leigen  ) THEN
      !================================================
@@ -349,9 +384,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !
      displ_vec(:,:) = eigenvec(:,:)*current_step_size
 
-     !write (iunartout,*) "DEBUG:current_step_size:", current_step_size, MAXVAL(fpara), fpara_tot, ABS(lowest_eigval)
-     !CALL perpforce( force_step, if_pos, eigenvec, fperp, fpara, nat)
-     !write (iunartout,*) "DEBUG:current_step_size:", current_step_size, MAXVAL(fpara), fpara_tot, ABS(lowest_eigval)
 
      ! count the number of steps made with the eigenvector
      ieigen = ieigen + 1
@@ -449,11 +481,21 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            !
            iover = iover + 1
 
+           IF( iover > 1 )THEN
+             tau(:,:) = tau_saddle(:,order(:))  ! no convertion needed
+             push_over = push_over * 0.80  
+           ENDIF
+
+           !
+           displ_vec(:,:) = fpush_factor*eigenvec(:,:)*eigen_step_size * push_over
+
+
            ! ** WARNING **
            if( iover > 4 ) &
                 CALL WARNING( iunartout, "PUSH_OVER_PROCEDURE()",&
                 "Too many push over at saddle point: frelax_ene_thr can be too big or push_over", &
                  [etot_step, etot_saddle, etot_step - etot_saddle, frelax_ene_thr, push_over])
+
            ! ** ERROR **
            IF( iover > 10 )THEN
              call write_fail_report( iunartout, OVER, etot_step )
@@ -462,16 +504,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
              displ_vec = 0.0_DP
              !lconv = .true.
              return
-             !STOP "ERROR PUSH OVER"
            ENDIF
            !
-           IF( iover > 1 )THEN
-             tau(:,:) = tau_saddle(:,order(:))  ! no convertion needed
-             push_over = push_over * 0.80  
-           ENDIF
-
-           !
-           displ_vec(:,:) = fpush_factor*eigenvec(:,:)*eigen_step_size * push_over
            !<<<<<<<<<<<<<<<<<<<<<<
 
            CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, &
@@ -489,7 +523,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         !! - write in output saying no more research
         !! - return a configuration in which a new ARTn search can start
 
-        write(iunartout,*) "--- NO FINAL_PUSH"
+        write(iunartout,*) "--- NO FINAL_PUSH :: Return to the start configuration "
         call clean_artn()
         !call write_end_report( iunartout, lsaddle, lpush_final, 0.0_DP )
 
@@ -600,6 +634,9 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         ! ...FINALIZATION
         IF( lconv )THEN
 
+
+         
+          !> SCHEMA FINILIZATION
           ! ...Here we should load the next minimum if the user ask
           IF( lmove_nextmin )THEN
             CALL move_nextmin( nat, tau )
@@ -747,6 +784,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
 
 
+
   ! ...Increment the ARTn-step
   istep = istep + 1
 
@@ -756,8 +794,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
 
 
-  ! ...Unconvert the Force and position
-  !force = unconvert_force( force )
 
 
 END SUBROUTINE artn

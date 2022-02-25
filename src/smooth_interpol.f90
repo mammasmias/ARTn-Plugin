@@ -12,7 +12,7 @@ SUBROUTINE smooth_interpol( ismooth, nat, v0, v1, v2, f_orient )
 !! @param[in]     v0         Actual field
 !! @param[in]     v1         orientation field 1
 !! @param[inout]  v2         orientation field 2
-!! @param[inout]  f_orient   Oritentation of of v0 on v2
+!! @param[inout]  f_orient   Oritentation of v0 on v2
 
   use units
   use artn_params, only : nsmooth

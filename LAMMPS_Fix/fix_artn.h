@@ -30,10 +30,9 @@ class FixARTn : public Fix {
   virtual ~FixARTn();
   int setmask();
   virtual void init();
-  void setup(int);
   void min_setup(int);
-  virtual void post_force(int);
   void min_post_force(int);
+  void post_run();
 
 
   // Communication

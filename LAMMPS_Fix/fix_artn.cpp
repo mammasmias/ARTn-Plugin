@@ -215,6 +215,7 @@ int FixARTn::setmask()
   //mask |= POST_FORCE;
   //mask |= POST_FORCE_RESPA;
   mask |= MIN_POST_FORCE;
+  mask |= POST_RUN;
   return mask;
 }
 
@@ -249,20 +250,6 @@ void FixARTn::init() {
 }
 
 
-
-
-
-/* ---------------------------------------------------------------------- */
-
-void FixARTn::setup( int /*vflag*/ ) {
-
-  // Depending of the module environment we can change the move interface
-  // and other thing
-
-  //cout<<" * IN SETUP..." << endl;
-
-
-}
 
 
 
@@ -388,30 +375,7 @@ void FixARTn::min_setup( int vflag ) {
 
 /* ---------------------------------------------------------------------- */
 
-void FixARTn::min_post_force( int vflag ) {
-
-  //cout<<" * IN MIN_POST_FORCES..." << endl;
-  post_force( vflag );
-  //cout<<" * OUT MIN_POST_FORCES..." << endl;
-
-//  if( istep == 3 )exit(0);
-
-}
-
-
-
-
-
-
-
-
-
-
-
-
-/* ---------------------------------------------------------------------- */
-
-void FixARTn::post_force( int /*vflag*/ ){
+void FixARTn::min_post_force( int /*vflag*/ ){
 
   // call pARTn library...
 
@@ -549,11 +513,12 @@ void FixARTn::post_force( int /*vflag*/ ){
 
         int j;
         for( j = 0; j < natoms; j++ )
-          if( order_tot[ j ] == inew[ i ] )break;
-
-        xtot[i][0] = ftot[j][0];
-        xtot[i][1] = ftot[j][1];
-        xtot[i][2] = ftot[j][2];
+          if( order_tot[ j ] == inew[ i ] ){
+            xtot[i][0] = ftot[j][0];
+            xtot[i][1] = ftot[j][1];
+            xtot[i][2] = ftot[j][2];
+            break;
+          }
       }  
     } // ::: ME = 0
 
@@ -734,6 +699,13 @@ void FixARTn::post_force( int /*vflag*/ ){
   MPI_Bcast( &disp, 1, MPI_INT, 0, world );
 
 
+  // ...Convert the movement to the force
+  if( !me ){
+    move_mode_( nat, order_tot, &ftot[0][0], &vtot[0][0], &etot, &nsteppos, &dt_curr, &alpha, &alpha_init, &dt_init, &disp, &disp_vec[0][0] );
+    memory->destroy( disp_vec );
+  }
+
+
 
   // ---------------------------------------------------------------------- COMVERGENCE 
   if( iconv ){
@@ -754,10 +726,10 @@ void FixARTn::post_force( int /*vflag*/ ){
 
 
   // ...Convert the movement to the force
-  if( !me ){
-    move_mode_( nat, order_tot, &ftot[0][0], &vtot[0][0], &etot, &nsteppos, &dt_curr, &alpha, &alpha_init, &dt_init, &disp, &disp_vec[0][0] );
-    memory->destroy( disp_vec );
-  }
+  //if( !me ){
+  //  move_mode_( nat, order_tot, &ftot[0][0], &vtot[0][0], &etot, &nsteppos, &dt_curr, &alpha, &alpha_init, &dt_init, &disp, &disp_vec[0][0] );
+  //  memory->destroy( disp_vec );
+  //}
 
 
   // ...Spread the FIRE parameters
@@ -869,6 +841,13 @@ void FixARTn::post_force( int /*vflag*/ ){
 }
 
 
+
+
+
+/* ---------------------------------------------------------------------- */
+
+void FixARTn::post_run(){
+}
 
 
 

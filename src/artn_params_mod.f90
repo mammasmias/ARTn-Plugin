@@ -696,3 +696,42 @@ END SUBROUTINE make_filename
 
 
 
+!......................................................................... DEBUGING 
+
+subroutine info_field( u0, n, v, txt )
+  use units, only : DP
+  implicit none
+
+  integer, intent(in) :: u0, n
+  real(DP), intent(in) :: v(3,n)
+  character(*), intent(in) :: txt
+
+  integer :: i
+  real(DP) :: lmax, vtot
+
+  write(u0,'("****** INFO FIELD:",x,a)') trim(txt)
+
+  lmax = 0.0_DP
+  do i = 1,n
+     lmax = max( lmax, norm2(v(:,i)) )
+  enddo
+  call sum_force( v, n, vtot )
+
+  write(u0,'("* total field: ",g12.4," | max norm: ",g12.4/)') vtot, lmax
+
+end subroutine info_field
+
+
+
+!subroutine max_component(n,)
+
+
+
+
+
+
+
+
+
+
+
