@@ -327,6 +327,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
        write(iunartout,'(5x,"|> BOX EXPLOSION - STEP",x,i0," - STOP ARTn RESEARCH ")') istep
        write(iunartout,'(5x,150("-")/)') 
       
+       !ifails = ifails + 1
 
        !> SCHEMA FINILIZATION
        ! ...Laod the start configuration
@@ -338,8 +339,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
        ! ...The research IS FINISHED
        CALL clean_artn()
 
-       disp = RELX
-       lconv = .true.  !! Stop the research 
+       !disp = RELX
+       !lconv = .true.  !! Stop the research 
        return
 
        
