@@ -139,13 +139,15 @@ MODULE artn_params
   CHARACTER(LEN=256) :: engine_units
   CHARACTER(LEN=10) :: struc_format_out
   CHARACTER(LEN=3), ALLOCATABLE :: elements(:)
+  CHARACTER(:), allocatable :: converge_property
   !
   NAMELIST/artn_parameters/ lrestart, lrelax, lpush_final, lmove_nextmin, &
        ninit, neigen, nperp, lanc_mat_size, nsmooth, push_mode, dist_thr,  &
        init_forc_thr,forc_thr, fpara_thr, eigval_thr, frelax_ene_thr, &
        push_step_size, dlanc, eigen_step_size, current_step_size, push_over, &
        push_ids, add_const, engine_units, zseed, struc_format_out, elements, &
-       verbose, filout, sadfname, initpfname, eigenfname, restartfname
+       verbose, filout, sadfname, initpfname, eigenfname, restartfname, &
+       converge_property
 
   interface warning
     module procedure :: warning_int, warning_real
@@ -252,6 +254,10 @@ CONTAINS
       !
       engine_units = 'qe'
       !
+      ! Default convergence parameter
+      !
+      converge_property = "maxval"
+      !
       ! Allocate the arrays
       !
       IF ( .not. ALLOCATED(add_const) )    ALLOCATE(add_const(4,nat), source = 0.D0)
@@ -284,9 +290,9 @@ CONTAINS
       mem = mem + sizeof( delr      )
 
       IF( verb )THEN
-      print*, "* LIB-ARTn MEMORY: ", mem, "Bytes"
-      print*, "* LIB-ARTn MEMORY: ", real(mem)/1000., "KB"
-      print*, "* LIB-ARTn MEMORY: ", real(mem)/1000000., "MB"
+        print*, "* LIB-ARTn MEMORY: ", mem, "Bytes"
+        print*, "* LIB-ARTn MEMORY: ", real(mem)/1.0e3, "KB"
+        print*, "* LIB-ARTn MEMORY: ", real(mem)/1.0e6, "MB"
       ENDIF
       
       !

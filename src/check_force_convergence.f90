@@ -16,7 +16,7 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
   USE artn_params, ONLY : linit, lbasin, leigen, llanczos, lperp, lrelax, &
                           ilanc, iperp, nperp, nperp_list, nperp_step, noperp, istep, INIT, PERP, EIGN, LANC, RELX, &
                           init_forc_thr, forc_thr, fpara_thr, push, &
-                          lowest_eigval, iunartout, restartfname, etot_step, write_restart, warning
+                          lowest_eigval, iunartout, restartfname, etot_step, write_restart, warning, converge_property
   IMPLICIT NONE
   REAL(DP), INTENT(IN) :: force(3,nat)
   REAL(DP), INTENT(IN) :: fperp(3,nat)
@@ -40,9 +40,15 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
   OPEN( UNIT = iunartout, FILE = 'artn.out', FORM = 'formatted', ACCESS = 'append', STATUS = 'unknown', IOSTAT = ios )
 
   ! ...Compute the variable
-  maxforce = MAXVAL(ABS(force*if_pos))
-  maxfpara = MAXVAL(ABS(fpara))
-  maxfperp = MAXVAL(ABS(fperp))
+  IF( trim(converge_property) == 'norm' )THEN
+    call sum_force( force*if_pos, nat, maxforce )
+    call sum_force( fpara, nat, maxfpara )
+    call sum_force( fperp, nat, maxfperp )
+  ELSE
+    maxforce = MAXVAL(ABS(force*if_pos))
+    maxfpara = MAXVAL(ABS(fpara))
+    maxfperp = MAXVAL(ABS(fperp))
+  ENDIF
 
   !
   IF ( lperp ) THEN 
@@ -180,6 +186,8 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
   ELSE IF ( lrelax ) THEN  
      !
      !IF( MAXVAL( ABS(force*if_pos)) < forc_thr  )then
+     !call sum_force( force*if_pos, nat, maxforce )
+     !call sum_force( force, nat, maxforce )
      IF( MAXforce < forc_thr  )then
        lforc_conv = .true.
        !write(iunartout,*)"Check_force::Relax->Force"

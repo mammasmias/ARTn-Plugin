@@ -9,7 +9,7 @@ SUBROUTINE clean_artn()
            artn_resume, old_lanczos_vec
   implicit none
 
-  write(*,*) " !> CLEANING PROCEDURE"
+  write(*,'(5x,"!> CLEANING PROCEDURE")')
 
   lrelax = .false.
   linit = .true.

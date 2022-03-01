@@ -58,22 +58,6 @@ SUBROUTINE write_initial_report(iunartout, filout)
   WRITE (iunartout,'(/,/)') 
   !WRITE (iunartout,*) " "
 
-! !%! Condition on the engin_units..
-! select case( verbose )
-!   case( 0 )
-!   WRITE (iunartout,'(5X,"istep",4X,"ART_step",4X,"Etot",5x,"init/eign/perp/lanc/relx","&
-!                     "4X," Ftot ",5X," Fperp ",4X," Fpara ",4X,"eigval", 6X, "delr", 2X, "npart", X,"evalf",2X,"a1")')
-
-!   case( 1: )
-!   WRITE (iunartout,'(5X,"istep",4X,"ART_step",4X,"Etot",5x,"init/eign/perp/lanc/relx","&
-!                     "4X," Ftot ",5X," Fperp ",4X," Fpara ",4X,"eigval", 6X, "delr", 2X, "npart", X,"evalf","&
-!                     "2X,"B/S/R|I/P/L/E|P/B/R",4X,"a1")')
-! end select
-
-! ! -- Units
-! WRITE (iunartout, strg_units )
-
-
   CLOSE ( UNIT = iunartout, STATUS = 'KEEP')
 
 END SUBROUTINE write_initial_report
@@ -102,7 +86,7 @@ SUBROUTINE write_header_report( u0 )
     case( 1: )
     WRITE( u0,'(5X,"istep",4X,"ART_step",4X,"Etot",5x,"init/eign/perp/lanc/relx","&
                "4X," Ftot ",5X," Fperp ",4X," Fpara ",4X,"eigval", 6X, "delr", 2X, "npart", X,"evalf","&
-               "2X,"B/S/R|I/P/L/E|P/B/R",4X,"a1")')
+               "4X,"B/S/R|I/P/L/E|P/B/R",4X,"a1")')
   end select
 
   ! -- Units
@@ -133,7 +117,7 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
   !
   USE artn_params, ONLY: push, MOVE, verbose  &
                         ,etot_init, iinit, iperp, ieigen, ilanc, irelax, delr, verbose, iartn, a1 &
-                        ,tau_init, lat, tau_step, delr &
+                        ,tau_init, lat, tau_step, delr, converge_property &
                         ,lrelax, linit, lbasin, lperp, llanczos, leigen, lsaddle, lpush_final, lbackward, lrestart 
   USE UNITS
   IMPLICIT NONE
@@ -162,9 +146,15 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
 
 
   ! ...Force processing
-  force_tot = MAXVAL( ABS(force) )
-  fperp_tot = MAXVAL( ABS(fperp) )
-  fpara_tot = MAXVAL( ABS(fpara) )
+  IF( trim(converge_property) == 'norm' )THEN
+    call sum_force( force, nat, force_tot )
+    call sum_force( fpara, nat, fpara_tot )
+    call sum_force( fperp, nat, fperp_tot )
+  ELSE
+    force_tot = MAXVAL( ABS(force) )
+    fperp_tot = MAXVAL( ABS(fperp) )
+    fpara_tot = MAXVAL( ABS(fpara) )
+  ENDIF
 
 
 
