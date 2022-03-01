@@ -150,7 +150,7 @@ MODULE artn_params
        converge_property
 
   interface warning
-    module procedure :: warning_int, warning_real
+    module procedure :: warning_nothing, warning_int, warning_real
   end interface
   !
 CONTAINS
@@ -414,6 +414,45 @@ CONTAINS
       write(*,2) repeat("*",50)
     endif
 
+
+    ! ...Character verification
+    converge_property = to_lower( converge_property )
+    select case( converge_property )
+      case( "norm", 'maxval' ); continue
+      case default
+        call warning( iunartout, "Initialize_artn",  &
+          "converge_property has no good keyword (norm or maxval)" )
+    end select
+
+   CONTAINS
+
+    !........................................................
+    elemental Function to_lower( str )Result( string )
+      !   ==============================
+      !   Changes a string to lower case
+      !   ==============================
+      Implicit None
+      Character(*), Intent(IN) :: str
+      Character(LEN(str))      :: string
+ 
+      Integer :: ic, i
+ 
+      Character(26), Parameter :: cap = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+      Character(26), Parameter :: low = 'abcdefghijklmnopqrstuvwxyz'
+ 
+      !   Capitalize each letter if it is lowecase
+      string = str
+      do i = 1, LEN_TRIM(str)
+          ic = INDEX(cap, str(i:i))
+          if( ic > 0 )then
+            string(i:i) = low(ic:ic)
+          else
+            string(i:i) = string(i:i)
+          endif
+      end do
+    END FUNCTION to_lower
+
+
     !
   END SUBROUTINE initialize_artn
 
@@ -555,6 +594,17 @@ CONTAINS
 
   !
   !---------------------------------------------------------------------------
+  SUBROUTINE warning_nothing( u0, STEP, text )
+
+    integer, intent( in ) :: u0
+    character(*), intent( in ) :: STEP, text
+
+    WRITE( u0,1 ) "* WARNING in ", STEP
+    WRITE( u0,1 ) "* => ", text
+    1 format(*(A))
+
+  END SUBROUTINE warning_nothing
+
   SUBROUTINE warning_int( u0, STEP, text, intv )
 
     integer, intent( in ) :: u0, intv(:)

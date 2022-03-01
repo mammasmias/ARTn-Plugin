@@ -58,7 +58,6 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         !
         ! We are outside of the basin check both perpendicular and total force convergence
         ! 
-        !IF (MAXVAL( ABS(force*if_pos)) < forc_thr  ) THEN
         IF( maxforce < forc_thr  ) THEN
            lsaddle_conv = .true.
 
@@ -72,7 +71,6 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         !
         ! check whether the fperp criterion should be tightened
         ! 
-        !IF ( MAXVAL(ABS(fpara)) <= fpara_thr ) THEN !> We are close to the saddle point 
         IF( maxfpara <= fpara_thr )THEN !> We are close to the saddle point 
            fperp_thr = forc_thr
 
@@ -156,11 +154,11 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         ! && Max Iteration of Perp-Relax
         !    nperp = 0 means no nperp constrain
 
-        !C1 = ( MAXVAL( ABS(fperp)) < fperp_thr ) ! check on the fperp field
         C1 = ( MAXfperp < fperp_thr ) ! check on the fperp field
         C2 = ( nperp > 0.AND.iperp >= nperp )    ! check on the perp-relax iteration
+        C3 = ( MAXfperp < MAXfpara ) ! check wheter fperp is lower than fpara
 
-        IF( C1 .OR. C2 ) THEN
+        IF( C1 .OR. C2 .OR. C3 )THEN
            lperp = .false.
            linit = .true.
            !write(iunartout,*)"Check_force::basin->Fperp"
