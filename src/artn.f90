@@ -508,6 +508,13 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            IF( iover > 10 )THEN
              call write_fail_report( iunartout, OVER, etot_step )
              !call clean_artn()  !! Over Push_Over
+             lrelax = .false.
+             linit = .false.
+             lbasin = .false.
+             lperp = .false.
+             llanczos = .false.
+             leigen = .false.
+             lsaddle = .false.
  
              ! ...Return to Starting configuration
              tau(:,:) = tau_init(:,order(:))
@@ -626,7 +633,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            irelax = 0
 
 
-        ELSEIF( .NOT.lend )THEN  !< If already pass before no need to rewrite again
+        !ELSEIF( .NOT.lend )THEN  !< If already pass before no need to rewrite again
+        ELSE  !< If already pass before no need to rewrite again
 
            ! ...It found the starting minimum! (should be the initial configuration)
            CALL make_filename( outfile, prefix_min, nmin )
@@ -646,6 +654,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
            lconv = .true.
            lend = lconv  !! Maybe don't need anymore
+
+           ! ...Save the Energy difference
            de_fwd = etot_saddle - etot_step
 
 

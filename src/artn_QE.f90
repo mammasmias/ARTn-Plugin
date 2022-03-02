@@ -139,6 +139,11 @@ SUBROUTINE artn_QE( force, etot, epsf_qe, nat, ityp, atm, tau, at, alat, istep, 
   call move_mode( nat, order, force, vel, etot_fire, nsteppos, dt_curr, alpha, fire_alpha_init, dt_init, disp, displ_vec )
 
 
+
+  ! ...Clean ARTn 
+  IF( lconv )call clean_artn()
+
+
   !
   ! write the FIRE parameters to its scratch file
   ! 

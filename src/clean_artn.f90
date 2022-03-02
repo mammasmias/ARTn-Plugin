@@ -12,8 +12,11 @@ SUBROUTINE clean_artn()
 
   integer :: ios
 
-  ! ...Write in output log
+
+  ! ...Fails if finished before it converged
   IF( .NOT.lend ) ifails = ifails + 1
+
+  ! ...Write in output log
   WRITE(*,'(5x,"!> CLEANING ARTn | Fail:",x,i0)') ifails
   OPEN ( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'old', POSITION = 'append', IOSTAT = ios )
     WRITE(iunartout,'(5x,"!> CLEANING ARTn | Fail:",x,i0/5x,*(a)//)') ifails, repeat("-",50)
@@ -45,7 +48,7 @@ SUBROUTINE clean_artn()
   ! ...Return the initial value of nperp
   nperp = nperp_list(1)
   nperp_step = 1
-  write(*,'(5x,"Reinitialize NPERP:",x,i0)') nperp
+  !write(*,'(5x,"Reinitialize NPERP:",x,i0)') nperp
 
   
   lowest_eigval = 0.0_DP
