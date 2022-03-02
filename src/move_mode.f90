@@ -142,7 +142,7 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
 
 
   CASE default
-     write(*,*) 'Problem with move_mode!', MOVE(disp)
+     write(*,'(5x,"|> No parameter convertion in move_mode:",x,a)') MOVE(disp)
 
   END SELECT
 

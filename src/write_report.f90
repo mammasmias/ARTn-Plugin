@@ -67,7 +67,7 @@ END SUBROUTINE write_initial_report
 
 !------------------------------------------------------------
 SUBROUTINE write_header_report( u0 )
-  use artn_params, only : verbose
+  use artn_params, only : verbose, isearch, ifound
   use units, only :  strg_units
   implicit none
 
@@ -76,6 +76,7 @@ SUBROUTINE write_header_report( u0 )
   integer :: ios
 
 
+  WRITE(u0,'(5x,"|> ARTn research :",2(x,i0)/,5x,*(a))') isearch, ifound, repeat("-",50)
 
   !%! Condition on the engin_units..
   select case( verbose )
@@ -260,7 +261,7 @@ SUBROUTINE write_inter_report( u, pushfactor, de )
       WRITE( u,'(15X,"dEinit - dEfinal    =", F12.5,x,a)') unconvert_energy((de(3)-de(5))), unit_char('energy') 
       WRITE( u,'(5X, "--------------------------------------------------")')
       WRITE( u,'(5X, "|> Configuration Files:", X,A)') trim(artn_resume)
-      WRITE( *,'("|> Configuration Files:", X,A)') trim(artn_resume)
+      WRITE( *,'(5x, "|> Configuration Files:", X,A)') trim(artn_resume)
       WRITE( u,'(5X, "--------------------------------------------------")')
       WRITE( u,'(/)')
 
@@ -295,12 +296,13 @@ SUBROUTINE write_end_report( iunartout, lsaddle, lpush_final, de )
 
     IF( lpush_final ) THEN
       WRITE(iunartout,'(5X,"       *** Pushing to adjacent minima  ***      ")')
-      WRITE(iunartout,'(5X, "------------------------------------------------")')
+      WRITE(iunartout,'(5X, "-------------------------------------------------")')
     ELSE
-      WRITE(iunartout,'(5X,"       *** ARTn search finished ***")')
-      WRITE(iunartout,'(5X,"       *** no push_final minimal ***")')
+      WRITE(iunartout,'(5X,"|> No push_final to Minimum :: ARTn search finished "/5x,*(a))') repeat("-",50)
+      !WRITE(iunartout,'(5X,"       *** ARTn search finished ***")')
+      !WRITE(iunartout,'(5X,"       *** no push_final minimal ***")')
       WRITE(iunartout,'(5X, "|> Configuration Files:", X,A)') trim(artn_resume)
-      WRITE(iunartout,'(5X, "------------------------------------------------"//)')
+      WRITE(iunartout,'(5X, "-------------------------------------------------"/)')
     ENDIF
 
   else

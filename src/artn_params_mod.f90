@@ -21,6 +21,7 @@ MODULE artn_params
   INTEGER, PARAMETER :: iunstruct = 556  !> fortran file unit for writing the structure
   INTEGER, PARAMETER :: iunrestart = 557 !> fortran file unit for writing the structure
   ! file names
+  CHARACTER(LEN=255) :: filin = 'artn.in'
   CHARACTER(LEN=255) :: filout = 'artn.out'
   CHARACTER(LEN=255) :: sadfname = 'saddle'
   CHARACTER(LEN=255) :: initpfname = 'initp'
@@ -61,6 +62,8 @@ MODULE artn_params
   INTEGER :: ismooth    !> number of smoothing steps
   INTEGER :: if_pos_ct  !> counter used to determine the number of fixed coordinates
   INTEGER :: zseed      !> random number generator seed
+  INTEGER :: ifound     !> Number of saddle point found
+  INTEGER :: isearch    !> Number of saddle point research
 
   INTEGER :: nmin       !> count the number of minimum found
   INTEGER :: nsaddle    !> count the number of saddle point found
@@ -181,6 +184,8 @@ CONTAINS
 
     INQUIRE( file = filnam, exist = file_exists )
 
+    write(*,'(5x,a)') "|> Initialize_ARTn()"
+
     IF( .not.file_exists )THEN
 
        WRITE(*,*) "ARTn: Input file does not exist!"
@@ -219,6 +224,8 @@ CONTAINS
       irelax = 0
       iover = 0
       zseed = 0
+      ifound = 0
+      isearch = 0
       !
       lowest_eigval = 0.D0
       fpush_factor = 1.0
