@@ -482,7 +482,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         ELSE  !< It is a PUSH_OVER the saddle point
            disp = EIGN
 
-           ! CALL PUSH_OVER_PROCEDURE( nat, iover, etot_step, etot_saddle, push_factor, displ_vec )
+           ! CALL PUSH_OVER_PROCEDURE( nat, iover, tau, etot_step, etot_saddle, push_factor, displ_vec )
            !>>>>>>>>>>>>>>>>>>>>>> push_over_procedure()
            !! Idea: Push over first time and if does not work return to the saddle 
            !!  and do a smaller push. Doing that one or two times and stop the research
@@ -659,28 +659,28 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         !
 
         !
-        ! ...FINALIZATION
-        IF( lconv )THEN
-         
-          !> SCHEMA FINILIZATION
-          lend = lconv
+      ! ! ...FINALIZATION
+      ! IF( lconv )THEN
+      !  
+      !   !> SCHEMA FINILIZATION
+      !   lend = lconv
 
-          ! ...Here we should load the next minimum if the user ask
-          IF( lmove_nextmin )THEN
-            CALL move_nextmin( nat, tau )
-          ELSE
-            tau(:,:) = tau_init(:,order(:))
-          ENDIF
+      !   ! ...Here we should load the next minimum if the user ask
+      !   IF( lmove_nextmin )THEN
+      !     CALL move_nextmin( nat, tau )
+      !   ELSE
+      !     tau(:,:) = tau_init(:,order(:))
+      !   ENDIF
 
-          ! ...Force = 0.0
-          displ_vec = 0.0_DP
+      !   ! ...Force = 0.0
+      !   displ_vec = 0.0_DP
 
-          ! ...The research IS FINISHED
-          !CALL clean_artn()  !! lconv = T => Converged
-          !CLOSE( UNIT = iunartout, STATUS = 'KEEP' )
-          !return
+      !   ! ...The research IS FINISHED
+      !   !CALL clean_artn()  !! lconv = T => Converged
+      !   !CLOSE( UNIT = iunartout, STATUS = 'KEEP' )
+      !   !return
 
-        ENDIF
+      ! ENDIF
 
 
      END IF

@@ -7,7 +7,7 @@ SUBROUTINE clean_artn()
            iartn, istep, iinit, iperp, ilanc, ieigen, nlanc, ifails,  &
            irelax, iover, istep, fpush_factor, lowest_eigval, nperp, nperp_list,  &
            artn_resume, old_lanczos_vec, H, Vmat, lanc_mat_size,  &
-           iunartout, filout
+           iunartout, filout, nperp_step
   implicit none
 
   integer :: ios
@@ -17,7 +17,6 @@ SUBROUTINE clean_artn()
   WRITE(*,'(5x,"!> CLEANING ARTn | Fail:",x,i0)') ifails
   OPEN ( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'old', POSITION = 'append', IOSTAT = ios )
     WRITE(iunartout,'(5x,"!> CLEANING ARTn | Fail:",x,i0/5x,*(a)//)') ifails, repeat("-",50)
-  CLOSE ( UNIT = iunartout, STATUS = 'KEEP')
 
   lrelax = .false.
   linit = .true.
@@ -45,6 +44,8 @@ SUBROUTINE clean_artn()
 
   ! ...Return the initial value of nperp
   nperp = nperp_list(1)
+  nperp_step = 1
+  write(*,'(5x,"Reinitialize NPERP:",x,i0)') nperp
 
   
   lowest_eigval = 0.0_DP
@@ -62,6 +63,7 @@ SUBROUTINE clean_artn()
   H = 0.0_DP
   Vmat = 0.0_DP
 
+  CLOSE ( UNIT = iunartout, STATUS = 'KEEP')
 
 END SUBROUTINE clean_artn
 
