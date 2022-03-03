@@ -67,7 +67,7 @@ Finally Quantum ESPRESSO must be launched with the flag -partn as follow:
 
 We test this interface only with gnu compiler. 
 
-ARTn, in LAMMPS, is defined as a FIX, `fix_artn.h` and `fix_artn.cpp`. So  you copy and paste these two files in the `LAMMPS_PATH/src/`.
+The folder `LAMMPS_FIX/` contains 3 file:  `fix_artn.h` and `fix_artn.cpp` which define the fix ARTn, and `artn/h` which contains the prototype of the library's routine used by the fix ARTn. So  copy and paste these three files in the `LAMMPS_PATH/src/`.
 
 In the Makefile of LAMMPS, i.e. `LAMMPS_PATH/src/MAKE/Makefile.serial`, you must had the library PATH. For pARTn it needs the openblas library with pthread library and the gfortran library for the C++/fortran interface. Of course the ARTn library is built at ARTn compilation and placed in the `plugin-ARTn/src/` folder.
 An example:
@@ -209,7 +209,7 @@ Depending of the engine the works units changes and it is to the user to be cohe
 
 ## TODO
 
-- Add an `artn.h` to include the `artn_()`, `move_mode_()` and other function of pARTn
+- Add an `artn.h` to include the `artn_()`, `move_mode_()` and other function of pARTn :ok:
 
 - **BUGS**
 
@@ -219,9 +219,9 @@ Depending of the engine the works units changes and it is to the user to be cohe
 
 - **END PROCEDURE**:
 
-  - Create a Clean procedure at the end of research to have to possibility to do many research in one launch
-  - `lpush_final = .false.` : no output indication 
-  - General procedure: 
+  - Create a Clean procedure at the end of research to have to possibility to do many research in one launch :ok:
+  - `lpush_final = .false.` : no output indication :ok:
+  - General procedure to finish ARTn :ok: 
 
 - nsteppos in ARTn doesn't have the same meaning for QE and LAMMPS in FIRE algo
 
