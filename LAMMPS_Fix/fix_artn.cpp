@@ -12,6 +12,7 @@
 ------------------------------------------------------------------------- */
 
 #include "fix_artn.h"
+#include "artn.h"
 
 #include "atom.h"
 #include "compute.h"
@@ -719,7 +720,7 @@ void FixARTn::min_post_force( int /*vflag*/ ){
 
 
     MPI_Barrier( world );
-    if( !me )cout<< " ************************** ARTn CONVERGED"<<endl;
+    if( !me )cout<< "     ************************** ARTn CONVERGED"<<endl;
     return;
   } // --------------------------------------------------------------------------------
 
@@ -847,6 +848,10 @@ void FixARTn::min_post_force( int /*vflag*/ ){
 /* ---------------------------------------------------------------------- */
 
 void FixARTn::post_run(){
+
+  // End of the ARTn research - we reset the ARTn counters & flag
+  if( !me )clean_artn_(); // Only proc 0
+
 }
 
 
