@@ -366,14 +366,26 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
      !CALL Smooth_interpol( ismooth, nat, force_step, push, eigenvec, fpara_tot )
      !>>>>>>>>>>>>>>>
-     smoothing_factor = 1.0_DP*ismooth/nsmooth
-     !!
-     fpara_tot = ddot(3*nat, force_step(:,:), 1, eigenvec(:,:), 1)
+     IF( nsmooth > 0 )THEN
 
-     eigenvec(:,:) = (1.0_DP - smoothing_factor)*push(:,:) &
-          -SIGN(1.0_DP,fpara_tot)*smoothing_factor*eigenvec(:,:)
-     !
-     IF ( ismooth < nsmooth) ismooth = ismooth + 1
+       smoothing_factor = 1.0_DP*ismooth/nsmooth
+       !!
+       fpara_tot = ddot(3*nat, force_step(:,:), 1, eigenvec(:,:), 1)
+
+       eigenvec(:,:) = (1.0_DP - smoothing_factor)*push(:,:) &
+            -SIGN(1.0_DP,fpara_tot)*smoothing_factor*eigenvec(:,:)
+       !
+       IF( ismooth < nsmooth)then
+         ismooth = ismooth + 1
+       ELSE
+         ! ...Save the eigenvector
+         push(:,:) = eigenvec(:,:)
+       ENDIF
+
+     ELSE
+       ! ...Save the eigenvector
+        push(:,:) = eigenvec(:,:)
+     ENDIF
      !<<<<<<<<<<<<<<<
 
      !
@@ -399,8 +411,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         ! do a perpendicular relax
         lperp = .true.
         iperp = 0
-        ! ...Save the eigenvector
-        push(:,:) = eigenvec(:,:)
      ENDIF
 
      CALL write_struct( at, nat, tau, order, elements, ityp, force_step, &
@@ -497,14 +507,15 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            ENDIF
 
            !
-           displ_vec(:,:) = fpush_factor*eigenvec(:,:)*eigen_step_size * push_over * merge( 1.0, 0.8*real(iover-1), iover == 1)
+           displ_vec(:,:) = fpush_factor*eigenvec(:,:)*eigen_step_size * push_over * merge( 1.0, 0.8**real(iover-1), iover == 1)
 
 
            ! ** WARNING **
            if( iover > 4 ) &
                 CALL WARNING( iunartout, "PUSH_OVER_PROCEDURE()",&
                 "Too many push over at saddle point: frelax_ene_thr can be too big or push_over", &
-                 [etot_step, etot_saddle, etot_step - etot_saddle, frelax_ene_thr, push_over])
+                 [ etot_step, etot_saddle, etot_step - etot_saddle, frelax_ene_thr,   &
+                   push_over*merge( 1.0, 0.8**real(iover-1), iover == 1) ] )
 
            ! ** ERROR **
            IF( iover > 10 )THEN
