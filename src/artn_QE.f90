@@ -54,7 +54,7 @@ SUBROUTINE artn_QE( force, etot, epsf_qe, nat, ityp, atm, tau, at, alat, istep, 
     SUBROUTINE artn( force, etot, nat, ityp, atm, tau, order, at, if_pos, disp, displ_vec, lconv )
       USE units, ONLY: DP
       IMPLICIT NONE
-      REAL(DP), INTENT(INOUT) :: force(3,nat)     ! force calculated by the engine
+      REAL(DP), INTENT(IN) :: force(3,nat)     ! force calculated by the engine
       REAL(DP), INTENT(INOUT) :: tau(3,nat)       ! atomic positions (needed for output only)
       REAL(DP), INTENT(OUT) :: displ_vec(3,nat)   ! displacement vector communicated to move mode
       REAL(DP), INTENT(IN) ::    etot             ! total energy in current step

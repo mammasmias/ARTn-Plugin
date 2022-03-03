@@ -10,7 +10,8 @@ SUBROUTINE write_initial_report(iunartout, filout)
   use artn_params, ONLY: engine_units, ninit, nperp, neigen, nsmooth,  &
                          init_forc_thr, forc_thr, fpara_thr, eigval_thr, &
                          push_step_size, eigen_step_size, lanc_mat_size, dlanc, &
-                         push_mode, verbose, push_over, frelax_ene_thr, zseed
+                         push_mode, verbose, push_over, frelax_ene_thr, zseed, &
+                         converge_property
   use units, only : strg_units, unconvert_force, &
                     unconvert_energy, unconvert_hessian, unconvert_length, unit_char
   INTEGER,             INTENT(IN) :: iunartout
@@ -39,11 +40,12 @@ SUBROUTINE write_initial_report(iunartout, filout)
   WRITE (iunartout,'(15X,"neigen          = ", I6)') neigen
   WRITE (iunartout,'(15X,"nsmooth         = ", I6)') nsmooth
   WRITE (iunartout,'(13X,"* Threshold Parameter: ")')
-  WRITE (iunartout,'(15X,"init_forc_thr   = ", F6.3,2x,A)') unconvert_force( init_forc_thr ), unit_char('force')
-  WRITE (iunartout,'(15X,"forc_thr        = ", F6.3,2x,A)') unconvert_force( forc_thr ), unit_char('force')
-  WRITE (iunartout,'(15X,"fpara_thr       = ", F6.3,2x,A)') unconvert_force( fpara_thr ), unit_char('force')
-  WRITE (iunartout,'(15X,"eigval_thr      = ", F6.3,2x,A)') unconvert_hessian( eigval_thr ), unit_char('hessian')
-  WRITE (iunartout,'(15X,"frelax_ene_thr  = ", F6.3,2x,A)') unconvert_energy( frelax_ene_thr ), unit_char('energy')
+  WRITE (iunartout,'(15X,"converge_property = ", A)') converge_property
+  WRITE (iunartout,'(15X,"init_forc_thr     = ", F6.3,2x,A)') unconvert_force( init_forc_thr ), unit_char('force')
+  WRITE (iunartout,'(15X,"forc_thr          = ", F6.3,2x,A)') unconvert_force( forc_thr ), unit_char('force')
+  WRITE (iunartout,'(15X,"fpara_thr         = ", F6.3,2x,A)') unconvert_force( fpara_thr ), unit_char('force')
+  WRITE (iunartout,'(15X,"eigval_thr        = ", F6.3,2x,A)') unconvert_hessian( eigval_thr ), unit_char('hessian')
+  WRITE (iunartout,'(15X,"frelax_ene_thr    = ", F6.3,2x,A)') unconvert_energy( frelax_ene_thr ), unit_char('energy')
   WRITE (iunartout,'(13X,"* Step size Parameter: ")')
   WRITE (iunartout,'(15X,"push_step_size  = ", F6.2,2x,A)') unconvert_length( push_step_size ), unit_char('length')
   WRITE (iunartout,'(15X,"eigen_step_size = ", F6.2,2x,A)') unconvert_length( eigen_step_size ), unit_char('length')
@@ -53,7 +55,7 @@ SUBROUTINE write_initial_report(iunartout, filout)
   WRITE (iunartout,'(5X, "Lanczos algorithm:")' )
   WRITE (iunartout,'(5X, "--------------------------------------------------")')
   WRITE (iunartout,'(15X,"lanc_mat_size   = ", I6)') lanc_mat_size
-  WRITE (iunartout,'(15X,"dlanc           = ", F6.3,2x,A)') unconvert_length( dlanc ), unit_char('length')
+  WRITE (iunartout,'(15X,"dlanc           = ", G5.4,2x,A)') unconvert_length( dlanc ), unit_char('length')
   WRITE (iunartout,'(5X, "--------------------------------------------------")')
   WRITE (iunartout,'(/,/)') 
   !WRITE (iunartout,*) " "

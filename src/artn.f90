@@ -8,7 +8,7 @@
 !!   Main ARTn plugin subroutine:
 !
 !> @details
-!!   modifies the input force to perform the ARTn algorithm
+!!   Modifies the input force to perform the ARTn algorithm
 !------------------------------------------------------------------------------
 SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, displ_vec, lconv )
   !----------------------------------------------------------------------------
@@ -54,7 +54,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   INTEGER,  INTENT(IN) ::    if_pos(3,nat)    !> coordinates fixed by engine
   CHARACTER(LEN=3),   INTENT(IN) :: atm(*)    !> name of atom corresponding to ityp
 
-  REAL(DP), INTENT(INOUT) :: force(3,nat)     !> force calculated by the engine
+  REAL(DP), INTENT(IN) :: force(3,nat)     !> force calculated by the engine
   REAL(DP), INTENT(INOUT) :: tau(3,nat)       !> atomic positions (needed for output only)
 
   REAL(DP), INTENT(OUT)  :: displ_vec(3,nat)  !> displacement vector communicated to move mode
@@ -375,6 +375,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !
      IF ( ismooth < nsmooth) ismooth = ismooth + 1
      !<<<<<<<<<<<<<<<
+
      !
      ! rescale the eigenvector according to the current force in the parallel direction
      ! see Cances_JCP130: some improvements of the ART technique doi:10.1063/1.3088532
@@ -386,6 +387,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      current_step_size = MIN(eigen_step_size,ABS(fpara_tot)/MAX( ABS(lowest_eigval), 0.01_DP ))
      !current_step_size = MIN(eigen_step_size,ABS(MAXVAL(fpara))/MAX( ABS(lowest_eigval), 0.01_DP ))
      !
+     !%! Put some test on current_step_size
+     !
      displ_vec(:,:) = eigenvec(:,:)*current_step_size
 
 
@@ -396,6 +399,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         ! do a perpendicular relax
         lperp = .true.
         iperp = 0
+        ! ...Save the eigenvector
+        push(:,:) = eigenvec(:,:)
      ENDIF
 
      CALL write_struct( at, nat, tau, order, elements, ityp, force_step, &
@@ -773,7 +778,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         END DO
         IF ( if_pos_ct < nlanc .and. if_pos_ct /= 0 ) nlanc = if_pos_ct
         v_in(:,:) = v_in(:,:)*if_pos(:,:)
-        !%! force(:,:) = force(:,:)*if_pos(:,:)
         force_step(:,:) = force_step(:,:)*if_pos(:,:)
      ENDIF
      !
@@ -802,14 +806,14 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            leigen = .true.
            ieigen = 0
            ! ...Save the eigenvector
-           push(:,:) = eigenvec(:,:)
+           !push(:,:) = eigenvec(:,:)  !! Move it in leigen block
            ! ...No yet perp relax
            lperp = .false.
            iperp = 0
            !
         ELSE
            ! structure is still in basin (under unflection),
-           ! in next step make an initial push
+           ! in next step it move following push vetor (can be a previous eigenvec)
            !! Next Mstep inside the Basin
            !lowest_eigval = 0.D0
            leigen = .false.
@@ -818,6 +822,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            iperp =  0
            noperp = 0      !> count the init-perp fail
            nperp_step = 1  !> count the out-basin perp relax step
+           ismooth = 1     !> Initialise the smoothy step
            iinit = iinit - 1
            !
         ENDIF
