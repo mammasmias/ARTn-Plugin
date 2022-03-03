@@ -85,7 +85,7 @@ SUBROUTINE artn_QE( force, etot, epsf_qe, nat, ityp, atm, tau, at, alat, istep, 
 
 
 
-  !print*, " * IN ARTn_QE::", nat
+  print*, " * IN ARTn_QE::", nat
   !print*, " * ARTn_QE::CONV:: ", epsf_qe
 
 

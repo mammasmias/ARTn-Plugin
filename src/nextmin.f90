@@ -14,7 +14,7 @@ SUBROUTINE move_nextmin( nat, pos )
 
   if( .not.allocated(tau_nextmin) )then
 
-    write(*,*) " *** ARTn:: Not other minimum saved "
+    write(*,'(5x,"*** ARTn:: Not other minimum saved ")')
     return
 
   else
@@ -22,7 +22,7 @@ SUBROUTINE move_nextmin( nat, pos )
     !pos = unconvert_length( tau_nextmin )
     pos = tau_nextmin
     etot_init = etot_final
-    write(*,*) " *** ARTn:: Next minimum loaded "
+    write(*,'(5x,"*** ARTn:: Next minimum loaded ")')
 
   endif
 
