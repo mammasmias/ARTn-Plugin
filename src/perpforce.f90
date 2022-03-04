@@ -44,10 +44,10 @@ SUBROUTINE perpforce( force, if_pos, push, fperp, fpara, nat )
   ! apply constraints
   IF ( ANY(if_pos(:,:) == 0)  ) fperp(:,:) = fperp(:,:)*if_pos(:,:) 
 
-  open( unit=iunartout, file=filout, FORM = 'formatted', ACCESS = 'append', STATUS = 'unknown' )
-  write(iunartout,*)"DEBUG::PERPF-coeff", a, b, a/b
-  write(iunartout,*)"DEBUG::PERPF-MAX", maxval(abs(force)), maxval(abs(fpara)), maxval(abs(fperp))
-  close( unit=iunartout, status='KEEP')
+  !open( unit=iunartout, file=filout, FORM = 'formatted', ACCESS = 'append', STATUS = 'unknown' )
+  !write(iunartout,*)"DEBUG::PERPF-coeff", a, b, a/b
+  !write(iunartout,*)"DEBUG::PERPF-MAX", maxval(abs(force)), maxval(abs(fpara)), maxval(abs(fperp))
+  !close( unit=iunartout, status='KEEP')
 
 END SUBROUTINE perpforce
 !END SUBROUTINE splitfield
