@@ -40,7 +40,8 @@ MODULE artn_params
   LOGICAL :: leigen     !> push with lanczos eigenvector
   LOGICAL :: llanczos   !> lanczos algorithm
   LOGICAL :: lbasin     !> true while in basin 
-  LOGICAL :: lsaddle    !> saddle point obtained
+  !LOGICAL :: lsaddle    !> saddle point obtained
+  LOGICAL :: lpush_over    !> saddle point obtained
   LOGICAL :: lbackward  !> backward saddle point obtained
   LOGICAL :: lmove_nextmin  !> backward saddle point obtained
   LOGICAL :: lread_param  !> flag read artn params
@@ -202,7 +203,8 @@ CONTAINS
       lperp = .false.
       llanczos = .false.
       leigen = .false.
-      lsaddle = .false.
+      !lsaddle = .false.
+      lpush_over = .false.
       lpush_final = .false.
       lbackward = .true.
       lrestart = .false.
@@ -519,7 +521,8 @@ CONTAINS
     !     etot_init, etot_step, lowest_eigval, etot_saddle, etot_final, de_back, &
     !     current_step_size, fpush_factor, &
     !     tau_step, force_step, push, eigenvec, H, Vmat, force_old, tau_saddle, eigen_saddle
-    WRITE ( iunartres, * ) linit, lperp, leigen, llanczos, lsaddle, lrelax, &
+    !WRITE ( iunartres, * ) linit, lperp, leigen, llanczos, lsaddle, lrelax, &
+    WRITE ( iunartres, * ) linit, lperp, leigen, llanczos, lpush_over, lrelax, &
          iartn, istep, iinit, ieigen, iperp, ilanc, irelax, ismooth,   &
          ninit, neigen, nlanc, lanc_mat_size, nperp, nmin, nsaddle, &
          etot_init, &
@@ -558,7 +561,8 @@ CONTAINS
        !     etot_init, etot_step, lowest_eigval, etot_saddle, etot_final, de_back, &
        !     current_step_size, fpush_factor,  &
        !     tau_step, force_step, push, eigenvec, H, Vmat, force_old, tau_saddle, eigen_saddle
-       READ( iunartres, * ) linit, lperp, leigen, llanczos, lsaddle, lrelax, &
+       !READ( iunartres, * ) linit, lperp, leigen, llanczos, lsaddle, lrelax, &
+       READ( iunartres, * ) linit, lperp, leigen, llanczos, lpush_over, lrelax, &
          iartn, istep, iinit, ieigen, iperp, ilanc, irelax, ismooth,   &
          ninit, neigen, nlanc, lanc_mat_size, nperp, nmin, nsaddle, &
          etot_init, &
@@ -652,7 +656,8 @@ CONTAINS
     lperp = .false.
     llanczos = .false.
     leigen = .false.
-    lsaddle = .false.
+    !lsaddle = .false.
+    lpush_over = .false.
 
   end subroutine flag_false
 

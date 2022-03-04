@@ -89,7 +89,7 @@ SUBROUTINE write_header_report( u0 )
     case( 1: )
     WRITE( u0,'(5X,"istep",4X,"ART_step",4X,"Etot",5x,"init/eign/perp/lanc/relx","&
                "4X," Ftot ",5X," Fperp ",4X," Fpara ",4X,"eigval", 6X, "delr", 2X, "npart", X,"evalf","&
-               "4X,"B/S/R|I/P/L/E|P/B/R",4X,"a1")')
+               "4X,"B/O/R|I/P/L/E|P/B/R",4X,"a1")')
   end select
 
   ! -- Units
@@ -123,7 +123,7 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
   USE artn_params, ONLY: push, MOVE, verbose  &
                         ,etot_init, iinit, iperp, ieigen, ilanc, irelax, delr, verbose, iartn, a1 &
                         ,tau_init, lat, tau_step, delr, converge_property &
-                        ,lrelax, linit, lbasin, lperp, llanczos, leigen, lsaddle, lpush_final, lbackward, lrestart 
+                        ,lrelax, linit, lbasin, lperp, llanczos, leigen, lpush_over, lpush_final, lbackward, lrestart 
   USE UNITS
   IMPLICIT NONE
 
@@ -221,7 +221,7 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
       WRITE(iunartout,5) iartn, Mstep, MOVE(disp), detot, iinit, ieigen, iperp, ilanc, irelax,  &
                          force_tot, fperp_tot, fpara_tot, lowEig,     &
                          dr, npart, evalf,   &
-          lbasin, lsaddle, lrelax, linit, lperp, llanczos, leigen,  lpush_final, lbackward, lrestart , a1
+          lbasin, lpush_over, lrelax, linit, lperp, llanczos, leigen,  lpush_final, lbackward, lrestart , a1
       5 format(5x,i4,3x,a,x,a,F10.4,x,5(x,i4),5(x,f10.4),2(x,i5),3X,10(L2),3X,f4.2)
 
   end select

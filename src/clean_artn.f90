@@ -3,7 +3,7 @@
 SUBROUTINE clean_artn()
   use units, only : DP
   use artn_params, only : lrelax, linit, lbasin, lperp, &
-           llanczos, leigen, lsaddle, lbackward, lend,  &
+           llanczos, leigen, lpush_over, lbackward, lend,  &
            iartn, istep, iinit, iperp, ilanc, ieigen, nlanc, ifails,  &
            irelax, iover, istep, fpush_factor, lowest_eigval, nperp, nperp_list,  &
            artn_resume, old_lanczos_vec, H, Vmat, lanc_mat_size,  &
@@ -27,7 +27,7 @@ SUBROUTINE clean_artn()
   lperp = .false.
   llanczos = .false.
   leigen = .false.
-  lsaddle = .false.
+  lpush_over = .false.
   lend = .false.
 
   !> Internal param

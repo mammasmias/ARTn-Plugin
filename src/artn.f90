@@ -30,7 +30,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   !
   USE units
   USE artn_params, ONLY: iunartin, iunartout, iunstruct, &
-       lrelax, linit, lperp, leigen, llanczos, lrestart, lbasin, lsaddle, lpush_final, lbackward, lmove_nextmin, lread_param,  &
+       lrelax, linit, lperp, leigen, llanczos, lrestart, lbasin, lpush_over, lpush_final, lbackward, lmove_nextmin, lread_param,  &
        irelax, istep, iperp, ieigen, iinit, ilanc, ismooth, iover, ifails, isearch, ifound, nlanc, nperp, noperp, nperp_step,  &
        if_pos_ct, lowest_eigval, etot_init, etot_step, etot_saddle, etot_final, de_saddle, de_back, de_fwd, &
        ninit, neigen, lanc_mat_size, nsmooth, push_mode, dist_thr, init_forc_thr, forc_thr, &
@@ -444,7 +444,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      tau_saddle = tau_step
      eigen_saddle = eigenvec
      !
-     lsaddle = .true.
+     !lsaddle = .true.
+     lpush_over = .true.
      ifound = ifound + 1
      !
      !CALL write_struct( at, nat, tau, order, elements, ityp, force_step, 1.0_DP, iunstruct, struc_format_out, sadfname )
@@ -462,7 +463,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         write( iunartout, '(5x,a)' ) "!> WARNING::E_Saddle < E_init => Should be a saddle refine mode"
      ENDIF
 
-     CALL write_end_report( iunartout, lsaddle, lpush_final, etot_step - etot_init )
+     !CALL write_end_report( iunartout, lsaddle, lpush_final, etot_step - etot_init )
+     CALL write_end_report( iunartout, lpush_over, lpush_final, etot_step - etot_init )
 
   ENDIF
 
@@ -472,7 +474,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   ! ...If saddle point is reached
   ! This block do only Push to adjacent minima after the saddle point
   !
-  IF ( lsaddle ) THEN
+  !IF ( lsaddle ) THEN
+  IF ( lpush_over ) THEN
      !
      ! do we do a final push ?
      !
@@ -500,7 +503,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            ! we started going downhill ...
            if( .NOT.lrelax )irelax = 0
            lrelax = .true.
-           lsaddle = .false.
+           !lsaddle = .false.
+           lpush_over = .false.
 
 
 
@@ -648,7 +652,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            lbackward = .true.
 
            ! ...Return to Push_Over Step in opposit direction
-           lsaddle = .true.
+           !lsaddle = .true.
+           lpush_over = .true.
            lrelax = .false.
 
            etot_final = etot_step
