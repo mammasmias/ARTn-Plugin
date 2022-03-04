@@ -55,7 +55,7 @@ SUBROUTINE write_initial_report(iunartout, filout)
   WRITE (iunartout,'(5X, "Lanczos algorithm:")' )
   WRITE (iunartout,'(5X, "--------------------------------------------------")')
   WRITE (iunartout,'(15X,"lanc_mat_size   = ", I6)') lanc_mat_size
-  WRITE (iunartout,'(15X,"dlanc           = ", G5.4,2x,A)') unconvert_length( dlanc ), unit_char('length')
+  WRITE (iunartout,'(15X,"dlanc           = ", G10.4,2x,A)') unconvert_length( dlanc ), unit_char('length')
   WRITE (iunartout,'(5X, "--------------------------------------------------")')
   WRITE (iunartout,'(/,/)') 
   !WRITE (iunartout,*) " "
