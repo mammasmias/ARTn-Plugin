@@ -641,6 +641,23 @@ CONTAINS
   END SUBROUTINE warning_real
 
 
+  !---------------------------------------------------------------------------
+  subroutine flag_false()
+
+    implicit none
+
+    lrelax = .false.
+    linit = .false.
+    lbasin = .false.
+    lperp = .false.
+    llanczos = .false.
+    leigen = .false.
+    lsaddle = .false.
+
+  end subroutine flag_false
+
+
+
 
 
   !---------------------------------------------------------------------------

@@ -73,7 +73,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   REAL(DP)  :: etot!, lat(3,3)
   INTEGER   :: ios ,i                         ! file IOSTAT
   !CHARACTER( LEN=255) :: filin !, filout, sadfname, initpfname, eigenfname, restartfname
-  LOGICAL :: lforc_conv, lsaddle_conv, ArtnStep
+  LOGICAL :: lforc_conv, lsaddle_conv, ArtnStep, lstop
   !character(:), allocatable :: outfile
   character(len=256) :: outfile
 
@@ -377,15 +377,12 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !>>>>>>>>>>>>>>>
   !  IF( nsmooth > 0 )THEN
 
-  !    !write(iunartout,*)"DEBUG::SMOOTH_INTERPOL", ismooth, norm2(force_step), norm2(push), norm2(eigenvec)
   !    smoothing_factor = 1.0_DP*ismooth/nsmooth
   !    !!
   !    fpara_tot = ddot(3*nat, force_step(:,:), 1, eigenvec(:,:), 1)
 
   !    eigenvec(:,:) = (1.0_DP - smoothing_factor)*push(:,:) &
   !         -SIGN(1.0_DP,fpara_tot)*smoothing_factor*eigenvec(:,:)
-  !    !write(iunartout,*)"DEBUG::SMOOTH_INTERPOL", ismooth, nsmooth, smoothing_factor, fpara_tot, &
-  !    !                   (1.0_DP - smoothing_factor), - SIGN(1.0_DP,fpara_tot)
   !    !
   !    IF( ismooth < nsmooth)then
   !      ismooth = ismooth + 1
@@ -503,54 +500,57 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            ! we started going downhill ...
            if( .NOT.lrelax )irelax = 0
            lrelax = .true.
+           lsaddle = .false.
 
 
 
         ELSE  !< It is a PUSH_OVER the saddle point
            disp = EIGN
 
-           ! CALL PUSH_OVER_PROCEDURE( nat, iover, tau, etot_step, etot_saddle, push_factor, displ_vec )
-           !>>>>>>>>>>>>>>>>>>>>>> push_over_procedure()
-           !! Idea: Push over first time and if does not work return to the saddle 
-           !!  and do a smaller push. Doing that one or two times and stop the research
-           !
-           iover = iover + 1
+           lstop = .false.
+           CALL PUSH_OVER_PROCEDURE( iover, nat, tau, eigenvec, fpush_factor, order, displ_vec, lconv )
+           !lconv = lstop
+    !      !>>>>>>>>>>>>>>>>>>>>>> push_over_procedure()
+    !      !! Idea: Push over first time and if does not work return to the saddle 
+    !      !!  and do a smaller push. Doing that one or two times and stop the research
+    !      !
+    !      iover = iover + 1
 
-           IF( iover > 1 )THEN
-             tau(:,:) = tau_saddle(:,order(:))  ! no convertion needed
-             !push_over = push_over * 0.80      !! Replace by ternary operator to don't change the value
-           ENDIF
+    !      IF( iover > 1 )THEN
+    !        tau(:,:) = tau_saddle(:,order(:))  ! no convertion needed
+    !        !push_over = push_over * 0.80      !! Replace by ternary operator to don't change the value
+    !      ENDIF
 
-           !
-           displ_vec(:,:) = fpush_factor*eigenvec(:,:)*eigen_step_size * push_over * merge( 1.0, 0.8**real(iover-1), iover == 1)
+    !      !
+    !      displ_vec(:,:) = fpush_factor*eigenvec(:,:)*eigen_step_size * push_over * merge( 1.0, 0.8**real(iover-1), iover == 1)
 
 
-           ! ** WARNING **
-           if( iover > 4 ) &
-                CALL WARNING( iunartout, "PUSH_OVER_PROCEDURE()",&
-                "Too many push over at saddle point: frelax_ene_thr can be too big or push_over", &
-                 [ etot_step, etot_saddle, etot_step - etot_saddle, frelax_ene_thr,   &
-                   push_over*merge( 1.0, 0.8**real(iover-1), iover == 1) ] )
+    !      ! ** WARNING **
+    !      if( iover > 4 ) &
+    !           CALL WARNING( iunartout, "PUSH_OVER_PROCEDURE()",&
+    !           "Too many push over at saddle point: frelax_ene_thr can be too big or push_over", &
+    !            [ etot_step, etot_saddle, etot_step - etot_saddle, frelax_ene_thr,   &
+    !              push_over*merge( 1.0, 0.8**real(iover-1), iover == 1) ] )
 
-           ! ** ERROR **
-           IF( iover > 10 )THEN
-             call write_fail_report( iunartout, OVER, etot_step )
-             !call clean_artn()  !! Over Push_Over
-             lrelax = .false.
-             linit = .false.
-             lbasin = .false.
-             lperp = .false.
-             llanczos = .false.
-             leigen = .false.
-             lsaddle = .false.
+    !      ! ** ERROR **
+    !      IF( iover > 10 )THEN
+    !        call write_fail_report( iunartout, OVER, etot_step )
+    !        !call clean_artn()  !! Over Push_Over
+    !        lrelax = .false.
+    !        linit = .false.
+    !        lbasin = .false.
+    !        lperp = .false.
+    !        llanczos = .false.
+    !        leigen = .false.
+    !        lsaddle = .false.
  
-             ! ...Return to Starting configuration
-             tau(:,:) = tau_init(:,order(:))
-             displ_vec = 0.0_DP
-             lconv = .true.
-             !return
-           ENDIF
-           !<<<<<<<<<<<<<<<<<<<<<<
+    !        ! ...Return to Starting configuration
+    !        tau(:,:) = tau_init(:,order(:))
+    !        displ_vec = 0.0_DP
+    !        lconv = .true.
+    !        !return
+    !      ENDIF
+    !      !<<<<<<<<<<<<<<<<<<<<<<
 
            !
            CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, &
@@ -639,7 +639,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            ! ...Save the minimum if it is new
            call save_min( nat, tau_step )
 
-
            disp = RELX
 
            ! ...restart from saddle point
@@ -647,7 +646,10 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            eigenvec(:,:) = eigen_saddle(:,:)
            lbackward = .true.
 
+           ! ...Return to Push_Over Step in opposit direction
+           lsaddle = .true.
            lrelax = .false.
+
            etot_final = etot_step
            de_back = etot_saddle - etot_final
 
