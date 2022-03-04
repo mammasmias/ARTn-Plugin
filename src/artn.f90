@@ -40,7 +40,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
        engine_units, struc_format_out, elements, &
        initialize_artn, read_restart, write_restart, &
        push_over, ran3, a1, old_lanczos_vec, lend, lat, fill_param_step, &
-       filin, filout, sadfname, initpfname, eigenfname, restartfname, warning,  &
+       filin, filout, sadfname, initpfname, eigenfname, restartfname, warning, flag_false,  &
        prefix_min, nmin, prefix_sad, nsaddle, artn_resume
   !
   IMPLICIT NONE
@@ -578,13 +578,14 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         tau(:,:) = tau_init(:,order(:))
 
         ! ...Tell to the engine it is finished
-        lrelax = .false.
-        linit = .false.
-        lbasin = .false.
-        lperp = .false.
-        llanczos = .false.
-        leigen = .false.
-        lsaddle = .false.
+        call flag_false()
+        !lrelax = .false.
+        !linit = .false.
+        !lbasin = .false.
+        !lperp = .false.
+        !llanczos = .false.
+        !leigen = .false.
+        !lsaddle = .false.
 
         lconv = .true.
 
@@ -674,13 +675,14 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            artn_resume = trim(artn_resume)//" | "//trim(outfile)
 
            ! ...Tell to the machin it is finished
-           lrelax = .false.
-           linit = .false.
-           lbasin = .false.
-           lperp = .false.
-           llanczos = .false.
-           leigen = .false.
-           lsaddle = .false.
+           call flag_false()
+           !lrelax = .false.
+           !linit = .false.
+           !lbasin = .false.
+           !lperp = .false.
+           !llanczos = .false.
+           !leigen = .false.
+           !lsaddle = .false.
 
            lconv = .true.
            lend = lconv  !! Maybe don't need anymore
@@ -697,31 +699,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
         END IF
         !
-
-        !
-      ! ! ...FINALIZATION
-      ! IF( lconv )THEN
-      !  
-      !   !> SCHEMA FINILIZATION
-      !   lend = lconv
-
-      !   ! ...Here we should load the next minimum if the user ask
-      !   IF( lmove_nextmin )THEN
-      !     CALL move_nextmin( nat, tau )
-      !   ELSE
-      !     tau(:,:) = tau_init(:,order(:))
-      !   ENDIF
-
-      !   ! ...Force = 0.0
-      !   displ_vec = 0.0_DP
-
-      !   ! ...The research IS FINISHED
-      !   !CALL clean_artn()  !! lconv = T => Converged
-      !   !CLOSE( UNIT = iunartout, STATUS = 'KEEP' )
-      !   !return
-
-      ! ENDIF
-
 
      END IF
      !
