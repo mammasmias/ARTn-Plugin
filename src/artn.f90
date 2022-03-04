@@ -364,29 +364,43 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !
      disp = EIGN
 
-     !CALL Smooth_interpol( ismooth, nat, force_step, push, eigenvec, fpara_tot )
-     !>>>>>>>>>>>>>>>
-     IF( nsmooth > 0 )THEN
 
-       smoothing_factor = 1.0_DP*ismooth/nsmooth
-       !!
-       fpara_tot = ddot(3*nat, force_step(:,:), 1, eigenvec(:,:), 1)
+     IF( nsmooth > 0 ) &
+       CALL Smooth_interpol( ismooth, nsmooth, nat, force_step, push, eigenvec )
 
-       eigenvec(:,:) = (1.0_DP - smoothing_factor)*push(:,:) &
-            -SIGN(1.0_DP,fpara_tot)*smoothing_factor*eigenvec(:,:)
-       !
-       IF( ismooth < nsmooth)then
-         ismooth = ismooth + 1
-       ELSE
-         ! ...Save the eigenvector
-         push(:,:) = eigenvec(:,:)
-       ENDIF
-
-     ELSE
-       ! ...Save the eigenvector
-        push(:,:) = eigenvec(:,:)
+     ! ...Overwrite the initial Push with Eigenvector
+     IF( nsmooth == 0.OR.ismooth > nsmooth )then
+       !write(iunartout,'(x,"DEBUG::EIGEN::Overwrite push = eigenvec")')
+       push(:,:) = eigenvec(:,:)  
      ENDIF
+
+     !>>>>>>>>>>>>>>>
+  !  IF( nsmooth > 0 )THEN
+
+  !    !write(iunartout,*)"DEBUG::SMOOTH_INTERPOL", ismooth, norm2(force_step), norm2(push), norm2(eigenvec)
+  !    smoothing_factor = 1.0_DP*ismooth/nsmooth
+  !    !!
+  !    fpara_tot = ddot(3*nat, force_step(:,:), 1, eigenvec(:,:), 1)
+
+  !    eigenvec(:,:) = (1.0_DP - smoothing_factor)*push(:,:) &
+  !         -SIGN(1.0_DP,fpara_tot)*smoothing_factor*eigenvec(:,:)
+  !    !write(iunartout,*)"DEBUG::SMOOTH_INTERPOL", ismooth, nsmooth, smoothing_factor, fpara_tot, &
+  !    !                   (1.0_DP - smoothing_factor), - SIGN(1.0_DP,fpara_tot)
+  !    !
+  !    IF( ismooth < nsmooth)then
+  !      ismooth = ismooth + 1
+  !    ELSE
+  !      ! ...Save the eigenvector
+  !      push(:,:) = eigenvec(:,:)
+  !      write(iunartout,'(x,"DEBUG::EIGEN::Overwrite push = eigenvec")')
+  !    ENDIF
+
+  !  ELSE
+  !    ! ...Save the eigenvector
+  !     push(:,:) = eigenvec(:,:)
+  !  ENDIF
      !<<<<<<<<<<<<<<<
+
 
      !
      ! rescale the eigenvector according to the current force in the parallel direction
@@ -477,12 +491,13 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
           eigenvec(:,:) = eigen_saddle(:,:)
           lbackward = .false.
         else
+          !! Normalize it to be sure
           eigenvec(:,:) = eigenvec(:,:)/dnrm2(3*nat,eigenvec,1)
         endif
         !
         !
         ! ...PUSH_OVER works => If diff Energy is negative
-        IF ( etot_step - etot_saddle < frelax_ene_thr ) THEN
+        IF( etot_step - etot_saddle < frelax_ene_thr ) THEN
         !IF ( etot_step - etot_saddle < 0.0_DP ) THEN
 
            ! we started going downhill ...

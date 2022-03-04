@@ -19,7 +19,7 @@ SUBROUTINE clean_artn()
   ! ...Write in output log
   WRITE(*,'(5x,"!> CLEANING ARTn | Fail:",x,i0)') ifails
   OPEN ( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'old', POSITION = 'append', IOSTAT = ios )
-    WRITE(iunartout,'(5x,"!> CLEANING ARTn | Fail:",x,i0/5x,*(a)//)') ifails, repeat("-",50)
+    WRITE(iunartout,'(5x,"!> CLEANING ARTn | Fail:",x,i0/5x,*(a))') ifails, repeat("-",50)
 
   lrelax = .false.
   linit = .true.
@@ -66,6 +66,7 @@ SUBROUTINE clean_artn()
   H = 0.0_DP
   Vmat = 0.0_DP
 
+  WRITE(iunartout,'(/)')
   CLOSE ( UNIT = iunartout, STATUS = 'KEEP')
 
 END SUBROUTINE clean_artn

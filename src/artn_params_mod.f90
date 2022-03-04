@@ -704,6 +704,24 @@ CONTAINS
     ran3 = mj * fac
     return
   END FUNCTION ran3
+
+
+  function dot_field( n, dx, dy )result( res )
+    use units, only : DP
+    implicit none
+    integer, intent(in) :: n
+    real(DP), intent(in) :: dx(*), dy(*)
+
+    integer :: i
+    real(DP) :: tmp, res
+
+    res = 0.0_DP
+    tmp = 0.0_DP
+    do i = 1,n
+       tmp = tmp + dx(i)*dy(i)
+    enddo
+    res = tmp
+  end function dot_field
     
 END MODULE artn_params
  

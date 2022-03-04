@@ -111,6 +111,8 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
   !
   !> @param [in]  etot		energy of the system
   !> @param [in]  force		List of atomic forces
+  !> @param [in]  fpara		List of parallel atomic forces
+  !> @param [in]  fperp		List of perpendicular atomic forces
   !> @param [in]  lowest_eigval	Lowest eigenvalue obtained by lanczos
   !> @param [in]  disp		Kind of actual displacement 
   !> @param [in]  if_pos	Fix the atom or not	
@@ -128,7 +130,10 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
   ! -- Arguments
   INTEGER,  INTENT(IN) :: nat, istep, iunartout
   INTEGER,  INTENT(IN) :: if_pos(3,nat)
-  REAL(DP), INTENT(IN) :: force(3,nat), fpara(3,nat), fperp(3,nat), etot, lowest_eigval
+  REAL(DP), INTENT(IN) :: force(3,nat),   &
+                          fpara(3,nat),   &
+                          fperp(3,nat)
+  REAL(DP), INTENT(IN) :: etot, lowest_eigval
   INTEGER,  INTENT(IN) :: disp
   LOGICAL, intent(IN)  :: ArtnStep
 
@@ -143,8 +148,6 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
   ! ...Print only ARTn-Step
   C1 = ( .NOT.ARTnStep .AND. verbose < 2) ! When verbose = {0,1}: print only ARTnStep
   IF( C1 )RETURN
-  !C2 = ( verbose == 2  .AND. ARTnStep )   ! When verbose = 2: print only noARTnStep
-  !IF( C1 .OR. C2 )RETURN
 
 
 
@@ -265,7 +268,7 @@ SUBROUTINE write_inter_report( u, pushfactor, de )
       WRITE( u,'(5X, "|> Configuration Files:", X,A)') trim(artn_resume)
       WRITE( *,'(5x, "|> Configuration Files:", X,A)') trim(artn_resume)
       WRITE( u,'(5X, "--------------------------------------------------")')
-      WRITE( u,'(/)')
+      !WRITE( u,'(/)')
 
 
     CASE DEFAULT

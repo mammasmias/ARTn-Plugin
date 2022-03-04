@@ -100,10 +100,8 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         ! 
         ! -- check perpendicular force convergence for the perp-relax 
         ! 
-        !C1 = ( MAXVAL( ABS(fperp)) < fperp_thr ) ! check on the fperp field
         C1 = ( maxfperp < fperp_thr ) ! check on the fperp field
         C2 = ( nperp > 0.AND.iperp >= nperp )    ! check on the perp-relax iteration
-        !C3 = ( MAXVAL( ABS(fperp)) < MAXVAL( ABS(fpara))) ! check wheter fperp is lower than fpara
         C3 = ( MAXfperp < MAXfpara ) ! check wheter fperp is lower than fpara
 
         IF( C1 .and. iperp == 0 )C1 = .false.
