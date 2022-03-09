@@ -20,6 +20,7 @@ LIB_OBJECTS := \
 	    $(OBJ)/sum_force.o \
             $(OBJ)/perpforce.o \
             $(OBJ)/smooth_interpol.o \
+            $(OBJ)/push_over_procedure.o \
 	    $(OBJ)/move_mode.o \
 	    $(OBJ)/write_report.o \
 	    $(OBJ)/write_struct.o \
@@ -31,13 +32,13 @@ LIB_OBJECTS := \
 
 FDEBUG := -g -fcheck=all #-check all  #-fcheck=all
 
-ifeq ($(F90),ifort)
-  MOD   := -module $(OBJ)
-  FLAGS := $(FFLAGS) $(FDEBUG) $(LAPACK_LIBS) -fPIC
-else #($(F90),gfortran)
+#ifeq ($(F90),ifort)
+ # MOD   := -module $(OBJ)
+ # FLAGS := $(FFLAGS) $(FDEBUG) $(LAPACK_LIBS) -fPIC
+#else #($(F90),gfortran)
   MOD   := -I$(OBJ) -J$(OBJ) 
   FLAGS := $(FFLAGS) $(FDEBUG) $(LAPACK_LIBS)
-endif
+#endif
 
 
 # ---------------------------------------------------------------------------
