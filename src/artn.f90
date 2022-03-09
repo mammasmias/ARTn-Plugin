@@ -188,11 +188,10 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     CALL push_init(nat, tau, order, lat, idum, push_ids, dist_thr, add_const, eigen_step_size, eigenvec , 'all ')
 
 
-    !> Test
-    !eigenvec = push
 
-
-    CALL perpforce( force_step, if_pos, push, fperp, fpara, nat)
+    ! ...Split the force field in para/perp field following the push field
+    !CALL perpforce( force_step, if_pos, push, fperp, fpara, nat)
+    CALL splitfield( 3*nat, force_step, if_pos, push, fperp, fpara )
 
 
 
