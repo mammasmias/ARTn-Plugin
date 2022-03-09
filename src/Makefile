@@ -20,7 +20,8 @@ LIB_OBJECTS := \
 	    $(OBJ)/sum_force.o \
             $(OBJ)/perpforce.o \
             $(OBJ)/smooth_interpol.o \
-	    $(OBJ)/move_mode.o \
+            $(OBJ)/push_over_procedure.o \
+            $(OBJ)/move_mode.o \
 	    $(OBJ)/write_report.o \
 	    $(OBJ)/write_struct.o \
             $(OBJ)/nextmin.o \
