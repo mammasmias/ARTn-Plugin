@@ -51,3 +51,32 @@ SUBROUTINE smooth_interpol( ismooth, nsmooth, nat, v0, v1, v2 )
 
 
 END SUBROUTINE smooth_interpol
+
+!
+!! SAVE from ARTN() body
+!
+     !>>>>>>>>>>>>>>>
+  !  IF( nsmooth > 0 )THEN
+
+  !    smoothing_factor = 1.0_DP*ismooth/nsmooth
+  !    !!
+  !    fpara_tot = ddot(3*nat, force_step(:,:), 1, eigenvec(:,:), 1)
+
+  !    eigenvec(:,:) = (1.0_DP - smoothing_factor)*push(:,:) &
+  !         -SIGN(1.0_DP,fpara_tot)*smoothing_factor*eigenvec(:,:)
+  !    !
+  !    IF( ismooth < nsmooth)then
+  !      ismooth = ismooth + 1
+  !    ELSE
+  !      ! ...Save the eigenvector
+  !      push(:,:) = eigenvec(:,:)
+  !      write(iunartout,'(x,"DEBUG::EIGEN::Overwrite push = eigenvec")')
+  !    ENDIF
+
+  !  ELSE
+  !    ! ...Save the eigenvector
+  !     push(:,:) = eigenvec(:,:)
+  !  ENDIF
+     !<<<<<<<<<<<<<<<
+
+

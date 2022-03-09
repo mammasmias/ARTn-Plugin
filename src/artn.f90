@@ -73,7 +73,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   REAL(DP)  :: etot!, lat(3,3)
   INTEGER   :: ios ,i                         ! file IOSTAT
   !CHARACTER( LEN=255) :: filin !, filout, sadfname, initpfname, eigenfname, restartfname
-  LOGICAL :: lforc_conv, lsaddle_conv, ArtnStep, lstop
+  LOGICAL :: lforc_conv, lsaddle_conv, ArtnStep
   !character(:), allocatable :: outfile
   character(len=256) :: outfile
 
@@ -379,30 +379,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
        push(:,:) = eigenvec(:,:)  
      ENDIF
 
-     !>>>>>>>>>>>>>>>
-  !  IF( nsmooth > 0 )THEN
-
-  !    smoothing_factor = 1.0_DP*ismooth/nsmooth
-  !    !!
-  !    fpara_tot = ddot(3*nat, force_step(:,:), 1, eigenvec(:,:), 1)
-
-  !    eigenvec(:,:) = (1.0_DP - smoothing_factor)*push(:,:) &
-  !         -SIGN(1.0_DP,fpara_tot)*smoothing_factor*eigenvec(:,:)
-  !    !
-  !    IF( ismooth < nsmooth)then
-  !      ismooth = ismooth + 1
-  !    ELSE
-  !      ! ...Save the eigenvector
-  !      push(:,:) = eigenvec(:,:)
-  !      write(iunartout,'(x,"DEBUG::EIGEN::Overwrite push = eigenvec")')
-  !    ENDIF
-
-  !  ELSE
-  !    ! ...Save the eigenvector
-  !     push(:,:) = eigenvec(:,:)
-  !  ENDIF
-     !<<<<<<<<<<<<<<<
-
 
      !
      ! rescale the eigenvector according to the current force in the parallel direction
@@ -440,7 +416,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   !
   ! The saddle point is reached -> confirmed by check_force_convergence()
   !
-  !> SHOULD BE A ROUTINE but is not because we call write_struct() that needs 
+  !> SHOULD BE A ROUTINE but not :: it's because we call write_struct() that needs 
   !!  arguments exist only in artn() 
   IF( lsaddle_conv )THEN
 
@@ -516,50 +492,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         ELSE  !< It is a PUSH_OVER the saddle point
            disp = EIGN
 
-           lstop = .false.
            CALL PUSH_OVER_PROCEDURE( iover, nat, tau, eigenvec, fpush_factor, order, displ_vec, lconv )
-           !lconv = lstop
-    !      !>>>>>>>>>>>>>>>>>>>>>> push_over_procedure()
-    !      !! Idea: Push over first time and if does not work return to the saddle 
-    !      !!  and do a smaller push. Doing that one or two times and stop the research
-    !      !
-    !      iover = iover + 1
-
-    !      IF( iover > 1 )THEN
-    !        tau(:,:) = tau_saddle(:,order(:))  ! no convertion needed
-    !        !push_over = push_over * 0.80      !! Replace by ternary operator to don't change the value
-    !      ENDIF
-
-    !      !
-    !      displ_vec(:,:) = fpush_factor*eigenvec(:,:)*eigen_step_size * push_over * merge( 1.0, 0.8**real(iover-1), iover == 1)
-
-
-    !      ! ** WARNING **
-    !      if( iover > 4 ) &
-    !           CALL WARNING( iunartout, "PUSH_OVER_PROCEDURE()",&
-    !           "Too many push over at saddle point: frelax_ene_thr can be too big or push_over", &
-    !            [ etot_step, etot_saddle, etot_step - etot_saddle, frelax_ene_thr,   &
-    !              push_over*merge( 1.0, 0.8**real(iover-1), iover == 1) ] )
-
-    !      ! ** ERROR **
-    !      IF( iover > 10 )THEN
-    !        call write_fail_report( iunartout, OVER, etot_step )
-    !        !call clean_artn()  !! Over Push_Over
-    !        lrelax = .false.
-    !        linit = .false.
-    !        lbasin = .false.
-    !        lperp = .false.
-    !        llanczos = .false.
-    !        leigen = .false.
-    !        lsaddle = .false.
- 
-    !        ! ...Return to Starting configuration
-    !        tau(:,:) = tau_init(:,order(:))
-    !        displ_vec = 0.0_DP
-    !        lconv = .true.
-    !        !return
-    !      ENDIF
-    !      !<<<<<<<<<<<<<<<<<<<<<<
 
            !
            CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, &
@@ -588,19 +521,11 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
         ! ...Tell to the engine it is finished
         call flag_false()
-        !lrelax = .false.
-        !linit = .false.
-        !lbasin = .false.
-        !lperp = .false.
-        !llanczos = .false.
-        !leigen = .false.
-        !lsaddle = .false.
 
         lconv = .true.
 
         ! ...Set the force to zero 
         displ_vec = 0.0_DP
-        !return
 
         ! ...Here we dont load the next minimum because it does not exist
 
@@ -686,13 +611,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
            ! ...Tell to the machin it is finished
            call flag_false()
-           !lrelax = .false.
-           !linit = .false.
-           !lbasin = .false.
-           !lperp = .false.
-           !llanczos = .false.
-           !leigen = .false.
-           !lsaddle = .false.
 
            lconv = .true.
            lend = lconv  !! Maybe don't need anymore
@@ -714,40 +632,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !
   END IF RELAX
 
-
-
-  ! Finalization Block
-  IF( lconv )THEN
-
-    write(iunartout,'(5x,"|> BLOCK FINALIZE..")')
-    !> SCHEMA FINILIZATION
-    lend = lconv
-
-    ! ...Here we should load the next minimum if the user ask
-    IF( lmove_nextmin )THEN
-      CALL move_nextmin( nat, tau )
-    ELSE
-      tau(:,:) = tau_init(:,order(:))
-    ENDIF
-
-    ! ...Force = 0.0
-    displ_vec = 0.0_DP
-
-    ! ...The research IS FINISHED
-    !CALL clean_artn()  !! lconv = T => Converged
-    CLOSE( UNIT = iunartout, STATUS = 'KEEP' )
-    return
-
-  ENDIF
-
-
-  !
-  ! write restart before the lanczos. If restart happens during lanczos,
-  ! the first step will repeat the last lanczos step from before restart.
-  ! Reason for this: if we put restart after lanczos, then the restarted lanczos
-  ! does not come back to initial point properly.
-  !
-  !CALL write_restart(restartfname,nat)
 
 
 
@@ -863,6 +747,33 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      ENDIF
 
   ENDIF LANCZOS_
+
+
+
+  !
+  !! --- Finalization Block
+  !
+  IF( lconv )THEN
+
+    write(iunartout,'(5x,"|> BLOCK FINALIZE..")')
+    !> SCHEMA FINILIZATION
+    lend = lconv
+
+    ! ...Here we should load the next minimum if the user ask
+    IF( lmove_nextmin )THEN
+      CALL move_nextmin( nat, tau )
+    ELSE
+      tau(:,:) = tau_init(:,order(:))
+    ENDIF
+
+    ! ...Force = 0.0
+    displ_vec = 0.0_DP
+
+    ! ...The research IS FINISHED
+    CLOSE( UNIT = iunartout, STATUS = 'KEEP' )
+    return
+
+  ENDIF
 
 
 
