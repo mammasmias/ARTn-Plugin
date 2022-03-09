@@ -52,8 +52,6 @@ SUBROUTINE Push_Over_Procedure( iover, nat, pos, v0, push_factor, order, displ_v
     !return
   ENDIF
 
-  
-
 
 END SUBROUTINE Push_Over_Procedure
 

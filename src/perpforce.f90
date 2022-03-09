@@ -52,11 +52,12 @@ subroutine splitfield( n, field, mask, fref, fperp, fpara )
   !
   !> @brief Extract the parallel and perpendicular component of field 
   !!   followig a reference field (fref) according to a mask.
+  !!   (Generalization of perpforce)
   !
   !> @param[in]     nat         number of point in the field 
   !! @param[in]     field       Field input
   !! @param[in]     mask        Constrain in field
-  !! @param[in]     fref         Parallel direction field reference
+  !! @param[in]     fref        Parallel direction field reference
   !! @param[out]    fperp       Perpendicular force field following dir field
   !! @param[out]    fpara       Parallel force field following dir field
   !

@@ -179,6 +179,11 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     ! --------------------------
     !
 
+    !------------------------------------------------------------------------------    
+    !> @brief 
+    !!   Here we have to initialize the push and eigenvec thanks to different way
+    !!   depending the user choice.
+    !!   - push_init() works for random 
     ! ...Define the Initial Push
     CALL push_init(nat, tau, order, lat, idum, push_ids, dist_thr, add_const, push_step_size, push , push_mode)
 
@@ -186,6 +191,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     ! ...Generate first lanczos eigenvector 
     add_const(:,:) = 0.0
     CALL push_init(nat, tau, order, lat, idum, push_ids, dist_thr, add_const, eigen_step_size, eigenvec , 'all ')
+    !------------------------------------------------------------------------------    
 
 
 
