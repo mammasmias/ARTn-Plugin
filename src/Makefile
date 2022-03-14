@@ -26,7 +26,7 @@ LIB_OBJECTS := \
 	    $(OBJ)/write_struct.o \
             $(OBJ)/nextmin.o \
             $(OBJ)/read_guess.o \
-            $(OBJ)/starting_guess.o \
+            $(OBJ)/start_guess.o \
             $(OBJ)/clean_artn.o \
             $(OBJ)/artn.o \
             $(OBJ)/artn_QE.o
