@@ -180,7 +180,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     !!   Here we have to initialize the push and eigenvec thanks to different way
     !!   depending the user choice.
     !!   - push_init() works for random 
-    call starting_guess( idum, nat, order, if_pos, push, eigenvec )
+    call start_guess( idum, nat, order, if_pos, push, eigenvec )
 
     ! ...Define the Initial Push
     !CALL push_init(nat, tau, order, lat, idum, push_ids, dist_thr, add_const, push_step_size, push , push_mode)
