@@ -164,7 +164,7 @@ CONTAINS
   !
   !
   !
-  SUBROUTINE initialize_artn( nat, iunartin, filnam )
+  SUBROUTINE setup_artn( nat, iunartin, filnam )
     !
     !> @breif
     !!   Sets defaults, reads input and creates ARTn output file
@@ -466,7 +466,7 @@ CONTAINS
 
 
     !
-  END SUBROUTINE initialize_artn
+  END SUBROUTINE setup_artn
 
 
   !---------------------------------------------------------------------------

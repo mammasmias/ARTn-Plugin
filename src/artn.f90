@@ -38,7 +38,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
        push_ids, add_const, push, eigenvec, tau_step, force_step, tau_init, tau_saddle, eigen_saddle, v_in, &
        VOID, INIT, PERP, EIGN, LANC, RELX, OVER, zseed, &
        engine_units, struc_format_out, elements, &
-       initialize_artn, read_restart, write_restart, &
+       !initialize_artn, read_restart, write_restart, &
+       setup_artn, read_restart, write_restart, &
        push_over, ran3, a1, old_lanczos_vec, lend, lat, fill_param_step, &
        filin, filout, sadfname, initpfname, eigenfname, restartfname, warning, flag_false,  &
        prefix_min, nmin, prefix_sad, nsaddle, artn_resume
@@ -121,7 +122,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     ONCE: IF( isearch == 0 )THEN
 
       ! ...Read the input parameters
-      CALL initialize_artn( nat, iunartin, filin )
+      !CALL initialize_artn( nat, iunartin, filin )
+      CALL setup_artn( nat, iunartin, filin )
 
 
       ! set initial random seed from input (could be moved to initialize_artn)
@@ -146,6 +148,14 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     CALL Fill_param_step( nat, at, order, tau, etot_eng, force )
 
 
+    !------------------------------------------------------------------------------    
+    !> @brief 
+    !!   Here we have to initialize the push and eigenvec thanks to different way
+    !!   depending the user choice.
+    !!   - push_init() works for random 
+    call start_guess( idum, nat, order, if_pos, push, eigenvec )
+
+
 
     IF( lrestart ) THEN
 
@@ -160,7 +170,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
       ! ...Overwirte the engine Arrays
       tau(:,:) = tau_step(:,order(:))
 
-      isearch = isearch + 1
+      !isearch = isearch + 1  !! We continue the search, not another one 
 
     ELSE
 
@@ -174,23 +184,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     !
     ! --------------------------
     !
-
-    !------------------------------------------------------------------------------    
-    !> @brief 
-    !!   Here we have to initialize the push and eigenvec thanks to different way
-    !!   depending the user choice.
-    !!   - push_init() works for random 
-    call start_guess( idum, nat, order, if_pos, push, eigenvec )
-
-    ! ...Define the Initial Push
-    !CALL push_init(nat, tau, order, lat, idum, push_ids, dist_thr, add_const, push_step_size, push , push_mode)
-
-
-    ! ...Generate first lanczos eigenvector 
-    !add_const(:,:) = 0.0
-    !CALL push_init(nat, tau, order, lat, idum, push_ids, dist_thr, add_const, eigen_step_size, eigenvec , 'all ')
-    !------------------------------------------------------------------------------    
-
 
 
     ! ...Split the force field in para/perp field following the push field

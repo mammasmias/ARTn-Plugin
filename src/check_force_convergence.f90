@@ -44,6 +44,10 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
     call sum_force( force*if_pos, nat, maxforce )
     call sum_force( fpara, nat, maxfpara )
     call sum_force( fperp, nat, maxfperp )
+    !maxforce = dsum( 3*nat, force*if_pos )
+    !maxfpara = dsum( 3*nat, fpara )
+    !maxfperp = dsum( 3*nat, fperp )
+ 
   ELSE
     maxforce = MAXVAL(ABS(force*if_pos))
     maxfpara = MAXVAL(ABS(fpara))

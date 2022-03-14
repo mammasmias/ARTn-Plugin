@@ -31,9 +31,10 @@ SUBROUTINE sum_force( force, nat, force_tot )
 END SUBROUTINE sum_force
 
 
-FUNCTION sum_field( n, f )result( res )
+FUNCTION dsum( n, f )result( res )
   !> @brief
   !!   sum the component square of the field in the mood of ddot of lib lapack
+  !!   The unroll loop can be faster than previous version
   !
   !> @param[in]   n     number of field's component 
   !! @param[in]   f     field f(n)
@@ -66,12 +67,12 @@ FUNCTION sum_field( n, f )result( res )
 
   ! ...Unroll the loop
   mp1 = m + 1
-  do i = 1,n,5
+  do i = mp1,n,5
      tmp = tmp + f(i)**2 + f(i+1)**2 + f(i+2)**2 + f(i+3)**2 + f(i+4)**2 
   enddo
   res = tmp
   return
-END FUNCTION sum_field
+END FUNCTION dsum
 
 
 
