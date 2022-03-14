@@ -58,3 +58,30 @@ SUBROUTINE displacement_validation( atom_id, atom_const, push, lvalid)
   !
 END SUBROUTINE displacement_validation
 
+
+subroutine apply_constrain( atom_const, push )
+
+  use units, only : DP
+  implicit none
+
+  integer, intent(in) :: atom_const(4)
+  REAL(DP), INTENT(INOUT) :: push(3)
+
+  ! Local variables
+  REAL(DP)               :: cone_angle, displacement_angle
+  REAL(DP)               :: dot_prod, displacement_norm, cone_dir_norm
+  REAL(DP), DIMENSION(3) :: cone_dir,displacement
+  REAL(DP) :: r1, r2, r3
+
+  
+  
+
+end subroutine apply_constrain
+
+
+
+
+
+
+
+

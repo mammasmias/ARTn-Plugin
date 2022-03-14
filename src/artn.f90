@@ -136,18 +136,14 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
       ENDIF
       !> Save the seed for DEBUG
       open( newunit=zseed, file="random_seed.dat" )
-      write( zseed, * )" zseed = ", int(z)
+      write( zseed, * )" zseed = ", idum
       close( zseed )
 
     endif ONCE
 
 
     ! ...Fill the *_step Arrays
-    !CALL Fill_param_step( nat, at, order, tau, etot_eng, force )
-    lat = at
-    tau_step(:,order(:)) = tau(:,:)
-    etot_step = convert_energy( etot_eng )
-    force_step(:,order(:)) = convert_force( force(:,:) )
+    CALL Fill_param_step( nat, at, order, tau, etot_eng, force )
 
 
 
@@ -184,13 +180,15 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     !!   Here we have to initialize the push and eigenvec thanks to different way
     !!   depending the user choice.
     !!   - push_init() works for random 
+    call starting_guess( idum, nat, order, if_pos, push, eigenvec )
+
     ! ...Define the Initial Push
-    CALL push_init(nat, tau, order, lat, idum, push_ids, dist_thr, add_const, push_step_size, push , push_mode)
+    !CALL push_init(nat, tau, order, lat, idum, push_ids, dist_thr, add_const, push_step_size, push , push_mode)
 
 
     ! ...Generate first lanczos eigenvector 
-    add_const(:,:) = 0.0
-    CALL push_init(nat, tau, order, lat, idum, push_ids, dist_thr, add_const, eigen_step_size, eigenvec , 'all ')
+    !add_const(:,:) = 0.0
+    !CALL push_init(nat, tau, order, lat, idum, push_ids, dist_thr, add_const, eigen_step_size, eigenvec , 'all ')
     !------------------------------------------------------------------------------    
 
 
@@ -204,14 +202,11 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   ELSE !>     ISTEP > 0
 
     ! ...Fill the *_step Arrays
-    !CALL Fill_param_step( nat, at, order, tau, etot_eng, force )
-    lat = at
-    tau_step(:,order(:)) = tau(:,:)
-    etot_step = convert_energy( etot_eng )
-    force_step(:,order(:)) = convert_force( force(:,:) )
+    CALL Fill_param_step( nat, at, order, tau, etot_eng, force )
 
 
-    CALL perpforce( force_step, if_pos, push, fperp, fpara, nat)
+    !CALL perpforce( force_step, if_pos, push, fperp, fpara, nat)
+    CALL splitfield( 3*nat, force_step, if_pos, push, fperp, fpara )
     CALL check_force_convergence( nat, force_step, if_pos, fperp, fpara, lforc_conv, lsaddle_conv )
 
   ENDIF

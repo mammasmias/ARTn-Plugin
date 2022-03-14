@@ -36,7 +36,7 @@ SUBROUTINE push_init( nat, tau, order, at, idum, push_ids, dist_thr, add_const, 
   REAL(DP),         INTENT(IN)  :: tau(3,nat),  &
                                    at(3,3)
   REAL(DP),         INTENT(INOUT) ::  add_const(4,nat)
-  CHARACTER(LEN=4), INTENT(IN)  :: mode
+  CHARACTER(*),     INTENT(IN)  :: mode
   REAL(DP),         INTENT(OUT) :: push(3,nat)
   !
   ! -- LOCAL VARIABLE

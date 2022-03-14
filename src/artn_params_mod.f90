@@ -30,21 +30,24 @@ MODULE artn_params
   CHARACTER(LEN=255) :: prefix_min = 'min'
   CHARACTER(LEN=255) :: prefix_sad = 'sad'
   CHARACTER(LEN=255) :: artn_resume
+  ! optional file
+  CHARACTER(LEN=255) :: push_guess = " " 
+  CHARACTER(LEN=255) :: eigenvec_guess = " "
   ! Constante move
   INTEGER :: VOID = 1, INIT = 2, PERP = 3, EIGN = 4, LANC = 5, RELX = 6, OVER = 7
   CHARACTER(LEN=4) :: MOVE(7)
   PARAMETER( MOVE = [ 'void', 'init', 'perp', 'eign', 'lanc', 'relx', 'over' ])
   ! control flags
-  LOGICAL :: linit      !> initial push OF THE MACROSTEP
-  LOGICAL :: lperp      !> perpendicular relax
-  LOGICAL :: leigen     !> push with lanczos eigenvector
-  LOGICAL :: llanczos   !> lanczos algorithm
-  LOGICAL :: lbasin     !> true while in basin 
-  !LOGICAL :: lsaddle    !> saddle point obtained
-  LOGICAL :: lpush_over    !> saddle point obtained
-  LOGICAL :: lbackward  !> backward saddle point obtained
+  LOGICAL :: linit          !> initial push OF THE MACROSTEP
+  LOGICAL :: lperp          !> perpendicular relax
+  LOGICAL :: leigen         !> push with lanczos eigenvector
+  LOGICAL :: llanczos       !> lanczos algorithm
+  LOGICAL :: lbasin         !> true while in basin 
+  !LOGICAL :: lsaddle        !> saddle point obtained
+  LOGICAL :: lpush_over     !> saddle point obtained
+  LOGICAL :: lbackward      !> backward saddle point obtained
   LOGICAL :: lmove_nextmin  !> backward saddle point obtained
-  LOGICAL :: lread_param  !> flag read artn params
+  LOGICAL :: lread_param    !> flag read artn params
   !
   LOGICAL :: lend
   INTEGER :: verbose    !> Verbose Level
@@ -116,12 +119,12 @@ MODULE artn_params
   INTEGER :: nsmooth              !> number of smoothing steps from push to eigenvec
   CHARACTER(LEN = 4) :: push_mode !> type of initial push (all , list or rad)
   ! convergence criteria
-  REAL(DP) :: dist_thr       !> distance threshold for push mode "rad"
-  REAL(DP) :: init_forc_thr  !> initial perp force threshold for perp relax convergence
-  REAL(DP) :: forc_thr  !> tightened force convergence criterion when near the saddle point
-  REAL(DP) :: fpara_thr !> parallel force convergence criterion, used to determine when to tighten convcrit_final
-  REAL(DP) :: eigval_thr     !> threshold for eigenvalue
-  REAL(DP) :: frelax_ene_thr      !> threshold to start relaxation to adjacent minima
+  REAL(DP) :: dist_thr          !> distance threshold for push mode "rad"
+  REAL(DP) :: init_forc_thr     !> initial perp force threshold for perp relax convergence
+  REAL(DP) :: forc_thr          !> tightened force convergence criterion when near the saddle point
+  REAL(DP) :: fpara_thr         !> parallel force convergence criterion, used to determine when to tighten convcrit_final
+  REAL(DP) :: eigval_thr        !> threshold for eigenvalue
+  REAL(DP) :: frelax_ene_thr    !> threshold to start relaxation to adjacent minima
   ! step sizes
   REAL(DP) :: push_step_size        !> step size of inital push in angstrom
   REAL(DP) :: eigen_step_size       !> step size for a step with the lanczos eigenvector
@@ -151,10 +154,10 @@ MODULE artn_params
        push_step_size, dlanc, eigen_step_size, current_step_size, push_over, &
        push_ids, add_const, engine_units, zseed, struc_format_out, elements, &
        verbose, filout, sadfname, initpfname, eigenfname, restartfname, &
-       converge_property
+       converge_property, push_guess, eigenvec_guess
 
   interface warning
-    module procedure :: warning_nothing, warning_int, warning_real
+    module procedure :: warning_nothing, warning_int, warning_real, warning_char
   end interface
   !
 CONTAINS
@@ -481,13 +484,14 @@ CONTAINS
     !> @param[in]  etot   energy of the system
     !> @param[in]  force  atomic force
     !
-    use units, only : convert_energy, convert_force
+    use units, only : convert_energy, convert_force, convert_length
     
     INTEGER, INTENT(IN) :: nat, order(nat)!, types(nat)
     REAL(DP), INTENT(IN) :: box(3,3), etot, pos(3,nat), force(3,nat)
 
     lat = box
     tau_step(:,order(:)) = pos(:,:)
+    !tau_step(:,order(:)) = convert_length( pos(:,:) )
     etot_step = convert_energy( etot )
     force_step(:,order(:)) = convert_force( force(:,:) )
 
@@ -643,6 +647,20 @@ CONTAINS
     2 format(A,*(x,f12.6))
 
   END SUBROUTINE warning_real
+
+
+  SUBROUTINE warning_char( u0, STEP, text, charv )
+
+    integer, intent( in ) :: u0
+    character(*), intent( in ) :: charv(:)
+    character(*), intent( in ) :: STEP, text
+
+    WRITE( u0,1 ) "* WARNING in ", STEP
+    WRITE( u0,1 ) "* => ", text
+    WRITE( u0,1 ) "* => ", charv
+    1 format(*(A))
+
+  END SUBROUTINE warning_char
 
 
   !---------------------------------------------------------------------------
