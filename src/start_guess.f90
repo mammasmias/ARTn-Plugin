@@ -1,6 +1,7 @@
 
 
-SUBROUTINE start_guess( idum, nat, order, mask, push, eigenvec )
+!SUBROUTINE start_guess( idum, nat, order, mask, push, eigenvec )
+SUBROUTINE start_guess( idum, nat, order, push, eigenvec )
   !
   !> @brief
   !!    Initialize the push and eigenvec arrays following the 
@@ -9,7 +10,6 @@ SUBROUTINE start_guess( idum, nat, order, mask, push, eigenvec )
   !> @param[in]  idum       seed for random number 
   !> @param[in]  nat        number of point 
   !! @param[in]  order      atom order of engine  
-  !! @param[in]  mask       
   !! @param[in]  push     
   !! @param[in]  eigenvec     
   !
@@ -21,11 +21,10 @@ SUBROUTINE start_guess( idum, nat, order, mask, push, eigenvec )
 
   integer, intent(in) :: nat, idum
   integer, intent(in) :: order(nat)
-  integer, intent(in) :: mask(nat)
+  !integer, intent(in) :: mask(nat)
   real(DP), intent(out) :: push(3,nat)
   real(DP), intent(out) :: eigenvec(3,nat)
 
-  integer :: i, n
   logical :: verb
 
   verb = .true.

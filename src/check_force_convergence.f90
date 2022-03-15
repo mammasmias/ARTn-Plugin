@@ -13,9 +13,9 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
   !> @param [out]  lsaddle_conv    Saddle-point Convergence Flag
   !
   USE units
-  USE artn_params, ONLY : linit, lbasin, leigen, llanczos, lperp, lrelax, &
-                          ilanc, iperp, nperp, nperp_list, nperp_step, noperp, istep, INIT, PERP, EIGN, LANC, RELX, &
-                          init_forc_thr, forc_thr, fpara_thr, push, &
+  USE artn_params, ONLY : linit, leigen, llanczos, lperp, lrelax, &
+                          ilanc, iperp, nperp, nperp_list, nperp_step, noperp, istep, INIT, EIGN, RELX, &
+                          init_forc_thr, forc_thr, fpara_thr,   &
                           lowest_eigval, iunartout, restartfname, etot_step, write_restart, warning, converge_property
   IMPLICIT NONE
   REAL(DP), INTENT(IN) :: force(3,nat)
@@ -32,6 +32,8 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
   integer :: ios
   REAL(DP) :: maxforce, maxfperp, maxfpara
 
+  real(DP), external :: dsum
+
   lforc_conv = .false.
   lsaddle_conv = .false.
   !
@@ -39,20 +41,22 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
   ! ...Open the output file
   OPEN( UNIT = iunartout, FILE = 'artn.out', FORM = 'formatted', ACCESS = 'append', STATUS = 'unknown', IOSTAT = ios )
 
+
   ! ...Compute the variable
   IF( trim(converge_property) == 'norm' )THEN
     call sum_force( force*if_pos, nat, maxforce )
     call sum_force( fpara, nat, maxfpara )
     call sum_force( fperp, nat, maxfperp )
-    !maxforce = dsum( 3*nat, force*if_pos )
-    !maxfpara = dsum( 3*nat, fpara )
-    !maxfperp = dsum( 3*nat, fperp )
+    !maxforce = sqrt( dsum( 3*nat, force*if_pos ) )
+    !maxfpara = sqrt( dsum( 3*nat, fpara ) )
+    !maxfperp = sqrt( dsum( 3*nat, fperp ) )
  
   ELSE
     maxforce = MAXVAL(ABS(force*if_pos))
     maxfpara = MAXVAL(ABS(fpara))
     maxfperp = MAXVAL(ABS(fperp))
   ENDIF
+
 
   !
   IF ( lperp ) THEN 
@@ -65,7 +69,8 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         IF( maxforce < forc_thr  ) THEN
            lsaddle_conv = .true.
 
-           CALL write_restart( restartfname, nat )
+           !CALL write_restart( restartfname, nat )
+           CALL write_restart( restartfname )
            CALL write_report( etot_step, force, fperp, fpara, lowest_eigval, EIGN, if_pos, istep, nat,  iunartout, ArtnStep )
            RETURN
         ENDIF
@@ -116,7 +121,8 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
            llanczos = .true. 
            leigen = .false. 
 
-           CALL write_restart( restartfname, nat )
+           !CALL write_restart( restartfname, nat )
+           CALL write_restart( restartfname )
            CALL write_report( etot_step, force, fperp, fpara, lowest_eigval, EIGN, if_pos, istep, nat,  iunartout, ArtnStep )
            ilanc = 0
 
@@ -164,7 +170,8 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
            lperp = .false.
            linit = .true.
            !write(iunartout,*)"Check_force::basin->Fperp"
-           CALL write_restart( restartfname, nat )
+           !CALL write_restart( restartfname, nat )
+           CALL write_restart( restartfname )
            CALL write_report( etot_step, force, fperp, fpara, lowest_eigval, INIT, if_pos, istep, nat,  iunartout, ArtnStep )
         ENDIF
 

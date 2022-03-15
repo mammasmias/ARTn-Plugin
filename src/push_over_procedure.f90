@@ -7,7 +7,7 @@ SUBROUTINE Push_Over_Procedure( iover, nat, pos, v0, push_factor, order, displ_v
 
 
   use units, only : DP
-  use artn_params, only : eigenvec, eigen_step_size, push_over, &
+  use artn_params, only : eigen_step_size, push_over, &
                    etot_step, etot_saddle, frelax_ene_thr, tau_saddle, tau_init, &
                    iunartout, OVER, warning, flag_false
   implicit none

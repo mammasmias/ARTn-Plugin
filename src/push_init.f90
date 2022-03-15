@@ -4,7 +4,7 @@
 !!   Miha Gunde
 
 
-SUBROUTINE push_init( nat, tau, order, at, idum, push_ids, dist_thr, add_const, init_step_size, push, mode)
+SUBROUTINE push_init( nat, tau, order, lat, idum, push_ids, dist_thr, add_const, init_step_size, push, mode)
   !
   !> @brief
   !!   subroutine that generates the initial push; options are specified by mode: 
@@ -25,7 +25,7 @@ SUBROUTINE push_init( nat, tau, order, at, idum, push_ids, dist_thr, add_const, 
   !> @param [in]    mode	    Actual kind displacement 
   !> @param [out]   push	    list of push applied on the atoms (ORDERED)
   !
-  USE artn_params, ONLY : DP, ran3, istep, iunartout, warning
+  USE artn_params, ONLY : DP, ran3, iunartout, warning
   IMPLICIT none
   ! -- ARGUMENTS
   INTEGER,          INTENT(IN)  :: nat,idum
@@ -34,14 +34,14 @@ SUBROUTINE push_init( nat, tau, order, at, idum, push_ids, dist_thr, add_const, 
   REAL(DP),         INTENT(IN)  :: dist_thr,    &
                                    init_step_size
   REAL(DP),         INTENT(IN)  :: tau(3,nat),  &
-                                   at(3,3)
+                                   lat(3,3)
   REAL(DP),         INTENT(INOUT) ::  add_const(4,nat)
   CHARACTER(*),     INTENT(IN)  :: mode
   REAL(DP),         INTENT(OUT) :: push(3,nat)
   !
   ! -- LOCAL VARIABLE
   INTEGER :: na, ia , iglob
-  REAL(DP) :: dr2, pushat(3)
+  REAL(DP) :: dr2
   REAL(DP) :: dist(3), tau0(3), vmax
   LOGICAL :: lvalid
   INTEGER :: atom_displaced(nat)
@@ -88,7 +88,7 @@ SUBROUTINE push_init( nat, tau, order, at, idum, push_ids, dist_thr, add_const, 
               IF( ia /= na ) THEN 
                  dist(:) = tau(:,ia) - tau0(:)
                  
-                 CALL pbc( dist, at)
+                 CALL pbc( dist, lat)
                  IF ( dnrm2(3,dist,1) <= dist_thr ) THEN
                     ! found an atom within dist_thr 
                     atom_displaced(ia) = 1
@@ -116,7 +116,8 @@ SUBROUTINE push_init( nat, tau, order, at, idum, push_ids, dist_thr, add_const, 
            ! check if the atom is constrained
            IF(ANY(ABS(add_const(:,na)) > 0.D0)) THEN
               ! check if the displacement is within the chosen constraint
-              CALL displacement_validation(na,add_const(:,na),push(:,na),lvalid )
+              !CALL displacement_validation(na,add_const(:,na),push(:,na),lvalid )
+              CALL displacement_validation( add_const(:,na), push(:,na), lvalid )
               IF( .not. lvalid )THEN; CYCLE RDM      ! draw another random vector
               ELSE;                   CYCLE INDEX    ! go to the next atom index
               ENDIF

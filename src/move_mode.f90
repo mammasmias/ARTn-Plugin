@@ -4,7 +4,6 @@
 !!  Miha Gunde
 !!  Nicolas Salles
 
-
 SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, alpha_init, dt_init, disp, displ_vec )
   !
   !> @breif
@@ -23,7 +22,7 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
   !> @param [in]    disp	Kind of actual displacement 
   !> @param [in]    displ_vec	Displacement field (unit lemgth/force/hessian ) 
   !
-  USE artn_params, ONLY:  lbasin, iperp, irelax, push, eigenvec, dlanc, MOVE
+  USE artn_params, ONLY:  lbasin, iperp, irelax, push, eigenvec, dlanc, MOVE !, istep
   USE UNITS
   !
   IMPLICIT NONE
@@ -45,7 +44,7 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
   ! -- Local Variable
   REAL(DP) :: dt0, dt, tmp0, tmp1
   REAL(DP), EXTERNAL               :: ddot,dnrm2
-  integer :: i
+  integer :: u0
   !
   ! do things depending on mode of the move
   ! NOTE force units of Ry/a.u. are assumed ... 
@@ -57,6 +56,10 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
   dt = convert_time( dt_curr )
   dt0 = convert_time( dt_init )   !%! Finally we don't touch dt_init
 
+  u0 = 73
+  !if( istep == 1 )write(u0,'("# -- FIRE PARAMETERS"/" istep  |  alpha   |   dt   |  nsteppos")')
+  !10 format(x,i0,2x,a,2(x,f15.5),x,i0)
+  !open(newunit=u0,file="fire_params.dat", )
 
 
   SELECT CASE( MOVE(disp) )
@@ -72,9 +75,7 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
      ! ...Displ_vec should be a Length
      force(:,:) = displ_vec(:,order(:))*amu_ry/dt**2
 
-     !do i = 1,nat
-     !1   print*, MOVE(disp), i, order(i), force(:,i), displ_vec(:,i)
-     !enddo
+     !write(u0,10) istep, MOVE(disp), alpha, dt, nsteppos
 
   CASE( 'perp' )
      !
@@ -86,6 +87,7 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
         ! for the first step forget previous velocity (prevent P < 0)
         etot = 0.D0
         vel(:,:) = 0.D0
+        !vel(:,:) = force(:,:) * dt0
         alpha = alpha_init
         dt = dt0
         nsteppos = 5
@@ -104,6 +106,7 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
         !vel = 0.D0
         
      ENDIF
+     !write(u0,10) istep, MOVE(disp), alpha, dt, nsteppos
         !
   CASE( 'lanc' )
      !
@@ -119,6 +122,8 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
      ! the step performed should be like this now translate it into the correct force
      force(:,:) = displ_vec(:,order(:))*dlanc*amu_ry/dt**2
 
+     !write(u0,10) istep, MOVE(disp), alpha, dt, nsteppos
+
      !
   CASE( 'eign' )
      !
@@ -129,6 +134,8 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
      dt = dt0
      nsteppos = 0
      force(:,:) = displ_vec(:,order(:))*amu_ry/dt**2
+
+     !write(u0,10) istep, MOVE(disp), alpha, dt, nsteppos
      !
 
   CASE( 'relx' )
@@ -140,6 +147,7 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
      endif
      force(:,:) = displ_vec(:,order(:))
 
+     !write(u0,10) istep, MOVE(disp), alpha, dt, nsteppos
 
   CASE default
      write(*,'(5x,"|> No parameter convertion in move_mode:",x,a)') MOVE(disp)

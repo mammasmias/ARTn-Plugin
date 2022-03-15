@@ -19,7 +19,7 @@ SUBROUTINE smooth_interpol( ismooth, nsmooth, nat, v0, v1, v2 )
   !! @param[inout]  v2         orientation field 2
 
   use units, only : DP
-  use artn_params, only : iunartout, force_step, eigenvec, dot_field
+  use artn_params, only : iunartout,  dot_field
 
   integer, intent( inout )  :: ismooth
   integer, intent( in )     :: nsmooth, nat

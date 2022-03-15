@@ -5,7 +5,7 @@
 !!   Nicolas Salles
 
 
-SUBROUTINE write_struct( at, nat, tau, order, atm, ityp, force, ener, fscale, ounit, form, fname )
+SUBROUTINE write_struct( lat, nat, tau, order, atm, ityp, force, ener, fscale, ounit, form, fname )
   !
   !> @brief
   !!   A subroutine that writes the structure to a file (based on xsf_struct of QE)
@@ -33,7 +33,7 @@ SUBROUTINE write_struct( at, nat, tau, order, atm, ityp, force, ener, fscale, ou
   CHARACTER(LEN=3), INTENT(IN) :: atm(*)         !> contains information on atomic types
   INTEGER,          INTENT(IN) :: ounit          !> output fortran unit
   REAL(DP),         INTENT(IN) :: tau(3,nat)     !> atomic positions
-  REAL(DP),         INTENT(IN) :: at(3,3)        !> lattice parameters in alat units
+  REAL(DP),         INTENT(IN) :: lat(3,3)        !> lattice parameters in alat units
   REAL(DP),         INTENT(IN) :: force(3,nat)   !> list of atomic forces
   REAL(DP),         INTENT(IN) :: ener           !> energy of the structure, in engine units
   REAL(DP),         INTENT(IN) :: fscale         !> factor for scaling the force
@@ -42,7 +42,7 @@ SUBROUTINE write_struct( at, nat, tau, order, atm, ityp, force, ener, fscale, ou
   CHARACTER(*), INTENT(IN) :: fname        !> file name
   !
   ! -- Local Variables
-  INTEGER :: i, j, na, ios, iloc
+  INTEGER ::  ios
   CHARACTER(:), ALLOCATABLE :: output
 
   ! ... Open the file with the good extention
@@ -54,10 +54,10 @@ SUBROUTINE write_struct( at, nat, tau, order, atm, ityp, force, ener, fscale, ou
   SELECT CASE( form )
 
     CASE( 'xsf' )
-      CALL write_xsf( at, nat, tau, order, atm, ityp, force*fscale, ounit )
+      CALL write_xsf( lat, nat, tau, order, atm, ityp, force*fscale, ounit )
 
     CASE( 'xyz')
-      CALL write_xyz( at, nat, tau, order, atm, ityp, force*fscale, ounit, ener )
+      CALL write_xyz( lat, nat, tau, order, atm, ityp, force*fscale, ounit, ener )
 
     CASE DEFAULT
       WRITE (ounit,*) " ** LIB::ARTn::WRITE_STRUC::Specified structure format not supported"
@@ -71,7 +71,7 @@ END SUBROUTINE write_struct
 
 
 ! .......................................................................................... XSF
-SUBROUTINE write_xsf( at, nat, tau, order, atm, ityp, force, ounit )
+SUBROUTINE write_xsf( lat, nat, tau, order, atm, ityp, force, ounit )
 
   USE UNITS
   !USE artn_params, ONLY: DP
@@ -83,17 +83,18 @@ SUBROUTINE write_xsf( at, nat, tau, order, atm, ityp, force, ounit )
   CHARACTER(LEN=3),   INTENT(IN) :: atm(*)         !> contains information on atomic types
   INTEGER,            INTENT(IN) :: ounit          !> output fortran unit
   REAL(DP),           INTENT(IN) :: tau(3,nat)     !> atomic positions
-  REAL(DP),           INTENT(IN) :: at(3,3)        !> lattice parameters in alat units
+  REAL(DP),           INTENT(IN) :: lat(3,3)        !> lattice parameters in alat units
   REAL(DP),           INTENT(IN) :: force(3,nat)   !> forces
   ! -- LOCAL VARIABLES
-  INTEGER :: na, u0, ios, iloc
-  REAL(DP) :: at_angs (3,3)
+  INTEGER :: na, iloc
+  REAL(DP) :: at_angs(3,3)
 
-  at_angs = unconvert_length( at )
+  !at_angs = unconvert_length( lat )  !!LAT is not converted
 
   WRITE(ounit,*) 'CRYSTAL'
   WRITE(ounit,*) 'PRIMVEC'
-  WRITE(ounit,'(2(3F15.9/),3f15.9)') at_angs
+  !WRITE(ounit,'(2(3F15.9/),3f15.9)') at_angs
+  WRITE(ounit,'(2(3F15.9/),3f15.9)') lat
   WRITE(ounit,*) 'PRIMCOORD'
   WRITE(ounit,*) nat, 1
 
@@ -125,7 +126,7 @@ SUBROUTINE read_xsf( lat, nat, tau, order, atm, ityp, force, fname )
   CHARACTER(*),       INTENT(IN) :: fname           !> file name
   ! -- LOCAL VARIABLES
   INTEGER :: na, u0, ios, iloc
-  REAL(DP) :: at_angs (3,3)
+  REAL(DP) :: at_angs(3,3)
 
   OPEN( newunit=u0, file=fname)
 
@@ -169,7 +170,7 @@ SUBROUTINE write_xyz( at, nat, tau, order, atm, ityp, f, ounit, ener )
   REAL(DP),           INTENT(IN) :: f(3,nat)       !> forces
   REAL(DP),           INTENT(IN) :: ener
   ! -- LOCAL VARIABLES
-  INTEGER :: na, u0, ios, iloc
+  INTEGER :: na, iloc, ios
 
   WRITE(ounit,*) nat
   WRITE(ounit,fmt=11) 'Lattice="',at(:,:),'"', &
@@ -205,7 +206,7 @@ SUBROUTINE read_xyz( lat, nat, tau, order, atm, ityp, force, fname )
   CHARACTER(*),       INTENT(IN) :: fname           !> file name
   ! -- LOCAL VARIABLES
   INTEGER :: na, u0, ios, iloc, i
-  REAL(DP) :: at_angs (3,3)
+  !REAL(DP) :: at_angs(3,3)
 
   OPEN( newunit=u0, file=fname)
 

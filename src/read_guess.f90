@@ -112,13 +112,13 @@ MODULE TOOLS
   END FUNCTION is_numeric
 
 
-  subroutine random_displacement( idum, id, vec )
+  subroutine random_displacement( idum, vec )
 
     use units, only : DP
     use artn_params, only : ran3
     implicit none
 
-    integer, intent(in) :: id, idum
+    integer, intent(in) :: idum
     real(DP), intent(inout ) :: vec(3)
 
     real(DP) :: dr
@@ -163,7 +163,8 @@ MODULE TOOLS
        d = dnrm2(3,dr,1) 
        IF( d <= rc )THEN
          ! found an atom within dist_thr 
-         call random_displacement( idum, na, vec(:,na)) 
+         !call random_displacement( idum, na, vec(:,na)) 
+         call random_displacement( idum, vec(:,na)) 
          !print*, id, na, d, "neigh random disp:", vec(:,na)
        ENDIF
     ENDDO
@@ -241,7 +242,8 @@ SUBROUTINE READ_GUESS( idum, nat, vec, filename )
        case( 1 )
          IF( is_numeric(words(1)) )read(words(1),*) idx
          push_ids(i) = idx
-         call random_displacement( idum, idx, vec(:,idx) )
+         !call random_displacement( idum, idx, vec(:,idx) )
+         call random_displacement( idum, vec(:,idx) )
          !print*, idx, "random disp:", vec(:,idx)
 
        case( 2: )

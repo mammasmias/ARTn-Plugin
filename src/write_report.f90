@@ -12,7 +12,7 @@ SUBROUTINE write_initial_report(iunartout, filout)
                          push_step_size, eigen_step_size, lanc_mat_size, dlanc, &
                          push_mode, verbose, push_over, frelax_ene_thr, zseed, &
                          converge_property
-  use units, only : strg_units, unconvert_force, &
+  use units, only : unconvert_force, &
                     unconvert_energy, unconvert_hessian, unconvert_length, unit_char
   INTEGER,             INTENT(IN) :: iunartout
   CHARACTER (LEN=255), INTENT(IN) :: filout
@@ -75,7 +75,7 @@ SUBROUTINE write_header_report( u0 )
 
   integer, intent( in ) :: u0
 
-  integer :: ios
+  !integer :: ios
 
 
   WRITE(u0,'(5x,"|> ARTn research :",2(x,i0)/,5x,*(a))') isearch, ifound, repeat("-",50)
@@ -84,12 +84,12 @@ SUBROUTINE write_header_report( u0 )
   select case( verbose )
     case( 0 )
     WRITE( u0,'(5X,"istep",4X,"ART_step",4X,"Etot",5x,"init/eign/perp/lanc/relx","&
-               "4X," Ftot ",5X," Fperp ",4X," Fpara ",4X,"eigval", 6X, "delr", 2X, "npart", X,"evalf",2X,"a1")')
+               &"4X," Ftot ",5X," Fperp ",4X," Fpara ",4X,"eigval", 6X, "delr", 2X, "npart", X,"evalf",2X,"a1")')
 
     case( 1: )
     WRITE( u0,'(5X,"istep",4X,"ART_step",4X,"Etot",5x,"init/eign/perp/lanc/relx","&
-               "4X," Ftot ",5X," Fperp ",4X," Fpara ",4X,"eigval", 6X, "delr", 2X, "npart", X,"evalf","&
-               "4X,"B/O/R|I/P/L/E|P/B/R",4X,"a1")')
+               &"4X," Ftot ",5X," Fperp ",4X," Fpara ",4X,"eigval", 6X, "delr", 2X, "npart", X,"evalf","&
+               &"4X,"B/O/R|I/P/L/E|P/B/R",4X,"a1")')
   end select
 
   ! -- Units
@@ -120,7 +120,7 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
   !> @param [in]  iunartout	Channel of output
   !> @param [in]  ARTnStep	Flag to print at ARTn step
   !
-  USE artn_params, ONLY: push, MOVE, verbose  &
+  USE artn_params, ONLY: MOVE, verbose  &
                         ,etot_init, iinit, iperp, ieigen, ilanc, irelax, delr, verbose, iartn, a1 &
                         ,tau_init, lat, tau_step, delr, converge_property &
                         ,lrelax, linit, lbasin, lperp, llanczos, leigen, lpush_over, lpush_final, lbackward, lrestart 
@@ -139,10 +139,10 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
 
   ! -- Local Variables
   CHARACTER(LEN=5) :: Mstep
-  integer :: macrostep = -1, evalf, i, npart
+  integer :: evalf, i, npart
   REAL(DP) :: force_tot, fperp_tot, fpara_tot, detot, lowEig, dr, rc2
   REAL(DP), EXTERNAL :: ddot
-  LOGICAL :: C1, C2
+  LOGICAL :: C1
   !
 
   ! ...Print only ARTn-Step
@@ -153,11 +153,11 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
 
   ! ...Force processing
   IF( trim(converge_property) == 'norm' )THEN
-    call sum_force( force, nat, force_tot )
+    call sum_force( force*if_pos, nat, force_tot )
     call sum_force( fpara, nat, fpara_tot )
     call sum_force( fperp, nat, fperp_tot )
   ELSE
-    force_tot = MAXVAL( ABS(force) )
+    force_tot = MAXVAL( ABS(force*if_pos) )
     fperp_tot = MAXVAL( ABS(fperp) )
     fpara_tot = MAXVAL( ABS(fpara) )
   ENDIF
@@ -176,7 +176,7 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
 
 
   !%! More Complete Output
-  Mstep = "macrostep"
+  Mstep = "Mstep"
   if( lbasin ) Mstep = 'Bstep'
   if( .not.lbasin ) Mstep = 'Sstep'
   if( lrelax ) Mstep = 'Rstep'

@@ -173,6 +173,7 @@ CONTAINS
     !> @param[in] iunartin Channel of input
     !> @param[in] filnam Input file name
     !
+    use iso_c_binding, only : C_SIZE_T
     USE units
     IMPLICIT none
     ! -- Arguments
@@ -180,7 +181,8 @@ CONTAINS
     CHARACTER (LEN=255), INTENT(IN) :: filnam
     ! -- Local Variables
     LOGICAL :: file_exists, verb
-    INTEGER :: ios, mem
+    INTEGER :: ios
+    integer(c_size_t) :: mem
     character(len=256) :: ftmp, ctmp
 
     verb = .true.
@@ -213,6 +215,12 @@ CONTAINS
       lrestart = .false.
       lmove_nextmin = .false.
       lread_param = .false.
+
+      !! ----- TEST
+      !lrelax = .true.
+      !linit = .false.
+      !lbasin = .false.
+      ! ---------
 
       lend = .false.
       verbose = 0
@@ -501,7 +509,8 @@ CONTAINS
 
   !
   !---------------------------------------------------------------------------
-  SUBROUTINE write_restart( filnres, nat )
+  !SUBROUTINE write_restart( filnres, nat )
+  SUBROUTINE write_restart( filnres )
     !
     !> @breif Subroutine that writes the minimum parameters required for restart of a calculation
     !! to a file
@@ -513,9 +522,9 @@ CONTAINS
     !  - (INIT/SADDLE/STEP): etot, tau, force (, current_step_size, fpush_factor)
     !
     CHARACTER (LEN=255), INTENT(IN) :: filnres
-    INTEGER, INTENT(IN) :: nat
+    !INTEGER, INTENT(IN) :: nat
     INTEGER :: ios
-    INTEGER :: i,j
+
     OPEN( UNIT = iunartres, FILE = filnres, ACTION="WRITE", FORM = 'formatted', STATUS = 'unknown', IOSTAT = ios)
     !OPEN( UNIT = iunartres, FILE = filnres, FORM = 'unformatted', ACCESS="SEQUENTIAL",  &
     !      STATUS = 'unknown', ACTION="WRITE", IOSTAT = ios)
@@ -553,7 +562,7 @@ CONTAINS
     CHARACTER (LEN=255), INTENT(IN) :: filnres
     LOGICAL :: file_exists
     INTEGER :: ios
-    INTEGER :: i,nat, order(nat), ityp(nat)
+    INTEGER :: nat, order(nat), ityp(nat)
     CHARACTER(LEN=255) :: fname
 
     INQUIRE ( file = filnres, exist = file_exists)

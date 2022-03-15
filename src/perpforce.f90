@@ -27,9 +27,8 @@ SUBROUTINE perpforce( force, if_pos, push, fperp, fpara, nat )
   INTEGER,  INTENT(IN)     :: if_pos(3,nat)
 
   ! -- LOCAL VARIABLE
-  REAL(DP) :: push_norm(3,nat), a, b
+  REAL(DP) :: a, b
   REAL(DP), EXTERNAL :: ddot,dnrm2
-  INTEGER  :: na
 
   ! calculate components parallel to the push
   !fpara(:,:) = ddot(3*nat,force(:,:),1,push(:,:),1) / ddot(3*nat,push(:,:),1,push(:,:),1) * push(:,:)
@@ -76,7 +75,6 @@ subroutine splitfield( n, field, mask, fref, fperp, fpara )
   ! -- LOCAL VARIABLE
   REAL(DP) :: a, b
   REAL(DP), EXTERNAL :: ddot,dnrm2
-  INTEGER  :: na
 
   ! calculate components parallel to the dir
   a = ddot( n, field, 1, fref, 1 )

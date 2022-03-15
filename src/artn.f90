@@ -30,9 +30,9 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   !
   USE units
   USE artn_params, ONLY: iunartin, iunartout, iunstruct, &
-       lrelax, linit, lperp, leigen, llanczos, lrestart, lbasin, lpush_over, lpush_final, lbackward, lmove_nextmin, lread_param,  &
-       irelax, istep, iperp, ieigen, iinit, ilanc, ismooth, iover, ifails, isearch, ifound, nlanc, nperp, noperp, nperp_step,  &
-       if_pos_ct, lowest_eigval, etot_init, etot_step, etot_saddle, etot_final, de_saddle, de_back, de_fwd, &
+       lrelax, linit, lperp, leigen, llanczos, lrestart, lbasin, lpush_over, lpush_final, lbackward, lmove_nextmin,  &
+       irelax, istep, iperp, ieigen, iinit, ilanc, ismooth, iover, isearch, ifound, nlanc, nperp, noperp, nperp_step,  &
+       if_pos_ct, lowest_eigval, etot_init, etot_step, etot_saddle, etot_final, de_back, de_fwd, &
        ninit, neigen, lanc_mat_size, nsmooth, push_mode, dist_thr, init_forc_thr, forc_thr, &
        fpara_thr, eigval_thr, frelax_ene_thr, push_step_size, current_step_size, dlanc, eigen_step_size, fpush_factor, &
        push_ids, add_const, push, eigenvec, tau_step, force_step, tau_init, tau_saddle, eigen_saddle, v_in, &
@@ -40,7 +40,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
        engine_units, struc_format_out, elements, &
        !initialize_artn, read_restart, write_restart, &
        setup_artn, read_restart, write_restart, &
-       push_over, ran3, a1, old_lanczos_vec, lend, lat, fill_param_step, &
+       push_over, ran3, a1, old_lanczos_vec, lend, fill_param_step, &
        filin, filout, sadfname, initpfname, eigenfname, restartfname, warning, flag_false,  &
        prefix_min, nmin, prefix_sad, nsaddle, artn_resume
   !
@@ -55,7 +55,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   INTEGER,  INTENT(IN) ::    if_pos(3,nat)    !> coordinates fixed by engine
   CHARACTER(LEN=3),   INTENT(IN) :: atm(*)    !> name of atom corresponding to ityp
 
-  REAL(DP), INTENT(IN) :: force(3,nat)     !> force calculated by the engine
+  REAL(DP), INTENT(IN) :: force(3,nat)        !> force calculated by the engine
   REAL(DP), INTENT(INOUT) :: tau(3,nat)       !> atomic positions (needed for output only)
 
   REAL(DP), INTENT(OUT)  :: displ_vec(3,nat)  !> displacement vector communicated to move mode
@@ -70,15 +70,15 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   REAL(DP)  :: fpara(3,nat)                   ! force parallel to push/eigenvec
   REAL(DP)  :: fperp(3,nat)                   ! force parallel to push/eigenvec
   REAL(DP)  :: fpara_tot                      ! total force in parallel direction
-  REAL(DP)  :: smoothing_factor               ! mixing factor for smooth transition between eigenvec and push
-  REAL(DP)  :: etot!, lat(3,3)
+  !REAL(DP)  :: smoothing_factor               ! mixing factor for smooth transition between eigenvec and push
+  !REAL(DP)  :: etot!, lat(3,3)
   INTEGER   :: ios ,i                         ! file IOSTAT
   !CHARACTER( LEN=255) :: filin !, filout, sadfname, initpfname, eigenfname, restartfname
   LOGICAL :: lforc_conv, lsaddle_conv, ArtnStep
   !character(:), allocatable :: outfile
   character(len=256) :: outfile
 
-  integer :: natom
+  !integer :: natom
   LOGICAL, PARAMETER :: noARTnStep = .false.
   REAL(DP) :: z
 
@@ -153,7 +153,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     !!   Here we have to initialize the push and eigenvec thanks to different way
     !!   depending the user choice.
     !!   - push_init() works for random 
-    call start_guess( idum, nat, order, if_pos, push, eigenvec )
+    !call start_guess( idum, nat, order, if_pos, push, eigenvec )
+    call start_guess( idum, nat, order, push, eigenvec )
 
 
 
@@ -187,8 +188,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
 
     ! ...Split the force field in para/perp field following the push field
-    !CALL perpforce( force_step, if_pos, push, fperp, fpara, nat)
-    CALL splitfield( 3*nat, force_step, if_pos, push, fperp, fpara )
+    CALL perpforce( force_step, if_pos, push, fperp, fpara, nat)
+    !CALL splitfield( 3*nat, force_step, if_pos, push, fperp, fpara )
 
 
 
@@ -198,8 +199,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     CALL Fill_param_step( nat, at, order, tau, etot_eng, force )
 
 
-    !CALL perpforce( force_step, if_pos, push, fperp, fpara, nat)
-    CALL splitfield( 3*nat, force_step, if_pos, push, fperp, fpara )
+    CALL perpforce( force_step, if_pos, push, fperp, fpara, nat)
+    !CALL splitfield( 3*nat, force_step, if_pos, push, fperp, fpara )
     CALL check_force_convergence( nat, force_step, if_pos, fperp, fpara, lforc_conv, lsaddle_conv )
 
   ENDIF
@@ -301,6 +302,10 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !
      ! If the force_perp component are small we continue
      ! to push
+
+     !fperp_tot = ddot(3*nat, fperp(:,:), 1, fperp(:,:), 1)
+     !current_step_size = MIN(eigen_step_size,ABS(fpara_tot)/MAX( ABS(lowest_eigval), 0.01_DP ))
+
      !
      displ_vec(:,:) = fperp(:,:)
      CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, disp, &
