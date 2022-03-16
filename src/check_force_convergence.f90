@@ -15,7 +15,7 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
   USE units
   USE artn_params, ONLY : linit, leigen, llanczos, lperp, lrelax, &
                           ilanc, iperp, nperp, nperp_list, nperp_step, noperp, istep, INIT, EIGN, RELX, &
-                          init_forc_thr, forc_thr, fpara_thr, tau_step,   &
+                          init_forc_thr, forc_thr, fpara_thr, tau_step, rcurv,  &
                           lowest_eigval, iunartout, restartfname, etot_step, write_restart, warning, converge_property
   IMPLICIT NONE
   REAL(DP), INTENT(IN) :: force(3,nat)
@@ -27,7 +27,7 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
   REAL(DP) :: fperp_thr
   LOGICAL, INTENT(OUT) :: lforc_conv, lsaddle_conv
   !
-  LOGICAL :: C1, C2, C3
+  LOGICAL :: C1, C2, C3, C4
   LOGICAL, parameter :: ARTnStep = .true.
   integer :: ios
   REAL(DP) :: maxforce, maxfperp, maxfpara
@@ -116,11 +116,12 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         C1 = ( maxfperp < fperp_thr ) ! check on the fperp field
         C2 = ( nperp > 0.AND.iperp >= nperp )    ! check on the perp-relax iteration
         C3 = ( MAXfperp < MAXfpara ) ! check wheter fperp is lower than fpara
+        C4 = ( rcurv > 0.5_DP )
 
         IF( C1 .and. iperp == 0 )C1 = .false.
         IF( C1.and. ABS(maxfperp - maxfpara) < maxfpara*1.20 ) C1 = .false.
 
-        IF( C1 .OR. C2 .OR. C3 ) THEN
+        IF( C1 .OR. C2 .OR. C3 .OR. C4 ) THEN
            lperp = .false.
            llanczos = .true. 
            leigen = .false. 
