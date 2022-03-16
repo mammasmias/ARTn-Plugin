@@ -91,12 +91,6 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
         dt = dt0
         nsteppos = 5
 
-        !dr = force * dt* dt
-        !if( dnrm2(3*nat, dr, 1) < dlanc )then
-        !  force = force *dt*dt/dnrm2(3*nat, dr, 1) * dlanc*amu_ry/dt**2
-        !endif
-        !print*, "Deplacement :", dnrm2(3*nat,force,1)*dt*dt
-
      ELSE
         ! subtract the components that are parallel
         if( lbasin )then
@@ -115,10 +109,10 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
 
      ! ...FIRE integration anticipation
      !call FIRE2_integration( iperp, nat, unconvert_force(force), vel, unconvert_time(dt), alpha, nsteppos, tmp0 )
-     !do while( tmp0 < 1.0e-2 )
+     !if( tmp0 < 1.0e-2 )then
      !   force = force * (1. + 0.02)
      !   call FIRE2_integration( iperp, nat, unconvert_force(force), vel, unconvert_time(dt), alpha, nsteppos, tmp0 )
-     !enddo
+     !endif
 
 
         !
@@ -150,7 +144,7 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
      force(:,:) = displ_vec(:,order(:))*amu_ry/dt**2
 
      !write(u0,10) istep, MOVE(disp), alpha, dt, nsteppos
-     !
+     !!
 
   CASE( 'relx' )
      !forc_thr = 10D-8    !! QE dependent
