@@ -7,7 +7,7 @@
 SUBROUTINE lanczos( nat, v_in, pushdir, force, &
      ilanc, nlanc, lowest_eigval, lowest_eigvec, displ_vec )
 
-  USE artn_params,            ONLY: DP, Vmat, H, force_old, dlanc
+  USE artn_params,            ONLY: DP, Vmat, H, force_old, dlanc, eval_conv_thr
   USE units, ONLY: unconvert_length, unconvert_hessian
   !
   !> @brief
@@ -40,7 +40,6 @@ SUBROUTINE lanczos( nat, v_in, pushdir, force, &
 
   ! -- LOCAL VARIABLES
   INTEGER :: i, j, io, id_min
-  REAL(DP), PARAMETER :: eval_conv_thr = 1.0D-2
   REAL(DP), ALLOCATABLE :: v1(:,:), q(:,:), eigvals(:)
   REAL(DP) :: dir
   REAL(DP), EXTERNAL :: ran3,dnrm2,ddot
@@ -124,7 +123,7 @@ SUBROUTINE lanczos( nat, v_in, pushdir, force, &
      eigval_diff = (lowest_eigval - lowest_eigval_old)/lowest_eigval_old
      !write(785,*) 1, lowest_eigval_old, lowest_eigval, abs(eigval_diff)
      !
-     IF ( .false..and.abs(lowest_eigval_old) > 0.0_DP ) THEN
+     IF ( abs(lowest_eigval_old) > 0.0_DP ) THEN
         IF ( ABS(eigval_diff) <= eval_conv_thr ) THEN
            !
            ! lanczos has converged

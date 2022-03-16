@@ -128,6 +128,7 @@ MODULE artn_params
   REAL(DP) :: current_step_size     !> controls the current size of eigenvector step
   REAL(DP) :: fpush_factor          !> factor for the final push 
   REAL(DP), target :: dlanc         !> step size in the lanczos algorithm 
+  REAL(DP), target :: eval_conv_thr !> threshold for convergence of eigenvalue in Lanczos
   REAL(DP) :: push_over             !> EigenVec fraction Push_over the saddle point for the relax
   ! Default Values (in Ry, au)
   REAL(DP), PARAMETER :: NAN = HUGE( dlanc )  !! Biggest number in DP representation
@@ -135,7 +136,7 @@ MODULE artn_params
                          def_forc_thr = 1.0d-3,       def_fpara_thr = 0.5d-2,  &
                          def_eigval_thr = -0.01_DP,   def_frelax_ene_thr  = 0.00_DP,    &
                          def_push_step_size = 0.3,    def_eigen_step_size = 0.2,    &
-                         def_dlanc = 1.D-2
+                         def_dlanc = 1.D-2,           def_eval_conv_thr = 1.0D-2
   ! arrays related to constraints
   INTEGER,  ALLOCATABLE :: push_ids(:)    !> IDs of atoms to be pushed
   REAL(DP), ALLOCATABLE :: add_const(:,:) !> constraints on initial push
@@ -151,7 +152,7 @@ MODULE artn_params
        push_step_size, dlanc, eigen_step_size, current_step_size, push_over, &
        push_ids, add_const, engine_units, zseed, struc_format_out, elements, &
        verbose, filout, sadfname, initpfname, eigenfname, restartfname, &
-       converge_property
+       converge_property, eval_conv_thr
 
   interface warning
     module procedure :: warning_nothing, warning_int, warning_real
@@ -260,6 +261,7 @@ CONTAINS
       !
       dlanc = NAN
       lanc_mat_size = 16
+      eval_conv_thr = NAN
       !
       engine_units = 'qe'
       !
@@ -365,6 +367,7 @@ CONTAINS
       write(*,1) "* push_step_size  = ", push_step_size
       write(*,1) "* eigen_step_size = ", eigen_step_size
       write(*,1) "* dlanc           = ", dlanc
+      write(*,1) "* eval_conv_thr   = ", eval_conv_thr
       write(*,2) repeat("*",50)
       1 format(x,a,x,g15.5)
       2 format(*(x,a))
@@ -406,6 +409,11 @@ CONTAINS
     if( dlanc == NAN )then; dlanc = def_dlanc
     else;                   dlanc = convert_length( dlanc ); endif
     !dlanc = 1.D-2
+    !
+    ! eval_conv_thr is a relative quantity, no need to be in specific units
+    if( eval_conv_thr == NAN )then; eval_conv_thr = def_eval_conv_thr
+    else;                   eval_conv_thr = eval_conv_thr ; endif
+    !eval_conv_thr = 1.D-2
 
     if( verb )then
       write(*,2) repeat("*",50)
@@ -420,6 +428,7 @@ CONTAINS
       write(*,1) "* push_step_size  = ", push_step_size
       write(*,1) "* eigen_step_size = ", eigen_step_size
       write(*,1) "* dlanc           = ", dlanc
+      write(*,1) "* eval_conv_thr   = ", eval_conv_thr
       write(*,2) repeat("*",50)
     endif
 
