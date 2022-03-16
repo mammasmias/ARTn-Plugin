@@ -188,8 +188,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
 
     ! ...Split the force field in para/perp field following the push field
-    CALL perpforce( force_step, if_pos, push, fperp, fpara, nat)
-    !CALL splitfield( 3*nat, force_step, if_pos, push, fperp, fpara )
+    !CALL perpforce( force_step, if_pos, push, fperp, fpara, nat)
+    CALL splitfield( 3*nat, force_step, if_pos, push, fperp, fpara )
 
 
 
@@ -199,8 +199,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     CALL Fill_param_step( nat, at, order, tau, etot_eng, force )
 
 
-    CALL perpforce( force_step, if_pos, push, fperp, fpara, nat)
-    !CALL splitfield( 3*nat, force_step, if_pos, push, fperp, fpara )
+    !CALL perpforce( force_step, if_pos, push, fperp, fpara, nat)
+    CALL splitfield( 3*nat, force_step, if_pos, push, fperp, fpara )
     CALL check_force_convergence( nat, force_step, if_pos, fperp, fpara, lforc_conv, lsaddle_conv )
 
   ENDIF
@@ -291,20 +291,19 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !   - here
      !.............................
      !
-     ! If eigenvalue is good, overwrite push with eigenvec (NS: Why?!)
-     !  If we come back in bassin we use this eigenvec and not push_init
+     ! If eigenvalue is good, overwrite push with eigenvec 
+     ! then If we come back in bassin we use this eigenvec and not push_init
      !
-     !
-     ! Subtract parrallel components to push from force.
      !
      disp = PERP
      !
      !
-     ! If the force_perp component are small we continue
-     ! to push
 
+     ! ...Some pre-processing on the fperp
      !fperp_tot = ddot(3*nat, fperp(:,:), 1, fperp(:,:), 1)
      !current_step_size = MIN(eigen_step_size,ABS(fpara_tot)/MAX( ABS(lowest_eigval), 0.01_DP ))
+
+     !call compute_curve( iperp, 3*nat, tau_step, fperp )
 
      !
      displ_vec(:,:) = fperp(:,:)

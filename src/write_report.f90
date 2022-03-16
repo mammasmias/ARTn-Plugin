@@ -120,7 +120,7 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
   !> @param [in]  iunartout	Channel of output
   !> @param [in]  ARTnStep	Flag to print at ARTn step
   !
-  USE artn_params, ONLY: MOVE, verbose  &
+  USE artn_params, ONLY: MOVE, verbose, rcurv  &
                         ,etot_init, iinit, iperp, ieigen, ilanc, irelax, delr, verbose, iartn, a1 &
                         ,tau_init, lat, tau_step, delr, converge_property &
                         ,lrelax, linit, lbasin, lperp, llanczos, leigen, lpush_over, lpush_final, lbackward, lrestart 
@@ -141,7 +141,8 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
   CHARACTER(LEN=5) :: Mstep
   integer :: evalf, i, npart
   REAL(DP) :: force_tot, fperp_tot, fpara_tot, detot, lowEig, dr, rc2
-  REAL(DP), EXTERNAL :: ddot
+  real(DP) :: ctot, cmax
+  REAL(DP), EXTERNAL :: ddot, dsum
   LOGICAL :: C1
   !
 
@@ -156,12 +157,14 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
     call sum_force( force*if_pos, nat, force_tot )
     call sum_force( fpara, nat, fpara_tot )
     call sum_force( fperp, nat, fperp_tot )
+    !force_tot = sqrt( dsum( 3*nat, force*if_pos ) )
+    !fpara_tot = sqrt( dsum( 3*nat, fpara ) )
+    !fperp_tot = sqrt( dsum( 3*nat, fperp ) )
   ELSE
     force_tot = MAXVAL( ABS(force*if_pos) )
     fperp_tot = MAXVAL( ABS(fperp) )
     fpara_tot = MAXVAL( ABS(fpara) )
   ENDIF
-
 
 
   ! .. Conversion Units
@@ -218,11 +221,20 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
       6 format(5x,i4,3x,a,x,a,F10.4,x,5(x,i4),5(x,f10.4),2(x,i5),3X,f4.2)
 
     case( 1: )
-      WRITE(iunartout,5) iartn, Mstep, MOVE(disp), detot, iinit, ieigen, iperp, ilanc, irelax,  &
-                         force_tot, fperp_tot, fpara_tot, lowEig,     &
-                         dr, npart, evalf,   &
-          lbasin, lpush_over, lrelax, linit, lperp, llanczos, leigen,  lpush_final, lbackward, lrestart , a1
-      5 format(5x,i4,3x,a,x,a,F10.4,x,5(x,i4),5(x,f10.4),2(x,i5),3X,10(L2),3X,f4.2)
+      !if( .not.lperp )then
+        WRITE(iunartout,5) iartn, Mstep, MOVE(disp), detot, iinit, ieigen, iperp, ilanc, irelax,  &
+                          force_tot, fperp_tot, fpara_tot, lowEig,     &
+                          dr, npart, evalf,   &
+           lbasin, lpush_over, lrelax, linit, lperp, llanczos, leigen,  lpush_final, lbackward, lrestart , a1
+       5 format(5x,i4,3x,a,x,a,F10.4,x,5(x,i4),5(x,f10.4),2(x,i5),3X,10(L2),3X,f4.2)
+
+      !else
+      !  WRITE(iunartout,4) iartn, Mstep, MOVE(disp), detot, iinit, ieigen, iperp, ilanc, irelax,  &
+      !                   force_tot, fperp_tot, fpara_tot, lowEig,     &
+      !                   dr, npart, evalf,   &
+      !    lbasin, lpush_over, lrelax, linit, lperp, llanczos, leigen,  lpush_final, lbackward, lrestart , a1, rcurv
+      !  4 format(5x,i4,3x,a,x,a,F10.4,x,5(x,i4),5(x,f10.4),2(x,i5),3X,10(L2),3X,f4.2,*(xf15.4)) 
+      !endif
 
   end select
 

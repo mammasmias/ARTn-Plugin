@@ -85,8 +85,10 @@ subroutine splitfield( n, field, mask, fref, fperp, fpara )
   fperp(1:n) = field(1:n) - fpara(1:n)
 
   ! apply constraints
-  IF ( ANY(mask(1:n) == 0)  ) fperp(1:n) = fperp(1:n)*mask(1:n)
-  IF ( ANY(mask(1:n) == 0)  ) fpara(1:n) = fpara(1:n)*mask(1:n)
+  IF( ANY(mask(1:n) == 0) )then
+     fperp(1:n) = fperp(1:n)*mask(1:n)
+     fpara(1:n) = fpara(1:n)*mask(1:n)
+  endif
 
 
 end subroutine splitfield

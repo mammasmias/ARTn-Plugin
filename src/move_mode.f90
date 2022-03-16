@@ -42,7 +42,7 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
   INTEGER, INTENT(IN)                       :: disp
   ! 
   ! -- Local Variable
-  REAL(DP) :: dt0, dt, tmp0, tmp1
+  REAL(DP) :: dt0, dt, tmp0, tmp1, dr(3,nat)
   REAL(DP), EXTERNAL               :: ddot,dnrm2
   integer :: u0
   !
@@ -87,10 +87,16 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
         ! for the first step forget previous velocity (prevent P < 0)
         etot = 0.D0
         vel(:,:) = 0.D0
-        !vel(:,:) = force(:,:) * dt0
         alpha = alpha_init
         dt = dt0
         nsteppos = 5
+
+        !dr = force * dt* dt
+        !if( dnrm2(3*nat, dr, 1) < dlanc )then
+        !  force = force *dt*dt/dnrm2(3*nat, dr, 1) * dlanc*amu_ry/dt**2
+        !endif
+        !print*, "Deplacement :", dnrm2(3*nat,force,1)*dt*dt
+
      ELSE
         ! subtract the components that are parallel
         if( lbasin )then
@@ -102,11 +108,19 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
           tmp1 = ddot( 3*nat, eigenvec(:,:), 1, eigenvec(:,:), 1 )  !> Don't need to be ordered
           vel(:,:) = vel(:,:) - tmp0 / tmp1 * eigenvec(:,order(:)) 
         endif
-        !vel(:,:) = vel(:,:) - ddot( 3*nat, vel, 1, push, 1 )*push(:,:) / ddot( 3*nat, push(:,:), 1, push(:,:), 1 )
-        !vel = 0.D0
         
      ENDIF
      !write(u0,10) istep, MOVE(disp), alpha, dt, nsteppos
+
+
+     ! ...FIRE integration anticipation
+     !call FIRE2_integration( iperp, nat, unconvert_force(force), vel, unconvert_time(dt), alpha, nsteppos, tmp0 )
+     !do while( tmp0 < 1.0e-2 )
+     !   force = force * (1. + 0.02)
+     !   call FIRE2_integration( iperp, nat, unconvert_force(force), vel, unconvert_time(dt), alpha, nsteppos, tmp0 )
+     !enddo
+
+
         !
   CASE( 'lanc' )
      !
