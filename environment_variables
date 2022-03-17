@@ -1,10 +1,16 @@
 # The following scripts is need for the user to set environment variables
 
+# COMPILER
+#F90=
+
 #
-#
+# ARTn PATH
 ART_PATH=`pwd`
 #
 # Path to the Energy and Force engines
 #
 # Quantum ESPRESSO
-QE_PATH=' '
+#QE_PATH=' '
+
+# LAMMPS 
+#LAMMPS_PATH=' '

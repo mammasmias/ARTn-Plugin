@@ -1,10 +1,11 @@
 
 #include ${QE_PATH}/make.inc
+include ../environment_variables
 
-OBJ  := Obj
-SRC  := .
-F90 := gfortran #ifort
-AR := ar
+OBJ := Obj
+SRC := .
+#F90 := gfortran #ifort
+#AR := ar
 
 LIB_OBJECTS := \
 	    $(OBJ)/units.o \
@@ -32,13 +33,13 @@ LIB_OBJECTS := \
 
 FDEBUG := -g -fcheck=all #-check all  #-fcheck=all
 
-#ifeq ($(F90),ifort)
- # MOD   := -module $(OBJ)
- # FLAGS := $(FFLAGS) $(FDEBUG) $(LAPACK_LIBS) -fPIC
-#else #($(F90),gfortran)
+ifeq ($(F90),ifort)
+  MOD   := -module $(OBJ)
+  FLAGS := $(FFLAGS) $(FDEBUG) $(LAPACK_LIBS) -fPIC
+else #($(F90),gfortran)
   MOD   := -I$(OBJ) -J$(OBJ) 
   FLAGS := $(FFLAGS) $(FDEBUG) $(LAPACK_LIBS)
-#endif
+endif
 
 
 # ---------------------------------------------------------------------------
