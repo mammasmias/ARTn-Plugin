@@ -1,9 +1,9 @@
 
 include environment_variables
 
-default : source
+default : help
 
-source :
+lib :
 	( cd src; $(MAKE); cd - )
 
 clean :
@@ -82,7 +82,7 @@ help:
 	@echo ""
 	@echo "* COMPILATION:"
 	@$(call verif_defined, F90)
-	@echo "make			compile the libartn.a library in src/ folder with ${F90} compiler"
+	@echo "make lib			compile the libartn.a library in src/ folder with ${F90} compiler"
 	@echo "make clean		delete the object files and libartn.a from src/ "
 	@echo ""
 	@echo ""
