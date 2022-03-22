@@ -62,14 +62,14 @@ check_defined = \
         $(call __check_defined,$1,$(strip $(value 2)))))
 __check_defined = \
     $(if $(value $1),, \
-      $(error Undefined $1$(if $2, ($2)): Define it in environment_variables file))
+      $(error Undefined $1$(if $2, ($2)): Define it in the file environment_variables))
 
 verif_defined = \
     $(strip $(foreach 1,$1, \
         $(call __verif_defined,$1,$(strip $(value 2)))))
 __verif_defined = \
     $(if $(value $1),, \
-      echo "*** Undefined $1$(if $2, ($2)): Define it in environment_variables file")
+      echo "*** Undefined $1$(if $2, ($2)): Define it in the file environment_variables")
 
 
 
@@ -82,7 +82,7 @@ help:
 	@echo ""
 	@echo "* COMPILATION:"
 	@$(call verif_defined, F90)
-	@echo "make lib			compile the libartn.a library in src/ folder with ${F90} compiler"
+	@echo "make lib		compile the libartn.a library in src/ folder with ${F90} compiler"
 	@echo "make clean		delete the object files and libartn.a from src/ "
 	@echo ""
 	@echo ""
