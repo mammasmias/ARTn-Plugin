@@ -4,6 +4,7 @@ include environment_variables
 default : help
 
 lib :
+	@$(call check_defined, F90)
 	( cd src; $(MAKE); cd - )
 
 clean :
