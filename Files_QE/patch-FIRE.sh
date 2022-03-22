@@ -5,6 +5,12 @@
 # should be run before attempting to add the ARTn plugin to QE 
 # 
 
+if[ -z ${QE_PATH+x} ] ; 
+then 
+  echo " You have to declare the environmental_variable QE_PATH"
+  stop
+fi
+
 # overwrite modified files 
 #cp  Modules-modified/*f90 qe-6.6/Modules/
 cp  Modules-modified/*f90 $QE_PATH/Modules/
