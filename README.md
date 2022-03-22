@@ -4,17 +4,14 @@ This is a working repo for the current version of the plugin-ARTn; currently it 
 
 ## Contains:
 
-- `Modules-modified/`: Modification on QE's Modules (see Modules-modified/README.md for a description )  ***(Has to disappear)***
 
-- `PW-src-modified/`: Routines modified in PW/src/ of QE mainly to add  ***(Has to disappear)***
-
-
-- `examples/`: Contains `Al-vacancy.d` and `H2+H.d` 
+- `examples/`: Contains many example including `Al-vacancy.d` and `H2+H.d` 
 - `src/`: ARTn plugin subroutines 
-- `patch-ARTn.sh`: Patch QE with the ARTn plugin 
-- `patch-FIRE.sh`: Patch QE with the FIRE minimization algorithm ***(Has to disappear)***
 - `README.md`: The file you are reading
-- `LAMMPS_Fix/`: Contains the fix of lammps to interface LAMMPS/ARTn
+- `Files_LAMMPS/`: Contains the fix of lammps to interface LAMMPS/ARTn
+- `Files_QE/`: Contains the file plugin_ext_forces.f90 which call the ARTn library
+- `Makefile`: Command to patch the engine and compile the library. Use the variables defined in file `environment_variables`
+- `environment_variables`: User costum file in which it should be define the fortran compiler to compile the library in the variable `F90` and the path where the engine can be found in variables `LAMMPS+PATH` or `QE_PATH`
 
 
 
@@ -22,10 +19,24 @@ This is a working repo for the current version of the plugin-ARTn; currently it 
 
 ### How to patch QE:
 
-<!--- **First installation:**  Execute  the `patch-FIRE.sh` script (adds the FIRE minimization option to QE)-->
+
 
 **Install/update the ARTn-plugin**:
-First configure QE, then put correct paths of QE and ART in the environment variables file, then run "make" to compile the libartn.a, and then run "make patch" to patch QE and make pw.
+First **configure** QE, then put correct paths of QE and ART in the `environment variables` file, then compile the libartn.a:
+
+```bash
+make lib
+```
+
+and then run "make patch" to patch QE
+
+```bash
+make patch-qe
+```
+
+This command recompile automatically PW.
+
+For the QE version older than 7.0 the ARTn patch need more files.
 
 ### How to run ARTn with QE:
 
@@ -67,9 +78,19 @@ Finally Quantum ESPRESSO must be launched with the flag -partn as follow:
 
 We test this interface only with gnu compiler. 
 
-The folder `LAMMPS_FIX/` contains 3 file:  `fix_artn.h` and `fix_artn.cpp` which define the fix ARTn, and `artn/h` which contains the prototype of the library's routine used by the fix ARTn. So  copy and paste these three files in the `LAMMPS_PATH/src/`.
+**In the plugin-ARTn repository**: First put the correct path in variable `LAMMPS_PATH` in file `environment_variables` as well as the fortran compiler use to compile library libartn.a in variable  `F90`. Afterwards compile the library `libartn.a`:
 
-In the Makefile of LAMMPS, i.e. `LAMMPS_PATH/src/MAKE/Makefile.serial`, you must had the library PATH. For pARTn it needs the openblas library with pthread library and the gfortran library for the C++/fortran interface. Of course the ARTn library is built at ARTn compilation and placed in the `plugin-ARTn/src/` folder.
+```bash
+make lib
+```
+
+patch lammps, means copy the files in `Files_LAMMPS/` to `LAMMPS_PATH/src` doing:
+
+```bash
+make patch-lammps
+```
+
+**In LAMMPS folder**: The plugin-ARTn library has to be called during the LAMMPS compilation. In the Makefile you want to use to compile it, i.e. `LAMMPS_PATH/src/MAKE/` the following lines has to be added. One variable to inform on library OPENBLAS, one to inform on the fortran library because the C++/Fortran interface and one last  to imform on the path of ART repository.
 An example:
 
 ```makefile
@@ -91,7 +112,7 @@ $(EXE): main.o $(LMPLIB) $(EXTRA_LINK_DEPENDS)
 Now you can compile LAMMPS using the normal command with the good name of the Makefile (serial/mpi)
 
 ```bash
-make serial
+make yourmakefile
 ```
 
 
@@ -209,35 +230,9 @@ Depending of the engine the works units changes and it is to the user to be cohe
 
 ## TODO
 
-- Add an `artn.h` to include the `artn_()`, `move_mode_()` and other function of pARTn :ok:
-
-- **BUGS**
-
-  - LANCZOS: Go out without and eigenvector before to do `lanc_mat_size` step
-  - Stay stuck between 2 state sometime
-  - `PUSH_OVER` has to be adjusted
-
-- **END PROCEDURE**:
-
-  - Create a Clean procedure at the end of research to have to possibility to do many research in one launch :ok:
-  - `lpush_final = .false.` : no output indication :ok:
-  - General procedure to finish ARTn :ok: 
-
 - nsteppos in ARTn doesn't have the same meaning for QE and LAMMPS in FIRE algo
 
-- Work on verbose debug mode :ok:
-
-- **Interface LAMMPS**: It's work but still have some noise coming from the velocity. Has to be solve but actually I (Nico) do a break...
-
-- Do pARTn output as ARTn output :ok:
-
-- Adapt the Units output with the Engine input :ok:
-
-- Verify the parameter NAME :ok:
-
 - Add the output filename custom 
-
-- `nperp` parameter it is deactivated when you it converge on the saddle point. Should be Activated when the system return in Basin. :ok:
 
 - `nperp`: Maybe we have to follow the antoine method: progressive increase of nperp after the inflection line. Or maybe to be proportional to the fperp magnitude because happen when the magnitude is too high the perp-relax lead the lost of saddle point.
 
@@ -255,66 +250,6 @@ Depending of the engine the works units changes and it is to the user to be cohe
         end select
     ```
 
-- `nperp`: Need an equilibration between fpara and fperp
+- **RESTART**: Fast Restart procedure for lammps and binary - Write the restart file with lammps take too mush time
 
-- **RESTART**: Fast Restart procedure for lammps and binary - Write it only at the end of ARTn-step. :ok:
-
-- **WARNING**: Create a error/warning log file to write all the step does not follow the normal behavior of ARTn. :female_detective:
-
-  ```fortran
-  module artn_param_mod
-    interface warning
-      module procedure :: warning_int, warning_real
-    end interface
-   CONTAINS
-    SUBROUTINE warning_int( u0, STEP, text, intv )
-    SUBROUTINE warning_real( u0, STEP, text, realv )
-  ```
-
-  
-
-  - **Transition INIT/PERP**: If the initial push is not enought, the perp-relax is not activated. So the `iinit` is incremented and can reach the lanczos step without never do perp-relax :ok:
-
-    ```fortran
-    module artn_param_mod
-    	integer :: noperp
-    
-    subroutine check_force()
-    	IF( lperp )THEN
-    	  IF( leigen )THEN
-    	    ...
-    	  ELSE !> In BASIN
-    	    ...
-    	    IF( C1 )THEN
-              noperp = noperp + 1
-              ! ** WARNING **
-              if( noperp > 2 ) &
-                CALL WARNING( iunartout, "Tansition Push-Init->Perp-Relax",  &
-            "The Fperp is too small after Push-INIT- change push_step_size ", [noperp])
-            ENDIF
-          ELSE IF( lrelax )THEN  
-          ENDIF
-    ```
-
-    
-
-  - **Transition Saddle/Relax**: If the `eigen_step_size` is too small ARTn can be blocked in PUSH_OVER mode. :ok:
-
-    ```fortran
-    SUBROUTINE ARTn()  
-      IF( lsaddle )THEN
-        IF( lpush_final )THEN
-          IF ( etot_step - etot_saddle < frelax_ene_thr ) THEN
-          ELSE
-            iover = iover + 1
-            ! ** WARNING **
-            if( iover > 2 ) &
-              CALL WARNING( iunartout, "PUSH-OVER", &
-              "Too many push over the saddle point - change eigen_step_size ", [iover])
-    ```
-
-    
-
-  - **`EIGN/LANC` Oscillation:** If `fpara_thr` is too close to `forc_thr` it is possible to enter in condition where `fpara > fpara_thr` => `fperp_thr = init_forc_thr` =>  `fperp < fperp_thr` 
-
-  - **Kill the simulation**: We should be able to kill the run when the configuration goes banana!! Often happen to loose the saddle point because the too much perp-relax.
+- Do **time profiler** for the ARTn library.
