@@ -14,9 +14,9 @@ clean :
 # -------------------------------------------------------------------------- LAMMPS
 patch-lammps:
 	@$(call check_defined, LAMMPS_PATH)
-	@cp LAMMPS_Fix/*artn.*  ${LAMMPS_PATH}/src/
+	@cp Files_LAMMPS/*artn.*  ${LAMMPS_PATH}/src/
 	@echo " ***** Fix/artn files copied"
-	@echo " ***** You have to compile LAMMPS before to use it"
+	@echo " ***** You have to compile LAMMPS before useing it"
 
 unpatch-lammps:
 	@$(call check_defined, LAMMPS_PATH)
@@ -70,16 +70,16 @@ verif_defined = \
         $(call __verif_defined,$1,$(strip $(value 2)))))
 __verif_defined = \
     $(if $(value $1),, \
-      echo "*** Undefined $1$(if $2, ($2)): Define it in the file environment_variables")
+      echo "*WARNING** Undefined $1$(if $2, ($2)): Define it in the file environment_variables")
 
 
 
 
 # ---------------------------------------------
 help:
-	@echo "*****************************************************************************************************"
+	@echo "*******************************************************************************"
 	@echo "*                    Plugin-ARTn Library "
-	@echo "*****************************************************************************************************"
+	@echo "*******************************************************************************"
 	@echo ""
 	@echo "* COMPILATION:"
 	@$(call verif_defined, F90)
@@ -97,7 +97,7 @@ help:
 	@echo "make patch-qe		copy Files_QE/plugin_ext_forces.f90 to QE_PATH/src"
 	@echo "make unpatch-qe		delete the changes in plugin_ext_forces.f90 from QE_PATH/src"
 	@echo ""
-	@echo "*****************************************************************************************************"
+	@echo "*******************************************************************************"
 	@echo ""
 	
 
