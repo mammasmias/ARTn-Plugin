@@ -130,12 +130,8 @@ MODULE artn_params
   REAL(DP) :: eigen_step_size       !> step size for a step with the lanczos eigenvector
   REAL(DP) :: current_step_size     !> controls the current size of eigenvector step
   REAL(DP) :: fpush_factor          !> factor for the final push 
-<<<<<<< HEAD
-  REAL(DP) :: dlanc                 !> step size in the lanczos algorithm 
-=======
   REAL(DP), target :: dlanc         !> step size in the lanczos algorithm 
   REAL(DP), target :: eval_conv_thr !> threshold for convergence of eigenvalue in Lanczos
->>>>>>> master
   REAL(DP) :: push_over             !> EigenVec fraction Push_over the saddle point for the relax
   ! Default Values (in Ry, au)
   REAL(DP), PARAMETER :: NAN = HUGE( dlanc )  !! Biggest number in DP representation
