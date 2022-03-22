@@ -135,7 +135,6 @@ SUBROUTINE artn_QE( force, etot, epsf_qe, nat, ityp, atm, tau, at, alat, istep, 
   !print*, " * ARTn_QE::PRE_MOVEMODE "
 
   ! ...Convert the dR given by ARTn to forces
-  !call move_mode( nat, force, vel, etot_fire, nsteppos, dt_curr, alpha, fire_alpha_init, dt_init, disp, displ_vec )
   call move_mode( nat, order, force, vel, etot_fire, nsteppos, dt_curr, alpha, fire_alpha_init, dt_init, disp, displ_vec )
 
 
