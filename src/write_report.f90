@@ -11,7 +11,7 @@ SUBROUTINE write_initial_report(iunartout, filout)
                          init_forc_thr, forc_thr, fpara_thr, eigval_thr, &
                          push_step_size, eigen_step_size, lanc_mat_size, dlanc, &
                          push_mode, verbose, push_over, frelax_ene_thr, zseed, &
-                         converge_property
+                         converge_property, eval_conv_thr
   use units, only : unconvert_force, &
                     unconvert_energy, unconvert_hessian, unconvert_length, unit_char
   INTEGER,             INTENT(IN) :: iunartout
@@ -56,6 +56,7 @@ SUBROUTINE write_initial_report(iunartout, filout)
   WRITE (iunartout,'(5X, "--------------------------------------------------")')
   WRITE (iunartout,'(15X,"lanc_mat_size   = ", I6)') lanc_mat_size
   WRITE (iunartout,'(15X,"dlanc           = ", G10.4,2x,A)') unconvert_length( dlanc ), unit_char('length')
+  WRITE (iunartout,'(15X,"eval_conv_thr   = ", G10.4)') eval_conv_thr
   WRITE (iunartout,'(5X, "--------------------------------------------------")')
   WRITE (iunartout,'(/,/)') 
   !WRITE (iunartout,*) " "
