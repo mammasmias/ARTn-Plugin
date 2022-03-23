@@ -154,18 +154,15 @@ Depending of the engine the works units changes and it is to the user to be cohe
 
 **The values gives by the user through the input file should be in engine units**
 
-- `lrelax`: Values `.true./.false`, default is `false.`.
-  Flag if we want to relax to adjacent minima from the saddle point.  
-
 - `lpush_final`: Values `.true./.false.`, default is `.true.`.  
   Flag to push to adjacent minimum along eigenvector. Flag to push to the second minimum.
 
 - `lrestart`: Values `.true./.false.`, default is `.false.`.
-  Flag for restarting a ARTn calculation.  
+  Flag for restarting a ARTn calculation.  initialize the ARTn parameters and configuration from the file `artn.restart`.
 
 - `lmove_nextmin`: Value .true./.false., default is .false. 
 
-  Flag to leave ARTn with the new minimum found.
+  Flag to leave ARTn with the new minimum found. 
 
 - `ninit`: Value integer, by default is `3`. Number of initial pushes before lanczos start.
 
@@ -181,6 +178,7 @@ Depending of the engine the works units changes and it is to the user to be cohe
   Engine specific flag:
 
 - `engine_units`: Value character, default is `qe`. For LAMMPS it is needed to specify `lammps/<units>` where `<units>` correspond to the units keywords in LAMMPS input: (`metal`, `charge`, ...)
+
 ###### The push mode:
 
 **The values gives by the user through the input file should be in engine units**
@@ -218,21 +216,22 @@ Depending of the engine the works units changes and it is to the user to be cohe
 
 - `verbose`: Value is integer, by default is `0`. Level `0`  print in output file at each ARTn step without flag information, at `1`  it will add the information flag and at `2`  will print at each step: define push, push and perprelax.  
 
-
-
-
-
 ## The output
 
-- explain the output file... More precisely explain the behavior by default tat pARTn does. 
+Various files can be found in output. 
 
-  I mean the saddle point research first, after the minimization to the first minimum and after the minimization to the second minimum. 
+- The details of ARTn research is given in file named `artn.out`. This file follows the engine units defined thank to the variable `engine_units`.  It gives the system parameters evolution used by ARTn to find the saddle point as well as the the balance energies between the locals minimum and saddle point.
+- At the beginnning ARTn write the initial configuration in file `initp.*` with `*` is the format choose by the user tank to the variable `struc_format_out`.
+- During the ARTn convergence to the saddle point, the followed eigenvector is store in the file `lastest_engenvec.*` with `*` follows the format defined by the variable `struc_format_out`.
+- For each convergence reached, saddle point and locals minimum, the configuration are stored following the format defined in variable `struc_format_out` and the name are build thank to the variables `prefix_sad` and `prefix_min`, customizable by the user, and a counter that allows to don't overwrite file if mulpile ARTn research are done in the same file.
 
 ## TODO
 
 - nsteppos in ARTn doesn't have the same meaning for QE and LAMMPS in FIRE algo
 
 - Add the output filename custom 
+
+- 
 
 - `nperp`: Maybe we have to follow the antoine method: progressive increase of nperp after the inflection line. Or maybe to be proportional to the fperp magnitude because happen when the magnitude is too high the perp-relax lead the lost of saddle point.
 
