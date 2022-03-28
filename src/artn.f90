@@ -428,6 +428,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      artn_resume = trim(artn_resume)//" | "//trim(outfile)
      !
 
+     !CALL write_end_report( iunartout, lsaddle, lpush_final, etot_step - etot_init )
+     CALL write_end_report( iunartout, lpush_over, lpush_final, etot_step - etot_init )
 
      !> If the saddle point is lower in energy
      !!  than the initial point: Mode refine
@@ -435,9 +437,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         ! ...HERE Warning to says we should be in refine saddle mode
         write( iunartout, '(5x,a)' ) "!> WARNING::E_Saddle < E_init => Should be a saddle refine mode"
      ENDIF
-
-     !CALL write_end_report( iunartout, lsaddle, lpush_final, etot_step - etot_init )
-     CALL write_end_report( iunartout, lpush_over, lpush_final, etot_step - etot_init )
 
   ENDIF
 
