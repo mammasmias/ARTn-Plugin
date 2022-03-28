@@ -42,7 +42,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
        setup_artn, read_restart, write_restart, &
        push_over, ran3, a1, old_lanczos_vec, lend, fill_param_step, &
        filin, filout, sadfname, initpfname, eigenfname, restartfname, warning, flag_false,  &
-       prefix_min, nmin, prefix_sad, nsaddle, artn_resume
+       prefix_min, nmin, prefix_sad, nsaddle, artn_resume, natoms
   !
   IMPLICIT NONE
   ! -- ARGUMENTS
@@ -320,7 +320,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      do i = 1,nat
         z = max( z, norm2(displ_vec(:,i)) )
      enddo
-     IF( z > 1.0e4 )THEN
+     IF( nat /= natoms.OR.z > 1.0e4 )THEN
 
        write(*,'(5x,"|> BOX EXPLOSION - STEP",x,i0," - STOP ARTn RESEARCH ")') istep
        write(iunartout,'(5x,"|> BOX EXPLOSION - STEP",x,i0," - STOP ARTn RESEARCH ")') istep

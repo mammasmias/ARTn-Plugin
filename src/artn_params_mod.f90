@@ -68,6 +68,7 @@ MODULE artn_params
   INTEGER :: zseed      !> random number generator seed
   INTEGER :: ifound     !> Number of saddle point found
   INTEGER :: isearch    !> Number of saddle point research
+  INTEGER :: natoms     !> Number of atoms in the system
 
   INTEGER :: nmin       !> count the number of minimum found
   INTEGER :: nsaddle    !> count the number of saddle point found
@@ -518,6 +519,7 @@ CONTAINS
     INTEGER, INTENT(IN) :: nat, order(nat)!, types(nat)
     REAL(DP), INTENT(IN) :: box(3,3), etot, pos(3,nat), force(3,nat)
 
+    natoms = nat
     lat = box
     tau_step(:,order(:)) = pos(:,:)
     !tau_step(:,order(:)) = convert_length( pos(:,:) )
