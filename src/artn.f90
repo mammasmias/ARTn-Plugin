@@ -195,6 +195,23 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
   ELSE !>     ISTEP > 0
 
+
+    if( nat /= natoms )then
+
+       write(*,'(5x,"|> ATOMS LOST (",2(x,i0),") - STEP",x,i0," - STOP ARTn RESEARCH ")') nat, natoms, istep
+       write(iunartout,'(5x,"|> ATOMS LOST (",2(x,i0),") - STEP",x,i0," - STOP ARTn RESEARCH ")') nat, natoms, istep
+       write(iunartout,'(5x,150("-")/)')
+
+       !> SCHEMA FINILIZATION
+       ! ...Laod the start configuration
+       tau(:,:) = tau_init(:,order(:))
+       ! ...Force = 0.0
+       displ_vec = 0.0_DP
+       lconv = .true.  !! Stop the research 
+
+    endif
+
+
     ! ...Fill the *_step Arrays
     CALL Fill_param_step( nat, at, order, tau, etot_eng, force )
 
