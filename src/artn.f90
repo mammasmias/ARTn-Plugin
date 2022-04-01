@@ -198,9 +198,11 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
     if( nat /= natoms )then
 
+       OPEN ( UNIT = iunartout, FILE = filout, FORM = 'formatted', ACCESS = 'append', STATUS = 'unknown', IOSTAT = ios )
        write(*,'(5x,"|> ATOMS LOST (",2(x,i0),") - STEP",x,i0," - STOP ARTn RESEARCH ")') nat, natoms, istep
        write(iunartout,'(5x,"|> ATOMS LOST (",2(x,i0),") - STEP",x,i0," - STOP ARTn RESEARCH ")') nat, natoms, istep
        write(iunartout,'(5x,150("-")/)')
+       Close( iunartout )
 
        !> SCHEMA FINILIZATION
        ! ...Laod the start configuration
@@ -208,6 +210,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
        ! ...Force = 0.0
        displ_vec = 0.0_DP
        lconv = .true.  !! Stop the research 
+       return
 
     endif
 
