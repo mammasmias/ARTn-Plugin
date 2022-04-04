@@ -248,21 +248,23 @@ END SUBROUTINE write_report
 !------------------------------------------------------------
 SUBROUTINE write_inter_report( u, pushfactor, de )
   use units, only : DP, unconvert_energy, unit_char
-  use artn_params, only : artn_resume
+  use artn_params, only : artn_resume, istep
   implicit none
 
   integer, intent( in ) :: u             !> Ouput Unit 
   integer, intent( in ) :: pushfactor
-  real(DP), intent( in ) :: de(*)            !> list of energie 
+  real(DP), intent( in ) :: de(*)            !> list of energie
+
 
   SELECT CASE( pushfactor )
 
     CASE( 1 )
       ! de(1) = de_back
       WRITE( u, '(5X, "--------------------------------------------------")')
-      WRITE( u, '(5X, "|> ARTn found adjacent minimum | backward E_act =", F12.5,x,a)') &
+      WRITE( u, '(5X, "|> ARTn converged to a forward minimum | backward E_act =", F12.5,x,a)') &
           unconvert_energy( de(1) ), unit_char('energy')
       WRITE( u, '(5X, "--------------------------------------------------")')
+      WRITE (u,'(5X, "|> number of steps:",x, i0)') istep
 
     CASE( -1 )
       ! de(1) = de_back
@@ -271,7 +273,7 @@ SUBROUTINE write_inter_report( u, pushfactor, de )
       ! de(4) = etot_final
       ! de(5) = etot   
       WRITE( u,'(5X, "--------------------------------------------------")')
-      WRITE( u,'(5X, "    *** ARTn converged to initial minimum ***   ")')
+      WRITE( u,'(5X, "    *** ARTn converged to a backward minimum ***   ")')
       WRITE( u,'(5X, "--------------------------------------------------")')
       WRITE( u,'(15X,"forward  E_act =", F12.5,x,a)') unconvert_energy(de(2)), unit_char('energy')
       WRITE( u,'(15X,"backward E_act =", F12.5,x,a)') unconvert_energy(de(1)), unit_char('energy') 
@@ -281,6 +283,7 @@ SUBROUTINE write_inter_report( u, pushfactor, de )
       WRITE( u,'(5X, "|> Configuration Files:", X,A)') trim(artn_resume)
       WRITE( *,'(5x, "|> Configuration Files:", X,A)') trim(artn_resume)
       WRITE( u,'(5X, "--------------------------------------------------")')
+      WRITE (u,'(5X, "|> Total number of steps:",x, i0)') istep
       !WRITE( u,'(/)')
 
 
@@ -298,7 +301,7 @@ END SUBROUTINE write_inter_report
 SUBROUTINE write_end_report( iunartout, lsaddle, lpush_final, de )
  
   use units, only : DP, unconvert_energy, unit_char
-  use artn_params, only : artn_resume
+  use artn_params, only : artn_resume, istep
   implicit none
 
   integer, intent( in ) :: iunartout
@@ -313,7 +316,7 @@ SUBROUTINE write_end_report( iunartout, lsaddle, lpush_final, de )
     WRITE (iunartout,'(5X, "--------------------------------------------------")')
 
     IF( lpush_final ) THEN
-      WRITE(iunartout,'(5X,"       *** Pushing to adjacent minima  ***      ")')
+      WRITE(iunartout,'(5X,"       *** Pushing forward to a minimum  ***      ")')
       WRITE(iunartout,'(5X, "-------------------------------------------------")')
     ELSE
       WRITE(iunartout,'(5X,"|> No push_final to Minimum :: ARTn search finished "/5x,*(a))') repeat("-",50)
@@ -328,6 +331,8 @@ SUBROUTINE write_end_report( iunartout, lsaddle, lpush_final, de )
     WRITE (iunartout,'(5X, "        *** ARTn saddle search failed  ***        ")')
     WRITE (iunartout,'(5X, "--------------------------------------------------")')
   endif
+
+  WRITE (iunartout,'(5X, "|> number of steps:",x, i0)') istep
 
 END SUBROUTINE write_end_report
 
