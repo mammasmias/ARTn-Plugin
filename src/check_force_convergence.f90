@@ -110,6 +110,8 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
            !nperp =  nperp_list(1)
         ENDIF
 
+        !print*, " CHECK_FORCE():Nperp ", nperp, nperp_step, nperp_list
+
         ! 
         ! -- check perpendicular force convergence for the perp-relax 
         ! 
@@ -118,8 +120,8 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         C3 = ( MAXfperp < MAXfpara ) ! check wheter fperp is lower than fpara
         !C4 = ( rcurv > 0.5_DP )
 
-        IF( C1 .and. iperp == 0 )C1 = .false.
-        IF( C1.and. ABS(maxfperp - maxfpara) < maxfpara*1.20 ) C1 = .false.
+        IF( C1 .and. iperp == 0 )C1 = .false.  !! Force to do at least one prep-relax
+        !IF( C1.and. ABS(maxfperp - maxfpara) < maxfpara*1.20 ) C1 = .false.  !! if fperp is to o far from fpara too many perp-relax can relax to much the system
 
         !IF( C1 .OR. C2 .OR. C3 .OR. C4 )THEN
         IF( C1 .OR. C2 .OR. C3 )THEN
@@ -170,7 +172,7 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
 
         C1 = ( MAXfperp < fperp_thr ) ! check on the fperp field
         C2 = ( nperp > 0.AND.iperp >= nperp )    ! check on the perp-relax iteration
-        C3 = ( MAXfperp < MAXfpara ) ! check wheter fperp is lower than fpara
+        C3 = .false. !( MAXfperp < MAXfpara ) ! check wheter fperp is lower than fpara
 
         IF( C1 .OR. C2 .OR. C3 )THEN
            lperp = .false.

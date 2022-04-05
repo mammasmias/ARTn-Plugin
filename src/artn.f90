@@ -196,6 +196,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   ELSE !>     ISTEP > 0
 
 
+    ! ...Verification of number of atoms before to play with arrays
     if( nat /= natoms )then
 
        OPEN ( UNIT = iunartout, FILE = filout, FORM = 'formatted', ACCESS = 'append', STATUS = 'unknown', IOSTAT = ios )

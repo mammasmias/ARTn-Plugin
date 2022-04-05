@@ -313,6 +313,7 @@ SUBROUTINE write_end_report( iunartout, lsaddle, lpush_final, de )
     WRITE (iunartout,'(5X, "--------------------------------------------------")')
     WRITE (iunartout,'(5X, "|> ARTn found a potential saddle point | E_saddle - E_initial =", F12.5,x,a)') &
       unconvert_energy(de), unit_char('energy')
+    WRITE(iunartout,'(5X, "|> Stored in Configuration Files:", X,A)') trim(artn_resume)
     WRITE (iunartout,'(5X, "--------------------------------------------------")')
 
     IF( lpush_final ) THEN
@@ -322,7 +323,6 @@ SUBROUTINE write_end_report( iunartout, lsaddle, lpush_final, de )
       WRITE(iunartout,'(5X,"|> No push_final to Minimum :: ARTn search finished "/5x,*(a))') repeat("-",50)
       !WRITE(iunartout,'(5X,"       *** ARTn search finished ***")')
       !WRITE(iunartout,'(5X,"       *** no push_final minimal ***")')
-      WRITE(iunartout,'(5X, "|> Configuration Files:", X,A)') trim(artn_resume)
       WRITE(iunartout,'(5X, "-------------------------------------------------"/)')
     ENDIF
 

@@ -56,7 +56,7 @@ MODULE artn_params
   INTEGER :: iperp      !> number of steps in perpendicular relaxation
   INTEGER :: nperp, nperp_step, noperp
   !INTEGER :: nperp_list(5) = [ 4, 8, 12, 16, 0 ]
-  INTEGER :: nperp_list(5) = [ 0, 0, 0, 0, 0 ]
+  INTEGER :: nperp_list(5) = [ 0, 0, 0, 0, 0 ]   !! Who do that??
   INTEGER :: iover
   INTEGER :: irelax     !> Number of relaxation iteration
   INTEGER :: ieigen     !> number of steps made with eigenvector
