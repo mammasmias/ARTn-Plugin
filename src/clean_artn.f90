@@ -7,7 +7,7 @@ SUBROUTINE clean_artn()
            iartn, istep, iinit, iperp, ilanc, ieigen, nlanc, ifails,  &
            irelax, iover, istep, fpush_factor, lowest_eigval, nperp, nperp_list,  &
            artn_resume, old_lanczos_vec, H, Vmat, lanc_mat_size,  &
-           iunartout, filout, nperp_step
+           iunartout, filout, nperp_step, old_lowest_eigval
   implicit none
 
   integer :: ios
@@ -51,6 +51,7 @@ SUBROUTINE clean_artn()
   !write(*,'(5x,"Reinitialize NPERP:",x,i0)') nperp
 
   
+  old_lowest_eigval = huge( old_lowest_eigval ) 
   lowest_eigval = 0.0_DP
   artn_resume = ""
 

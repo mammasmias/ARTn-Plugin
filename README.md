@@ -154,7 +154,7 @@ Depending of the engine the works units changes and it is to the user to be cohe
 
 **The values gives by the user through the input file should be in engine units**
 
-- `lpush_final`: Values `.true./.false.`, default is `.true.`.  
+- `lpush_final`: Values `.true./.false.`, default is `.true.`. 
   Flag to push to adjacent minimum along eigenvector. Flag to push to the second minimum.
 
 - `lrestart`: Values `.true./.false.`, default is `.false.`.
@@ -169,6 +169,10 @@ Depending of the engine the works units changes and it is to the user to be cohe
 - `neigen`: Value integer, by default is `1`. Number of steps made with eigenvector before perpendicular relax.
 
 - `nperp`: Value integer, by default is `3`. Maximum number of relaxation perpendicular to the move direction after an `init` or `eigen` push.
+
+- `lnperp_limitation`: Values `.true./.false.`, default is `.true.`. 
+
+  this option allows to constrain the number of perpendicular relaxation during the convrgence to the saddle point, out of the basin. The limitation is incremental starting by 8, 12, 16, -1 (infinite). These values are stored in arrays `nperp_limitation(5)` where the first value is `nperp` in the basin. These list can be customizable in input giving the values of the array: `nperp_limitation = [...custom values]` 
 
 - `lanc_mat_size`: Value integer, by default is `16`. Maximum number of Lanczos iterations
 

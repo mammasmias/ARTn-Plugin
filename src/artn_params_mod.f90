@@ -107,6 +107,7 @@ MODULE artn_params
   ! arrays that are used by the Lanczos algorithm !
   !                                               !
   REAL(DP) :: a1  !> dot product between previous and actual min lanczos vector
+  REAL(DP) :: old_lowest_eigval
   REAL(DP), ALLOCATABLE :: old_lanczos_vec(:,:) !> Store the previous lanczos vec
   REAL(DP), ALLOCATABLE :: H(:,:)               !> tridiagonal matrix
   REAL(DP), ALLOCATABLE :: Vmat(:,:,:)          !> matrix containing the laczos vectors
@@ -263,6 +264,7 @@ CONTAINS
       ifound = 0
       isearch = 0
       !
+      old_lowest_eigval = HUGE(dlanc)
       lowest_eigval = 0.D0
       fpush_factor = 1.0
       push_over = 1.0_DP
