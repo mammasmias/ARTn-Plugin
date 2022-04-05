@@ -28,6 +28,7 @@ LIB_OBJECTS := \
             $(OBJ)/nextmin.o \
             $(OBJ)/read_guess.o \
             $(OBJ)/start_guess.o \
+            $(OBJ)/nperp_limitation.o \
             $(OBJ)/clean_artn.o \
             $(OBJ)/artn.o \
             $(OBJ)/artn_QE.o

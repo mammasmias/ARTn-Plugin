@@ -88,12 +88,11 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
            fperp_thr = forc_thr
 
            ! ...Perp-relax managment
-           !if( nperp_step == 1 )nperp_list(1) = nperp
-           !nperp_step = nperp_step + 1
-           select case( nperp_step )
-             case(:4); nperp = nperp_list( nperp_step )
-             case(5:); nperp = nperp_list( 5 )
-           end select
+           CALL nperp_limitation( 0 )
+           !select case( nperp_step )
+           !  case(:4); nperp = nperp_list( nperp_step )
+           !  case(5:); nperp = nperp_list( 5 )
+           !end select
            !nperp = 0    ! Remove the Perp-Relax Iteration constrain
 
         ELSE
@@ -101,13 +100,11 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
            fperp_thr = init_forc_thr
 
            ! ...Perp-relax managment
-           !if( nperp_step == 1 )nperp_list(1) = nperp
-           !nperp_step = nperp_step + 1
-           select case( nperp_step )
-             case(:4); nperp = nperp_list( nperp_step )
-             case(5:); nperp = nperp_list( 5 )
-           end select
-           !nperp =  nperp_list(1)
+           CALL nperp_limitation( 0 )
+           !select case( nperp_step )
+           !  case(:4); nperp = nperp_list( nperp_step )
+           !  case(5:); nperp = nperp_list( 5 )
+           !end select
         ENDIF
 
         !print*, " CHECK_FORCE():Nperp ", nperp, nperp_step, nperp_list
@@ -136,12 +133,13 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
 
            ! ...Perp-Relax is finshed, 
            !   we count the nperp_step
-           if( nperp_step == 1 )nperp_list(1) = nperp
-           nperp_step = nperp_step + 1
-           select case( nperp_step )
-             case(:4); nperp = nperp_list( nperp_step )
-             case(5:); nperp = nperp_list( 5 )
-           end select
+           CALL nperp_limitation( 1 )
+           !if( nperp_step == 1 )nperp_list(1) = nperp
+           !nperp_step = nperp_step + 1
+           !select case( nperp_step )
+           !  case(:4); nperp = nperp_list( nperp_step )
+           !  case(5:); nperp = nperp_list( 5 )
+           !end select
            !WRITE( iunartout,* ) "* NEXT NPERP ",nperp, nperp_step
 
         ENDIF
@@ -169,6 +167,7 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         ! ...Do INIT until fperp is > fperp_thr
         ! && Max Iteration of Perp-Relax
         !    nperp = 0 means no nperp constrain
+        CALL nperp_limitation( -1 )
 
         C1 = ( MAXfperp < fperp_thr ) ! check on the fperp field
         C2 = ( nperp > 0.AND.iperp >= nperp )    ! check on the perp-relax iteration

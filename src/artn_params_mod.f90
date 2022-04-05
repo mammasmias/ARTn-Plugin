@@ -48,15 +48,13 @@ MODULE artn_params
   LOGICAL :: lbackward      !> backward saddle point obtained
   LOGICAL :: lmove_nextmin  !> backward saddle point obtained
   LOGICAL :: lread_param    !> flag read artn params
+  LOGICAL :: lnperp_limitation  !> Constrain on the nperp-relax above the inflation point 
   !
   LOGICAL :: lend
   INTEGER :: verbose    !> Verbose Level
   ! counters
   INTEGER :: istep, iartn, ifails
   INTEGER :: iperp      !> number of steps in perpendicular relaxation
-  INTEGER :: nperp, nperp_step, noperp
-  !INTEGER :: nperp_list(5) = [ 4, 8, 12, 16, 0 ]
-  INTEGER :: nperp_list(5) = [ 0, 0, 0, 0, 0 ]   !! Who do that??
   INTEGER :: iover
   INTEGER :: irelax     !> Number of relaxation iteration
   INTEGER :: ieigen     !> number of steps made with eigenvector
@@ -70,8 +68,16 @@ MODULE artn_params
   INTEGER :: isearch    !> Number of saddle point research
   INTEGER :: natoms     !> Number of atoms in the system
 
+  ! optional staf
+  !! nperp
+  INTEGER :: nperp, nperp_step, noperp
+  INTEGER :: def_nperp_list(5) = [ 4, 8, 12, 16, 0 ]
+  !INTEGER :: nperp_list(5) = [ 0, 0, 0, 0, 0 ]   !! Who do that??
+  INTEGER, ALLOCATABLE :: nperp_list(:)
+  !! output structure counter
   INTEGER :: nmin       !> count the number of minimum found
   INTEGER :: nsaddle    !> count the number of saddle point found
+
   ! lanczos variables
   REAL(DP) :: lowest_eigval !> Lowest eigenvalues obtained by lanczos algorithm
   !                                           !
@@ -156,7 +162,8 @@ MODULE artn_params
        push_step_size, dlanc, eigen_step_size, current_step_size, push_over, &
        push_ids, add_const, engine_units, zseed, struc_format_out, elements, &
        verbose, filout, sadfname, initpfname, eigenfname, restartfname, &
-       converge_property, eval_conv_thr, push_guess, eigenvec_guess
+       converge_property, eval_conv_thr, push_guess, eigenvec_guess,  &
+       nperp_list, lnperp_limitation
 
 
   !! Curvature
@@ -230,6 +237,8 @@ CONTAINS
       lmove_nextmin = .false.
       lread_param = .false.
 
+      lnperp_limitation = .true.  ! We always use nperp limitaiton
+
       !! ----- TEST
       !lrelax = .true.
       !linit = .false.
@@ -262,7 +271,7 @@ CONTAINS
       !
       ninit = 3
       nperp_step = 1
-      nperp = nperp_list( nperp_step )
+      nperp = -1 !def_nperp_list( nperp_step )
       noperp = 0 
       neigen = 1
       nsmooth = 1
@@ -332,21 +341,28 @@ CONTAINS
       
       !
       ! read the ARTn input file
+      !
       OPEN( UNIT = iunartin, FILE = filnam, FORM = 'formatted', STATUS = 'unknown', IOSTAT = ios)
       READ( NML = artn_parameters, UNIT = iunartin)
       CLOSE ( UNIT = iunartin, STATUS = 'KEEP')
       lread_param = .true.
+
       !
       ! inital number of lanczos iterations
       !
       nlanc = lanc_mat_size
+
       !
       ! initialize lanczos matrices (user chooses wheter to change lanc_mat_size)
       !
       IF ( .not. ALLOCATED(H)) ALLOCATE( H(1:lanc_mat_size,1:lanc_mat_size), source = 0.D0 )
       IF ( .not. ALLOCATED(Vmat)) ALLOCATE( Vmat(3,nat,1:lanc_mat_size), source = 0.D0 )
+
       !
-      ! initialize lanczos specific variables
+      ! initialize nperp limitation
+      !
+      CALL init_nperp_limitation( lnperp_limitation )
+
     ENDIF
 
 
