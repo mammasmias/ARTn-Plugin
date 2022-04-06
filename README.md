@@ -144,6 +144,11 @@ To see the meaning of these parameters refere to the min_fire web page of LAMMPS
 
 Plugin-ARTn is linked with Energy/Forces calculation Engine through the minimization algorithm FIRE. The engine should have this algorithm.  The idea is to launch the engine for a FIRE minimization and the activation of plugin-ARTn bias the minimization to apply the ARTn method.
 
+### How to use
+
+- Research from the local minimum...
+- Saddle refine...
+
 ### Input and Parameters
 
 Once the Engine is compiled with the pARTn library the ARTn input is automatically red at the first moment of the engine minimization step. The ARTn input calls `artn.in`  which allows to change all the  ARTn's parameters. It should be located in the working directory of the calculation. 

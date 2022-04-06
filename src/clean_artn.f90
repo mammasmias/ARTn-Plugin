@@ -5,7 +5,7 @@ SUBROUTINE clean_artn()
   use artn_params, only : lrelax, linit, lbasin, lperp, &
            llanczos, leigen, lpush_over, lbackward, lend,  &
            iartn, istep, iinit, iperp, ilanc, ieigen, nlanc, ifails,  &
-           irelax, iover, istep, fpush_factor, lowest_eigval, nperp, nperp_list,  &
+           irelax, iover, istep, fpush_factor, lowest_eigval,  &
            artn_resume, old_lanczos_vec, H, Vmat, lanc_mat_size,  &
            iunartout, filout, nperp_step, old_lowest_eigval
   implicit none
@@ -46,8 +46,9 @@ SUBROUTINE clean_artn()
   iover = 0
 
   ! ...Return the initial value of nperp
-  nperp = nperp_list(1)
-  nperp_step = 1
+  call nperp_limitation_step( -1 )
+  !nperp = nperp_list(1)
+  !nperp_step = 1
   !write(*,'(5x,"Reinitialize NPERP:",x,i0)') nperp
 
   

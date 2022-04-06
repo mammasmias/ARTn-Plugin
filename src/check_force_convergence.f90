@@ -14,7 +14,7 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
   !
   USE units
   USE artn_params, ONLY : linit, leigen, llanczos, lperp, lrelax, &
-                          ilanc, iperp, nperp, nperp_list, nperp_step, noperp, istep, INIT, EIGN, RELX, &
+                          ilanc, iperp, nperp, nperp_step, noperp, istep, INIT, EIGN, RELX, &
                           init_forc_thr, forc_thr, fpara_thr, tau_step, rcurv,  &
                           lowest_eigval, iunartout, restartfname, etot_step, write_restart, warning, converge_property
   IMPLICIT NONE
@@ -88,23 +88,14 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
            fperp_thr = forc_thr
 
            ! ...Perp-relax managment
-           CALL nperp_limitation( 0 )
-           !select case( nperp_step )
-           !  case(:4); nperp = nperp_list( nperp_step )
-           !  case(5:); nperp = nperp_list( 5 )
-           !end select
-           !nperp = 0    ! Remove the Perp-Relax Iteration constrain
+           CALL nperp_limitation_step( 0 )
 
         ELSE
 
            fperp_thr = init_forc_thr
 
            ! ...Perp-relax managment
-           CALL nperp_limitation( 0 )
-           !select case( nperp_step )
-           !  case(:4); nperp = nperp_list( nperp_step )
-           !  case(5:); nperp = nperp_list( 5 )
-           !end select
+           CALL nperp_limitation_step( 0 )
         ENDIF
 
         !print*, " CHECK_FORCE():Nperp ", nperp, nperp_step, nperp_list
@@ -126,20 +117,15 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
            llanczos = .true. 
            leigen = .false. 
 
-           !CALL write_restart( restartfname, nat )
+           write(iunartout,*)"Check_force::eigen->Fperp",   &
+              C1, unconvert_force( maxfperp ), unconvert_force( maxforce ), C2, nperp, C3, unconvert_force( maxfpara )
            CALL write_restart( restartfname )
            CALL write_report( etot_step, force, fperp, fpara, lowest_eigval, EIGN, if_pos, istep, nat,  iunartout, ArtnStep )
            ilanc = 0
 
            ! ...Perp-Relax is finshed, 
            !   we count the nperp_step
-           CALL nperp_limitation( 1 )
-           !if( nperp_step == 1 )nperp_list(1) = nperp
-           !nperp_step = nperp_step + 1
-           !select case( nperp_step )
-           !  case(:4); nperp = nperp_list( nperp_step )
-           !  case(5:); nperp = nperp_list( 5 )
-           !end select
+           CALL nperp_limitation_step( 1 )
            !WRITE( iunartout,* ) "* NEXT NPERP ",nperp, nperp_step
 
         ENDIF
@@ -166,18 +152,15 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
 
         ! ...Do INIT until fperp is > fperp_thr
         ! && Max Iteration of Perp-Relax
-        !    nperp = 0 means no nperp constrain
-        CALL nperp_limitation( -1 )
+        CALL nperp_limitation_step( -1 )
 
         C1 = ( MAXfperp < fperp_thr ) ! check on the fperp field
         C2 = ( nperp > 0.AND.iperp >= nperp )    ! check on the perp-relax iteration
-        C3 = .false. !( MAXfperp < MAXfpara ) ! check wheter fperp is lower than fpara
 
-        IF( C1 .OR. C2 .OR. C3 )THEN
+        IF( C1 .OR. C2 )THEN
            lperp = .false.
            linit = .true.
-           !write(iunartout,*)"Check_force::basin->Fperp"
-           !CALL write_restart( restartfname, nat )
+           !write(iunartout,*)"Check_force::basin->Fperp", C1, C2
            CALL write_restart( restartfname )
            CALL write_report( etot_step, force, fperp, fpara, lowest_eigval, INIT, if_pos, istep, nat,  iunartout, ArtnStep )
         ENDIF
@@ -211,3 +194,7 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
   close( iunartout )
      
 ENDSUBROUTINE check_force_convergence
+
+
+
+
