@@ -146,6 +146,8 @@ Plugin-ARTn is linked with Energy/Forces calculation Engine through the minimiza
 
 ### How to use
 
+ARTn can be used in many different way thanks some optional variable. 
+
 - Research from the local minimum...
 - Saddle refine...
 
@@ -242,20 +244,30 @@ Various files can be found in output.
 
 - 
 
-- `nperp`: Maybe we have to follow the antoine method: progressive increase of nperp after the inflection line. Or maybe to be proportional to the fperp magnitude because happen when the magnitude is too high the perp-relax lead the lost of saddle point.
+- `nperp`: Follows antoine method: progressive increase of nperp after the inflection line. Or maybe to be proportional to the fperp magnitude because happen when the magnitude is too high the perp-relax lead the lost of saddle point. :ok:
 
-  - Antoine method is implemented:
+  - Done by the routine `nperp_limitation_*()` routines:
 
   - ```fortran
     module artn_param_mod
-    	integer :: nperp_list(5) = [4,8,12,16,0]
+    	logical :: lnperp_limitation
+    	integer, allocatable :: nperp_limitation(:)
+    	integer :: def_nperp_limitation(5) = [4,8,12,16,0]
     	integer :: noperp, nperp_step
     	
+    subroutine initialize_artn()
+    	[...]
+    	!! After read artn_params namelist
+    	call nperp_limitation_init( lnperp_limitation )
+    	
     subroutine check_force()
-    	select case( nperp_step )
-          case(:4); nperp = nperp_list( nperp_step )
-          case(5:); nperp = nperp_list( 5 )
-        end select
+    	[...]
+    	call nperp_limitation_step( 0 ) !! stay in same nperp_step
+        [...]
+    	call nperp_limitation_step( 1 ) !! go to the next nperp_step
+    	[...]
+    	call nperp_limitation_step( -1 ) !! return to the first nperp to the list
+    	
     ```
 
 - **RESTART**: Fast Restart procedure for lammps and binary - Write the restart file with lammps take too mush time
