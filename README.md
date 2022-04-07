@@ -144,6 +144,13 @@ To see the meaning of these parameters refere to the min_fire web page of LAMMPS
 
 Plugin-ARTn is linked with Energy/Forces calculation Engine through the minimization algorithm FIRE. The engine should have this algorithm.  The idea is to launch the engine for a FIRE minimization and the activation of plugin-ARTn bias the minimization to apply the ARTn method.
 
+### How to use
+
+ARTn can be used in many different way thanks some optional variable. 
+
+- Research from the local minimum...
+- Saddle refine...
+
 ### Input and Parameters
 
 Once the Engine is compiled with the pARTn library the ARTn input is automatically red at the first moment of the engine minimization step. The ARTn input calls `artn.in`  which allows to change all the  ARTn's parameters. It should be located in the working directory of the calculation. 
@@ -154,7 +161,7 @@ Depending of the engine the works units changes and it is to the user to be cohe
 
 **The values gives by the user through the input file should be in engine units**
 
-- `lpush_final`: Values `.true./.false.`, default is `.true.`.  
+- `lpush_final`: Values `.true./.false.`, default is `.true.`. 
   Flag to push to adjacent minimum along eigenvector. Flag to push to the second minimum.
 
 - `lrestart`: Values `.true./.false.`, default is `.false.`.
@@ -169,6 +176,10 @@ Depending of the engine the works units changes and it is to the user to be cohe
 - `neigen`: Value integer, by default is `1`. Number of steps made with eigenvector before perpendicular relax.
 
 - `nperp`: Value integer, by default is `3`. Maximum number of relaxation perpendicular to the move direction after an `init` or `eigen` push.
+
+- `lnperp_limitation`: Values `.true./.false.`, default is `.true.`. 
+
+  this option allows to constrain the number of perpendicular relaxation during the convrgence to the saddle point, out of the basin. The limitation is incremental starting by 8, 12, 16, -1 (infinite). These values are stored in arrays `nperp_limitation(5)` where the first value is `nperp` in the basin. These list can be customizable in input giving the values of the array: `nperp_limitation = [...custom values]` 
 
 - `lanc_mat_size`: Value integer, by default is `16`. Maximum number of Lanczos iterations
 
@@ -233,20 +244,30 @@ Various files can be found in output.
 
 - 
 
-- `nperp`: Maybe we have to follow the antoine method: progressive increase of nperp after the inflection line. Or maybe to be proportional to the fperp magnitude because happen when the magnitude is too high the perp-relax lead the lost of saddle point.
+- `nperp`: Follows antoine method: progressive increase of nperp after the inflection line. Or maybe to be proportional to the fperp magnitude because happen when the magnitude is too high the perp-relax lead the lost of saddle point. :ok:
 
-  - Antoine method is implemented:
+  - Done by the routine `nperp_limitation_*()` routines:
 
   - ```fortran
     module artn_param_mod
-    	integer :: nperp_list(5) = [4,8,12,16,0]
+    	logical :: lnperp_limitation
+    	integer, allocatable :: nperp_limitation(:)
+    	integer :: def_nperp_limitation(5) = [4,8,12,16,0]
     	integer :: noperp, nperp_step
     	
+    subroutine initialize_artn()
+    	[...]
+    	!! After read artn_params namelist
+    	call nperp_limitation_init( lnperp_limitation )
+    	
     subroutine check_force()
-    	select case( nperp_step )
-          case(:4); nperp = nperp_list( nperp_step )
-          case(5:); nperp = nperp_list( 5 )
-        end select
+    	[...]
+    	call nperp_limitation_step( 0 ) !! stay in same nperp_step
+        [...]
+    	call nperp_limitation_step( 1 ) !! go to the next nperp_step
+    	[...]
+    	call nperp_limitation_step( -1 ) !! return to the first nperp to the list
+    	
     ```
 
 - **RESTART**: Fast Restart procedure for lammps and binary - Write the restart file with lammps take too mush time

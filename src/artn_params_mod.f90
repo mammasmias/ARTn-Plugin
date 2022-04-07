@@ -71,9 +71,9 @@ MODULE artn_params
   ! optional staf
   !! nperp
   INTEGER :: nperp, nperp_step, noperp
-  INTEGER :: def_nperp_list(5) = [ 4, 8, 12, 16, 0 ]
-  !INTEGER :: nperp_list(5) = [ 0, 0, 0, 0, 0 ]   !! Who do that??
-  INTEGER, ALLOCATABLE :: nperp_list(:)
+  INTEGER :: def_nperp_limitation(5) = [ 4, 8, 12, 16, -1 ]
+  !INTEGER :: nperp_limitation(5) = [ 0, 0, 0, 0, 0 ]   !! Who do that??
+  INTEGER, ALLOCATABLE :: nperp_limitation(:)
   !! output structure counter
   INTEGER :: nmin       !> count the number of minimum found
   INTEGER :: nsaddle    !> count the number of saddle point found
@@ -107,6 +107,7 @@ MODULE artn_params
   ! arrays that are used by the Lanczos algorithm !
   !                                               !
   REAL(DP) :: a1  !> dot product between previous and actual min lanczos vector
+  REAL(DP) :: old_lowest_eigval
   REAL(DP), ALLOCATABLE :: old_lanczos_vec(:,:) !> Store the previous lanczos vec
   REAL(DP), ALLOCATABLE :: H(:,:)               !> tridiagonal matrix
   REAL(DP), ALLOCATABLE :: Vmat(:,:,:)          !> matrix containing the laczos vectors
@@ -163,7 +164,7 @@ MODULE artn_params
        push_ids, add_const, engine_units, zseed, struc_format_out, elements, &
        verbose, filout, sadfname, initpfname, eigenfname, restartfname, &
        converge_property, eval_conv_thr, push_guess, eigenvec_guess,  &
-       nperp_list, lnperp_limitation
+       nperp_limitation, lnperp_limitation
 
 
   !! Curvature
@@ -263,6 +264,7 @@ CONTAINS
       ifound = 0
       isearch = 0
       !
+      old_lowest_eigval = HUGE(dlanc)
       lowest_eigval = 0.D0
       fpush_factor = 1.0
       push_over = 1.0_DP
@@ -271,7 +273,7 @@ CONTAINS
       !
       ninit = 3
       nperp_step = 1
-      nperp = -1 !def_nperp_list( nperp_step )
+      nperp = -1 !def_nperp_limitation( nperp_step )
       noperp = 0 
       neigen = 1
       nsmooth = 1
@@ -317,6 +319,7 @@ CONTAINS
       IF ( .not. ALLOCATED(elements) )     ALLOCATE(elements(300), source = "XXX")
 
       IF ( .not. ALLOCATED(delr) ) ALLOCATE( delr(3,nat), source = 0.D0 )
+      IF ( .not. ALLOCATED(nperp_limitation) ) ALLOCATE( nperp_limitation(10), source = -2 )
 
       ! ...Compute the size of ARTn lib
       mem = 0
@@ -361,7 +364,7 @@ CONTAINS
       !
       ! initialize nperp limitation
       !
-      CALL init_nperp_limitation( lnperp_limitation )
+      CALL nperp_limitation_init( lnperp_limitation )
 
     ENDIF
 

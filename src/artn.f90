@@ -42,7 +42,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
        setup_artn, read_restart, write_restart, &
        push_over, ran3, a1, old_lanczos_vec, lend, fill_param_step, &
        filin, filout, sadfname, initpfname, eigenfname, restartfname, warning, flag_false,  &
-       prefix_min, nmin, prefix_sad, nsaddle, artn_resume, natoms
+       prefix_min, nmin, prefix_sad, nsaddle, artn_resume, natoms, old_lowest_eigval
   !
   IMPLICIT NONE
   ! -- ARGUMENTS
@@ -113,12 +113,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
   IF( istep == 0 )THEN
 
-    !write(*,*) "ISTEP = 0: lread_param; ifails", lread_param, ifails, ( .NOT.lread_param.AND.ifails == 0 )
-    !> @brief lread_param and ifail are there to not read input multiple time
-    !!  we need 2 parameter to be able to write the output header once 
 
-    !> Don't initialize ARTn if it fails before
-    !NOFAILS: if( .NOT.lread_param.AND.ifails == 0 )then  
+    !> Initialize if it is the first search
     ONCE: IF( isearch == 0 )THEN
 
       ! ...Read the input parameters
@@ -153,8 +149,9 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     !!   Here we have to initialize the push and eigenvec thanks to different way
     !!   depending the user choice.
     !!   - push_init() works for random 
-    !call start_guess( idum, nat, order, if_pos, push, eigenvec )
     call start_guess( idum, nat, order, push, eigenvec )
+    ! ...If no init step => nullify push
+    !if( ninit == 0 )push = 1.0_DP
 
 
 
@@ -663,6 +660,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, disp, &
           if_pos, istep, nat,  iunartout, noARTnStep )
 
+
      IF (ilanc == 0 ) THEN
         !
         ! first iternation of current lanczos call
@@ -721,6 +719,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            ! ...No yet perp relax
            lperp = .false.
            iperp = 0
+
+           old_lowest_eigval = lowest_eigval
            !
         ELSE
            ! structure is still in basin (under unflection),
@@ -735,6 +735,19 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            nperp_step = 1  !> count the out-basin perp relax step
            ismooth = 1     !> Initialise the smoothy step
            iinit = iinit - 1
+
+           ! ...If we lose the eigval
+           if( old_lowest_eigval < eigval_thr )then
+             write(iunartout,'(5x,"|> EIGENVALUE LOST <=> RETURN To the Basin => research FAIL!")')
+             write(*,'(5x,"|> EIGENVALUE LOST <=> RETURN To the Basin => research FAIL!")')
+             call write_fail_report( iunartout, disp, old_lowest_eigval )
+             !> SCHEMA FINILIZATION
+             ! ...Laod the start configuration
+             tau(:,:) = tau_init(:,order(:))
+             ! ...No displacement 
+             displ_vec = 0.0_DP
+             lconv = .true.
+           endif
            !
         ENDIF
         !
