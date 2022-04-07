@@ -4,6 +4,8 @@ MODULE TOOLS
 
   use units, only : DP
   implicit none
+  private
+  public :: read_guess
 
  CONTAINS
 
@@ -173,23 +175,13 @@ MODULE TOOLS
   end subroutine neigh_random_displacement
 
 
-END MODULE TOOLS
-
-
-
-
-
-
-
-
-
 
 !.....................................................................................................
 SUBROUTINE READ_GUESS( idum, nat, vec, filename )
 
   use units,       only : DP, unconvert_length
   use artn_params, only : warning, iunartout, dist_thr, push_ids
-  use tools
+  ! use tools
   implicit none
 
   integer,      intent( in ) :: nat, idum
@@ -263,7 +255,7 @@ SUBROUTINE READ_GUESS( idum, nat, vec, filename )
             else
               call warning( iunartout, 'READ_GUESS', 'Displacement propose are not valid', words )
             endif
-         enddo   
+         enddo
          !print*, idx, "constrain disp:", vec(:,idx)
 
        case default
@@ -282,6 +274,6 @@ END SUBROUTINE READ_GUESS
 
 
 
-
+END MODULE TOOLS
 
 
