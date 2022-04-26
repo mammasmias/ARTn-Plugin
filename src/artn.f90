@@ -723,6 +723,20 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            old_lowest_eigval = lowest_eigval
            !
         ELSE
+           !
+           ! ...If we lose the eigval
+           if( .not.lbasin .and. lowest_eigval > eigval_thr )then
+             write(iunartout,'(5x,"|> EIGENVALUE LOST <=> RETURN To the Basin => research FAIL!")')
+             write(*,'(5x,"|> EIGENVALUE LOST <=> RETURN To the Basin => research FAIL!")')
+             call write_fail_report( iunartout, disp, old_lowest_eigval )
+             !> SCHEMA FINILIZATION
+             ! ...Laod the start configuration
+             tau(:,:) = tau_init(:,order(:))
+             ! ...No displacement 
+             displ_vec = 0.0_DP
+             lconv = .true.
+           endif
+
            ! structure is still in basin (under unflection),
            ! in next step it move following push vetor (can be a previous eigenvec)
            !! Next Mstep inside the Basin
@@ -736,18 +750,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            ismooth = 1     !> Initialise the smoothy step
            iinit = iinit - 1
 
-           ! ...If we lose the eigval
-           if( old_lowest_eigval < eigval_thr )then
-             write(iunartout,'(5x,"|> EIGENVALUE LOST <=> RETURN To the Basin => research FAIL!")')
-             write(*,'(5x,"|> EIGENVALUE LOST <=> RETURN To the Basin => research FAIL!")')
-             call write_fail_report( iunartout, disp, old_lowest_eigval )
-             !> SCHEMA FINILIZATION
-             ! ...Laod the start configuration
-             tau(:,:) = tau_init(:,order(:))
-             ! ...No displacement 
-             displ_vec = 0.0_DP
-             lconv = .true.
-           endif
            !
         ENDIF
         !
