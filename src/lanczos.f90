@@ -7,7 +7,7 @@
 SUBROUTINE lanczos( nat, v_in, pushdir, force, &
      ilanc, nlanc, lowest_eigval, lowest_eigvec, displ_vec )
 
-  USE artn_params, ONLY: DP, Vmat, H, force_old, dlanc, eval_conv_thr, &
+  USE artn_params, ONLY: DP, Vmat, H, force_old, dlanc, lanczos_eval_conv_thr, &
                          lanczos_min_size
   USE units, ONLY: unconvert_length, unconvert_hessian
   !
@@ -126,8 +126,8 @@ SUBROUTINE lanczos( nat, v_in, pushdir, force, &
      ! write(785,*) 1, lowest_eigval_old, lowest_eigval, abs(eigval_diff)
      !
      IF ( abs(lowest_eigval_old) > 0.0_DP ) THEN
-!        IF ( ABS(eigval_diff) <= eval_conv_thr ) THEN
-        IF ( ilanc .ge. lanczos_min_size .and. ABS(eigval_diff) <= eval_conv_thr ) THEN
+!        IF ( ABS(eigval_diff) <= lanczos_eval_conv_thr ) THEN
+        IF ( ilanc .ge. lanczos_min_size .and. ABS(eigval_diff) <= lanczos_eval_conv_thr ) THEN
            !
            ! lanczos has converged
            ! set max number of iternations to current iteration
@@ -221,8 +221,8 @@ SUBROUTINE lanczos( nat, v_in, pushdir, force, &
      !write (*,*) "Debug eigval:", ilanc, lowest_eigval_old, lowest_eigval, abs(eigval_diff)
      ! write(785,*) ilanc, lowest_eigval_old, lowest_eigval, abs(eigval_diff)
      !
-     !IF ( ABS(eigval_diff) <= eval_conv_thr ) THEN
-     IF ( ilanc.ge.lanczos_min_size .and. ABS(eigval_diff) <= eval_conv_thr ) THEN
+     !IF ( ABS(eigval_diff) <= lanczos_eval_conv_thr ) THEN
+     IF ( ilanc.ge.lanczos_min_size .and. ABS(eigval_diff) <= lanczos_eval_conv_thr ) THEN
         ! write(*,*) 'converged! in:',ilanc
         !write(785,*) 'converged! in:',ilanc
         !
