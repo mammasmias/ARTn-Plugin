@@ -7,7 +7,7 @@
 SUBROUTINE lanczos( nat, v_in, pushdir, force, &
      ilanc, nlanc, lowest_eigval, lowest_eigvec, displ_vec )
 
-  USE artn_params, ONLY: DP, Vmat, H, force_old, dlanc, lanczos_eval_conv_thr, &
+  USE artn_params, ONLY: DP, Vmat, H, force_old, lanczos_disp, lanczos_eval_conv_thr, &
                          lanczos_min_size
   USE units, ONLY: unconvert_length, unconvert_hessian
   !
@@ -72,7 +72,7 @@ SUBROUTINE lanczos( nat, v_in, pushdir, force, &
      ! initialization of the lanczos: save the original force, and
      ! the initial lanczos vector
      !
-     ! write(785,*) 'entering lanc with size:',nlanc, unconvert_length(dlanc), dlanc
+     ! write(785,*) 'entering lanc with size:',nlanc, unconvert_length(lanczos_disp), lanczos_disp
      !
      ! store the force of the initial position
      !
@@ -97,7 +97,7 @@ SUBROUTINE lanczos( nat, v_in, pushdir, force, &
      ! first do q(:) = -[Hessian]( {R_1} - {R} ) = -[Hessian]{dR}
      q(:,:) = force(:,:) - force_old(:,:)
      !! now do q(:) = [Hessian]{dR}/d_lanc = [Hessian]{v0}
-     q(:,:) = -q(:,:) / dlanc
+     q(:,:) = -q(:,:) / lanczos_disp
      !
      alpha = ddot(3*nat,Vmat(:,:,1),1,q(:,:),1)
      !
@@ -151,7 +151,7 @@ SUBROUTINE lanczos( nat, v_in, pushdir, force, &
      ! first generate current alpha
      !
      q(:,:) = force(:,:) - force_old(:,:)
-     q(:,:) = -q(:,:)/dlanc
+     q(:,:) = -q(:,:)/lanczos_disp
      !
      ! alpha = dot( v1, q )
      !

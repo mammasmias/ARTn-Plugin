@@ -69,7 +69,7 @@ SUBROUTINE artn_QE( force, etot, epsf_qe, nat, ityp, atm, tau, at, alat, istep, 
     END SUBROUTINE artn
     SUBROUTINE move_mode(nat, order, force, vel, etot, nsteppos, dt_curr, alpha, alpha_init, dt_init, disp, displ_vec )
       use units, only : DP
-      USE artn_params, ONLY: iperp, push0 => push, push=>eigenvec, dlanc, move
+      USE artn_params, ONLY: iperp, push0 => push, push=>eigenvec, move
       IMPLICIT NONE
       INTEGER, INTENT(IN), value                :: nat
       REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: force

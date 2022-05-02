@@ -13,7 +13,7 @@
   add_const(3,2) = 0.2
   add_const(3,6) = 1.0
   ! lanczos parameters
-  dlanc = 5.D-3 
+  lanczos_disp = 5.D-3 
   lanczos_max_size = 16
   ! eigenpush parms
   nsmooth = 3 

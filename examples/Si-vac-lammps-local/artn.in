@@ -24,8 +24,8 @@
   add_const(:,4343) = 1.0, -1.0, 1.0, 10.0 
   
   !! lanczos parameters
-  dlanc = 0.2D-1
-  lanzos_max_size = 16
+  lanczos_disp = 0.2D-1
+  lanczos_max_size = 16
   
   !! eigenpush parms
   eigen_step_size = 0.10

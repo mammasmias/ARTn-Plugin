@@ -10,7 +10,7 @@
   push_ids = 1
   add_const(3,1) = -1.0 
   ! lanczos parameters
-  dlanc = 5.D-3 
+  lanczos_disp = 5.D-3 
   lanczos_max_size = 9
   ! eigenpush parms
   eigen_step_size = 0.2

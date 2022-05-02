@@ -140,16 +140,16 @@ MODULE artn_params
   REAL(DP) :: eigen_step_size       !> step size for a step with the lanczos eigenvector
   REAL(DP) :: current_step_size     !> controls the current size of eigenvector step
   REAL(DP) :: fpush_factor          !> factor for the final push 
-  REAL(DP), target :: dlanc         !> step size in the lanczos algorithm 
+  REAL(DP), target :: lanczos_disp         !> step size in the lanczos algorithm 
   REAL(DP), target :: lanczos_eval_conv_thr !> threshold for convergence of eigenvalue in Lanczos
   REAL(DP) :: push_over             !> EigenVec fraction Push_over the saddle point for the relax
   ! Default Values (in Ry, au)
-  REAL(DP), PARAMETER :: NAN = HUGE( dlanc )  !! Biggest number in DP representation
+  REAL(DP), PARAMETER :: NAN = HUGE( lanczos_disp )  !! Biggest number in DP representation
   REAL(DP), PARAMETER :: def_dist_thr = 0.0_DP,       def_init_forc_thr = 1.0d-2,   &
                          def_forc_thr = 1.0d-3,       def_fpara_thr = 0.5d-2,  &
                          def_eigval_thr = -0.01_DP,   def_frelax_ene_thr  = 0.00_DP,    &
                          def_push_step_size = 0.3,    def_eigen_step_size = 0.2,    &
-                         def_dlanc = 1.D-2,           def_lanczos_eval_conv_thr = 1.0D-2
+                         def_lanczos_disp = 1.D-2,           def_lanczos_eval_conv_thr = 1.0D-2
   ! arrays related to constraints
   INTEGER,  ALLOCATABLE :: push_ids(:)    !> IDs of atoms to be pushed
   REAL(DP), ALLOCATABLE :: add_const(:,:) !> constraints on initial push
@@ -162,7 +162,7 @@ MODULE artn_params
   NAMELIST/artn_parameters/ lrestart, lrelax, lpush_final, lmove_nextmin, &
        ninit, neigen, nperp, lanczos_max_size, nsmooth, push_mode, dist_thr,  &
        init_forc_thr,forc_thr, fpara_thr, eigval_thr, frelax_ene_thr, &
-       push_step_size, dlanc, eigen_step_size, current_step_size, push_over, &
+       push_step_size, lanczos_disp, eigen_step_size, current_step_size, push_over, &
        push_ids, add_const, engine_units, zseed, struc_format_out, elements, &
        verbose, filout, sadfname, initpfname, eigenfname, restartfname, &
        converge_property, lanczos_eval_conv_thr, push_guess, eigenvec_guess,  &
@@ -266,7 +266,7 @@ CONTAINS
       ifound = 0
       isearch = 0
       !
-      old_lowest_eigval = HUGE(dlanc)
+      old_lowest_eigval = HUGE(lanczos_disp)
       lowest_eigval = 0.D0
       fpush_factor = 1.0
       push_over = 1.0_DP
@@ -296,7 +296,7 @@ CONTAINS
       push_mode = 'all'
       struc_format_out = 'xsf'
       !
-      dlanc = NAN
+      lanczos_disp = NAN
       lanczos_max_size = 16
       lanczos_min_size = 0
       lanczos_eval_conv_thr = NAN
@@ -413,7 +413,7 @@ CONTAINS
       !
       write(*,1) "* push_step_size  = ", push_step_size
       write(*,1) "* eigen_step_size = ", eigen_step_size
-      write(*,1) "* dlanc           = ", dlanc
+      write(*,1) "* lanczos_disp           = ", lanczos_disp
       write(*,1) "* lanczos_eval_conv_thr   = ", lanczos_eval_conv_thr
       write(*,2) repeat("*",50)
       1 format(x,a,x,g15.5)
@@ -453,9 +453,9 @@ CONTAINS
     else;                             eigen_step_size = convert_length( eigen_step_size ); endif
     !eigen_step_size = 0.2
     !
-    if( dlanc == NAN )then; dlanc = def_dlanc
-    else;                   dlanc = convert_length( dlanc ); endif
-    !dlanc = 1.D-2
+    if( lanczos_disp == NAN )then; lanczos_disp = def_lanczos_disp
+    else;                   lanczos_disp = convert_length( lanczos_disp ); endif
+    !lanczos_disp = 1.D-2
     !
     ! lanczos_eval_conv_thr is a relative quantity, no need to be in specific units
     if( lanczos_eval_conv_thr == NAN )then; lanczos_eval_conv_thr = def_lanczos_eval_conv_thr
@@ -474,7 +474,7 @@ CONTAINS
       !
       write(*,1) "* push_step_size  = ", push_step_size
       write(*,1) "* eigen_step_size = ", eigen_step_size
-      write(*,1) "* dlanc           = ", dlanc
+      write(*,1) "* lanczos_disp           = ", lanczos_disp
       write(*,1) "* lanczos_eval_conv_thr   = ", lanczos_eval_conv_thr
       write(*,2) repeat("*",50)
     endif

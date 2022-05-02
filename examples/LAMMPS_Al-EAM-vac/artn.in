@@ -24,7 +24,7 @@
   add_const(:,251) = 1.0, 1.0, 0.0, 45.0 
   
   !! lanczos parameters
-  dlanc = 0.2D-1
+  lanczos_disp = 0.2D-1
   lanczos_max_size = 16
   !eigval_thr = -0.4 
   

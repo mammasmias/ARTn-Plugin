@@ -17,7 +17,7 @@
   push_mode = 'all'
 
   !! lanczos parameters
-  dlanc = 1.0D-5
+  lanczos_disp = 1.0D-5
   lanczos_max_size = 16
   
   !! eigenpush parms
