@@ -33,7 +33,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
        lrelax, linit, lperp, leigen, llanczos, lrestart, lbasin, lpush_over, lpush_final, lbackward, lmove_nextmin,  &
        irelax, istep, iperp, ieigen, iinit, ilanc, ismooth, iover, isearch, ifound, nlanc, nperp, noperp, nperp_step,  &
        if_pos_ct, lowest_eigval, etot_init, etot_step, etot_saddle, etot_final, de_back, de_fwd, &
-       ninit, neigen, lanc_mat_size, nsmooth, push_mode, dist_thr, init_forc_thr, forc_thr, &
+       ninit, neigen, lanczos_max_size, nsmooth, push_mode, dist_thr, init_forc_thr, forc_thr, &
        fpara_thr, eigval_thr, frelax_ene_thr, push_step_size, current_step_size, dlanc, eigen_step_size, fpush_factor, &
        push_ids, add_const, push, eigenvec, tau_step, force_step, tau_init, tau_saddle, eigen_saddle, v_in, &
        VOID, INIT, PERP, EIGN, LANC, RELX, OVER, zseed, &
@@ -283,7 +283,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
         ! ...modify the force to be equal to the push
         displ_vec = push
- 
 
         CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, &
              disp, if_pos, istep, nat, iunartout, noARTnStep )
@@ -769,7 +768,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         !
         ! reset lanczos size for next call
         !
-        nlanc = lanc_mat_size
+        nlanc = lanczos_max_size
 
      ENDIF
 

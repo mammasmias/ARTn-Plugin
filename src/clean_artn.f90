@@ -6,7 +6,7 @@ SUBROUTINE clean_artn()
            llanczos, leigen, lpush_over, lbackward, lend,  &
            iartn, istep, iinit, iperp, ilanc, ieigen, nlanc, ifails,  &
            irelax, iover, istep, fpush_factor, lowest_eigval,  &
-           artn_resume, old_lanczos_vec, H, Vmat, lanc_mat_size,  &
+           artn_resume, old_lanczos_vec, H, Vmat, lanczos_max_size,  &
            iunartout, filout, nperp_step, old_lowest_eigval
   implicit none
 
@@ -63,7 +63,7 @@ SUBROUTINE clean_artn()
   !READ( NML = artn_parameters, UNIT = iunartin)
   !CLOSE ( UNIT = iunartin, STATUS = 'KEEP')
 
-  nlanc = lanc_mat_size
+  nlanc = lanczos_max_size
 
   H = 0.0_DP
   Vmat = 0.0_DP

@@ -7,7 +7,8 @@
 SUBROUTINE lanczos( nat, v_in, pushdir, force, &
      ilanc, nlanc, lowest_eigval, lowest_eigvec, displ_vec )
 
-  USE artn_params,            ONLY: DP, Vmat, H, force_old, dlanc, eval_conv_thr
+  USE artn_params, ONLY: DP, Vmat, H, force_old, dlanc, eval_conv_thr, &
+                         lanczos_min_size
   USE units, ONLY: unconvert_length, unconvert_hessian
   !
   !> @brief
@@ -48,6 +49,7 @@ SUBROUTINE lanczos( nat, v_in, pushdir, force, &
   ! Try to remove a temporary array when call diag
   REAL(DP) :: Htmp(ilanc,ilanc), Hstep(nlanc,nlanc)
 
+
   ! allocate vectors and put to zero
   ALLOCATE( q(3,nat), source=0.D0 )
   ALLOCATE( v1(3,nat), source=0.D0)
@@ -70,7 +72,7 @@ SUBROUTINE lanczos( nat, v_in, pushdir, force, &
      ! initialization of the lanczos: save the original force, and
      ! the initial lanczos vector
      !
-     !write(785,*) 'entering lanc with size:',nlanc, unconvert_length(dlanc)
+     ! write(785,*) 'entering lanc with size:',nlanc, unconvert_length(dlanc), dlanc
      !
      ! store the force of the initial position
      !
@@ -121,10 +123,11 @@ SUBROUTINE lanczos( nat, v_in, pushdir, force, &
      ! check for convergence in this step
      !
      eigval_diff = (lowest_eigval - lowest_eigval_old)/lowest_eigval_old
-     !write(785,*) 1, lowest_eigval_old, lowest_eigval, abs(eigval_diff)
+     ! write(785,*) 1, lowest_eigval_old, lowest_eigval, abs(eigval_diff)
      !
      IF ( abs(lowest_eigval_old) > 0.0_DP ) THEN
-        IF ( ABS(eigval_diff) <= eval_conv_thr ) THEN
+!        IF ( ABS(eigval_diff) <= eval_conv_thr ) THEN
+        IF ( ilanc .ge. lanczos_min_size .and. ABS(eigval_diff) <= eval_conv_thr ) THEN
            !
            ! lanczos has converged
            ! set max number of iternations to current iteration
@@ -216,9 +219,10 @@ SUBROUTINE lanczos( nat, v_in, pushdir, force, &
      !
      eigval_diff = (lowest_eigval - lowest_eigval_old)/lowest_eigval_old
      !write (*,*) "Debug eigval:", ilanc, lowest_eigval_old, lowest_eigval, abs(eigval_diff)
-     !write(785,*) ilanc, lowest_eigval_old, lowest_eigval, abs(eigval_diff)
+     ! write(785,*) ilanc, lowest_eigval_old, lowest_eigval, abs(eigval_diff)
      !
-     IF ( ABS(eigval_diff) <= eval_conv_thr ) THEN
+     !IF ( ABS(eigval_diff) <= eval_conv_thr ) THEN
+     IF ( ilanc.ge.lanczos_min_size .and. ABS(eigval_diff) <= eval_conv_thr ) THEN
         ! write(*,*) 'converged! in:',ilanc
         !write(785,*) 'converged! in:',ilanc
         !
@@ -284,12 +288,12 @@ SUBROUTINE lanczos( nat, v_in, pushdir, force, &
   ! ENDIF
 
   !
-  ! Overwrite displ_vec by the next vector displacement 
+  ! Overwrite displ_vec by the next vector displacement
   !
   displ_vec(:,:) = v1(:,:)
 
   DEALLOCATE( q, v1 )
 
-  !flush(785)
+  ! flush(785)
 
 END SUBROUTINE lanczos

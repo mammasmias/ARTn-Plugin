@@ -18,7 +18,7 @@
 
   !! lanczos parameters
   dlanc = 1.0D-5
-  lanc_mat_size = 16
+  lanczos_max_size = 16
   
   !! eigenpush parms
   eigen_step_size = 0.15

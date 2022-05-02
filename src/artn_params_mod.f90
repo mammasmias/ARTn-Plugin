@@ -72,7 +72,7 @@ MODULE artn_params
   !! nperp
   INTEGER :: nperp, nperp_step, noperp
   INTEGER :: def_nperp_limitation(5) = [ 4, 8, 12, 16, -1 ]
-  !INTEGER :: nperp_limitation(5) = [ 0, 0, 0, 0, 0 ]   !! Who do that??
+  ! INTEGER :: def_nperp_limitation(5) = [ 5, 10, 15, 20, -1 ]
   INTEGER, ALLOCATABLE :: nperp_limitation(:)
   !! output structure counter
   INTEGER :: nmin       !> count the number of minimum found
@@ -123,7 +123,8 @@ MODULE artn_params
   !
   INTEGER :: ninit                !> number of initial pushes before lanczos start
   INTEGER :: neigen               !> number of steps made with eigenvector before perp relax
-  INTEGER :: lanc_mat_size        !> size of the lanczos tridiagonal matrix 
+  INTEGER :: lanczos_max_size        !> size of the lanczos tridiagonal matrix 
+  INTEGER :: lanczos_min_size        !> minimal size of lanzos matrix (use with care)
   INTEGER :: nsmooth              !> number of smoothing steps from push to eigenvec
   CHARACTER(LEN = 4) :: push_mode !> type of initial push (all , list or rad)
   ! convergence criteria
@@ -158,13 +159,13 @@ MODULE artn_params
   CHARACTER(:), allocatable :: converge_property
   !
   NAMELIST/artn_parameters/ lrestart, lrelax, lpush_final, lmove_nextmin, &
-       ninit, neigen, nperp, lanc_mat_size, nsmooth, push_mode, dist_thr,  &
+       ninit, neigen, nperp, lanczos_max_size, nsmooth, push_mode, dist_thr,  &
        init_forc_thr,forc_thr, fpara_thr, eigval_thr, frelax_ene_thr, &
        push_step_size, dlanc, eigen_step_size, current_step_size, push_over, &
        push_ids, add_const, engine_units, zseed, struc_format_out, elements, &
        verbose, filout, sadfname, initpfname, eigenfname, restartfname, &
        converge_property, eval_conv_thr, push_guess, eigenvec_guess,  &
-       nperp_limitation, lnperp_limitation
+       nperp_limitation, lnperp_limitation, lanczos_min_size
 
 
   !! Curvature
@@ -295,7 +296,8 @@ CONTAINS
       struc_format_out = 'xsf'
       !
       dlanc = NAN
-      lanc_mat_size = 16
+      lanczos_max_size = 16
+      lanczos_min_size = 0
       eval_conv_thr = NAN
       !
       engine_units = 'qe'
@@ -353,13 +355,13 @@ CONTAINS
       !
       ! inital number of lanczos iterations
       !
-      nlanc = lanc_mat_size
+      nlanc = lanczos_max_size
 
       !
-      ! initialize lanczos matrices (user chooses wheter to change lanc_mat_size)
+      ! initialize lanczos matrices (user chooses wheter to change lanczos_max_size)
       !
-      IF ( .not. ALLOCATED(H)) ALLOCATE( H(1:lanc_mat_size,1:lanc_mat_size), source = 0.D0 )
-      IF ( .not. ALLOCATED(Vmat)) ALLOCATE( Vmat(3,nat,1:lanc_mat_size), source = 0.D0 )
+      IF ( .not. ALLOCATED(H)) ALLOCATE( H(1:lanczos_max_size,1:lanczos_max_size), source = 0.D0 )
+      IF ( .not. ALLOCATED(Vmat)) ALLOCATE( Vmat(3,nat,1:lanczos_max_size), source = 0.D0 )
 
       !
       ! initialize nperp limitation
@@ -579,7 +581,7 @@ CONTAINS
     !WRITE ( iunartres, * ) linit, lperp, leigen, llanczos, lsaddle, lrelax, &
     WRITE ( iunartres, * ) linit, lperp, leigen, llanczos, lpush_over, lrelax, &
          iartn, istep, iinit, ieigen, iperp, ilanc, irelax, ismooth,   &
-         ninit, neigen, nlanc, lanc_mat_size, nperp, nmin, nsaddle, &
+         ninit, neigen, nlanc, lanczos_max_size, nperp, nmin, nsaddle, &
          etot_init, &
          etot_step, tau_step, force_step, current_step_size, fpush_factor, &    !> Actual step
          eigenvec, H, Vmat, force_old, lowest_eigval, &
@@ -619,7 +621,7 @@ CONTAINS
        !READ( iunartres, * ) linit, lperp, leigen, llanczos, lsaddle, lrelax, &
        READ( iunartres, * ) linit, lperp, leigen, llanczos, lpush_over, lrelax, &
          iartn, istep, iinit, ieigen, iperp, ilanc, irelax, ismooth,   &
-         ninit, neigen, nlanc, lanc_mat_size, nperp, nmin, nsaddle, &
+         ninit, neigen, nlanc, lanczos_max_size, nperp, nmin, nsaddle, &
          etot_init, &
          etot_step, tau_step, force_step, current_step_size, fpush_factor, &   !> Actual step
          eigenvec, H, Vmat, force_old, lowest_eigval, &

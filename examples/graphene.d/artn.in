@@ -10,7 +10,7 @@
   add_const(:,1) = 0.0, 1.0, 0.0
 ! lanczos parameters
   dlanc = 0.1D-1 
-  nlanc_init = 16
+  laczos_max_size = 16
   ! eigenpush parms
   eigen_step_size = 0.3
 /
