@@ -42,7 +42,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
        setup_artn, read_restart, write_restart, &
        push_over, ran3, a1, old_lanczos_vec, lend, fill_param_step, &
        filin, filout, sadfname, initpfname, eigenfname, restartfname, warning, flag_false,  &
-       prefix_min, nmin, prefix_sad, nsaddle, artn_resume, natoms, old_lowest_eigval
+       prefix_min, nmin, prefix_sad, nsaddle, artn_resume, natoms, old_lowest_eigval, &
+       lanczos_always_random
   !
   IMPLICIT NONE
   ! -- ARGUMENTS
@@ -64,7 +65,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
   ! -- LOCAL VARIABLES
   REAL(DP), EXTERNAL :: dnrm2, ddot           ! lapack functions
-  INTEGER :: na, icoor, idum                  ! integers for loops
+  INTEGER :: na, icoor, idum, iidum           ! integers for loops
   !
   !
   REAL(DP)  :: fpara(3,nat)                   ! force parallel to push/eigenvec
@@ -665,6 +666,18 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         ! first iternation of current lanczos call
         !
         v_in(:,:) = eigenvec(:,:)
+        !
+        IF( lanczos_always_random ) THEN
+           ! generate random initial vector
+           CALL random_number(z)
+           z = z *1e8
+           iidum = INT(z)
+           do na = 1, nat
+              v_in(:,na) = (/0.5_DP - ran3(iidum),0.5_DP - ran3(iidum),0.5_DP - ran3(iidum)/)
+           end do
+           ! normalize
+           v_in = v_in / norm2(v_in)
+        ENDIF
         !
         ! reset the eigenvalue flag
         !

@@ -120,6 +120,7 @@ MODULE artn_params
   LOGICAL :: lrestart    !> do we want to restart the calculation
   LOGICAL :: lrelax      !> do start the relaxation to adjacent minima from the saddle point
   LOGICAL :: lpush_final !> push to adjacent minimum along eigenvector
+  LOGICAL :: lanczos_always_random !> always start lanczos with random vector
   !
   INTEGER :: ninit                !> number of initial pushes before lanczos start
   INTEGER :: neigen               !> number of steps made with eigenvector before perp relax
@@ -165,7 +166,7 @@ MODULE artn_params
        push_ids, add_const, engine_units, zseed, struc_format_out, elements, &
        verbose, filout, sadfname, initpfname, eigenfname, restartfname, &
        converge_property, eval_conv_thr, push_guess, eigenvec_guess,  &
-       nperp_limitation, lnperp_limitation, lanczos_min_size
+       nperp_limitation, lnperp_limitation, lanczos_min_size, lanczos_always_random
 
 
   !! Curvature
@@ -299,6 +300,7 @@ CONTAINS
       lanczos_max_size = 16
       lanczos_min_size = 0
       eval_conv_thr = NAN
+      lanczos_always_random = .false.
       !
       engine_units = 'qe'
       !
