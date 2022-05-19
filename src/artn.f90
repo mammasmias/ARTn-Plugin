@@ -795,6 +795,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   IF( lconv )THEN
 
     write(iunartout,'(5x,"|> BLOCK FINALIZE..")')
+    WRITE (iunartout,'(5X, "|> number of steps:",x, i0)') istep
     !> SCHEMA FINILIZATION
     lend = lconv
 
