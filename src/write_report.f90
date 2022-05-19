@@ -283,7 +283,6 @@ SUBROUTINE write_inter_report( u, pushfactor, de )
       WRITE( u,'(5X, "|> Configuration Files:", X,A)') trim(artn_resume)
       WRITE( *,'(5x, "|> Configuration Files:", X,A)') trim(artn_resume)
       WRITE( u,'(5X, "--------------------------------------------------")')
-      WRITE (u,'(5X, "|> Total number of steps:",x, i0)') istep
       !WRITE( u,'(/)')
 
 

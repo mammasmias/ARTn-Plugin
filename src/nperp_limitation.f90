@@ -89,7 +89,7 @@ SUBROUTINE nperp_limitation_init( flag )
   ELSE
     !! We still define nperp_limitation but at nothing
     !nperp_limitation = [ 0, 0 ]
-    nperp_limitation = [ 4, -1 ]
+    nperp_limitation = [ -1, -1 ]
 
     !! But he still define is own nperp in basin
     if( nperp /= -1 )nperp_limitation(1) = nperp
