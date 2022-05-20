@@ -135,6 +135,7 @@ MODULE artn_params
   REAL(DP) :: fpara_thr         !> parallel force convergence criterion, used to determine when to tighten convcrit_final
   REAL(DP) :: eigval_thr        !> threshold for eigenvalue
   REAL(DP) :: frelax_ene_thr    !> threshold to start relaxation to adjacent minima
+  REAL(DP) :: etot_diff_limit   !> limit for energy difference, if above exit the research
   ! step sizes
   REAL(DP) :: push_step_size        !> step size of inital push in angstrom
   REAL(DP) :: eigen_step_size       !> step size for a step with the lanczos eigenvector
@@ -149,7 +150,8 @@ MODULE artn_params
                          def_forc_thr = 1.0d-3,       def_fpara_thr = 0.5d-2,  &
                          def_eigval_thr = -0.01_DP,   def_frelax_ene_thr  = 0.00_DP,    &
                          def_push_step_size = 0.3,    def_eigen_step_size = 0.2,    &
-                         def_lanczos_disp = 1.D-2,           def_lanczos_eval_conv_thr = 1.0D-2
+                         def_lanczos_disp = 1.D-2,    def_lanczos_eval_conv_thr = 1.0D-2, &
+                         def_etot_diff_limit = 80.0_DP
   ! arrays related to constraints
   INTEGER,  ALLOCATABLE :: push_ids(:)    !> IDs of atoms to be pushed
   REAL(DP), ALLOCATABLE :: add_const(:,:) !> constraints on initial push
@@ -166,7 +168,7 @@ MODULE artn_params
        push_ids, add_const, engine_units, zseed, struc_format_out, elements, &
        verbose, filout, sadfname, initpfname, eigenfname, restartfname, &
        converge_property, lanczos_eval_conv_thr, push_guess, eigenvec_guess,  &
-       nperp_limitation, lnperp_limitation, lanczos_min_size, lanczos_always_random
+       nperp_limitation, lnperp_limitation, lanczos_min_size, lanczos_always_random, etot_diff_limit
 
 
   !! Curvature
@@ -289,6 +291,7 @@ CONTAINS
       fpara_thr = NAN
       eigval_thr = NAN ! 0.1 Ry/bohr^2 corresponds to 0.5 eV/Angs^2
       frelax_ene_thr  = NAN ! in Ry; ( etot - etot_saddle ) < frelax_ene_thr
+      etot_diff_limit = NAN
       !
       push_step_size = NAN
       eigen_step_size = NAN
@@ -427,8 +430,8 @@ CONTAINS
     !! We convert the USERS Values in ARTn units to be coherente:
     !! So we convert the value if it's differents from NAN initialized values
 
-    if( dist_thr == NAN )then; dist_thr = def_dist_thr
-    else;                      dist_thr = convert_length( dist_thr ); endif
+    ! distance is in units on input, no need to convert
+    if( dist_thr == NAN )then; dist_thr = def_dist_thr; endif
     !
     if( init_forc_thr == NAN )then; init_forc_thr = def_init_forc_thr
     else;                           init_forc_thr = convert_force( init_forc_thr ); endif
@@ -444,6 +447,11 @@ CONTAINS
     !eigval_thr = -0.01_DP ! in Ry/bohr^2 corresponds to 0.5 eV/Angs^2
     if( frelax_ene_thr == NAN )then; frelax_ene_thr = def_frelax_ene_thr
     else;                       frelax_ene_thr = convert_energy( frelax_ene_thr ); endif
+    !etot_diff_limit = 1000.0 eV ~ 80 Ry
+    if( etot_diff_limit == NAN ) then; etot_diff_limit = def_etot_diff_limit
+    else;    etot_diff_limit = convert_energy( etot_diff_limit ); endif
+
+
     !relax_thr  = -0.01_DP ! in Ry; ( etot - etot_saddle ) < relax_thr
     !
     if( push_step_size == NAN )then; push_step_size = def_push_step_size
@@ -471,6 +479,7 @@ CONTAINS
       write(*,1) "* fpara_thr       = ", fpara_thr
       write(*,1) "* eigval_thr      = ", eigval_thr
       write(*,1) "* frelax_ene_thr       = ", frelax_ene_thr
+      write(*,1) "* etot_diff_limit      = ", etot_diff_limit
       !
       write(*,1) "* push_step_size  = ", push_step_size
       write(*,1) "* eigen_step_size = ", eigen_step_size
