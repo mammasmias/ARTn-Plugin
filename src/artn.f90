@@ -43,7 +43,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
        push_over, ran3, a1, old_lanczos_vec, lend, fill_param_step, &
        filin, filout, sadfname, initpfname, eigenfname, restartfname, warning, flag_false,  &
        prefix_min, nmin, prefix_sad, nsaddle, artn_resume, natoms, old_lowest_eigval, &
-       lanczos_always_random
+       lanczos_always_random, etot_diff_limit
   !
   IMPLICIT NONE
   ! -- ARGUMENTS
@@ -641,6 +641,15 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !
   END IF RELAX
 
+  
+  if( etot_step - etot_init > etot_diff_limit ) then
+     write(iunartout,'(5x,"|> Energy exceeds the limit! => research FAIL!",2f8.3)') unconvert_energy(etot_step-etot_init), &
+          unconvert_energy(etot_diff_limit )
+     write(*,'(5x,"|> Energy exceeds the limit! => research FAIL!",2f8.3)') unconvert_energy(etot_step-etot_init), &
+          unconvert_energy(etot_diff_limit )
+     lconv = .true.
+     call write_fail_report( iunartout, disp, etot_step )
+  endif
 
 
 

@@ -155,7 +155,7 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         CALL nperp_limitation_step( -1 )
 
         C1 = ( MAXfperp < fperp_thr ) ! check on the fperp field
-        C2 = ( nperp > 0.AND.iperp >= nperp )    ! check on the perp-relax iteration
+        C2 = ( nperp > -1 .AND.iperp >= nperp )    ! check on the perp-relax iteration
 
         IF( C1 .OR. C2 )THEN
            lperp = .false.
