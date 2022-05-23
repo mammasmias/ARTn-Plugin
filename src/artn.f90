@@ -43,7 +43,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
        push_over, ran3, a1, old_lanczos_vec, lend, fill_param_step, &
        filin, filout, sadfname, initpfname, eigenfname, restartfname, warning, flag_false,  &
        prefix_min, nmin, prefix_sad, nsaddle, artn_resume, natoms, old_lowest_eigval, &
-       lanczos_always_random, etot_diff_limit
+       lanczos_always_random, etot_diff_limit, error_message
   !
   IMPLICIT NONE
   ! -- ARGUMENTS
@@ -74,12 +74,10 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   !REAL(DP)  :: smoothing_factor               ! mixing factor for smooth transition between eigenvec and push
   !REAL(DP)  :: etot!, lat(3,3)
   INTEGER   :: ios ,i                         ! file IOSTAT
-  !CHARACTER( LEN=255) :: filin !, filout, sadfname, initpfname, eigenfname, restartfname
   LOGICAL :: lforc_conv, lsaddle_conv, ArtnStep
-  !character(:), allocatable :: outfile
+  LOGICAL :: lerror   ! flag for an error from the engine
   character(len=256) :: outfile
 
-  !integer :: natom
   LOGICAL, PARAMETER :: noARTnStep = .false.
   REAL(DP) :: z
 
@@ -101,17 +99,12 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   !
   fpara_tot = 0.D0
   !
-  !filin = 'artn.in'
-  !> Move output file name in module : Can be customize
-
 
 
 
   !
   ! initialize artn
   !
-
-
   IF( istep == 0 )THEN
 
 
@@ -141,15 +134,23 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     endif ONCE
 
 
-    ! ...Fill the *_step Arrays
-    CALL Fill_param_step( nat, at, order, tau, etot_eng, force )
+    ! ...Fill the *_step Arrays and parameters
+    CALL Fill_param_step( nat, at, order, tau, etot_eng, force, lerror )
+    IF ( lerror ) THEN
+       !! something went wrong in filling the arrays!
+       disp = void
+       !! write report
+       call write_fail_report( iunartout, disp, etot_eng )
+       !! finish the current search
+       lconv = .true.
+    ENDIF
 
 
-    !------------------------------------------------------------------------------    
-    !> @brief 
-    !!   Here we have to initialize the push and eigenvec thanks to different way
-    !!   depending the user choice.
-    !!   - push_init() works for random 
+
+    !------------------------------------------------------------------------------
+    !> @brief
+    !!   Here we have to initialize the push and eigenvec accoriding to user's choice
+    !!   - push_init() works for random
     call start_guess( idum, nat, order, force, push, eigenvec )
     ! ...If no init step => nullify push
     !if( ninit == 0 )push = 1.0_DP
@@ -169,7 +170,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
       ! ...Overwirte the engine Arrays
       tau(:,:) = tau_step(:,order(:))
 
-      !isearch = isearch + 1  !! We continue the search, not another one 
+      !isearch = isearch + 1  !! We continue the search, not another one
 
     ELSE
 
@@ -191,31 +192,22 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
 
 
-  ELSE !>     ISTEP > 0
-
-
-    ! ...Verification of number of atoms before to play with arrays
-    if( nat /= natoms )then
-
-       OPEN ( UNIT = iunartout, FILE = filout, FORM = 'formatted', ACCESS = 'append', STATUS = 'unknown', IOSTAT = ios )
-       write(*,'(5x,"|> ATOMS LOST (",2(x,i0),") - STEP",x,i0," - STOP ARTn RESEARCH ")') nat, natoms, istep
-       write(iunartout,'(5x,"|> ATOMS LOST (",2(x,i0),") - STEP",x,i0," - STOP ARTn RESEARCH ")') nat, natoms, istep
-       write(iunartout,'(5x,150("-")/)')
-       Close( iunartout )
-
-       !> SCHEMA FINILIZATION
-       ! ...Laod the start configuration
-       tau(:,:) = tau_init(:,order(:))
-       ! ...Force = 0.0
-       displ_vec = 0.0_DP
-       lconv = .true.  !! Stop the research 
-       return
-
-    endif
-
+  ELSE
+    !>     ISTEP > 0
+    !! receive variables from the engine, split force into perp and para,
+    !! and check if it is converged
 
     ! ...Fill the *_step Arrays
-    CALL Fill_param_step( nat, at, order, tau, etot_eng, force )
+    CALL Fill_param_step( nat, at, order, tau, etot_eng, force, lerror )
+    IF( lerror ) THEN
+       !! somehing went wrong
+       disp = void
+       !! write report
+       call write_fail_report( iunartout, disp, etot_step )
+       !! finish current search
+       displ_vec = 0.0_DP
+       lconv = .true.
+    ENDIF
 
 
     !CALL perpforce( force_step, if_pos, push, fperp, fpara, nat)
@@ -237,7 +229,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
 
   ! -- Start a ARTn search
-  !write( iunartout,*)"|> test print: istep", istep
   if( istep == 0 )then
      ! ...Write Zero step
      CALL write_header_report( iunartout )
@@ -255,18 +246,18 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   IF ( linit ) THEN
      !
      !=============================
-     ! generate initial push vector
+     ! Send a push with initial push vector and decide what to do next: perp_relax, or lanczos
      !=============================
-     ! linit is touched by:
+     ! linit flag is touched by:
      !   - initialize_artn(),
      !   - check_force_convergence()
      !   - here
      !.............................
 
 
-
-     ! ...Start lanczos when number of init steps is reached
      IF ( iinit >= ninit ) THEN
+        !
+        ! Pass to lanczos when number of init steps is reached
 
         ! ...For actual step
         llanczos = .true.
@@ -275,14 +266,15 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         linit = .false.
         lperp = .false.
 
-
-     ELSE  ! ...Init Push
+     ELSE
+        !
+        ! Do init push, and switch to perp relax for next step
 
         iinit = iinit + 1
         disp = INIT
 
 
-        ! ...modify the force to be equal to the push
+        ! displacement equal to the push
         displ_vec = push
 
         CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, &
@@ -291,7 +283,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         !call info_field( iunartout, nat, displ_vec, "init::displ_vec" )
 
 
-        ! ...set up the flags (we did an initial push, now we need to relax perpendiculary)
+        ! ...set up the flags for next step (we do an initial push, then we need to relax perpendiculary)
         linit = .false.
         lperp = .true.
         iperp = 0
@@ -309,12 +301,11 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !   - here
      !.............................
      !
-     ! If eigenvalue is good, overwrite push with eigenvec 
+     ! If eigenvalue is good, overwrite push with eigenvec
      ! then If we come back in bassin we use this eigenvec and not push_init
      !
      !
      disp = PERP
-     !
      !
 
      ! ...Some pre-processing on the fperp
@@ -331,37 +322,16 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      iperp = iperp + 1
      !
 
-     !> Here we do a last verification on displ_vec to prevent 
+     !> Here we do a last verification on displ_vec to detect
      !! the box explosion
      !! -> Stop the search if one of displacement has 5 number
      z = 0.0_DP
      do i = 1,nat
         z = max( z, norm2(displ_vec(:,i)) )
      enddo
-     IF( nat /= natoms.OR.z > 1.0e4 )THEN
-
-       write(*,'(5x,"|> BOX EXPLOSION - STEP",x,i0," - STOP ARTn RESEARCH ")') istep
-       write(iunartout,'(5x,"|> BOX EXPLOSION - STEP",x,i0," - STOP ARTn RESEARCH ")') istep
-       write(iunartout,'(5x,150("-")/)') 
-      
-       !ifails = ifails + 1
-       
-
-       !> SCHEMA FINILIZATION
-       ! ...Laod the start configuration
-       tau(:,:) = tau_init(:,order(:))
-
-       ! ...Force = 0.0
-       displ_vec = 0.0_DP
-
-       ! ...The research IS FINISHED
-       !CALL clean_artn()  ! Explosion Box
-
-       !disp = RELX
-       lconv = .true.  !! Stop the research 
-       !return
-
-       
+     IF( nat /= natoms .OR. z > 1.0e4 )THEN
+       error_message = "Box explosion"
+       lconv = .true.  !! Stop the research
      ENDIF
 
      !call info_field( iunartout, nat, displ_vec, "perp::displ_vec" )
@@ -381,12 +351,12 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
 
      IF( nsmooth > 0 ) &
-       CALL Smooth_interpol( ismooth, nsmooth, nat, force_step, push, eigenvec )
+       CALL smooth_interpol( ismooth, nsmooth, nat, force_step, push, eigenvec )
 
      ! ...Overwrite the initial Push with Eigenvector
-     IF( nsmooth == 0.OR.ismooth > nsmooth )then
+     IF( nsmooth == 0 .OR. ismooth > nsmooth )then
        !write(iunartout,'(x,"DEBUG::EIGEN::Overwrite push = eigenvec")')
-       push(:,:) = eigenvec(:,:)  
+       push(:,:) = eigenvec(:,:)
      ENDIF
 
 
@@ -404,6 +374,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !%! Put some test on current_step_size
      !
      displ_vec(:,:) = eigenvec(:,:)*current_step_size
+
 
 
      ! count the number of steps made with the eigenvector
@@ -426,8 +397,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   !
   ! The saddle point is reached -> confirmed by check_force_convergence()
   !
-  !> SHOULD BE A ROUTINE but not :: it's because we call write_struct() that needs 
-  !!  arguments exist only in artn() 
+  !> SHOULD BE A ROUTINE but not :: it's because we call write_struct() that needs
+  !!  arguments exist only in artn()
   IF( lsaddle_conv )THEN
 
      !> store the saddle point energy
@@ -533,7 +504,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
         lconv = .true.
 
-        ! ...Set the force to zero 
+        ! ...Set the force to zero
         displ_vec = 0.0_DP
 
         ! ...Here we dont load the next minimum because it does not exist
@@ -563,7 +534,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
 
      !
-     ! The convergence is reached: 
+     ! The convergence is reached:
      !  - Switch the push_over or
      !  - Finish the ARTn search
      !
@@ -641,14 +612,11 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !
   END IF RELAX
 
-  
+
   if( etot_step - etot_init > etot_diff_limit ) then
-     write(iunartout,'(5x,"|> Energy exceeds the limit! => research FAIL!",2f8.3)') unconvert_energy(etot_step-etot_init), &
-          unconvert_energy(etot_diff_limit )
-     write(*,'(5x,"|> Energy exceeds the limit! => research FAIL!",2f8.3)') unconvert_energy(etot_step-etot_init), &
-          unconvert_energy(etot_diff_limit )
-     lconv = .true.
+     error_message = 'ENERGY EXCEEDS THE LIMIT'
      call write_fail_report( iunartout, disp, etot_step )
+     lconv = .true.
   endif
 
 
@@ -698,7 +666,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         a1 = 0.0
      ENDIF
      !
-     ! apply constraints from the engine (QE)
+     ! apply constraints from the engine. Works only with engines which fill if_pos!! (not lammps)
      !
      IF ( ANY(if_pos(:,:) == 0) ) THEN
         DO na=1,nat
@@ -746,16 +714,10 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         ELSE
            !
            ! ...If we lose the eigval
-           if( .not.lbasin .and. lowest_eigval > eigval_thr )then
-             write(iunartout,'(5x,"|> EIGENVALUE LOST <=> RETURN To the Basin => research FAIL!")')
-             write(*,'(5x,"|> EIGENVALUE LOST <=> RETURN To the Basin => research FAIL!")')
-             call write_fail_report( iunartout, disp, old_lowest_eigval )
-             !> SCHEMA FINILIZATION
-             ! ...Laod the start configuration
-             tau(:,:) = tau_init(:,order(:))
-             ! ...No displacement 
-             displ_vec = 0.0_DP
-             lconv = .true.
+           if( .not. lbasin .and. lowest_eigval > eigval_thr )then
+              error_message = 'EIGENVALUE LOST'
+              call write_fail_report( iunartout, disp, old_lowest_eigval )
+              lconv = .true.
            endif
 
            ! structure is still in basin (under unflection),
@@ -768,7 +730,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            iperp =  0
            noperp = 0      !> count the init-perp fail
            nperp_step = 1  !> count the out-basin perp relax step
-           ismooth = 1     !> Initialise the smoothy step
+           ! ismooth = 1     !> Initialise the smoothy step
            iinit = iinit - 1
 
            !
@@ -807,6 +769,13 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     WRITE (iunartout,'(5X, "|> number of steps:",x, i0)') istep
     !> SCHEMA FINILIZATION
     lend = lconv
+
+    IF( lerror ) THEN
+       ! STOP the research
+       write(iunartout,'(5x,"|> STOPPING DUE TO ERROR")')
+       CLOSE( UNIT = iunartout, STATUS = 'KEEP' )
+       STOP
+    ENDIF
 
     ! ...Here we should load the next minimum if the user ask
     IF( lmove_nextmin )THEN

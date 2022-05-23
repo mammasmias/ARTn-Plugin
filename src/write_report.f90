@@ -340,7 +340,7 @@ END SUBROUTINE write_end_report
 SUBROUTINE write_fail_report( iunartout, disp, estep )
 
   use units, only : DP, unconvert_energy, unit_char
-  use artn_params, only : MOVE, ifails
+  use artn_params, only : MOVE, ifails, error_message
   implicit none
 
   integer, intent( in ) :: iunartout, disp
@@ -351,6 +351,7 @@ SUBROUTINE write_fail_report( iunartout, disp, estep )
   WRITE (iunartout,'(5X, "--------------------------------------------------")')
   WRITE (iunartout,'(5X, "        *** ARTn search failed ( ",i0," ) at ",a," *** ")') ifails, MOVE(DISP)
   WRITE (iunartout,'(5X, "Step Params: Etot = ",f10.4,x,a)') unconvert_energy(estep), unit_char('energy')
+  WRITE (iunartout, '(5X, "Failure message: ",a)') trim(adjustl(error_message))
   WRITE (iunartout,'(5X, "--------------------------------------------------"//)')
 
 END SUBROUTINE write_fail_report
