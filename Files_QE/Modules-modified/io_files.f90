@@ -110,7 +110,7 @@ CONTAINS
   SUBROUTINE create_directory( dirname )
     !------------------------------------------------------------------------
     !
-    USE wrappers,  ONLY : f_mkdir_safe
+    USE clib_wrappers,  ONLY : f_mkdir_safe
     !
     CHARACTER(LEN=*), INTENT(IN) :: dirname
     !
@@ -158,7 +158,7 @@ CONTAINS
     ! ...    exst= .t. if tmp_dir exists
     ! ...    pfs = .t. if tmp_dir visible from all procs of an image
     !
-    USE wrappers,      ONLY : f_mkdir_safe
+    USE clib_wrappers,      ONLY : f_mkdir_safe
     !
     IMPLICIT NONE
     !
