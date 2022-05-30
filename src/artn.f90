@@ -165,7 +165,13 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
       CLOSE ( UNIT = iunartout, STATUS = 'KEEP')
 
       ! ...Read the FLAGS, FORCES, POSITIONS, ENERGY, ...
-      CALL read_restart( restartfname, nat, order, ityp )
+      CALL read_restart( restartfname, nat, order, ityp, lerror )
+      IF( lerror )THEN
+        error_message = 'RESTART FILE DOES NOT EXIST'
+        call write_fail_report( iunartout, disp, etot_step )
+        lconv = .true.
+      ENDIF
+
 
       ! ...Overwirte the engine Arrays
       tau(:,:) = tau_step(:,order(:))

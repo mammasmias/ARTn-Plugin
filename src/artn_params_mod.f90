@@ -639,7 +639,7 @@ CONTAINS
   END SUBROUTINE write_restart
   !
   !---------------------------------------------------------------------------
-  SUBROUTINE read_restart( filnres, nat, order, ityp )
+  SUBROUTINE read_restart( filnres, nat, order, ityp, ierr )
     !
     ! Subroutine that reads the restart file, if a restart is requested
     !
@@ -651,9 +651,11 @@ CONTAINS
     LOGICAL :: file_exists
     INTEGER :: ios
     INTEGER :: nat, order(nat), ityp(nat)
+    LOGICAL, intent( out ) :: ierr
     CHARACTER(LEN=255) :: fname
 
     INQUIRE ( file = filnres, exist = file_exists)
+    ierr = file_exists
     IF ( file_exists ) THEN
        OPEN( UNIT = iunartres, FILE = filnres, ACTION="READ", FORM = 'formatted', STATUS = 'old', IOSTAT = ios)
        !OPEN( UNIT = iunartres, FILE = filnres, FORM = 'unformatted', ACTION="READ", STATUS = 'OLD', IOSTAT = ios)
