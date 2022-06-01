@@ -654,8 +654,8 @@ CONTAINS
     LOGICAL, intent( out ) :: ierr
     CHARACTER(LEN=255) :: fname
 
-    INQUIRE ( file = filnres, exist = file_exists)
-    ierr = file_exists
+    INQUIRE( file = filnres, exist = file_exists )
+    ierr = .NOT.file_exists
     IF ( file_exists ) THEN
        OPEN( UNIT = iunartres, FILE = filnres, ACTION="READ", FORM = 'formatted', STATUS = 'old', IOSTAT = ios)
        !OPEN( UNIT = iunartres, FILE = filnres, FORM = 'unformatted', ACTION="READ", STATUS = 'OLD', IOSTAT = ios)
