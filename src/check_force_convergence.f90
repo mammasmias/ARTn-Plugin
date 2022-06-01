@@ -116,11 +116,11 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
            lperp = .false.
            llanczos = .true. 
            leigen = .false. 
-           IF (C1) write(iunartout,*)"Stop perp relax because fperp<fperp_thr ",&
+           IF (C1) write(iunartout,*)"   |> Stop perp relax because fperp < fperp_thr ",&
                unconvert_force( maxfperp ), unconvert_force(fperp_thr), TRIM(converge_property) 
-           IF (C2) write(iunartout,*)"Stop perp relax because iperp>nperp_thr ",&
+           IF (C2) write(iunartout,*)"   |> Stop perp relax because iperp > nperp_thr ",&
                iperp, nperp 
-           IF (C3) write(iunartout,*)"Stop perp relax because fperp<fpara ",&
+           IF (C3) write(iunartout,*)"   |> Stop perp relax because fperp < fpara ",&
                unconvert_force( maxfperp ), unconvert_force( maxfpara ), TRIM(converge_property)
 
            CALL write_restart( restartfname )

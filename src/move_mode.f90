@@ -22,7 +22,7 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
   !> @param [in]    disp	Kind of actual displacement 
   !> @param [in]    displ_vec	Displacement field (unit lemgth/force/hessian ) 
   !
-  USE artn_params, ONLY:  lbasin, iperp, irelax, push, eigenvec, lanczos_disp, MOVE !, istep
+  USE artn_params, ONLY:  lbasin, iperp, irelax, push, eigenvec, lanczos_disp, MOVE , istep
   USE UNITS
   !
   IMPLICIT NONE
@@ -130,7 +130,8 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
      ! the step performed should be like this now translate it into the correct force
      force(:,:) = displ_vec(:,order(:))*lanczos_disp*amu_ry/dt**2
 
-     !write(u0,10) istep, MOVE(disp), alpha, dt, nsteppos
+     !write(u0,10) istep, MOVE(disp), alpha, dt, nsteppos, amu_ry
+     !write(u0,*) istep, MOVE(disp), alpha, dt, nsteppos, amu_ry, dt*dt/amu_ry
 
      !
   CASE( 'eign' )
