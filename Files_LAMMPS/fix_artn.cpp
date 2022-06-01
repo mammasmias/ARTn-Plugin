@@ -338,6 +338,8 @@ void FixARTn::min_setup( int vflag ) {
     cout<< " * dtmin->"<< dtmin<< endl;
     cout<< " * dtmax->"<< dtmax<< endl;
     cout<< " * ftm2v->"<< force->ftm2v << endl;
+    cout<< " * dmax->"<< dmax << endl;
+    cout<< " * delaystep->"<< nsteppos0 << endl;
   }
 
 
