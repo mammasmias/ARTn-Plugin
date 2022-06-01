@@ -70,6 +70,11 @@ module units
     !!   Receive the keyword of Engine which contains the engine name and 
     !!   type of unit. Maybe we can also define the units for the output
     !
+    !> @note
+    !!   Important to know:
+    !!   Hessian, Force, Position, Time are exchange with Engine
+    !!   Energy is converted only for the ouput
+    !
     !> @param [inout]  txt   Engine Keyword 
     !
     ! -- Arguments
@@ -120,7 +125,7 @@ module units
       ! ---------------------------------------------- QE
       case( 'qe', 'quantum_espresso' )
 
-        !! Energy: Rydberg
+        !! Energy: Rydberg   
         E2au = 1. !/ Ry2eV
         au2E = Ry2eV
 
@@ -139,8 +144,9 @@ module units
         H2au = 1.0_DP 
         au2H = 1.0_DP 
 
-        cE = "Ry"
-        cL = "a.u." ! "bohr"
+        cE = "eV" !"Ry"
+        !cL = "a.u." ! "bohr"
+        cL = "Angs" ! "bohr"
         !strg_units = '(27X, "[Ry]",17X,"-----------[Ry/a.u.]----------",3X,"Ry/a.u.^2")'
 
       ! ---------------------------------------------- LAMMPS
@@ -173,6 +179,28 @@ module units
             cE = "eV"
             !cL = AA
             cL = "Ang"
+
+          case( 'lj' )
+            !! Energy: 1
+            E2au = 1.0_DP
+            au2E = 1.0_DP
+            !! Length: 1
+            L2au = 1.0_DP
+            au2L = 1.0_DP
+            !! Time: 1
+            T2au = 1.0_DP
+            au2T = 1.0_DP
+            !! Force
+            F2au = E2au / L2au
+            au2F = 1.0_DP / F2au
+
+            !! Hessian
+            H2au = F2au / L2au
+            au2H = 1.0_DP / H2au
+
+            cE = "LJ"
+            cL = "LJ"
+
 
           !case( 'real' )
             !! Energy: Kcal/mol
