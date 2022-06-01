@@ -107,7 +107,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   !
   IF( istep == 0 )THEN
 
-
     !> Initialize if it is the first search
     ONCE: IF( isearch == 0 )THEN
 
@@ -127,11 +126,11 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         idum = INT(z)
       ENDIF
       !> Save the seed for DEBUG
-      open( newunit=zseed, file="random_seed.dat" )
-      write( zseed, * )" zseed = ", idum
-      close( zseed )
+      OPEN( newunit=zseed, file="random_seed.dat" )
+      WRITE( zseed, * )" zseed = ", idum
+      CLOSE( zseed )
 
-    endif ONCE
+    ENDIF ONCE
 
 
     ! ...Fill the *_step Arrays and parameters
@@ -144,8 +143,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
        !! finish the current search
        lconv = .true.
     ENDIF
-
-
 
     !------------------------------------------------------------------------------
     !> @brief
@@ -245,7 +242,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      artn_resume = '* Start: '//trim(initpfname)
   endif
 
-
   !
   ! initial displacement , then switch off linit, and pass to lperp
   !
@@ -307,8 +303,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !   - here
      !.............................
      !
-     ! If eigenvalue is good, overwrite push with eigenvec
-     ! then If we come back in bassin we use this eigenvec and not push_init
+     ! If eigenvalue is good, overwrite push with eigenvec 
      !
      !
      disp = PERP
@@ -364,8 +359,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
        !write(iunartout,'(x,"DEBUG::EIGEN::Overwrite push = eigenvec")')
        push(:,:) = eigenvec(:,:)
      ENDIF
-
-
      !
      ! rescale the eigenvector according to the current force in the parallel direction
      ! see Cances_JCP130: some improvements of the ART technique doi:10.1063/1.3088532
@@ -397,8 +390,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, disp, if_pos, istep, nat,  iunartout, noARTnStep )
 
   END IF
-
-
 
   !
   ! The saddle point is reached -> confirmed by check_force_convergence()
@@ -595,8 +586,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            ! ...Save the structure name file to print it
            artn_resume = trim(artn_resume)//" | "//trim(outfile)
 
-           ! ...Tell to the machin it is finished
-           call flag_false()
+           ! ...Communicate to the engine it is finished
+           CALL flag_false()
 
            lconv = .true.
            lend = lconv  !! Maybe don't need anymore
@@ -710,7 +701,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            leigen = .true.
            ieigen = 0
            ! ...Save the eigenvector
-           !push(:,:) = eigenvec(:,:)  !! Move it in leigen block
            ! ...No yet perp relax
            lperp = .false.
            iperp = 0
@@ -764,8 +754,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
   ENDIF LANCZOS_
 
-
-
   !
   !! --- Finalization Block
   !
@@ -777,7 +765,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     lend = lconv
 
     IF( lerror ) THEN
-       ! STOP the research
+       ! STOP the search
        write(iunartout,'(5x,"|> STOPPING DUE TO ERROR")')
        CLOSE( UNIT = iunartout, STATUS = 'KEEP' )
        STOP
@@ -793,7 +781,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     ! ...Force = 0.0
     displ_vec = 0.0_DP
 
-    ! ...The research IS FINISHED
+    ! ...The search IS FINISHED
     CLOSE( UNIT = iunartout, STATUS = 'KEEP' )
     return
 

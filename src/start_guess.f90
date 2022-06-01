@@ -67,8 +67,6 @@ SUBROUTINE start_guess( idum, nat, order, force, push, eigenvec )
     !! random
     if( verb )write(iunartout,'(5x,"|> First EIGEN vectors RANDOM")')
     add_const = 0
-    ! call push_init( nat, tau_step, order, lat, idum, push_ids, dist_thr, add_const, eigen_step_size, eigenvec, 'all')
-
     !! set up the mask according to input forces
     mask(:) = 0
     j = 1

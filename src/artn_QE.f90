@@ -93,11 +93,6 @@ SUBROUTINE artn_QE( force, etot, epsf_qe, nat, ityp, atm, tau, at, alat, istep, 
   box = at * alat
   pos = tau * alat  
 
-  !print*, " * BOX(c,l)::"
-  !do i = 1, 3
-  !   print*, box(:,i)
-  !enddo
-
   do i = 1,nat
      order(i) = i
   enddo
@@ -131,18 +126,11 @@ SUBROUTINE artn_QE( force, etot, epsf_qe, nat, ityp, atm, tau, at, alat, istep, 
      CLOSE( UNIT = 4, STATUS = 'DELETE')
   ENDIF
 
-
-  !print*, " * ARTn_QE::PRE_MOVEMODE "
-
   ! ...Convert the dR given by ARTn to forces
   call move_mode( nat, order, force, vel, etot_fire, nsteppos, dt_curr, alpha, fire_alpha_init, dt_init, disp, displ_vec )
 
-
-
   ! ...Clean ARTn 
   IF( lconv )call clean_artn()
-
-
   !
   ! write the FIRE parameters to its scratch file
   ! 

@@ -53,8 +53,7 @@ SUBROUTINE push_init( nat, tau, order, lat, idum, push_ids, dist_thr, add_const,
 
   !write(iunartout,*)" PUSH_INIT"
   !write(*,*)" PUSH_INIT"
-
-
+  write(*,*) "DEBUG initial push", init_step_size
   !
   !  read the list of pushed atoms
   !
@@ -68,7 +67,6 @@ SUBROUTINE push_init( nat, tau, order, lat, idum, push_ids, dist_thr, add_const,
         iglob = order(na)
         IF( ANY(push_ids == iglob) )THEN
            atom_displaced(na) = 1
-           !print*, " * PUSH_INIT::Atom_displeced", na, atom_displaced(na), order(na), push_ids
         ENDIF
      ENDDO
 
@@ -102,9 +100,6 @@ SUBROUTINE push_init( nat, tau, order, lat, idum, push_ids, dist_thr, add_const,
 
   !%! Order the ADD_CONST Array: i = order(i)
   add_const(:,:) = add_const(:,order(:))
-
-
-
   !
   !%! Now All the information are converted in local index
   INDEX:DO na=1,nat
@@ -129,27 +124,16 @@ SUBROUTINE push_init( nat, tau, order, lat, idum, push_ids, dist_thr, add_const,
   ENDDO INDEX
   ! if all atoms are pushed center the push vector to avoid translational motion 
   IF ( mode == 'all')  CALL center(push(:,:), nat)
-  ! 
   !
-  ! normalize so that maxval of the vector is 1.0
+  ! normalize so that the norm of the largest displacement of an atom is 1.0
   !
   vmax = 0.0_DP
   do na = 1,nat
      vmax = max( vmax, norm2(push(:,na)) )
   enddo
   push(:,:) = push(:,:)/ vmax
-  !push(:,:) = push(:,:)/MAXVAL(ABS(push(:,:)))
-
   ! scale initial push vector according to step size (ORDERED) 
   push(:,order(:)) = init_step_size*push(:,:)
-
-
-! do na =1,nat
-!    !if( ANY(ABS(add_const(:,na)) > 0.D0) )print*, "PUSH_INIT:", na, order(na), push(:,na)
-!    if( atom_displaced(na) == 1 )print*, "PUSH_INIT:", na, order(na), push(:,order(na))
-!    !print*, "PUSH_INIT:", na, order(na), push(:,na)
-! enddo
-
 
 
 

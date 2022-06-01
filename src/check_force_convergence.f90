@@ -37,28 +37,18 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
   lforc_conv = .false.
   lsaddle_conv = .false.
   !
-
   ! ...Open the output file
   OPEN( UNIT = iunartout, FILE = 'artn.out', FORM = 'formatted', ACCESS = 'append', STATUS = 'unknown', IOSTAT = ios )
-
-
   ! ...Compute the variable
   IF( trim(converge_property) == 'norm' )THEN
     call sum_force( force*if_pos, nat, maxforce )
     call sum_force( fpara, nat, maxfpara )
     call sum_force( fperp, nat, maxfperp )
-    !maxforce = sqrt( dsum( 3*nat, force*if_pos ) )
-    !maxfpara = sqrt( dsum( 3*nat, fpara ) )
-    !maxfperp = sqrt( dsum( 3*nat, fperp ) )
- 
   ELSE
     maxforce = MAXVAL(ABS(force*if_pos))
     maxfpara = MAXVAL(ABS(fpara))
     maxfperp = MAXVAL(ABS(fperp))
   ENDIF
-
-  
-
   !
   IF ( lperp ) THEN 
      !
@@ -79,8 +69,6 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
            RETURN
         ENDIF
 
-
-
         !
         ! check whether the fperp criterion should be tightened
         ! 
@@ -97,8 +85,6 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
            ! ...Perp-relax managment
            CALL nperp_limitation_step( 0 )
         ENDIF
-
-        !print*, " CHECK_FORCE():Nperp ", nperp, nperp_step, nperp_list
 
         ! 
         ! -- check perpendicular force convergence for the perp-relax 
@@ -147,7 +133,6 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         !
         ! In the Basin after perp-relax we always return to init mode
         !
-
         fperp_thr = init_forc_thr 
 
         ! ...Do INIT until fperp is > fperp_thr
@@ -170,7 +155,7 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
           noperp = noperp + 1
           ! ** WARNING **
           if( noperp > 2 ) &
-            CALL WARNING( iunartout, "Tansition Push-Init->Perp-Relax",  &
+            CALL WARNING( iunartout, "Transition Push-Init->Perp-Relax",  &
                  "The Fperp is too small after Push-INIT- change push_step_size ", [noperp])
         ENDIF
 

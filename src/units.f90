@@ -122,11 +122,11 @@ module units
 
         !! Energy: Rydberg
         E2au = 1. !/ Ry2eV
-        au2E = Ry2eV
+        au2E = 1. ! Ry2eV
 
         !! Length: Bohr
-        L2au = 1. / B2A
-        au2L = B2A
+        L2au = 1. ! / B2A
+        au2L = 1. ! B2A
 
         !! Time: aut(Ry)
         T2au = 1.
@@ -200,14 +200,14 @@ module units
             !! Time: nanosecond
 
           case default
-            print*, " * ARTn::WARNING::LAMMPS/mode not define "
+            print*, " * ARTn::WARNING::LAMMPS/mode not defined "
 
         end select
 
 
       ! ---------------------------------------------- OTHER
       case default
-        print*, " * ARTn::WARNING::Engine not define "
+        print*, " * ARTn::WARNING::Engine not defined "
 
     end select   
 

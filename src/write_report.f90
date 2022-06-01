@@ -204,7 +204,7 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
     endif
     call compute_delr( nat, tau_step, tau_init, lat, delr )
     npart = 0
-    rc2 = 0.1!*0.1  !! Miha: Why square? NS: Why not!
+    rc2 = 0.1!*0.1  !! Miha: Why square? NS: Why not! 
     do i = 1, nat
        if( norm2(delr(:,i)) > rc2 ) npart = npart + 1
     enddo
@@ -253,7 +253,7 @@ SUBROUTINE write_inter_report( u, pushfactor, de )
 
   integer, intent( in ) :: u             !> Ouput Unit 
   integer, intent( in ) :: pushfactor
-  real(DP), intent( in ) :: de(*)            !> list of energie
+  real(DP), intent( in ) :: de(*)        !> list of energies 
 
 
   SELECT CASE( pushfactor )
