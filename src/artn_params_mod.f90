@@ -868,24 +868,27 @@ END MODULE artn_params
 
 !......................................................................... FUNCTION
 integer function get_iperp()
-  !> @brief give the parameters IPERP
-  !> @return the value of iperp
+  !> @brief 
+  !!   give the parameters IPERP
+  !> @return  iperp
   USE artn_params, only : iperp
   get_iperp = iperp
 end function get_iperp
 
 
 integer function get_perp()
-  !> @brief give the parameters PERP
-  !> @return the value of perp
+  !> @brief 
+  !!   give the parameters PERP
+  !> @return  PERP
   USE artn_params, only : perp
   get_perp = perp
 end function get_perp
 
 
 integer function get_relx()
-  !> @brief give the parameters RELX
-  !> @return the value of RELX
+  !> @brief 
+  !!   give the parameters RELX
+  !> @return RELX
   USE artn_params, only : relx
   get_relx = relx
 end function get_relx

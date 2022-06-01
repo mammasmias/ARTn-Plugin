@@ -72,7 +72,7 @@ class FixARTn : public Fix {
   int fire_integrator, ntimestep_start;
   int delaystep_start_flag;
 
-  int nsteppos;
+  int nsteppos, nsteppos0;   // current and defined delaystep (for the relax step)
   double dt_curr;
   double alpha;
 

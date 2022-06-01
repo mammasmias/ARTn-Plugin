@@ -100,11 +100,14 @@ FixARTn::FixARTn( LAMMPS *lmp, int narg, char **arg ): Fix( lmp, narg, arg )
   alpha_init = 0.1;
   alphashrink = 0.99;
 
+  // ...Define delaystep for the relaxation
+  nsteppos0 = 5;
+
   //dt_init = 0.001; //update->dt;
   dtsk = 0.5;
   dtgrow = 1.1;
 
-  dmax = 0.5;
+  dmax = 0.1;
 
   tmax = 20.;
   tmin = 0.02;
@@ -119,9 +122,17 @@ FixARTn::FixARTn( LAMMPS *lmp, int narg, char **arg ): Fix( lmp, narg, arg )
     /* Here we change the min_fire parameter 
     */
     
-    if( strcmp(arg[iarg], "alpha0") == 0 ){
+    if (strcmp(arg[iarg],"dmax") == 0) {
+      if (iarg+2 > narg) error->all(FLERR,"Illegal min_modify command");
+      dmax = utils::numeric(FLERR,arg[iarg+1],false,lmp);
+      iarg += 2;
+    } else if( strcmp(arg[iarg], "alpha0") == 0 ){
       if (iarg+2 > narg) error->all(FLERR,"Illegal min_modify command");
       alpha_init = utils::numeric(FLERR,arg[iarg+1],false,lmp);
+      iarg += 2;
+    } else if (strcmp(arg[iarg],"delaystep") == 0) {
+      if (iarg+2 > narg) error->all(FLERR,"Illegal min_modify command");
+      nsteppos0 = utils::numeric(FLERR,arg[iarg+1],false,lmp);
       iarg += 2;
     } else if (strcmp(arg[iarg],"alphashrink") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal min_modify command");
@@ -277,18 +288,27 @@ void FixARTn::min_setup( int vflag ) {
   if( word )memory->destroy( word );
   memory->create( word, nword, 20, "fix:word" );
 
+  string str;
   strcpy( word[0], "alpha0" );
-  strcpy( word[1], "0.0");   // at the begining
+  str = to_string(alpha_init);
+  strcpy( word[1], str.c_str() );
+  //strcpy( word[1], "0.0");   // at the begining
   strcpy( word[2], "alphashrink") ;
-  strcpy( word[3], "0.99") ;
+  str = to_string(alphashrink);
+  strcpy( word[3], str.c_str() );
+  //strcpy( word[3], "0.99") ;
   strcpy( word[4], "delaystep") ;
-  strcpy( word[5], "20") ;
+  str = to_string(nsteppos0);
+  strcpy( word[5], str.c_str() );
+  //strcpy( word[5], "5") ;
   strcpy( word[6], "halfstepback") ;
   strcpy( word[7], "no") ;
   strcpy( word[8], "integrator") ;
   strcpy( word[9], "eulerimplicit") ;
   strcpy( word[10], "dmax") ;
-  strcpy( word[11], "0.5") ;
+  str = to_string(dmax);
+  strcpy( word[11], str.c_str() );
+  //strcpy( word[11], "0.15") ;
 
   minimize-> modify_params( nword, word );
 
@@ -317,6 +337,9 @@ void FixARTn::min_setup( int vflag ) {
     cout<< " * dt0->"<< dt_init<< endl;
     cout<< " * dtmin->"<< dtmin<< endl;
     cout<< " * dtmax->"<< dtmax<< endl;
+    cout<< " * ftm2v->"<< force->ftm2v << endl;
+    cout<< " * dmax->"<< dmax << endl;
+    cout<< " * delaystep->"<< nsteppos0 << endl;
   }
 
 
@@ -771,12 +794,12 @@ void FixARTn::min_post_force( int /*vflag*/ ){
 
   // ...CHANGE FIRE PARAMETER as function of the value of 
 
-  if( (disp == get_perp_() && get_iperp_() == 1) 
-    || (disp != get_perp_() && disp != get_relx_()) ){
+  //if( (disp == get_perp_() && get_iperp_() == 1) 
+  //  || (disp != get_perp_() && disp != get_relx_()) ){
 
 
     // ...Update the time
-    update->dt = dt_curr;
+    //update->dt = dt_curr;
     string str;
 
 
@@ -790,6 +813,7 @@ void FixARTn::min_post_force( int /*vflag*/ ){
     strcpy( word[1], str.c_str() );
 
     strcpy( word[2], "delaystep" );
+    if( nsteppos != 0 )nsteppos = nsteppos0;
     str = to_string(nsteppos);
     strcpy( word[3], str.c_str() );
 
@@ -803,6 +827,15 @@ void FixARTn::min_post_force( int /*vflag*/ ){
       strcpy( word[5], "no" );
     }
 
+  // ...Launch modification of FIRE parameter
+  if( (disp == get_perp_() && get_iperp_() == 1) 
+    || (disp != get_perp_() && disp != get_relx_()) ){
+
+    // ...Update the time
+    update->dt = dt_curr;
+
+    //printf(" CHange Fire param: %d at %ld\n", disp, update->ntimestep );
+    //printf(" dt %f \n %s %s \n %s %s \n %s %s \n ", dt_curr, word[0], word[1], word[2], word[3], word[4], word[5]);
 
     // ...Send the new parameter to minmize
     minimize-> modify_params( nword, word );
