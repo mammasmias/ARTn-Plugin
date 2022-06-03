@@ -127,11 +127,11 @@ module units
 
         !! Energy: Rydberg   
         E2au = 1. !/ Ry2eV
-        au2E = 1. ! Ry2eV
+        au2E = 1. !  Ry2eV
 
         !! Length: Bohr
         L2au = 1. ! / B2A
-        au2L = 1. ! B2A
+        au2L = 1. !  B2A
 
         !! Time: aut(Ry)
         T2au = 1.
@@ -144,9 +144,9 @@ module units
         H2au = 1.0_DP 
         au2H = 1.0_DP 
 
-        cE = "eV" !"Ry"
+        cE = "Ry" !"Ry"
         !cL = "a.u." ! "bohr"
-        cL = "Angs" ! "bohr"
+        cL = "a.u." ! "bohr"
         !strg_units = '(27X, "[Ry]",17X,"-----------[Ry/a.u.]----------",3X,"Ry/a.u.^2")'
 
       ! ---------------------------------------------- LAMMPS

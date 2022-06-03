@@ -448,6 +448,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         if( lbackward )then
           eigenvec(:,:) = eigen_saddle(:,:)
           lbackward = .false.
+          etot_step = etot_saddle
         else
           !! Normalize it to be sure
           eigenvec(:,:) = eigenvec(:,:)/dnrm2(3*nat,eigenvec,1)
@@ -456,12 +457,9 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         !
         ! ...PUSH_OVER works => If diff Energy is negative
         IF( etot_step - etot_saddle < frelax_ene_thr ) THEN
-        !IF ( etot_step - etot_saddle < 0.0_DP ) THEN
-
            ! we started going downhill ...
            if( .NOT.lrelax )irelax = 0
            lrelax = .true.
-           !lsaddle = .false.
            lpush_over = .false.
 
 
