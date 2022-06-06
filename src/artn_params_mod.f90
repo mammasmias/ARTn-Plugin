@@ -149,7 +149,7 @@ MODULE artn_params
   REAL(DP), PARAMETER :: def_dist_thr = 0.0_DP,       def_init_forc_thr = 1.0d-2,   &
                          def_forc_thr = 1.0d-3,       def_fpara_thr = 0.5d-2,  &
                          def_eigval_thr = -0.01_DP,   def_frelax_ene_thr  = 0.00_DP,    &
-                         def_push_step_size = 0.3,    def_eigen_step_size = 0.2,    &
+                         def_push_step_size = 0.4,    def_eigen_step_size = 0.4,    &
                          def_lanczos_disp = 1.D-2,    def_lanczos_eval_conv_thr = 1.0D-2, &
                          def_etot_diff_limit = 80.0_DP
   ! arrays related to constraints
