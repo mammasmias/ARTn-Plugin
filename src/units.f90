@@ -144,9 +144,15 @@ module units
         H2au = 1.0_DP 
         au2H = 1.0_DP 
 
+<<<<<<< HEAD
         cE = "Ry" !"Ry"
         !cL = "a.u." ! "bohr"
         cL = "a.u." ! "bohr"
+=======
+        cE = "Ry"  !"eV"
+        !cL = "a.u." ! "bohr"
+        cL = "bohr" !"Angs"
+>>>>>>> cc09bb00ed14c5bbc167fcebcf6a5c73838129f8
         !strg_units = '(27X, "[Ry]",17X,"-----------[Ry/a.u.]----------",3X,"Ry/a.u.^2")'
 
       ! ---------------------------------------------- LAMMPS
