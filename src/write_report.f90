@@ -55,8 +55,8 @@ SUBROUTINE write_initial_report(iunartout, filout)
   WRITE (iunartout,'(5X, "Lanczos algorithm:")' )
   WRITE (iunartout,'(5X, "--------------------------------------------------")')
   WRITE (iunartout,'(15X,"lanczos_max_size   = ", I6)') lanczos_max_size
-  WRITE (iunartout,'(15X,"lanczos_disp           = ", G10.4,2x,A)') unconvert_length( lanczos_disp ), unit_char('length')
-  WRITE (iunartout,'(15X,"lanczos_eval_conv_thr   = ", G10.4)') lanczos_eval_conv_thr
+  WRITE (iunartout,'(15X,"lanczos_disp           = ", G11.4,2x,A)') unconvert_length( lanczos_disp ), unit_char('length')
+  WRITE (iunartout,'(15X,"lanczos_eval_conv_thr   = ", G11.4)') lanczos_eval_conv_thr
   WRITE (iunartout,'(5X, "--------------------------------------------------")')
   WRITE (iunartout,'(/,/)') 
   !WRITE (iunartout,*) " "
