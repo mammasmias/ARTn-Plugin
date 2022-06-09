@@ -155,6 +155,8 @@ MODULE artn_params
   ! arrays related to constraints
   INTEGER,  ALLOCATABLE :: push_ids(:)    !> IDs of atoms to be pushed
   REAL(DP), ALLOCATABLE :: add_const(:,:) !> constraints on initial push
+  ! array related to the report
+  REAL(DP) :: bilan(8)
   !
   CHARACTER(LEN=256) :: engine_units
   CHARACTER(LEN=10) :: struc_format_out
@@ -299,6 +301,8 @@ CONTAINS
       !
       push_mode = 'all'
       struc_format_out = 'xsf'
+
+      bilan = 0.0_DP
       !
       lanczos_disp = NAN
       lanczos_max_size = 16

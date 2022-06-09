@@ -121,7 +121,7 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
   !> @param [in]  iunartout	Channel of output
   !> @param [in]  ARTnStep	Flag to print at ARTn step
   !
-  USE artn_params, ONLY: MOVE, verbose, rcurv  &
+  USE artn_params, ONLY: MOVE, verbose, rcurv, bilan  &
                         ,etot_init, iinit, iperp, ieigen, ilanc, irelax, delr, verbose, iartn, a1 &
                         ,tau_init, lat, tau_step, delr, converge_property &
                         ,lrelax, linit, lbasin, lperp, llanczos, leigen, lpush_over, lpush_final, lbackward, lrestart 
@@ -214,6 +214,17 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
   ENDIF
 
 
+  ! ...Fill bilan variable for the inter report
+  if( ARTnStep )THEN; 
+    ctot = dr
+    cmax = real(npart,DP)
+  ELSE
+    ctot = bilan(7)
+    cmax = bilan(6)
+  ENDIF
+  bilan = [ detot, force_tot, fpara_tot, fperp_tot, lowEig, cmax, ctot, real(evalf,DP) ]
+
+
   select case( verbose )
     case( 0 )
       WRITE(iunartout,6) iartn, Mstep, MOVE(disp), detot, iinit, ieigen, iperp, ilanc, irelax,  &
@@ -223,11 +234,11 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, disp, if_pos,
 
     case( 1: )
       !if( .not.lperp )then
-        WRITE(iunartout,5) iartn, Mstep, MOVE(disp), detot, iinit, ieigen, iperp, ilanc, irelax,  &
+      WRITE(iunartout,5) iartn, Mstep, MOVE(disp), detot, iinit, ieigen, iperp, ilanc, irelax,  &
                           force_tot, fperp_tot, fpara_tot, lowEig,     &
                           dr, npart, evalf,   &
            lbasin, lpush_over, lrelax, linit, lperp, llanczos, leigen,  lpush_final, lbackward, lrestart , a1
-       5 format(5x,i4,3x,a,x,a,F10.4,x,5(x,i4),5(x,f10.4),2(x,i5),3X,10(L2),3X,f4.2)
+      5 format(5x,i4,3x,a,x,a,F10.4,x,5(x,i4),5(x,f10.4),2(x,i5),3X,10(L2),3X,f4.2)
 
       !else
       !  WRITE(iunartout,4) iartn, Mstep, MOVE(disp), detot, iinit, ieigen, iperp, ilanc, irelax,  &
@@ -248,12 +259,13 @@ END SUBROUTINE write_report
 !------------------------------------------------------------
 SUBROUTINE write_inter_report( u, pushfactor, de )
   use units, only : DP, unconvert_energy, unit_char
-  use artn_params, only : artn_resume, istep
+  use artn_params, only : artn_resume, istep, bilan
   implicit none
 
   integer, intent( in ) :: u             !> Ouput Unit 
   integer, intent( in ) :: pushfactor
   real(DP), intent( in ) :: de(*)        !> list of energies 
+  character(:), allocatable :: Cbilan
 
 
   SELECT CASE( pushfactor )
@@ -291,6 +303,10 @@ SUBROUTINE write_inter_report( u, pushfactor, de )
       
 
   END SELECT
+    Cbilan = '(5x,"|> DEBRIEF | dE= ",f12.5,x,"'//unit_char('energy')//' | F_{tot,para,perp}= ",3(f12.5,x),"' &
+     //unit_char('force')//' | EigenVal= ", f12.5,x,"'//unit_char('hessian')//' | npart= ",f4.0,x," | delr= ",f12.5,x,"' &
+     //unit_char('length')//' | evalf= ",f5.0,x,"|")'
+    Write(u,Cbilan) Bilan
 
 END SUBROUTINE write_inter_report
 
@@ -300,12 +316,13 @@ END SUBROUTINE write_inter_report
 SUBROUTINE write_end_report( iunartout, lsaddle, lpush_final, de )
  
   use units, only : DP, unconvert_energy, unit_char
-  use artn_params, only : artn_resume, istep
+  use artn_params, only : artn_resume, istep, bilan
   implicit none
 
   integer, intent( in ) :: iunartout
   logical, intent( in ) :: lsaddle, lpush_final
   REAL(DP), intent( in ), value :: de
+  character(:), allocatable :: Cbilan
   
   if( lsaddle )then
 
@@ -314,6 +331,13 @@ SUBROUTINE write_end_report( iunartout, lsaddle, lpush_final, de )
       unconvert_energy(de), unit_char('energy')
     WRITE(iunartout,'(5X, "|> Stored in Configuration Files:", X,A)') trim(artn_resume)
     WRITE (iunartout,'(5X, "--------------------------------------------------")')
+
+    Cbilan = '(5x,"|> DEBRIEF | dE= ",f12.5,x,"'//unit_char('energy')//' | F_{tot,para,perp}= ",3(f12.5,x),"' &
+        //unit_char('force')// &
+        ' | EigenVal= ", f12.5,x,"'//unit_char('hessian')//' | npart= ",f4.0,x," | delr= ",f12.5,x,"'//unit_char('length')// &
+        ' | evalf= ",f5.0,x,"|")'
+    Write(iunartout,Cbilan) Bilan
+
 
     IF( lpush_final ) THEN
       WRITE(iunartout,'(5X,"       *** Pushing forward to a minimum  ***      ")')
