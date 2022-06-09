@@ -59,7 +59,7 @@ SUBROUTINE nperp_limitation_init( flag )
   !!    -1 no limitation
   !!    {0,1,...} nperp limit
   !
-  !! @param[in] flag true/false to use nperp_limitation
+  !> @param[in] flag true/false to use nperp_limitation
   ! 
   use artn_params, only: nperp_limitation, nperp_step, nperp, &
                          def_nperp_limitation
@@ -73,10 +73,11 @@ SUBROUTINE nperp_limitation_init( flag )
   !! User says use nperp_limitation
   IF( flag )THEN
 
-    !! but no defines the limitation
+    !! but no defines the limitation (perviously initialized at -2 by default)
     IF( ALL(nperp_limitation == -2) )THEN
       deallocate( nperp_limitation )
       allocate( nperp_limitation, source=def_nperp_limitation )
+      if( nperp > -1 )nperp_limitation( 1 ) = nperp
 
     !! define just one limitation
     ELSE
@@ -105,7 +106,7 @@ SUBROUTINE nperp_limitation_init( flag )
     nperp_limitation = [ -1, -1 ]
 
     !! But he still define is own nperp in basin
-    if( nperp /= -1 )nperp_limitation(1) = nperp
+    if( nperp > -1 )nperp_limitation(1) = nperp
   ENDIF
 
   !! Define nperp
