@@ -72,5 +72,3 @@ SUBROUTINE clean_artn()
   CLOSE ( UNIT = iunartout, STATUS = 'KEEP')
 
 END SUBROUTINE clean_artn
-
-

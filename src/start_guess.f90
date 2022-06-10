@@ -21,7 +21,7 @@ SUBROUTINE start_guess( idum, nat, order, force, push, eigenvec )
   use units, only : DP
   use artn_params, only : push_mode, push_step_size, add_const, dist_thr, &
                           lat, tau_step, eigen_step_size, push_guess, eigenvec_guess, &
-                          push_ids, iunartout, filout
+                          push_ids, iunartout, filout, verbose
   use tools, only: read_guess
   implicit none
 
@@ -35,7 +35,7 @@ SUBROUTINE start_guess( idum, nat, order, force, push, eigenvec )
   integer :: mask(nat)
   integer :: i, j
 
-  verb = .true.
+  IF (verbose >2) verb = .true.
   !verb = .false.
 
   if( verb )OPEN ( UNIT = iunartout, FILE = filout, FORM = 'formatted', ACCESS = 'append', STATUS = 'unknown' )
@@ -87,6 +87,3 @@ SUBROUTINE start_guess( idum, nat, order, force, push, eigenvec )
 
 
 END SUBROUTINE start_guess
-
-
-
