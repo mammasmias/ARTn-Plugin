@@ -35,8 +35,8 @@ MODULE artn_params
   CHARACTER(LEN=255) :: eigenvec_guess = " "
   ! Constante move
   INTEGER :: VOID = 1, INIT = 2, PERP = 3, EIGN = 4, LANC = 5, RELX = 6, OVER = 7
-  CHARACTER(LEN=4) :: MOVE(7)
-  PARAMETER( MOVE = [ 'void', 'init', 'perp', 'eign', 'lanc', 'relx', 'over' ])
+  CHARACTER(LEN=4) :: MOVE(8)
+  PARAMETER( MOVE = [ 'void', 'init', 'perp', 'eign', 'lanc', 'relx', 'over', 'smth'])
   ! control flags
   LOGICAL :: linit          !> initial push OF THE MACROSTEP
   LOGICAL :: lperp          !> perpendicular relax
@@ -263,7 +263,7 @@ CONTAINS
       iperp = 0
       ilanc = 0
       ieigen = 0
-      ismooth = 1
+      ismooth = 0 
       if_pos_ct = 0
       irelax = 0
       iover = 0
@@ -283,7 +283,7 @@ CONTAINS
       nperp = -1 !def_nperp_limitation( nperp_step )
       noperp = 0 
       neigen = 1
-      nsmooth = 1
+      nsmooth = 0
       nmin = 0
       nsaddle = 0
       !

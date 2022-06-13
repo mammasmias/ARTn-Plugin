@@ -116,7 +116,7 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
   !> @param [in]  istep		actual step of ARTn 
   !> @param [in]  iunartout	Channel of output
   !
-  USE artn_params, ONLY: MOVE, verbose, rcurv, bilan, filout  &
+  USE artn_params, ONLY: MOVE, verbose, rcurv, bilan, filout, ismooth, nsmooth  &
                         ,etot_init, iinit, iperp, ieigen, ilanc, irelax, delr, verbose, iartn, a1 &
                         ,tau_init, lat, tau_step, delr, converge_property &
                         ,lrelax, linit, lbasin, lperp, llanczos, leigen, lpush_over, lpush_final, lbackward, lrestart 
@@ -153,12 +153,15 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
                        disp=2
      IF (.NOT.lbasin)  disp=4
   ENDIF    
-  IF ( istep==0   )    disp=1  
+  IF ( istep==0   )    disp=1
+  IF ( disp == 4 .AND. ismooth <= nsmooth .AND. nsmooth>0)&
+                       disp=8
   !
   ! ...Define when to print
   IF (( .NOT.(disp==1) ).AND. &
       ( .NOT.(disp==2) ).AND. &
       ( .NOT.(disp==4) ).AND. &
+      ( .NOT.(disp==8) ).AND. &
       ( .NOT.((mod(irelax,5)==0) .AND. disp==6)) .AND.&  ! can be changed to print more during relax
       ( verbose<3 ) )  RETURN
   !
@@ -203,7 +206,7 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
     ENDIF
   ENDIF 
   !
-  IF( disp==2 .OR. disp==4 .OR. disp==6) THEN
+  IF( disp==2 .OR. disp==4 .OR. disp==6 .OR. disp==8) THEN
     !  
     ! ...Displacement processing
     call compute_delr( nat, tau_step, tau_init, lat, delr )
@@ -218,7 +221,7 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
   ENDIF
   !
   ! ...Fill bilan variable for the inter report
-  IF ( disp==2 .OR. disp==4 ) THEN 
+  IF ( disp==2 .OR. disp==4 .OR. disp==8) THEN 
     ctot = dr
     cmax = real(npart,DP)
   ELSE
@@ -246,7 +249,7 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
   END SELECT
   CLOSE(iunartout)
   !
-  IF( disp==2 .OR. disp==4 ) iartn = iartn + 1
+  IF( disp==2 .OR. disp==4 .OR. disp==8) iartn = iartn + 1
   !
 END SUBROUTINE write_report
 

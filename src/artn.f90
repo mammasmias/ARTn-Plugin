@@ -286,25 +286,22 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !================================================
      !
      ! leigen is .true. after we obtain a good eigenvector
-     !
      ! if we have a good lanczos eigenvector use it as push vector
      !
      !
-     disp =EIGN
-     ilanc = 0
+     disp    = EIGN
+     ilanc   = 0
+     ismooth = ismooth +1
+     ieigen  = ieigen + 1
      !
-     IF( nsmooth > 0 ) &
+     IF( nsmooth > 0 .AND. ismooth <= nsmooth ) THEN
        CALL smooth_interpol( ismooth, nsmooth, nat, force_step, push, eigenvec )
-     !
-     ! ...Overwrite the initial Push with Eigenvector
-     IF( nsmooth == 0 .OR. ismooth > nsmooth )then
-       !write(iunartout,'(x,"DEBUG::EIGEN::Overwrite push = eigenvec")')
+     ELSE 
        push(:,:) = eigenvec(:,:)
      ENDIF
      !
      ! rescale the eigenvector according to the current force in the parallel direction
      ! see Cances_JCP130: some improvements of the ART technique doi:10.1063/1.3088532
-     !
      ! 0.13 is taken from ARTn, 0.5 eV/Angs^2 corresponds roughly to 0.01 Ry/Bohr^2
      !
      ! ...Recompute the norm of fpara because eigenvec change a bit
@@ -312,13 +309,10 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      current_step_size = MIN(eigen_step_size,ABS(fpara_tot)/MAX( ABS(lowest_eigval), 0.01_DP ))
      !current_step_size = MIN(eigen_step_size,ABS(MAXVAL(fpara))/MAX( ABS(lowest_eigval), 0.01_DP ))
      !
-     !%! Put some test on current_step_size
+     ! Put some test on current_step_size
      !
      displ_vec(:,:) = eigenvec(:,:)*current_step_size
      ! 
-     ! count the number of steps made with the eigenvector
-     ieigen = ieigen + 1
-     !
      IF ( ieigen == neigen  ) THEN
         ! do a perpendicular relax
         lperp = .true.
@@ -620,8 +614,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            iperp  = 0
            noperp = 0      !> count the init-perp fail
            nperp_step = 1  !> count the out-basin perp relax step
-           ! ismooth = 1     !> Initialise the smoothy step
-           ! iinit = iinit - 1
            !
         ENDIF
         !
