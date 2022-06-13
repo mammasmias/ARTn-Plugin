@@ -38,7 +38,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
        push_ids, add_const, push, eigenvec, tau_step, force_step, tau_init, tau_saddle, eigen_saddle, v_in, &
        VOID, INIT, PERP, EIGN, LANC, RELX, OVER, zseed, &
        engine_units, struc_format_out, elements, &
-       setup_artn, read_restart, write_restart, &
+       setup_artn, read_restart, write_restart,&
        push_over, ran3, a1, old_lanczos_vec, lend, fill_param_step, &
        filin, filout, sadfname, initpfname, eigenfname, restartfname, warning, flag_false,  &
        prefix_min, nmin, prefix_sad, nsaddle, artn_resume, natoms, old_lowest_eigval, &
@@ -157,21 +157,28 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
       ! ...Overwirte the engine Arrays
       tau(:,:) = tau_step(:,order(:))
       !
-      !isearch = isearch + 1  !! We continue the search, not another one
-      !
     ELSE
       ! 
-      IF( isearch == 0 )CALL write_initial_report( iunartout, filout )
+      CALL write_initial_report( iunartout, filout )
+      !IF( isearch == 0 ) CALL write_initial_report( iunartout, filout )
       isearch = isearch + 1
       ! ...Initial parameter
       etot_init = etot_step
+            OPEN ( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'old', POSITION = 'append', IOSTAT = ios )
+      WRITE (iunartout, '(5x,a/)') "|> CACA"
+      CLOSE ( UNIT = iunartout, STATUS = 'KEEP')
+
       !
     ENDIF
     !
     ! ...Split the force field in para/perp field following the push field
     !CALL perpforce( force_step, if_pos, push, fperp, fpara, nat)
+    CALL write_initial_report( iunartout, filout )
     CALL splitfield( 3*nat, force_step, if_pos, push, fperp, fpara )
-    !
+    CALL write_header_report( iunartout )
+    CALL write_report( etot_step, force, fperp, fpara, lowest_eigval, if_pos, istep, nat,  iunartout )
+    CALL write_struct( at, nat, tau, order, elements, ityp, push, etot_eng, 1.0_DP, iunstruct, struc_format_out, initpfname )
+    artn_resume = '* Start: '//trim(initpfname)
     !
   ELSE
     !  ISTEP > 0
@@ -195,16 +202,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     !
   ENDIF
   disp =VOID
-  !
-  ! -- Start a ARTn search
-  if( istep == 0 )then
-     ! ...Write Zero step
-     CALL write_header_report( iunartout )
-     CALL write_report( etot_step, force, fperp, fpara, lowest_eigval, if_pos, istep, nat,  iunartout )
-     CALL write_struct( at, nat, tau, order, elements, ityp, push, etot_eng, &
-          1.0_DP, iunstruct, struc_format_out, initpfname )
-     artn_resume = '* Start: '//trim(initpfname)
-  endif
   !
   ! initial displacement , then switch off linit, and pass to lperp
   !
@@ -599,11 +596,11 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         ELSE
            !
            ! ...If we lose the eigval
-           if( .not. lbasin .and. lowest_eigval > eigval_thr )then
+           IF ( .NOT. lbasin .AND. lowest_eigval > eigval_thr ) THEN
               error_message = 'EIGENVALUE LOST'
-              call write_fail_report( iunartout, disp, old_lowest_eigval )
+              call write_fail_report( iunartout, disp, lowest_eigval )
               lconv = .true.
-           endif
+           ENDIF
            !
            ! structure is still in basin (under unflection),
            ! in next step it move following push vetor (can be a previous eigenvec)

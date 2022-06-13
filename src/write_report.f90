@@ -79,7 +79,7 @@ SUBROUTINE write_header_report( iunartout )
   !integer :: ios
 
 
-  OPEN( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'unknown', POSITION='rewind', IOSTAT = ios )
+  OPEN( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'unknown', POSITION='append', IOSTAT = ios )
   WRITE(iunartout,'(5x,"|> ARTn research :",2(x,i0)/,5x,*(a))') isearch, ifound, repeat("-",50)
 
   !%! Condition on the engin_units..

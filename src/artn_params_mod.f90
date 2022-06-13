@@ -15,39 +15,39 @@ MODULE artn_params
   SAVE
   ! constants unit pipe
   !INTEGER, PARAMETER ::  DP = selected_real_kind(14,200) ! double precision
-  INTEGER, PARAMETER :: iunartin = 52    !> fortran file unit for ARTn input file
-  INTEGER, PARAMETER :: iunartout = 53   !> fortran file unit for ARTn output file
-  INTEGER, PARAMETER :: iunartres = 54   !> fortran file unit for ARTn restart file
-  INTEGER, PARAMETER :: iunstruct = 556  !> fortran file unit for writing the structure
-  INTEGER, PARAMETER :: iunrestart = 557 !> fortran file unit for writing the structure
+  INTEGER, PARAMETER :: iunartin     = 52   !> fortran file unit for ARTn input file
+  INTEGER, PARAMETER :: iunartout    = 53   !> fortran file unit for ARTn output file
+  INTEGER, PARAMETER :: iunartres    = 54   !> fortran file unit for ARTn restart file
+  INTEGER, PARAMETER :: iunstruct    = 556  !> fortran file unit for writing the structure
+  INTEGER, PARAMETER :: iunrestart   = 557  !> fortran file unit for writing the structure
   ! file names
-  CHARACTER(LEN=255) :: filin = 'artn.in'
-  CHARACTER(LEN=255) :: filout = 'artn.out'
-  CHARACTER(LEN=255) :: sadfname = 'saddle'
-  CHARACTER(LEN=255) :: initpfname = 'initp'
-  CHARACTER(LEN=255) :: eigenfname = 'latest_eigenvec'
+  CHARACTER(LEN=255) :: filin        = 'artn.in'
+  CHARACTER(LEN=255) :: filout       = 'artn.out'
+  CHARACTER(LEN=255) :: sadfname     = 'saddle'
+  CHARACTER(LEN=255) :: initpfname   = 'initp'
+  CHARACTER(LEN=255) :: eigenfname   = 'latest_eigenvec'
   CHARACTER(LEN=255) :: restartfname = 'artn.restart'
-  CHARACTER(LEN=255) :: prefix_min = 'min'
-  CHARACTER(LEN=255) :: prefix_sad = 'sad'
+  CHARACTER(LEN=255) :: prefix_min   = 'min'
+  CHARACTER(LEN=255) :: prefix_sad   = 'sad'
   CHARACTER(LEN=255) :: artn_resume
   ! optional file
-  CHARACTER(LEN=255) :: push_guess = " " 
+  CHARACTER(LEN=255) :: push_guess   = " " 
   CHARACTER(LEN=255) :: eigenvec_guess = " "
   ! Constante move
   INTEGER :: VOID = 1, INIT = 2, PERP = 3, EIGN = 4, LANC = 5, RELX = 6, OVER = 7
   CHARACTER(LEN=4) :: MOVE(8)
   PARAMETER( MOVE = [ 'void', 'init', 'perp', 'eign', 'lanc', 'relx', 'over', 'smth'])
   ! control flags
-  LOGICAL :: linit          !> initial push OF THE MACROSTEP
-  LOGICAL :: lperp          !> perpendicular relax
-  LOGICAL :: leigen         !> push with lanczos eigenvector
-  LOGICAL :: llanczos       !> lanczos algorithm
-  LOGICAL :: lbasin         !> true while in basin 
+  LOGICAL :: linit              !> initial push OF THE MACROSTEP
+  LOGICAL :: lperp              !> perpendicular relax
+  LOGICAL :: leigen             !> push with lanczos eigenvector
+  LOGICAL :: llanczos           !> lanczos algorithm
+  LOGICAL :: lbasin             !> true while in basin 
   !LOGICAL :: lsaddle        !> saddle point obtained
-  LOGICAL :: lpush_over     !> saddle point obtained
-  LOGICAL :: lbackward      !> backward saddle point obtained
-  LOGICAL :: lmove_nextmin  !> backward saddle point obtained
-  LOGICAL :: lread_param    !> flag read artn params
+  LOGICAL :: lpush_over         !> saddle point obtained
+  LOGICAL :: lbackward          !> backward saddle point obtained
+  LOGICAL :: lmove_nextmin      !> backward saddle point obtained
+  LOGICAL :: lread_param        !> flag read artn params
   LOGICAL :: lnperp_limitation  !> Constrain on the nperp-relax above the inflation point 
   !
   LOGICAL :: lend
@@ -100,9 +100,9 @@ MODULE artn_params
   REAL(DP) :: etot_step    !>  the total energy in the current step
   REAL(DP) :: etot_saddle  !>  the total energy of the saddle point
   REAL(DP) :: etot_final   !>  the total energy of the next minimum along eigenvector
-  REAL(DP) :: de_saddle !> change in E from starting point
-  REAL(DP) :: de_back   !> backward barrier
-  REAL(DP) :: de_fwd    !> forward barrier
+  REAL(DP) :: de_saddle    !>  change in E from starting point
+  REAL(DP) :: de_back      !>  backward barrier
+  REAL(DP) :: de_fwd       !>  forward barrier
   !                                               !
   ! arrays that are used by the Lanczos algorithm !
   !                                               !
@@ -117,25 +117,25 @@ MODULE artn_params
   ! variables that are read from the input  start here
   !------------------------------------------------------------!
   !
-  LOGICAL :: lrestart    !> do we want to restart the calculation
-  LOGICAL :: lrelax      !> do start the relaxation to adjacent minima from the saddle point
-  LOGICAL :: lpush_final !> push to adjacent minimum along eigenvector
-  LOGICAL :: lanczos_always_random !> always start lanczos with random vector
+  LOGICAL :: lrestart               !> do we want to restart the calculation
+  LOGICAL :: lrelax                 !> do start the relaxation to adjacent minima from the saddle point
+  LOGICAL :: lpush_final            !> push to adjacent minimum along eigenvector
+  LOGICAL :: lanczos_always_random  !> always start lanczos with random vector
   !
-  INTEGER :: ninit                !> number of initial pushes before lanczos start
-  INTEGER :: neigen               !> number of steps made with eigenvector before perp relax
-  INTEGER :: lanczos_max_size        !> size of the lanczos tridiagonal matrix 
-  INTEGER :: lanczos_min_size        !> minimal size of lanzos matrix (use with care)
-  INTEGER :: nsmooth              !> number of smoothing steps from push to eigenvec
-  CHARACTER(LEN = 4) :: push_mode !> type of initial push (all , list or rad)
+  INTEGER :: ninit                  !> number of initial pushes before lanczos start
+  INTEGER :: neigen                 !> number of steps made with eigenvector before perp relax
+  INTEGER :: lanczos_max_size       !> size of the lanczos tridiagonal matrix 
+  INTEGER :: lanczos_min_size       !> minimal size of lanzos matrix (use with care)
+  INTEGER :: nsmooth                !> number of smoothing steps from push to eigenvec
+  CHARACTER(LEN = 4) :: push_mode   !> type of initial push (all , list or rad)
   ! convergence criteria
-  REAL(DP) :: dist_thr          !> distance threshold for push mode "rad"
-  REAL(DP) :: init_forc_thr     !> initial perp force threshold for perp relax convergence
-  REAL(DP) :: forc_thr          !> tightened force convergence criterion when near the saddle point
-  REAL(DP) :: fpara_thr         !> parallel force convergence criterion, used to determine when to tighten convcrit_final
-  REAL(DP) :: eigval_thr        !> threshold for eigenvalue
-  REAL(DP) :: frelax_ene_thr    !> threshold to start relaxation to adjacent minima
-  REAL(DP) :: etot_diff_limit   !> limit for energy difference, if above exit the research
+  REAL(DP) :: dist_thr              !> distance threshold for push mode "rad"
+  REAL(DP) :: init_forc_thr         !> initial perp force threshold for perp relax convergence
+  REAL(DP) :: forc_thr              !> tightened force convergence criterion when near the saddle point
+  REAL(DP) :: fpara_thr             !> parallel force convergence criterion, used to determine when to tighten convcrit_final
+  REAL(DP) :: eigval_thr            !> threshold for eigenvalue
+  REAL(DP) :: frelax_ene_thr        !> threshold to start relaxation to adjacent minima
+  REAL(DP) :: etot_diff_limit       !> limit for energy difference, if above exit the research
   ! step sizes
   REAL(DP) :: push_step_size        !> step size of inital push in angstrom
   REAL(DP) :: eigen_step_size       !> step size for a step with the lanczos eigenvector
