@@ -9,9 +9,8 @@
 !
 MODULE artn_params
   !
-  !
   USE units, ONLY : DP
-  IMPLICIT none
+  IMPLICIT NONE 
   SAVE
   ! constants unit pipe
   !INTEGER, PARAMETER ::  DP = selected_real_kind(14,200) ! double precision
@@ -37,37 +36,40 @@ MODULE artn_params
   INTEGER :: VOID = 1, INIT = 2, PERP = 3, EIGN = 4, LANC = 5, RELX = 6, OVER = 7
   CHARACTER(LEN=4) :: MOVE(8)
   PARAMETER( MOVE = [ 'void', 'init', 'perp', 'eign', 'lanc', 'relx', 'over', 'smth'])
+  !
   ! control flags
   LOGICAL :: linit              !> initial push OF THE MACROSTEP
   LOGICAL :: lperp              !> perpendicular relax
   LOGICAL :: leigen             !> push with lanczos eigenvector
   LOGICAL :: llanczos           !> lanczos algorithm
   LOGICAL :: lbasin             !> true while in basin 
-  !LOGICAL :: lsaddle        !> saddle point obtained
   LOGICAL :: lpush_over         !> saddle point obtained
   LOGICAL :: lbackward          !> backward saddle point obtained
   LOGICAL :: lmove_nextmin      !> backward saddle point obtained
   LOGICAL :: lread_param        !> flag read artn params
   LOGICAL :: lnperp_limitation  !> Constrain on the nperp-relax above the inflation point 
-  !
   LOGICAL :: lend
-  INTEGER :: verbose    !> Verbose Level
+  INTEGER :: verbose            !> Verbose Level
+  !
   ! counters
-  INTEGER :: istep, iartn, ifails
-  INTEGER :: iperp      !> number of steps in perpendicular relaxation
+  INTEGER :: istep
+  INTEGER :: iartn
+  INTEGER :: ifails
+  INTEGER :: inewchance         !> number of new attemps after loosing eigenvalue 
+  INTEGER :: iperp              !> number of steps in perpendicular relaxation
   INTEGER :: iover
-  INTEGER :: irelax     !> Number of relaxation iteration
-  INTEGER :: ieigen     !> number of steps made with eigenvector
-  INTEGER :: iinit      !> number of pushes made
-  INTEGER :: ilanc      !> current lanczos iteration
-  INTEGER :: nlanc      !> max number of lanczos iterations
-  INTEGER :: ismooth    !> number of smoothing steps
-  INTEGER :: if_pos_ct  !> counter used to determine the number of fixed coordinates
-  INTEGER :: zseed      !> random number generator seed
-  INTEGER :: ifound     !> Number of saddle point found
-  INTEGER :: isearch    !> Number of saddle point research
-  INTEGER :: natoms     !> Number of atoms in the system
-
+  INTEGER :: irelax             !> Number of relaxation iteration
+  INTEGER :: ieigen             !> number of steps made with eigenvector
+  INTEGER :: iinit              !> number of pushes made
+  INTEGER :: ilanc              !> current lanczos iteration
+  INTEGER :: nlanc              !> max number of lanczos iterations
+  INTEGER :: ismooth            !> number of smoothing steps
+  INTEGER :: if_pos_ct          !> counter used to determine the number of fixed coordinates
+  INTEGER :: zseed              !> random number generator seed
+  INTEGER :: ifound             !> Number of saddle point found
+  INTEGER :: isearch            !> Number of saddle point research
+  INTEGER :: natoms             !> Number of atoms in the system
+  ! 
   ! optional staf
   !! nperp
   INTEGER :: nperp, nperp_step, noperp
@@ -84,9 +86,9 @@ MODULE artn_params
   ! arrays that are needed by ARTn internally !
   !                                           !
   REAL(DP) :: lat(3,3)
-  REAL(DP), ALLOCATABLE :: tau_init(:,:)
-  REAL(DP), ALLOCATABLE :: tau_nextmin(:,:)
-  REAL(DP), ALLOCATABLE :: delr(:,:)
+  REAL(DP), ALLOCATABLE :: tau_init(:,:)         !> initial coordinates
+  REAL(DP), ALLOCATABLE :: tau_nextmin(:,:)      !> coordinates of the new minimum
+  REAL(DP), ALLOCATABLE :: delr(:,:)             !> displacement vector  
   REAL(DP), ALLOCATABLE :: push(:,:)             !> initial push vector
   REAL(DP), ALLOCATABLE, target :: eigenvec(:,:) !> lanczos eigenvector
   REAL(DP), ALLOCATABLE :: tau_step(:,:)         !> current coordinates (restart)
@@ -117,33 +119,34 @@ MODULE artn_params
   ! variables that are read from the input  start here
   !------------------------------------------------------------!
   !
-  LOGICAL :: lrestart               !> do we want to restart the calculation
-  LOGICAL :: lrelax                 !> do start the relaxation to adjacent minima from the saddle point
-  LOGICAL :: lpush_final            !> push to adjacent minimum along eigenvector
-  LOGICAL :: lanczos_always_random  !> always start lanczos with random vector
+  LOGICAL :: lrestart                       !> do we want to restart the calculation
+  LOGICAL :: lrelax                         !> do start the relaxation to adjacent minima from the saddle point
+  LOGICAL :: lpush_final                    !> push to adjacent minimum along eigenvector
+  LOGICAL :: lanczos_always_random          !> always start lanczos with random vector
   !
-  INTEGER :: ninit                  !> number of initial pushes before lanczos start
-  INTEGER :: neigen                 !> number of steps made with eigenvector before perp relax
-  INTEGER :: lanczos_max_size       !> size of the lanczos tridiagonal matrix 
-  INTEGER :: lanczos_min_size       !> minimal size of lanzos matrix (use with care)
-  INTEGER :: nsmooth                !> number of smoothing steps from push to eigenvec
-  CHARACTER(LEN = 4) :: push_mode   !> type of initial push (all , list or rad)
+  INTEGER :: ninit                          !> number of initial pushes before lanczos start
+  INTEGER :: neigen                         !> number of steps made with eigenvector before perp relax
+  INTEGER :: lanczos_max_size               !> size of the lanczos tridiagonal matrix 
+  INTEGER :: lanczos_min_size               !> minimal size of lanzos matrix (use with care)
+  INTEGER :: nsmooth                        !> number of smoothing steps from push to eigenvec
+  INTEGER :: nnewchance                     !> number of new attemps after loosing eigenvalue
+  CHARACTER(LEN = 4) :: push_mode           !> type of initial push (all , list or rad)
   ! convergence criteria
-  REAL(DP) :: dist_thr              !> distance threshold for push mode "rad"
-  REAL(DP) :: init_forc_thr         !> initial perp force threshold for perp relax convergence
-  REAL(DP) :: forc_thr              !> tightened force convergence criterion when near the saddle point
-  REAL(DP) :: fpara_thr             !> parallel force convergence criterion, used to determine when to tighten convcrit_final
-  REAL(DP) :: eigval_thr            !> threshold for eigenvalue
-  REAL(DP) :: frelax_ene_thr        !> threshold to start relaxation to adjacent minima
-  REAL(DP) :: etot_diff_limit       !> limit for energy difference, if above exit the research
+  REAL(DP) :: dist_thr                      !> distance threshold for push mode "rad"
+  REAL(DP) :: init_forc_thr                 !> initial perp force threshold for perp relax convergence
+  REAL(DP) :: forc_thr                      !> tightened force convergence criterion when near the saddle point
+  REAL(DP) :: fpara_thr                     !> parallel force convergence criterion, used to determine when to tighten convcrit_final
+  REAL(DP) :: eigval_thr                    !> threshold for eigenvalue
+  REAL(DP) :: frelax_ene_thr                !> threshold to start relaxation to adjacent minima
+  REAL(DP) :: etot_diff_limit               !> limit for energy difference, if above exit the research
   ! step sizes
-  REAL(DP) :: push_step_size        !> step size of inital push in angstrom
-  REAL(DP) :: eigen_step_size       !> step size for a step with the lanczos eigenvector
-  REAL(DP) :: current_step_size     !> controls the current size of eigenvector step
-  REAL(DP) :: fpush_factor          !> factor for the final push 
-  REAL(DP), target :: lanczos_disp         !> step size in the lanczos algorithm 
+  REAL(DP) :: push_step_size                !> step size of inital push in angstrom
+  REAL(DP) :: eigen_step_size               !> step size for a step with the lanczos eigenvector
+  REAL(DP) :: current_step_size             !> controls the current size of eigenvector step
+  REAL(DP) :: fpush_factor                  !> factor for the final push 
+  REAL(DP), target :: lanczos_disp          !> step size in the lanczos algorithm 
   REAL(DP), target :: lanczos_eval_conv_thr !> threshold for convergence of eigenvalue in Lanczos
-  REAL(DP) :: push_over             !> EigenVec fraction Push_over the saddle point for the relax
+  REAL(DP) :: push_over                     !> EigenVec fraction Push_over the saddle point for the relax
   ! Default Values (in Ry, au)
   REAL(DP), PARAMETER :: NAN = HUGE( lanczos_disp )  !! Biggest number in DP representation
   REAL(DP), PARAMETER :: def_dist_thr = 0.0_DP,       def_init_forc_thr = 1.0d-2,   &
@@ -158,36 +161,28 @@ MODULE artn_params
   ! array related to the report
   REAL(DP) :: bilan(8)
   !
-  CHARACTER(LEN=256) :: engine_units
-  CHARACTER(LEN=10) :: struc_format_out
+  CHARACTER(LEN=256)            :: engine_units
+  CHARACTER(LEN=10)             :: struc_format_out
   CHARACTER(LEN=3), ALLOCATABLE :: elements(:)
-  CHARACTER(:), allocatable :: converge_property
-  CHARACTER(LEN=500) :: error_message
+  CHARACTER(:),     ALLOCATABLE :: converge_property
+  CHARACTER(LEN=500)            :: error_message
   !
   NAMELIST/artn_parameters/ lrestart, lrelax, lpush_final, lmove_nextmin, &
        ninit, neigen, nperp, lanczos_max_size, nsmooth, push_mode, dist_thr,  &
        init_forc_thr,forc_thr, fpara_thr, eigval_thr, frelax_ene_thr, &
        push_step_size, lanczos_disp, eigen_step_size, current_step_size, push_over, &
        push_ids, add_const, engine_units, zseed, struc_format_out, elements, &
-       verbose, filout, sadfname, initpfname, eigenfname, restartfname, &
+       verbose, filout, sadfname, initpfname, eigenfname, restartfname, nnewchance,&
        converge_property, lanczos_eval_conv_thr, push_guess, eigenvec_guess,  &
        nperp_limitation, lnperp_limitation, lanczos_min_size, lanczos_always_random, etot_diff_limit
-
-
-  !! Curvature
+  ! 
+  ! Curvature
   REAL(DP), allocatable :: f0(:)
   REAL(DP) :: rcurv
-
-
-
-
-  interface warning
+  !
+  INTERFACE warning
     module procedure :: warning_nothing, warning_int, warning_real, warning_char
-  end interface
-
-
-
-
+  END INTERFACE 
   !
 CONTAINS
   !
@@ -213,95 +208,86 @@ CONTAINS
     INTEGER :: ios
     integer(c_size_t) :: mem
     character(len=256) :: ftmp, ctmp
-
+    !
     verb = .true.
     verb = .false.
-
+    !
     INQUIRE( file = filnam, exist = file_exists )
-
+    !
     write(*,'(5x,a)') "|> Initialize_ARTn()"
-
+    !
     IF( .not.file_exists )THEN
-
-       WRITE(*,*) "ARTn: Input file does not exist!"
-       lrelax = .true.
-       RETURN
-
+      !
+      WRITE(*,*) "ARTn: Input file does not exist!"
+      lrelax = .true.
+      RETURN
+      ! 
     ELSE !%! FILE EXIST
       !
       ! set up defaults for flags and counters
       !
-      lrelax = .false.
-      linit = .true.
-      lbasin = .true.
-      lperp = .false.
-      llanczos = .false.
-      leigen = .false.
-      !lsaddle = .false.
-      lpush_over = .false.
-      lpush_final = .false.
-      lbackward = .true.
-      lrestart = .false.
-      lmove_nextmin = .false.
-      lread_param = .false.
-
+      lrelax            = .false.
+      linit             = .true.
+      lbasin            = .true.
+      lperp             = .false.
+      llanczos          = .false.
+      leigen            = .false.
+      !lsaddle          = .false.
+      lpush_over        = .false.
+      lpush_final       = .false.
+      lbackward         = .true.
+      lrestart          = .false.
+      lmove_nextmin     = .false.
+      lread_param       = .false.
       lnperp_limitation = .true.  ! We always use nperp limitaiton
-
-      !! ----- TEST
-      !lrelax = .true.
-      !linit = .false.
-      !lbasin = .false.
-      ! ---------
-
-      lend = .false.
-      verbose = 0
+      lend              = .false.
       !
-      ifails = 0
-      iartn = 0
-      istep = 0
-      iinit = 0
-      iperp = 0
-      ilanc = 0
-      ieigen = 0
-      ismooth = 0 
-      if_pos_ct = 0
-      irelax = 0
-      iover = 0
-      zseed = 0
-      ifound = 0
-      isearch = 0
+      verbose           = 0
+      ifails            = 0
+      iartn             = 0
+      istep             = 0
+      iinit             = 0
+      iperp             = 0
+      ilanc             = 0
+      ieigen            = 0
+      ismooth           = 0 
+      if_pos_ct         = 0
+      irelax            = 0
+      iover             = 0
+      zseed             = 0
+      ifound            = 0
+      isearch           = 0
+      inewchance        = 0
       !
       old_lowest_eigval = HUGE(lanczos_disp)
-      lowest_eigval = 0.D0
-      fpush_factor = 1.0
-      push_over = 1.0_DP
+      lowest_eigval     = 0.D0
+      fpush_factor      = 1.0
+      push_over         = 1.0_DP
       !
       ! Defaults for input parameters
+      ninit             = 3
+      nperp_step        = 1
+      nperp             = -1 !def_nperp_limitation( nperp_step )
+      noperp            = 0 
+      neigen            = 1
+      nsmooth           = 0
+      nmin              = 0
+      nsaddle           = 0
+      nnewchance        = 0
       !
-      ninit = 3
-      nperp_step = 1
-      nperp = -1 !def_nperp_limitation( nperp_step )
-      noperp = 0 
-      neigen = 1
-      nsmooth = 0
-      nmin = 0
-      nsaddle = 0
+      dist_thr          = NAN
+      init_forc_thr     = NAN
+      forc_thr          = NAN
+      fpara_thr         = NAN
+      eigval_thr        = NAN ! 0.1 Ry/bohr^2 corresponds to 0.5 eV/Angs^2
+      frelax_ene_thr    = NAN ! in Ry; ( etot - etot_saddle ) < frelax_ene_thr
+      etot_diff_limit   = NAN
+      push_step_size    = NAN
+      eigen_step_size   = NAN
       !
-      dist_thr = NAN
-      !
-      init_forc_thr = NAN
-      forc_thr = NAN
-      fpara_thr = NAN
-      eigval_thr = NAN ! 0.1 Ry/bohr^2 corresponds to 0.5 eV/Angs^2
-      frelax_ene_thr  = NAN ! in Ry; ( etot - etot_saddle ) < frelax_ene_thr
-      etot_diff_limit = NAN
-      !
-      push_step_size = NAN
-      eigen_step_size = NAN
-      !
-      push_mode = 'all'
-      struc_format_out = 'xsf'
-
+      push_mode         = 'all'
+      struc_format_out  = 'xsf'
+     
       bilan = 0.0_DP
       !
       lanczos_disp = NAN
@@ -313,78 +299,65 @@ CONTAINS
       engine_units = 'qe'
       !
       ! Default convergence parameter
-      !
       converge_property = "maxval"
       !
       ! error string
-      !
       error_message = ''
       !
       ! Allocate the arrays
+      IF ( .not. ALLOCATED(add_const) )        ALLOCATE( add_const(4,nat),     source = 0.D0 )
+      IF ( .not. ALLOCATED(push_ids) )         ALLOCATE( push_ids(nat),        source = 0    )
+      IF ( .not. ALLOCATED(push) )             ALLOCATE( push(3,nat),          source = 0.D0 )
+      IF ( .not. ALLOCATED(eigenvec) )         ALLOCATE( eigenvec(3,nat),      source = 0.D0 )
+      IF ( .not. ALLOCATED(eigen_saddle) )     ALLOCATE( eigen_saddle(3,nat),  source = 0.D0 )
+      IF ( .not. ALLOCATED(tau_saddle) )       ALLOCATE( tau_saddle(3,nat),    source = 0.D0 )
+      IF ( .not. ALLOCATED(tau_step) )         ALLOCATE( tau_step(3,nat),      source = 0.D0 )
+      IF ( .not. ALLOCATED(force_step) )       ALLOCATE( force_step(3,nat),    source = 0.D0 )
+      IF ( .not. ALLOCATED(force_old) )        ALLOCATE( force_old(3,nat),     source = 0.D0 )
+      IF ( .not. ALLOCATED(v_in) )             ALLOCATE( v_in(3,nat),          source = 0.D0 )
+      IF ( .not. ALLOCATED(elements) )         ALLOCATE( elements(300),        source = "XXX")
+      IF ( .not. ALLOCATED(delr) )             ALLOCATE( delr(3,nat),          source = 0.D0 )
+      IF ( .not. ALLOCATED(nperp_limitation) ) ALLOCATE( nperp_limitation(10), source = -2   )
       !
-      IF ( .not. ALLOCATED(add_const) )    ALLOCATE(add_const(4,nat), source = 0.D0)
-      IF ( .not. ALLOCATED(push_ids) )     ALLOCATE(push_ids(nat), source = 0)
-      IF ( .not. ALLOCATED(push) )         ALLOCATE(push(3,nat), source = 0.D0)
-      IF ( .not. ALLOCATED(eigenvec) )     ALLOCATE(eigenvec(3,nat), source = 0.D0)
-      IF ( .not. ALLOCATED(eigen_saddle) ) ALLOCATE(eigen_saddle(3,nat), source = 0.D0)
-      IF ( .not. ALLOCATED(tau_saddle) )   ALLOCATE(tau_saddle(3,nat), source = 0.D0)
-      IF ( .not. ALLOCATED(tau_step) )   ALLOCATE(tau_step(3,nat), source = 0.D0)
-      IF ( .not. ALLOCATED(force_step) )   ALLOCATE(force_step(3,nat), source = 0.D0)
-      IF ( .not. ALLOCATED(force_old) ) ALLOCATE( force_old(3,nat), source = 0.D0 )
-      IF ( .not. ALLOCATED(v_in) ) ALLOCATE( v_in(3,nat), source = 0.D0 )
-      IF ( .not. ALLOCATED(elements) )     ALLOCATE(elements(300), source = "XXX")
-
-      IF ( .not. ALLOCATED(delr) ) ALLOCATE( delr(3,nat), source = 0.D0 )
-      IF ( .not. ALLOCATED(nperp_limitation) ) ALLOCATE( nperp_limitation(10), source = -2 )
-
       ! ...Compute the size of ARTn lib
       mem = 0
-      mem = mem + sizeof( add_const )
-      mem = mem + sizeof( push_ids  )
-      mem = mem + sizeof( push      )
-      mem = mem + sizeof( eigenvec  )
+      mem = mem + sizeof( add_const    )
+      mem = mem + sizeof( push_ids     )
+      mem = mem + sizeof( push         )
+      mem = mem + sizeof( eigenvec     )
       mem = mem + sizeof( eigen_saddle )
-      mem = mem + sizeof( tau_saddle )
-      mem = mem + sizeof( tau_step  )
-      mem = mem + sizeof( force_step )
-      mem = mem + sizeof( force_old )
-      mem = mem + sizeof( v_in      )
-      mem = mem + sizeof( elements  )
-      mem = mem + sizeof( delr      )
-
+      mem = mem + sizeof( tau_saddle   )
+      mem = mem + sizeof( tau_step     )
+      mem = mem + sizeof( force_step   )
+      mem = mem + sizeof( force_old    )
+      mem = mem + sizeof( v_in         )
+      mem = mem + sizeof( elements     )
+      mem = mem + sizeof( delr         )
+      !
       IF( verb )THEN
         print*, "* LIB-ARTn MEMORY: ", mem, "Bytes"
         print*, "* LIB-ARTn MEMORY: ", real(mem)/1.0e3, "KB"
         print*, "* LIB-ARTn MEMORY: ", real(mem)/1.0e6, "MB"
       ENDIF
-      
       !
       ! read the ARTn input file
       !
       OPEN( UNIT = iunartin, FILE = filnam, FORM = 'formatted', STATUS = 'unknown', IOSTAT = ios)
       READ( NML = artn_parameters, UNIT = iunartin)
-      CLOSE ( UNIT = iunartin, STATUS = 'KEEP')
+      CLOSE( UNIT = iunartin, STATUS = 'KEEP')
       lread_param = .true.
-
       !
       ! inital number of lanczos iterations
-      !
       nlanc = lanczos_max_size
-
       !
       ! initialize lanczos matrices (user chooses wheter to change lanczos_max_size)
-      !
-      IF ( .not. ALLOCATED(H)) ALLOCATE( H(1:lanczos_max_size,1:lanczos_max_size), source = 0.D0 )
-      IF ( .not. ALLOCATED(Vmat)) ALLOCATE( Vmat(3,nat,1:lanczos_max_size), source = 0.D0 )
-
+      IF ( .NOT. ALLOCATED(H))    ALLOCATE( H(1:lanczos_max_size,1:lanczos_max_size), source = 0.D0 )
+      IF ( .NOT. ALLOCATED(Vmat)) ALLOCATE( Vmat(3,nat,1:lanczos_max_size), source = 0.D0 )
       !
       ! initialize nperp limitation
-      !
       CALL nperp_limitation_init( lnperp_limitation )
-
+      !
     ENDIF
-
-
     !
     ! --- Read the counter file
     !
@@ -396,7 +369,7 @@ CONTAINS
       read(ios,*) ctmp, ctmp, nmin 
       close( ios )
     endif
-
+    !  
     !> saddle counter file
     ftmp = trim(prefix_sad)//"counter"
     inquire( file=trim(ftmp), exist=file_exists )
@@ -405,14 +378,11 @@ CONTAINS
       read(ios,*) ctmp, ctmp, nsaddle
       close( ios )
     endif
-
-
     !
     ! --- Define the Units conversion
     !
     call make_units( engine_units )
-
-
+    !
     if( verb )then
       write(*,2) repeat("*",50)
       write(*,2) "* Units:          ", trim(engine_units)
@@ -431,14 +401,14 @@ CONTAINS
       1 format(x,a,x,g15.5)
       2 format(*(x,a))
     endif
-
+    !
     ! ...Convert the default values parameters from Engine_units
     !! For the moment the ARTn units is in a.u. (Ry, L, T)
     !! The default value are in ARTn units but the input values gives by the users
     !! are suppose in engine_units.
     !! We convert the USERS Values in ARTn units to be coherente:
     !! So we convert the value if it's differents from NAN initialized values
-
+    !
     ! distance is in units on input, no need to convert
     if( dist_thr == NAN )then; dist_thr = def_dist_thr; endif
     !
@@ -459,8 +429,8 @@ CONTAINS
     !etot_diff_limit = 1000.0 eV ~ 80 Ry
     if( etot_diff_limit == NAN ) then; etot_diff_limit = def_etot_diff_limit
     else;    etot_diff_limit = convert_energy( etot_diff_limit ); endif
-
-
+    !
+    !
     !relax_thr  = -0.01_DP ! in Ry; ( etot - etot_saddle ) < relax_thr
     !
     if( push_step_size == NAN )then; push_step_size = def_push_step_size
@@ -478,7 +448,7 @@ CONTAINS
     if( lanczos_eval_conv_thr == NAN )then; lanczos_eval_conv_thr = def_lanczos_eval_conv_thr
     else;                   lanczos_eval_conv_thr = lanczos_eval_conv_thr ; endif
     !lanczos_eval_conv_thr = 1.D-2
-
+    !
     if( verb )then
       write(*,2) repeat("*",50)
       write(*,2) "* Units:          ", trim(engine_units)
@@ -496,8 +466,8 @@ CONTAINS
       write(*,1) "* lanczos_eval_conv_thr   = ", lanczos_eval_conv_thr
       write(*,2) repeat("*",50)
     endif
-
-
+    !
+    !
     ! ...Character verification
     converge_property = to_lower( converge_property )
     select case( converge_property )
@@ -506,9 +476,9 @@ CONTAINS
         call warning( iunartout, "Initialize_artn",  &
           "converge_property has no good keyword (norm or maxval)" )
     end select
-
+    !
    CONTAINS
-
+    !
     !........................................................
     elemental Function to_lower( str )Result( string )
       !   ==============================
@@ -534,13 +504,14 @@ CONTAINS
           endif
       end do
     END FUNCTION to_lower
-
-
     !
   END SUBROUTINE setup_artn
 
 
-  !---------------------------------------------------------------------------
+
+
+
+!---------------------------------------------------------------------------
   SUBROUTINE Fill_param_step( nat, box, order, pos, etot, force, error )
     !
     !> @brief fill the *_step arrays on which ARTn works on.

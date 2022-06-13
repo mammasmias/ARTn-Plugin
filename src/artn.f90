@@ -38,7 +38,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
        push_ids, add_const, push, eigenvec, tau_step, force_step, tau_init, tau_saddle, eigen_saddle, v_in, &
        VOID, INIT, PERP, EIGN, LANC, RELX, OVER, zseed, &
        engine_units, struc_format_out, elements, &
-       setup_artn, read_restart, write_restart,&
+       setup_artn, read_restart, write_restart, inewchance, nnewchance,&
        push_over, ran3, a1, old_lanczos_vec, lend, fill_param_step, &
        filin, filout, sadfname, initpfname, eigenfname, restartfname, warning, flag_false,  &
        prefix_min, nmin, prefix_sad, nsaddle, artn_resume, natoms, old_lowest_eigval, &
@@ -164,33 +164,27 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
       isearch = isearch + 1
       ! ...Initial parameter
       etot_init = etot_step
-            OPEN ( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'old', POSITION = 'append', IOSTAT = ios )
-      WRITE (iunartout, '(5x,a/)') "|> CACA"
-      CLOSE ( UNIT = iunartout, STATUS = 'KEEP')
-
       !
     ENDIF
     !
     ! ...Split the force field in para/perp field following the push field
     !CALL perpforce( force_step, if_pos, push, fperp, fpara, nat)
-    CALL write_initial_report( iunartout, filout )
     CALL splitfield( 3*nat, force_step, if_pos, push, fperp, fpara )
+    CALL write_initial_report( iunartout, filout )
     CALL write_header_report( iunartout )
     CALL write_report( etot_step, force, fperp, fpara, lowest_eigval, if_pos, istep, nat,  iunartout )
     CALL write_struct( at, nat, tau, order, elements, ityp, push, etot_eng, 1.0_DP, iunstruct, struc_format_out, initpfname )
     artn_resume = '* Start: '//trim(initpfname)
     !
   ELSE
-    !  ISTEP > 0
-    !! receive variables from the engine, split force into perp and para,
-    !! and check if it is converged
+    ! ISTEP > 0
+    ! receive variables from the engine, split force into perp and para, and check if it is converged
     !
     ! ...Fill the *_step Arrays
     CALL Fill_param_step( nat, at, order, tau, etot_eng, force, lerror )
     IF( lerror ) THEN
        !! somehing went wrong
-       disp = void
-       call write_fail_report( iunartout, disp, etot_step )
+       call write_fail_report( iunartout, void, etot_step )
        !! finish current search
        displ_vec = 0.0_DP
        lconv = .true.
@@ -596,10 +590,18 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         ELSE
            !
            ! ...If we lose the eigval
-           IF ( .NOT. lbasin .AND. lowest_eigval > eigval_thr ) THEN
-              error_message = 'EIGENVALUE LOST'
-              call write_fail_report( iunartout, disp, lowest_eigval )
-              lconv = .true.
+           IF ( .NOT. lbasin .AND. lowest_eigval > 0.0) THEN
+              ! 
+              IF (inewchance < nnewchance) THEN
+                 ! Hope by continue pushing along init we find something 
+                 inewchance = inewchance +1
+                 ismooth      = 0
+              ELSE
+                 error_message = 'EIGENVALUE LOST'
+                 call write_fail_report( iunartout, disp, lowest_eigval )
+                 lconv = .true.
+              ENDIF
+              !
            ENDIF
            !
            ! structure is still in basin (under unflection),
