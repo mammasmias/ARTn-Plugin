@@ -1,15 +1,12 @@
-
 !> @author
 !!  Matic Poberznik,
 !!  Miha Gunde
-
-
 SUBROUTINE lanczos( nat, v_in, pushdir, force, &
      ilanc, nlanc, lowest_eigval, lowest_eigvec, displ_vec )
-
+  !
   USE artn_params, ONLY: DP, Vmat, H, force_old, lanczos_disp, lanczos_eval_conv_thr, &
                          lanczos_min_size
-  USE units, ONLY: unconvert_length, unconvert_hessian
+  USE units,       ONLY: unconvert_length, unconvert_hessian
   !
   !> @brief
   !!   Lanczos subroutine for the ARTn algorithm;
@@ -28,45 +25,41 @@ SUBROUTINE lanczos( nat, v_in, pushdir, force, &
   !> @param [inout]   ilanc	      current step of lanczos
   !
   IMPLICIT NONE
+  !
   ! -- ARGUMENTS
-  INTEGER,                    INTENT(IN) :: nat
-  REAL(DP), DIMENSION(3,nat), INTENT(IN) :: v_in
-  REAL(DP), DIMENSION(3,nat), INTENT(IN) :: pushdir
-  REAL(DP), DIMENSION(3,nat), INTENT(IN) :: force
+  INTEGER,                    INTENT(IN)    :: nat
+  REAL(DP), DIMENSION(3,nat), INTENT(IN)    :: v_in
+  REAL(DP), DIMENSION(3,nat), INTENT(IN)    :: pushdir
+  REAL(DP), DIMENSION(3,nat), INTENT(IN)    :: force
   INTEGER,                    INTENT(INOUT) :: ilanc
   INTEGER,                    INTENT(INOUT) :: nlanc
   REAL(DP),                   INTENT(INOUT) :: lowest_eigval
   REAL(DP), DIMENSION(3,nat), INTENT(INOUT) :: lowest_eigvec
-  REAL(DP), DIMENSION(3,nat), INTENT(OUT) :: displ_vec
-
+  REAL(DP), DIMENSION(3,nat), INTENT(OUT)   :: displ_vec
+  !
   ! -- LOCAL VARIABLES
-  INTEGER :: i, j, io, id_min
-  REAL(DP), ALLOCATABLE :: v1(:,:), q(:,:), eigvals(:)
-  REAL(DP) :: dir
-  REAL(DP), EXTERNAL :: ran3,dnrm2,ddot
-  REAL(DP) :: alpha, beta, lowest_eigval_old, eigval_diff
-
+  INTEGER                                   :: i, j, io, id_min
+  REAL(DP), ALLOCATABLE                     :: v1(:,:), q(:,:), eigvals(:)
+  REAL(DP)                                  :: dir
+  REAL(DP), EXTERNAL                        :: ran3,dnrm2,ddot
+  REAL(DP)                                  :: alpha, beta, lowest_eigval_old, eigval_diff
+  !
   ! Try to remove a temporary array when call diag
-  REAL(DP) :: Htmp(ilanc,ilanc), Hstep(nlanc,nlanc)
-
-
+  REAL(DP)                                  :: Htmp(ilanc,ilanc), Hstep(nlanc,nlanc)
+  !
   ! allocate vectors and put to zero
   ALLOCATE( q(3,nat), source=0.D0 )
   ALLOCATE( v1(3,nat), source=0.D0)
-
   !
   ! store the eigenvalue of the previous iteration
-  !
   IF( ilanc > 0 )THEN
     lowest_eigval_old = lowest_eigval
   ELSE
     lowest_eigval_old = 0.0_DP
   ENDIF
-
-
+  !
   !
   ! decide what to do based on which step ilanc we are in
-  !
   IF ( ilanc  == 0 ) THEN
      !
      ! initialization of the lanczos: save the original force, and
@@ -286,14 +279,11 @@ SUBROUTINE lanczos( nat, v_in, pushdir, force, &
   !    v1(:,:) = 0.D0
   !    v1(:,:) = v1(:,:) - Vmat(:,:,nlanc)
   ! ENDIF
-
   !
   ! Overwrite displ_vec by the next vector displacement
   !
   displ_vec(:,:) = v1(:,:)
-
+  !
   DEALLOCATE( q, v1 )
-
-  ! flush(785)
-
+  !
 END SUBROUTINE lanczos
