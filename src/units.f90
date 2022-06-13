@@ -12,7 +12,7 @@ module units
   !
   PRIVATE
 
-  PUBLIC :: DP, PI, AMU_RY,  make_units,   &
+  PUBLIC :: DP, PI, AMU_RY, B2A,  make_units,   &
             convert_length, unconvert_length,   &
             convert_force, unconvert_force,     &
             convert_hessian, unconvert_hessian, &

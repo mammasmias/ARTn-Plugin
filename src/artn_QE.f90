@@ -8,12 +8,12 @@
 !> @details
 !!   modifies the input force to perform the ARTn algorithm 
 !------------------------------------------------------------------------------
-SUBROUTINE artn_QE( force, etot, epsf_qe, nat, ityp, atm, tau, at, alat, istep, if_pos,   &
+SUBROUTINE artn_QE( force, etot, epsf_qe, nat, ntyp, ityp, atm, tau, at, alat, istep, if_pos,   &
                     vel, dt_init, fire_alpha_init, lconv, prefix_qe, tmp_dir_qe )
   !----------------------------------------------------------------------------
   !
   USE units, ONLY : DP
-  USE artn_params, ONLY: forc_thr 
+  USE artn_params, ONLY: forc_thr, elements 
   !
   !  Interface Quantum ESPRESSO/ARTn:
   !  We convert/compute/adapt some variables 
@@ -30,6 +30,7 @@ SUBROUTINE artn_QE( force, etot, epsf_qe, nat, ityp, atm, tau, at, alat, istep, 
   REAL(DP),           INTENT(IN) ::    alat             !> lattice parameter of QE
   REAL(DP),           INTENT(IN) ::    at(3,3)          !> lattice parameters in alat units 
   INTEGER,            INTENT(IN) ::    nat              !> number of atoms
+  INTEGER,            INTENT(IN) ::    ntyp             !> number of atomic types 
   INTEGER,            INTENT(IN) ::    ityp(nat)        !> atom types
   INTEGER,            INTENT(IN) ::    istep            !> current step
   INTEGER,            INTENT(IN) ::    if_pos(3,nat)    !> coordinates fixed by engine 
@@ -87,8 +88,7 @@ SUBROUTINE artn_QE( force, etot, epsf_qe, nat, ityp, atm, tau, at, alat, istep, 
 
   print*, " * IN ARTn_QE::", nat
   !print*, " * ARTn_QE::CONV:: ", epsf_qe
-
-
+ 
   ! ...Convert the length in angstrom
   box = at * alat
   pos = tau * alat  
@@ -96,8 +96,14 @@ SUBROUTINE artn_QE( force, etot, epsf_qe, nat, ityp, atm, tau, at, alat, istep, 
   do i = 1,nat
      order(i) = i
   enddo
-
-
+  IF ( .not. ALLOCATED(elements) )         ALLOCATE( elements(ntyp),        source = "XXX")
+  !print*,"Before allocation"
+  !ALLOCATE (elements(ntyp), source = "XXX")
+  !print*,"After allocation"
+  DO i = 1, ntyp
+     elements(i) = atm(i)
+  ENDDO
+  print*, "Elements:", elements(:)
   ! ...Launch ARTn
   call artn( force, etot, nat, ityp, atm, pos, order, box, if_pos, disp, displ_vec, lconv )
 

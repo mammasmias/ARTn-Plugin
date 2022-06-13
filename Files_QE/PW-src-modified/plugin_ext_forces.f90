@@ -18,7 +18,7 @@ SUBROUTINE plugin_ext_forces()
   USE plugin_flags
   ! modifications start here
   ! we take some stuff from QE
-  USE ions_base,     ONLY : nat, tau, if_pos, ityp, atm, amass
+  USE ions_base,     ONLY : nat, tau, if_pos,ntyp => nsp , ityp, atm, amass
   USE cell_base,     ONLY : alat, at
   USE force_mod,     ONLY : force
   USE ener,          ONLY : etot 
@@ -46,7 +46,7 @@ SUBROUTINE plugin_ext_forces()
   endif
 
   IF ( ionode .and. use_partn ) THEN
-     CALL artn_QE( force, etot, eps(2), nat, ityp, atm, tau, at, alat, istep, if_pos, vel, dt, fire_alpha_init, &
+     CALL artn_QE( force, etot, eps(2), nat,ntyp, ityp, atm, tau, at, alat, istep, if_pos, vel, dt, fire_alpha_init, &
           lconv, prefix, tmp_dir ) 
   ENDIF
   IF ( ionode .and. lconv .and. use_partn ) THEN

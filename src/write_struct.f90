@@ -94,7 +94,7 @@ SUBROUTINE write_xsf( lat, nat, tau, order, atm, ityp, force, ounit )
   WRITE(ounit,*) 'CRYSTAL'
   WRITE(ounit,*) 'PRIMVEC'
   !WRITE(ounit,'(2(3F15.9/),3f15.9)') at_angs
-  WRITE(ounit,'(2(3F15.9/),3f15.9)') lat
+  WRITE(ounit,'(2(3F15.9/),3f15.9)') lat*B2A
   WRITE(ounit,*) 'PRIMCOORD'
   WRITE(ounit,*) nat, 1
 
@@ -102,7 +102,7 @@ SUBROUTINE write_xsf( lat, nat, tau, order, atm, ityp, force, ounit )
      ! convert positions are in Engine units length
      ! -> And the force???
      iloc = order(na)
-     WRITE(ounit,'(a3,3x,6f15.9)') atm(ityp(iloc)), tau(:,iloc) , unconvert_force( force(:,iloc) )
+     WRITE(ounit,'(a3,3x,6f15.9)') atm(ityp(iloc)), tau(:,iloc)*B2A , unconvert_force( force(:,iloc) )
      !WRITE(ounit,'(a3,3x,6f15.9)') atm(ityp(iloc)), unconvert_length( tau(:,iloc) ), unconvert_force( force(:,iloc) )
      !WRITE(ounit,'(a3,3x,6f15.9)') ityp(iloc), unconvert_length( tau(:,iloc) ), unconvert_force( force(:,iloc) )
   ENDDO
@@ -144,6 +144,8 @@ SUBROUTINE read_xsf( lat, nat, tau, order, atm, ityp, force, fname )
        iloc = order(na)
        READ( u0,* ) atm(ityp(iloc)), tau(:,iloc), force(:,iloc)
     ENDDO
+    lat   = lat*1/B2A
+    tau   = tau*1/B2A
     force = convert_force( force )
 
   CLOSE( u0 )
