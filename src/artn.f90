@@ -63,7 +63,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   ! -- LOCAL VARIABLES
   REAL(DP), EXTERNAL              :: dnrm2, ddot      ! lapack functions
   INTEGER                         :: na, icoor        ! integers for loops
-  INTEGER                         :: idum, iidum      ! integers for loops
+  INTEGER                         :: iidum            ! integers for loops
   REAL(DP)                        :: fpara(3,nat)     ! force parallel to push/eigenvec
   REAL(DP)                        :: fperp(3,nat)     ! force parallel to push/eigenvec
   REAL(DP)                        :: fpara_tot        ! total force in parallel direction
@@ -83,61 +83,33 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   ! (4) follow the lanczos direction twoard the saddle point
   ! (5) push twoards adjacent minimum & initial minimum
   !
-  ! flag that controls convergence
-  !
-  lconv = .false.
-  lforc_conv = .false.
+  ! ... Flags that controls convergence
+  lconv        = .false.
+  lforc_conv   = .false.
   lsaddle_conv = .false.
   !
-  ! fpara_tot is used to scale the magnitude of the eigenvector
-  !
+  ! ... fpara_tot is used to scale the magnitude of the eigenvector
   fpara_tot = 0.D0
   !
-  ! initialize artn
-  !
+  ! ... Initialize artn
   IF( istep == 0 )THEN
     !
-    !> Initialize if it is the first search
-    ONCE: IF( isearch == 0 )THEN
-      !
-      ! ...Read the input parameters
-      !CALL initialize_artn( nat, iunartin, filin )
-      CALL setup_artn( nat, iunartin, filin )
-      !
-      ! set initial random seed from input (could be moved to initialize_artn)
-      ! value zseed = 0 means generate random seed
-      idum = zseed
-      IF( idum .EQ. 0) THEN
-        !
-        ! generate random seed
-        CALL random_number(z)
-        z = z *1e8
-        idum = INT(z)
-      ENDIF
-      !> Save the seed for DEBUG
-      OPEN( newunit=zseed, file="random_seed.dat" )
-      WRITE( zseed, * )" zseed = ", idum
-      CLOSE( zseed )
-      !
-    ENDIF ONCE
+    ! ...Initialize if it is the first search
+    IF( isearch == 0 )  CALL setup_artn( nat, iunartin, filin )
     !
     ! ...Fill the *_step Arrays and parameters
     CALL Fill_param_step( nat, at, order, tau, etot_eng, force, lerror )
     IF ( lerror ) THEN
-       !! something went wrong in filling the arrays!
+       ! 
+       ! ... Something went wrong in filling the arrays!
        disp =void 
        call write_fail_report( iunartout, disp, etot_eng )
-       !! finish the current search
        lconv = .true.
+       !
     ENDIF
     !
-    !------------------------------------------------------------------------------
-    !> @brief
-    !!   Here we have to initialize the push and eigenvec accoriding to user's choice
-    !!   - push_init() works for random
-    call start_guess( idum, nat, order, force, push, eigenvec )
-    ! ...If no init step => nullify push
-    !if( ninit == 0 )push = 1.0_DP
+    ! ... Initialize pushvect and eigenvec accoriding to user's choice
+    call start_guess( zseed, nat, order, force, push, eigenvec )
     !
     IF( lrestart ) THEN
       !

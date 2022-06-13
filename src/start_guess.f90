@@ -1,12 +1,7 @@
-
-
-!SUBROUTINE start_guess( idum, nat, order, mask, push, eigenvec )
 SUBROUTINE start_guess( idum, nat, order, force, push, eigenvec )
   !
   !> @brief
-  !!    Initialize the push and eigenvec arrays following the
-  !!    mode keyword
-
+  !!    Initialize the push and eigenvec arrays following the mode keyword
   !!
   !! MIHA
   !! use force input as mask for push_ids when calling push_init for eigenvec.
@@ -18,72 +13,67 @@ SUBROUTINE start_guess( idum, nat, order, force, push, eigenvec )
   !! @param[in]  push
   !! @param[in]  eigenvec
   !
-  use units, only : DP
-  use artn_params, only : push_mode, push_step_size, add_const, dist_thr, &
+  USE units,       ONLY : DP
+  USE artn_params, ONLY : push_mode, push_step_size, add_const, dist_thr,             &
                           lat, tau_step, eigen_step_size, push_guess, eigenvec_guess, &
                           push_ids, iunartout, filout, verbose
-  use tools, only: read_guess
-  implicit none
-
-  integer, intent(in) :: nat, idum
-  integer, intent(in) :: order(nat)
-  real(DP), intent(in) :: force(3,nat)
-  real(DP), intent(out) :: push(3,nat)
-  real(DP), intent(out) :: eigenvec(3,nat)
-
-  logical :: verb
-  integer :: mask(nat)
-  integer :: i, j
-
-  IF (verbose >2) verb = .true.
-  !verb = .false.
-
-  if( verb )OPEN ( UNIT = iunartout, FILE = filout, FORM = 'formatted', ACCESS = 'append', STATUS = 'unknown' )
-
-  ! ...Define PUSH:
-  !print*, "PUSH_MODE:", trim(push_mode)
-
-  select case( trim(push_mode) )
-
-    case( 'all', 'list', 'rad' )
-      if( verb )write(iunartout,'(5x,"|> First PUSH vectors almost RANDOM")')
-      CALL push_init( nat, tau_step, order, lat, idum, push_ids, dist_thr, add_const, push_step_size, push, push_mode)
-
-    case( 'file' )
-      if( verb )write(iunartout,'(5x,"|> PUSH vectors read in file",x,a)') trim(push_guess)
-      CALL read_guess( idum, nat, push, push_guess )
-
-  end select
-
-
+  USE tools,       ONLY : read_guess
+  !
+  IMPLICIT NONE
+  ! 
+  ! Arguments
+  INTEGER,  INTENT(IN)  :: nat, idum
+  INTEGER,  INTENT(IN)  :: order(nat)
+  REAL(DP), INTENT(IN)  :: force(3,nat)
+  REAL(DP), INTENT(OUT) :: push(3,nat)
+  REAL(DP), INTENT(OUT) :: eigenvec(3,nat)
+  !
+  ! Local variables
+  INTEGER               :: mask(nat)
+  INTEGER               :: i, j
+  !
+  IF( verbose >2 ) OPEN ( UNIT = iunartout, FILE = filout, FORM = 'formatted', ACCESS = 'append', STATUS = 'unknown' )
+  !
+  SELECT CASE( TRIM(push_mode) )
+    !
+    CASE( 'all', 'list', 'rad' )
+       ! 
+       IF( verbose>2 ) WRITE(iunartout,'(5x,"|> First PUSH vectors almost RANDOM")')
+       CALL push_init( nat, tau_step, order, lat, idum, push_ids, dist_thr, add_const, push_step_size, push, push_mode)
+       !
+    CASE( 'file' )
+       ! 
+       IF( verbose >2 ) WRITE(iunartout,'(5x,"|> PUSH vectors read in file",x,a)') TRIM(push_guess)
+       CALL read_guess( idum, nat, push, push_guess )
+       !
+  END SELECT
+  !
   ! ...Define EIGENVEC:
-  !print*, "EIGENVEC_GUESS:", trim(eigenvec_guess), len_trim(eigenvec_guess)
-
-  if( len_trim(eigenvec_guess) /= 0 )then
+  IF( LEN_TRIM(eigenvec_guess) /= 0 ) THEN
     !! read the file
-    if( verb )write(iunartout,'(5x,"|> First EIGEN vectors read in file",x,a)') trim(eigenvec_guess)
-    call read_guess( idum, nat, eigenvec, eigenvec_guess )
-  else
+    IF( verbose>2 ) WRITE(iunartout,'(5x,"|> First EIGEN vectors read in file",x,a)') TRIM(eigenvec_guess)
+    CALL read_guess( idum, nat, eigenvec, eigenvec_guess )
+  ELSE
     !! random
-    if( verb )write(iunartout,'(5x,"|> First EIGEN vectors RANDOM")')
+    IF( verbose>2 ) WRITE(iunartout,'(5x,"|> First EIGEN vectors RANDOM")')
     add_const = 0
     !! set up the mask according to input forces
     mask(:) = 0
     j = 1
-    do i = 1, nat
+    DO i = 1, nat
        !! Atoms with norm of the force > 1e-16 are most probably not fixed by the engine, use the array 'mask'
        !! as list of push_ids to generate the initial eigenvec components.
        !! This avoids generating components on atoms that are fixed.
-       if( norm2(force(:,i)) .gt. 1e-16 ) then
+       IF( NORM2(force(:,i)) .GT. 1e-16 ) THEN
           mask(j) = i
           j = j + 1
-       endif
-    end do
+       ENDIF
+       !
+    ENDDO
     call push_init( nat, tau_step, order, lat, idum, mask, dist_thr, add_const, eigen_step_size, eigenvec, 'list')
-  endif
-
-
-  if( verb )close(unit=iunartout, STATUS='KEEP')
-
-
+    !
+  ENDIF
+  !
+  IF( verbose>2 ) CLOSE(UNIT=iunartout, STATUS='KEEP')
+  !
 END SUBROUTINE start_guess

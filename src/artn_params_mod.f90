@@ -197,17 +197,20 @@ CONTAINS
     !> @param[in] iunartin Channel of input
     !> @param[in] filnam Input file name
     !
-    use iso_c_binding, only : C_SIZE_T
+    USE iso_c_binding, ONLY : C_SIZE_T
     USE units
-    IMPLICIT none
+    IMPLICIT NONE
+    !
     ! -- Arguments
     INTEGER,             INTENT(IN) :: nat,iunartin
     CHARACTER (LEN=255), INTENT(IN) :: filnam
+    !
     ! -- Local Variables
-    LOGICAL :: file_exists, verb
-    INTEGER :: ios
-    integer(c_size_t) :: mem
-    character(len=256) :: ftmp, ctmp
+    LOGICAL                         :: file_exists, verb
+    INTEGER                         :: ios
+    INTEGER(c_size_t)               :: mem
+    CHARACTER(LEN=256)              :: ftmp, ctmp
+    REAL(DP)                        :: z
     !
     verb = .true.
     verb = .false.
@@ -476,6 +479,19 @@ CONTAINS
         call warning( iunartout, "Initialize_artn",  &
           "converge_property has no good keyword (norm or maxval)" )
     end select
+    !
+    ! set initial random seed from input, value zseed = 0 means generate random seed
+    IF( zseed .EQ. 0) THEN
+      !
+      ! generate random seed
+      CALL random_number(z)
+      z     = z *1e8
+      zseed = INT(z)
+    ENDIF
+    !> Save the seed for DEBUG
+    OPEN( NEWUNIT=zseed, file="random_seed.dat" )
+    WRITE( zseed, * )" zseed = ", zseed
+    CLOSE( zseed )
     !
    CONTAINS
     !

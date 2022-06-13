@@ -1,9 +1,7 @@
-
 !> @author
 !!   Matic Poberznik,
 !!   Miha Gunde
-
-
+!!
 SUBROUTINE push_init( nat, tau, order, lat, idum, push_ids, dist_thr, add_const, init_step_size, push, mode)
   !
   !> @brief
@@ -58,10 +56,12 @@ SUBROUTINE push_init( nat, tau, order, lat, idum, push_ids, dist_thr, add_const,
   !  read the list of pushed atoms
   !
   IF ( mode == 'all' ) THEN
+     !  
      ! displace all atoms 
      atom_displaced(:) = 1
-
+     ! 
   ELSE IF ( mode == 'list' ) THEN 
+     ! 
      ! displace only atoms in list 
      DO na=1,nat
         iglob = order(na)
@@ -69,9 +69,9 @@ SUBROUTINE push_init( nat, tau, order, lat, idum, push_ids, dist_thr, add_const,
            atom_displaced(na) = 1
         ENDIF
      ENDDO
-
+     !
   ELSE IF ( mode == 'rad' ) THEN 
-     if( sum(push_ids) == 0) &
+      IF( sum(push_ids) == 0) &
        call warning( iunartout, "PUSH_INIT()",&
             "push_mode = 'rad' need a list of atoms: define push_ids keyword ", push_ids )
      ! displace only atoms in list and all atoms within chosen a cutoff radius ...
