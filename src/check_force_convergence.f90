@@ -92,13 +92,13 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
            llanczos = .true. 
            leigen   = .false. 
            ilanc    = 0
-           IF ( C1.AND.verbose>2 ) WRITE(iunartout,'(5x,a46,x,f10.4,x,a1,x,f10.4,a20)') &
+           IF ( C1.AND.verbose>1 ) WRITE(iunartout,'(5x,a46,x,f10.4,x,a1,x,f10.4,a20)') &
                "|> Stop perp relax because fperp < fperp_thr :",&
                unconvert_force( maxfperp ),"<", unconvert_force(fperp_thr), TRIM(converge_property) 
-           IF ( C2.AND.verbose>2 ) WRITE(iunartout,'(5x,a46,x,i3,a1,i3)') &
+           IF ( C2.AND.verbose>1 ) WRITE(iunartout,'(5x,a46,x,i3,a1,i3)') &
                "|> Stop perp relax because iperp > nperp_thr :",&
                iperp,">",nperp 
-           IF ( C3.AND.verbose>2 ) WRITE(iunartout,'(5x,a46,x,f10.4,x,a1,x,f10.4,a20)') &
+           IF ( C3.AND.verbose>1 ) WRITE(iunartout,'(5x,a46,x,f10.4,x,a1,x,f10.4,a20)') &
                "|> Stop perp relax because fperp < fpara     :",&
                unconvert_force( maxfperp ),"<", unconvert_force( maxfpara ), TRIM(converge_property)
            !
