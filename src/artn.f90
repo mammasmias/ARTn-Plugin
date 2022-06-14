@@ -276,7 +276,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !
      displ_vec(:,:) = eigenvec(:,:)*current_step_size
      ! 
-     IF ( ieigen == neigen  ) THEN
+     IF ( ieigen >= neigen  ) THEN
         ! do a perpendicular relax
         lperp = .true.
         iperp = 0
@@ -552,7 +552,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            lbasin = .false.
            ! ...push in eigenvector direction
            leigen = .true.
-           ieigen = 0
+           !ieigen = 0
            ! ...Save the eigenvector
            ! ...No yet perp relax
            lperp  = .false.
