@@ -118,7 +118,7 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
   !
   USE artn_params, ONLY: MOVE, verbose, rcurv, bilan, filout, ismooth, nsmooth  &
                         ,etot_init, iinit, iperp, ieigen, ilanc, irelax, delr, verbose, iartn, a1 &
-                        ,tau_init, lat, tau_step, delr, converge_property &
+                        ,tau_init, lat, tau_step, delr, converge_property, ninit &
                         ,lrelax, linit, lbasin, lperp, llanczos, leigen, lpush_over, lpush_final, lbackward, lrestart,&
                         VOID, INIT, PERP, EIGN, LANC, RELX, OVER, SMTH
 
@@ -165,7 +165,7 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
   IF ( disp == EIGN .AND. ismooth <= nsmooth .AND. nsmooth>0) disp=SMTH
   ! 
   ! ... Update iart counter
-  IF( (disp==LANC .AND. ilanc==1) .OR. (disp==INIT .AND. istep==1)) iartn = iartn + 1
+  IF( (disp==LANC .AND. ilanc==1) .OR. (disp==INIT .AND. iinit<=ninit)) iartn = iartn + 1
   !
   ! ...Define when to print
   IF (( .NOT.(disp==VOID) ).AND. &
