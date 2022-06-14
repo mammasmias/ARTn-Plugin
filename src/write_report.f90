@@ -165,6 +165,9 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
       ( .NOT.((mod(irelax,5)==0) .AND. disp==6)) .AND.&  ! can be changed to print more during relax
       ( verbose<3 ) )  RETURN
   !
+  IF( disp==2 .OR. disp==4 .OR. disp==8 .OR. (disp=5.AND. istep=1) )&
+      iartn = iartn + 1
+  !
   ! ...Force processing
   IF( trim(converge_property) == 'norm' )THEN
     call sum_force( force*if_pos, nat, force_tot )
@@ -248,8 +251,6 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
     ! 
   END SELECT
   CLOSE(iunartout)
-  !
-  IF( disp==2 .OR. disp==4 .OR. disp==8) iartn = iartn + 1
   !
 END SUBROUTINE write_report
 
