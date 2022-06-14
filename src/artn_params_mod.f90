@@ -33,7 +33,7 @@ MODULE artn_params
   CHARACTER(LEN=255) :: push_guess   = " " 
   CHARACTER(LEN=255) :: eigenvec_guess = " "
   ! Constante move
-  INTEGER :: VOID = 1, INIT = 2, PERP = 3, EIGN = 4, LANC = 5, RELX = 6, OVER = 7
+  INTEGER :: VOID = 1, INIT = 2, PERP = 3, EIGN = 4, LANC = 5, RELX = 6, OVER = 7, SMTH = 8
   CHARACTER(LEN=4) :: MOVE(8)
   PARAMETER( MOVE = [ 'void', 'init', 'perp', 'eign', 'lanc', 'relx', 'over', 'smth'])
   !

@@ -119,7 +119,9 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
   USE artn_params, ONLY: MOVE, verbose, rcurv, bilan, filout, ismooth, nsmooth  &
                         ,etot_init, iinit, iperp, ieigen, ilanc, irelax, delr, verbose, iartn, a1 &
                         ,tau_init, lat, tau_step, delr, converge_property &
-                        ,lrelax, linit, lbasin, lperp, llanczos, leigen, lpush_over, lpush_final, lbackward, lrestart 
+                        ,lrelax, linit, lbasin, lperp, llanczos, leigen, lpush_over, lpush_final, lbackward, lrestart,&
+                        VOID, INIT, PERP, EIGN, LANC, RELX, OVER, SMTH
+
   USE UNITS
   IMPLICIT NONE
 
@@ -141,32 +143,37 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
   INTEGER              :: ios
   !
   !...Define the displacement type 
-  disp =5
-  IF ( lrelax     )    disp=6
-  IF ( lpush_over )    disp=7
-  IF ( lperp      )    disp=3  
+  disp = LANC
+  IF ( lrelax     )    disp=RELX
+  IF ( lpush_over )    disp= OVER
+  IF ( lperp      )    disp= PERP  
+  !
+  ! ... If it is the first perp relax, we where in Init or Eigen
   IF ( lperp    .AND. iperp==0 ) THEN  
-                       disp=2
-      IF (.NOT.lbasin) disp=4
-  ENDIF    
+                       disp=INIT
+      IF (.NOT.lbasin) disp=EIGN
+  ENDIF   
+  !
+  ! ... If it is the first lanczos, we where in Init or Eigen
   IF ( llanczos .AND. ilanc==0 ) THEN  
-                       disp=2
-     IF (.NOT.lbasin)  disp=4
+                       disp=INIT
+     IF (.NOT.lbasin)  disp=EIGN
   ENDIF    
-  IF ( istep==0   )    disp=1
-  IF ( disp == 4 .AND. ismooth <= nsmooth .AND. nsmooth>0)&
-                       disp=8
+  IF ( istep==0   )    disp=VOID
+  !
+  ! ... Maybe the eigen is in smooth mode
+  IF ( disp == EIGN .AND. ismooth <= nsmooth .AND. nsmooth>0) disp=SMTH
+  ! 
+  ! ... Update iart counter
+  IF( (disp==LANC .AND. ilanc==1) .OR. (disp==INIT .AND. istep==1)) iartn = iartn + 1
   !
   ! ...Define when to print
-  IF (( .NOT.(disp==1) ).AND. &
-      ( .NOT.(disp==2) ).AND. &
-      ( .NOT.(disp==4) ).AND. &
-      ( .NOT.(disp==8) ).AND. &
-      ( .NOT.((mod(irelax,5)==0) .AND. disp==6)) .AND.&  ! can be changed to print more during relax
-      ( verbose<3 ) )  RETURN
-  !
-  IF( disp==2 .OR. disp==4 .OR. disp==8 .OR. (disp=5.AND. istep=1) )&
-      iartn = iartn + 1
+  IF (( .NOT.(disp==VOID) ).AND. &
+      ( .NOT.(disp==INIT) ).AND. &
+      ( .NOT.(disp==EIGN) ).AND. &
+      ( .NOT.(disp==SMTH) ).AND. &
+      ( .NOT.((mod(irelax,5)==0) .AND. disp==RELX)) .AND.&  ! can be changed to print more during relax
+      ( verbose<2 ) )  RETURN
   !
   ! ...Force processing
   IF( trim(converge_property) == 'norm' )THEN
@@ -199,7 +206,7 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
   evalf = istep+1
   dr    = 0.
   npart = 0
-  IF( disp==1 ) THEN
+  IF( disp==VOID ) THEN
     !
     ! ...Initialize Displacement processing
     IF( .NOT.ALLOCATED(tau_init) ) THEN
@@ -209,7 +216,7 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
     ENDIF
   ENDIF 
   !
-  IF( disp==2 .OR. disp==4 .OR. disp==6 .OR. disp==8) THEN
+  IF( disp==INIT .OR. disp==EIGN .OR. disp==SMTH .OR. disp==RELX) THEN
     !  
     ! ...Displacement processing
     call compute_delr( nat, tau_step, tau_init, lat, delr )
@@ -224,7 +231,7 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
   ENDIF
   !
   ! ...Fill bilan variable for the inter report
-  IF ( disp==2 .OR. disp==4 .OR. disp==8) THEN 
+  IF ( disp==INIT .OR. disp==EIGN .OR. disp==SMTH) THEN 
     ctot = dr
     cmax = real(npart,DP)
   ELSE
