@@ -118,7 +118,7 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
   !
   USE artn_params, ONLY: MOVE, verbose, rcurv, bilan, filout, ismooth, nsmooth  &
                         ,etot_init, iinit, iperp, ieigen, ilanc, irelax, delr, verbose, iartn, a1 &
-                        ,tau_init, lat, tau_step, delr, converge_property, ninit &
+                        ,tau_init, lat, tau_step, delr, converge_property, ninit, iperp_save, ilanc_save &
                         ,lrelax, linit, lbasin, lperp, llanczos, leigen, lpush_over, lpush_final, lbackward, lrestart,&
                         VOID, INIT, PERP, EIGN, LANC, RELX, OVER, SMTH
 
@@ -245,7 +245,7 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
   SELECT CASE( verbose )
     !
     CASE( 0 )
-      WRITE(iunartout,6) iartn, Mstep, MOVE(disp), detot, iinit, ieigen, iperp, ilanc, irelax,  &
+      WRITE(iunartout,6) iartn, Mstep, MOVE(disp), detot, iinit, ieigen, iperp_save, ilanc_save, irelax,  &
                          force_tot, fperp_tot, fpara_tot, lowEig, dr, npart, evalf, a1
       6 FORMAT(5x,i4,3x,a,x,a,F10.4,x,5(x,i4),5(x,f10.4),2(x,i5),3X,f4.2)
     !
@@ -258,6 +258,10 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
     ! 
   END SELECT
   CLOSE(iunartout)
+  IF( disp==INIT .OR. disp==EIGN .OR. disp==SMTH .OR. disp==RELX) THEN
+    ilanc_save  = 0
+    iperp_save  = 0
+  ENDIF  
   !
 END SUBROUTINE write_report
 

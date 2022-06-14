@@ -37,7 +37,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
        fpara_thr, eigval_thr, frelax_ene_thr, push_step_size, current_step_size, eigen_step_size, fpush_factor, &
        push_ids, add_const, push, eigenvec, tau_step, force_step, tau_init, tau_saddle, eigen_saddle, v_in, &
        VOID, INIT, PERP, EIGN, LANC, RELX, OVER, zseed, &
-       engine_units, struc_format_out, elements, &
+       engine_units, struc_format_out, elements, ilanc_save, &
        setup_artn, read_restart, write_restart, inewchance, nnewchance,&
        push_over, ran3, a1, old_lanczos_vec, lend, fill_param_step, &
        filin, filout, sadfname, initpfname, eigenfname, restartfname, warning, flag_false,  &
@@ -545,6 +545,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         !
         ! check lowest eigenvalue, decide what to do in next step
         !
+        ilanc_save =ilanc
         IF ( lowest_eigval < eigval_thr ) THEN
            ! structure is out of the basin (above inflection),
            ! in next step make a push with the eigenvector

@@ -14,8 +14,8 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
   !
   USE units
   USE artn_params, ONLY : linit, leigen, llanczos, lperp, lrelax, &
-                          ilanc, iperp, nperp, nperp_step, noperp, istep, INIT, EIGN, RELX, &
-                          init_forc_thr, forc_thr, fpara_thr, tau_step, rcurv, verbose, iinit,ninit,&
+                          ilanc, iperp, nperp, nperp_step, noperp, istep, INIT, EIGN, RELX, iperp_save, &
+                          init_forc_thr, forc_thr, fpara_thr, tau_step, rcurv, verbose, iinit, ninit,&
                           lowest_eigval, iunartout, restartfname, etot_step, write_restart, warning, converge_property
   IMPLICIT NONE
   REAL(DP), INTENT(IN)  :: force(3,nat)
@@ -87,7 +87,8 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         !IF( C1.and. ABS(maxfperp - maxfpara) < maxfpara*1.20 ) C1 = .false.  !! if fperp is to o far from fpara too many perp-relax can relax to much the system
         !
         !IF( C1 .OR. C2 .OR. C3 .OR. C4 )THEN
-        IF( C1 .OR. C2 .OR. C3 )THEN
+        IF( C1 .OR. C2 .OR. C3 ) THEN
+           iperp_save = iperp 
            lperp    = .false.
            llanczos = .true. 
            leigen   = .false. 
@@ -133,6 +134,7 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         C2 = ( nperp > -1 .AND.iperp >= nperp ) ! check on the perp-relax iteration
         !
         IF( C1 .OR. C2 )THEN
+          iperp_save = iperp  
           IF( iinit<ninit ) THEN 
             lperp = .false.
             linit = .true.
