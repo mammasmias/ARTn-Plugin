@@ -135,12 +135,6 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         !
      ENDIF
      !
-     !... Initialize couter if perp relax is finished
-     IF (.NOT. lperp ) THEN
-         iperp_save = iperp  
-         iperp      = 0
-     ENDIF    
-     !
      IF (verbose >1) THEN
         !    
         ! ... Show Stop perp message
@@ -154,8 +148,8 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
             unconvert_force( maxfperp ),"<", unconvert_force(fperp_thr), TRIM(converge_property)
         !
         IF ( C2 ) WRITE(iunartout,'(5x,a46,x,i3,a1,i3)') &
-            "|> Stop perp relax because iperp > nperp_thr :",&
-            iperp,">",nperp 
+            "|> Stop perp relax because iperp = nperp max :",&
+            iperp,"=",nperp 
         !
         IF ( C3 ) WRITE(iunartout,'(5x,a46,x,f10.4,x,a1,x,f10.4,a20)') &
             "|> Stop perp relax because fperp < fpara     :",&
@@ -168,6 +162,12 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         IF ( noperp>2 ) WRITE(iunartout,'(5x,a90)') &
             "|> WARNING -The Fperp is too small after each Push-INIT- You should increase push_step_size"
         CLOSE( iunartout )
+        !
+        !... Initialize couter if perp relax is finished
+        IF (.NOT. lperp ) THEN
+            iperp_save = iperp  
+            iperp      = 0
+        ENDIF    
         !
      ENDIF   
      ! 
