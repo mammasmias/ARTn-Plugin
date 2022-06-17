@@ -163,13 +163,13 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
             "|> WARNING -The Fperp is too small after each Push-INIT- You should increase push_step_size"
         CLOSE( iunartout )
         !
-        !... Initialize couter if perp relax is finished
-        IF (.NOT. lperp ) THEN
-            iperp_save = iperp  
-            iperp      = 0
-        ENDIF    
-        !
      ENDIF   
+     !
+     !... Initialize couter if perp relax is finished
+     IF (.NOT. lperp ) THEN
+         iperp_save = iperp  
+         iperp      = 0
+     ENDIF    
      ! 
   ELSE IF ( lrelax ) THEN  
      !
