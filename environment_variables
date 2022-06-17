@@ -14,3 +14,7 @@ ART_PATH=`pwd`
 
 # LAMMPS 
 #LAMMPS_PATH=' '
+
+
+# prefix for running the examples in parallel, i.e., PARA_PREFIX = "mpirun -np 4" 
+# PARA_PREFIX= 
