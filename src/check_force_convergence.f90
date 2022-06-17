@@ -13,7 +13,7 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
   !> @param [out]  lsaddle_conv    Saddle-point Convergence Flag
   !
   USE units
-  USE artn_params, ONLY : linit, leigen, llanczos, lperp, lrelax, &
+  USE artn_params, ONLY : linit, leigen, llanczos, lperp, lrelax, lbasin, nperp_step, nperp_limitation,&
                           ilanc, iperp, nperp, nperp_step, noperp, istep, INIT, EIGN, RELX, iperp_save, &
                           init_forc_thr, forc_thr, fpara_thr, tau_step, rcurv, verbose, iinit, ninit,&
                           lowest_eigval, iunartout, restartfname, etot_step, write_restart, warning, converge_property
@@ -57,38 +57,32 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
      ! ...Compute Force evolution
      IF ( leigen ) THEN ! ... NOT IN BASIN
         !
-        ! We are outside of the basin
-        !
         ! ... Is the system converged to saddle?
         C0 = ( maxforce < forc_thr )
         IF( C0  ) THEN
            lsaddle_conv = .true.
            CALL write_restart( restartfname )
-           !RETURN
         ENDIF
         !
-        ! ... Ccheck whether the fperp criterion should be tightened
-        IF( maxfpara <= fpara_thr )THEN !> We are close to the saddle point 
+        ! ... Check whether the fperp criterion should be tightened
+        IF( maxfpara <= fpara_thr ) THEN !> We are close to the saddle point 
            fperp_thr = forc_thr
-           ! ...Perp-relax managment
-           CALL nperp_limitation_step( 0 )
         ELSE
            fperp_thr = init_forc_thr
-           ! ...Perp-relax managment
-           CALL nperp_limitation_step( 0 )
         ENDIF
         ! 
-        ! ... Check perpendicular force convergence for the perp-relax 
-        C1 = ( maxfperp < fperp_thr )         ! check on the fperp field
-        C2 = ( nperp > 0.AND.iperp >= nperp ) ! check on the perp-relax iteration
-        C3 = ( MAXfperp < MAXfpara )          ! check wheter fperp is lower than fpara
-        !C4 = ( rcurv > 0.5_DP )
-        ! 
+        ! ... Conditions for stopping perp_relax
+        C1 = ( maxfperp < fperp_thr )          ! check on the fperp field
+        C2 = ( nperp > 0.AND.iperp >= nperp )  ! check on the perp-relax iteration
+        C3 = ( MAXfperp < MAXfpara )           ! check wheter fperp is lower than fpara
         IF( C1 .and. iperp == 0 ) C1 = .false. ! Force to do at least one prep-relax. AJ Why?
         !
-        ! ... If fperp is to o far from fpara too many perp-relax can relax to much the system
+        ! ... If fperp is to far from fpara too many perp-relax can relax to an unconnected basin 
         !IF( C1.and. ABS(maxfperp - maxfpara) < maxfpara*1.20 ) C1 = .false.
+        ! ... Idea: check curvature
+        !C4 = ( rcurv > 0.5_DP )
         !
+        ! ... Stopping condition is filled, switch to lanczos
         IF( C1 .OR. C2 .OR. C3 ) THEN
            lperp    = .false.
            llanczos = .true. 
@@ -97,26 +91,18 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
            !
            CALL write_restart( restartfname )
            !
-           ! ...Perp-Relax is finshed,  we count the nperp_step
-           CALL nperp_limitation_step( 1 )
-           !
         ENDIF
         !
         !
      ELSE ! ... IN  BASIN
         !
-        ! In the Basin after perp-relax we always return to init mode
-        !
         fperp_thr = init_forc_thr 
         !
-        ! ...Do INIT until fperp is > fperp_thr
-        ! && Max Iteration of Perp-Relax
-        CALL nperp_limitation_step( -1 )
-        ! 
+        ! ... Conditions for stopping perp_relax
         C1 = ( MAXfperp < fperp_thr )           ! check on the fperp field
         C2 = ( nperp > -1 .AND.iperp >= nperp ) ! check on the perp-relax iteration
         !
-        ! ... After perp-relax return to lanczos or init if we are still close to the minimum
+        ! ... Stopping condition is filled, switch to lanczos or to init if we are still close to the minimum
         IF( C1 .OR. C2 )THEN
           IF( iinit<ninit ) THEN 
             lperp    = .false.
@@ -165,10 +151,16 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         !
      ENDIF   
      !
-     !... Initialize couter if perp relax is finished
+     !... If perp relax is finished: update counter and update number of allowed perp_relax steps
      IF (.NOT. lperp ) THEN
          iperp_save = iperp  
          iperp      = 0
+         IF ( .NOT. lbasin) THEN
+            nperp_step=nperp_step+1
+            nperp = nperp_limitation(MIN(SIZE(nperp_limitation), nperp_step))
+         ELSE   
+            nperp = nperp_limitation(1) 
+         ENDIF   
      ENDIF    
      ! 
   ELSE IF ( lrelax ) THEN  
