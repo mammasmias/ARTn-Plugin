@@ -33,7 +33,7 @@ MODULE artn_params
   CHARACTER(LEN=255) :: push_guess   = " " 
   CHARACTER(LEN=255) :: eigenvec_guess = " "
   ! Constante move
-  INTEGER :: VOID = 1, INIT = 2, PERP = 3, EIGN = 4, LANC = 5, RELX = 6, OVER = 7
+  INTEGER :: VOID = 1, INIT = 2, PERP = 3, EIGN = 4, LANC = 5, RELX = 6, OVER = 7, SMTH = 8
   CHARACTER(LEN=4) :: MOVE(8)
   PARAMETER( MOVE = [ 'void', 'init', 'perp', 'eign', 'lanc', 'relx', 'over', 'smth'])
   !
@@ -57,11 +57,13 @@ MODULE artn_params
   INTEGER :: ifails
   INTEGER :: inewchance         !> number of new attemps after loosing eigenvalue 
   INTEGER :: iperp              !> number of steps in perpendicular relaxation
+  INTEGER :: iperp_save         !> number of steps in perpendicular relaxation
   INTEGER :: iover
   INTEGER :: irelax             !> Number of relaxation iteration
   INTEGER :: ieigen             !> number of steps made with eigenvector
   INTEGER :: iinit              !> number of pushes made
   INTEGER :: ilanc              !> current lanczos iteration
+  INTEGER :: ilanc_save         !> save current lanczos iteration
   INTEGER :: nlanc              !> max number of lanczos iterations
   INTEGER :: ismooth            !> number of smoothing steps
   INTEGER :: if_pos_ct          !> counter used to determine the number of fixed coordinates
@@ -251,7 +253,9 @@ CONTAINS
       istep             = 0
       iinit             = 0
       iperp             = 0
+      iperp_save        = 0
       ilanc             = 0
+      ilanc_save        = 0
       ieigen            = 0
       ismooth           = 0 
       if_pos_ct         = 0

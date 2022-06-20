@@ -37,7 +37,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
        fpara_thr, eigval_thr, frelax_ene_thr, push_step_size, current_step_size, eigen_step_size, fpush_factor, &
        push_ids, add_const, push, eigenvec, tau_step, force_step, tau_init, tau_saddle, eigen_saddle, v_in, &
        VOID, INIT, PERP, EIGN, LANC, RELX, OVER, zseed, &
-       engine_units, struc_format_out, elements, &
+       engine_units, struc_format_out, elements, ilanc_save, &
        setup_artn, read_restart, write_restart, inewchance, nnewchance,&
        push_over, ran3, a1, old_lanczos_vec, lend, fill_param_step, &
        filin, filout, sadfname, initpfname, eigenfname, restartfname, warning, flag_false,  &
@@ -167,6 +167,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     CALL check_force_convergence( nat, force_step, if_pos, fperp, fpara, lforc_conv, lsaddle_conv )
     !
   ENDIF
+  !
   disp =VOID
   !
   ! initial displacement , then switch off linit, and pass to lperp
@@ -201,7 +202,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         ! ...set up the flags for next step (we do an initial push, then we need to relax perpendiculary)
         linit = .false.
         lperp = .true.
-        iperp = 0
         !
      ENDIF
      ilanc = 0
@@ -269,17 +269,15 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !
      ! ...Recompute the norm of fpara because eigenvec change a bit
      fpara_tot = ddot(3*nat, force_step(:,:), 1, eigenvec(:,:), 1)
-     current_step_size = MIN(eigen_step_size,ABS(fpara_tot)/MAX( ABS(lowest_eigval), 0.01_DP ))
-     !current_step_size = MIN(eigen_step_size,ABS(MAXVAL(fpara))/MAX( ABS(lowest_eigval), 0.01_DP ))
+     current_step_size = -SIGN(-1.0_DP,fpara_tot)*MIN(eigen_step_size,ABS(fpara_tot)/MAX( ABS(lowest_eigval), 0.01_DP ))
      !
      ! Put some test on current_step_size
      !
      displ_vec(:,:) = eigenvec(:,:)*current_step_size
      ! 
-     IF ( ieigen == neigen  ) THEN
+     IF ( ieigen >= neigen  ) THEN
         ! do a perpendicular relax
         lperp = .true.
-        iperp = 0
      ENDIF
      !
      CALL write_struct( at, nat, tau, order, elements, ityp, force_step, &
@@ -536,7 +534,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
           ilanc, nlanc, lowest_eigval, eigenvec, displ_vec)
      !
      ilanc = ilanc + 1
-     iperp = 0
      !
      ! Lanczos has converged:
      ! nlanc = number of steps it took to converge,
@@ -545,6 +542,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         !
         ! check lowest eigenvalue, decide what to do in next step
         !
+        ilanc_save =ilanc
         IF ( lowest_eigval < eigval_thr ) THEN
            ! structure is out of the basin (above inflection),
            ! in next step make a push with the eigenvector
@@ -552,11 +550,9 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            lbasin = .false.
            ! ...push in eigenvector direction
            leigen = .true.
-           ieigen = 0
            ! ...Save the eigenvector
            ! ...No yet perp relax
            lperp  = .false.
-           iperp  = 0
            old_lowest_eigval = lowest_eigval
            !
         ELSE
@@ -583,7 +579,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            leigen = .false.
            linit  = .true.
            lbasin = .true.
-           iperp  = 0
            noperp = 0      !> count the init-perp fail
            nperp_step = 1  !> count the out-basin perp relax step
            !
