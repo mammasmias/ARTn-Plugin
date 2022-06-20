@@ -184,17 +184,18 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
   !
   ! ...Force processing
   IF( trim(converge_property) == 'norm' )THEN
-    call sum_force( force*if_pos, nat, force_tot )
-    call sum_force( fpara, nat, fpara_tot )
-    call sum_force( fperp, nat, fperp_tot )
-    !force_tot = sqrt( dsum( 3*nat, force*if_pos ) )
-    !fpara_tot = sqrt( dsum( 3*nat, fpara ) )
-    !fperp_tot = sqrt( dsum( 3*nat, fperp ) )
+    !call sum_force( force*if_pos, nat, force_tot )
+    !call sum_force( fpara, nat, fpara_tot )
+    !call sum_force( fperp, nat, fperp_tot )
+    force_tot = sqrt( dsum( 3*nat, force ) )
+    fpara_tot = sqrt( dsum( 3*nat, fpara ) )
+    fperp_tot = sqrt( dsum( 3*nat, fperp ) )
   ELSE
     force_tot = MAXVAL( ABS(force*if_pos) )
     fperp_tot = MAXVAL( ABS(fperp) )
     fpara_tot = MAXVAL( ABS(fpara) )
   ENDIF
+  write(*,*) " * write_REPORT::", force_tot, fperp_tot, fpara_tot
   !
   ! .. Conversion Units
   force_tot = unconvert_force( force_tot )
@@ -265,6 +266,8 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
     ! 
   END SELECT
   CLOSE(iunartout)
+  
+  !! What happens here?
   IF( disp==INIT .OR. disp==EIGN .OR. disp==SMTH .OR. disp==RELX) THEN
     ilanc_save  = 0
     iperp_save  = 0
