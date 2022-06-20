@@ -131,9 +131,13 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
       !
     ELSE
       ! 
-      CALL write_initial_report( iunartout, filout )
-      !IF( isearch == 0 ) CALL write_initial_report( iunartout, filout )
+      ! ...Create The input
+      !!    To be able to do multiple research in the same run we keep 
+      !!    in memory "isearch" how many time we pass here and open an output 
+      !!    file only once
+      IF( isearch == 0 ) CALL write_initial_report( iunartout, filout )
       isearch = isearch + 1
+
       ! ...Initial parameter
       etot_init = etot_step
       !
@@ -142,15 +146,18 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     ! ...Split the force field in para/perp field following the push field
     !CALL perpforce( force_step, if_pos, push, fperp, fpara, nat)
     CALL splitfield( 3*nat, force_step, if_pos, push, fperp, fpara )
-    CALL write_initial_report( iunartout, filout )
+
+    ! ...Start to write the output
     CALL write_header_report( iunartout )
     CALL write_report( etot_step, force, fperp, fpara, lowest_eigval, if_pos, istep, nat,  iunartout )
+
+    ! ...Write the structure
     CALL write_struct( at, nat, tau, order, elements, ityp, push, etot_eng, 1.0_DP, iunstruct, struc_format_out, initpfname )
     artn_resume = '* Start: '//trim(initpfname)
     !
   ELSE
-    ! ISTEP > 0
-    ! receive variables from the engine, split force into perp and para, and check if it is converged
+    !! ISTEP > 0
+    !! receive variables from the engine, split force into perp and para, and check if it is converged
     !
     ! ...Fill the *_step Arrays
     CALL Fill_param_step( nat, at, order, tau, etot_eng, force, lerror )
