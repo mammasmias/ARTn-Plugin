@@ -95,7 +95,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   IF( istep == 0 )THEN
     !
     ! ...Initialize if it is the first search
-    IF( isearch == 0 )  CALL setup_artn( nat, iunartin, filin )
+    IF( isearch == 0 )CALL setup_artn( nat, iunartin, filin )
     !
     ! ...Fill the *_step Arrays and parameters
     CALL Fill_param_step( nat, at, order, tau, etot_eng, force, lerror )
@@ -169,8 +169,13 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
        lconv = .true.
     ENDIF
     !
+    ! ...Split the force field in para/perp field following the push field
     CALL splitfield( 3*nat, force_step, if_pos, push, fperp, fpara )
+
+    ! ...Write Output
     CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, if_pos, istep, nat,  iunartout)
+
+    ! ...Check the convergence forces  
     CALL check_force_convergence( nat, force_step, if_pos, fperp, fpara, lforc_conv, lsaddle_conv )
     !
   ENDIF
@@ -639,6 +644,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     !
     ! ...Force = 0.0
     displ_vec = 0.0_DP
+    disp = VOID
     !
     ! ...The search IS FINISHED
     RETURN

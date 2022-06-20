@@ -581,10 +581,11 @@ CONTAINS
 
     natoms = nat
     lat = box
-    tau_step(:,order(:)) = pos(:,:)
-    !tau_step(:,order(:)) = convert_length( pos(:,:) )
     etot_step = convert_energy( etot )
     force_step(:,order(:)) = convert_force( force(:,:) )
+    ! ...IMORTANT: the position is not converted 
+    tau_step(:,order(:)) = pos(:,:)
+    !tau_step(:,order(:)) = convert_length( pos(:,:) )
 
   END SUBROUTINE Fill_param_step
 

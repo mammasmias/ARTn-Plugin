@@ -187,7 +187,7 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
     !call sum_force( force*if_pos, nat, force_tot )
     !call sum_force( fpara, nat, fpara_tot )
     !call sum_force( fperp, nat, fperp_tot )
-    force_tot = sqrt( dsum( 3*nat, force ) )
+    force_tot = sqrt( dsum( 3*nat, force*if_pos ) )
     fpara_tot = sqrt( dsum( 3*nat, fpara ) )
     fperp_tot = sqrt( dsum( 3*nat, fperp ) )
   ELSE
@@ -195,7 +195,6 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
     fperp_tot = MAXVAL( ABS(fperp) )
     fpara_tot = MAXVAL( ABS(fpara) )
   ENDIF
-  write(*,*) " * write_REPORT::", force_tot, fperp_tot, fpara_tot
   !
   ! .. Conversion Units
   force_tot = unconvert_force( force_tot )
