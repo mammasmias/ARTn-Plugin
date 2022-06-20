@@ -209,7 +209,7 @@ CONTAINS
     !
     ! -- Local Variables
     LOGICAL                         :: file_exists, verb
-    INTEGER                         :: ios
+    INTEGER                         :: ios, u0
     INTEGER(c_size_t)               :: mem
     CHARACTER(LEN=256)              :: ftmp, ctmp
     REAL(DP)                        :: z
@@ -493,9 +493,9 @@ CONTAINS
       zseed = INT(z)
     ENDIF
     !> Save the seed for DEBUG
-    OPEN( NEWUNIT=zseed, file="random_seed.dat" )
-    WRITE( zseed, * )" zseed = ", zseed
-    CLOSE( zseed )
+    OPEN( NEWUNIT=u0, file="random_seed.dat" )
+    WRITE( u0, * )" zseed = ", zseed
+    CLOSE( u0 )
     !
    CONTAINS
     !
