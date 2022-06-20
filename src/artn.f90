@@ -149,7 +149,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
     ! ...Start to write the output
     CALL write_header_report( iunartout )
-    CALL write_report( etot_step, force, fperp, fpara, lowest_eigval, if_pos, istep, nat,  iunartout )
+    CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, if_pos, istep, nat,  iunartout )
 
     ! ...Write the structure
     CALL write_struct( at, nat, tau, order, elements, ityp, push, etot_eng, 1.0_DP, iunstruct, struc_format_out, initpfname )
@@ -170,7 +170,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     ENDIF
     !
     CALL splitfield( 3*nat, force_step, if_pos, push, fperp, fpara )
-    CALL write_report( etot_step, force, fperp, fpara, lowest_eigval, if_pos, istep, nat,  iunartout)
+    CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, if_pos, istep, nat,  iunartout)
     CALL check_force_convergence( nat, force_step, if_pos, fperp, fpara, lforc_conv, lsaddle_conv )
     !
   ENDIF
