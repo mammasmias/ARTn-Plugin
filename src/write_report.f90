@@ -22,8 +22,15 @@ SUBROUTINE write_initial_report(iunartout, filout)
   ! Writes the header to the artn output file
   !
   OPEN( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'unknown', POSITION='rewind', IOSTAT = ios )
+
   WRITE (iunartout,'(5X, "--------------------------------------------------")')
-  WRITE (iunartout,'(5X, "                ARTn plugin                       ")')
+  WRITE (iunartout,'(5X, "|       _____                _____ _______       |")')
+  WRITE (iunartout,'(5X, "|      /  _  |         /\   |  __ \__   __|      |")')
+  WRITE (iunartout,'(5X, "|      | (_) |  ___   /  \  | |__) | | |         |")')
+  WRITE (iunartout,'(5X, "|      |  ___/ |___| / /\ \ |  _  /  | |         |")')
+  WRITE (iunartout,'(5X, "|      | |          / ____ \| | \ \  | |         |")')
+  WRITE (iunartout,'(5X, "|      |_|         /_/    \_\_|  \_\ |_|         |")')
+  WRITE (iunartout,'(5X, "|                                    ARTn plugin |")')
   WRITE (iunartout,'(5X, "--------------------------------------------------")')
   WRITE (iunartout,'(5X, " "                                                 )')
   WRITE (iunartout,'(5X, "               INPUT PARAMETERS                   ")')
