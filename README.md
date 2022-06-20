@@ -179,7 +179,7 @@ Depending of the engine the works units changes and it is to the user to be cohe
 
 - `lnperp_limitation`: Values `.true./.false.`, default is `.true.`. 
 
-  this option allows to constrain the number of perpendicular relaxation during the convrgence to the saddle point, out of the basin. The limitation is incremental starting by 8, 12, 16, -1 (infinite). These values are stored in arrays `nperp_limitation(5)` where the first value is `nperp` in the basin. These list can be customizable in input giving the values of the array: `nperp_limitation = [...custom values]` 
+  this option allows to constrain the number of perpendicular relaxation during the convergence to the saddle point, out of the basin. The limitation is incremental starting by 8, 12, 16, -1 (infinite). These values are stored in arrays `nperp_limitation(5)` where the first value is `nperp` in the basin. These list can be customizable in input giving the values of the array: `nperp_limitation = [...custom values]` 
 
 - `lanc_mat_size`: Value integer, by default is `16`. Maximum number of Lanczos iterations
 
@@ -239,6 +239,8 @@ Various files can be found in output.
 ## TODO
 
 - nsteppos in ARTn doesn't have the same meaning for QE and LAMMPS in FIRE algo
+
+- nsteppos is customizable in LAMMPS (delaystep) :ok:
 
 - Add the output filename custom 
 

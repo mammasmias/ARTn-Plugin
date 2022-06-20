@@ -734,6 +734,9 @@ void FixARTn::min_post_force( int /*vflag*/ ){
   // ---------------------------------------------------------------------- COMVERGENCE 
   if( iconv ){
 
+    // ...Clean ARTn
+    clean_artn_();
+
     // ...Reset the energy force tolerence
     update-> etol = etol;
     update-> ftol = ftol;
