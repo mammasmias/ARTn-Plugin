@@ -323,10 +323,13 @@ SUBROUTINE write_inter_report( iunartout, pushfactor, de )
       
 
   END SELECT
-    Cbilan = '(5x,"|> DEBRIEF | dE= ",f12.5,x,"'//unit_char('energy')//' | F_{tot,para,perp}= ",3(f12.5,x),"' &
+
+  ! ...Write the debrief line
+  Cbilan = '(5x,"|> DEBRIEF | dE= ",f12.5,x,"'//unit_char('energy')//' | F_{tot,para,perp}= ",3(f12.5,x),"' &
      //unit_char('force')//' | EigenVal= ", f12.5,x,"'//unit_char('hessian')//' | npart= ",f4.0,x," | delr= ",f12.5,x,"' &
      //unit_char('length')//' | evalf= ",f5.0,x,"|")'
-    Write(iunartout,Cbilan) Bilan
+  Write(iunartout,Cbilan) Bilan
+
   CLOSE(iunartout)
 
 END SUBROUTINE write_inter_report

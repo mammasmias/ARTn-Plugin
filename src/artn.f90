@@ -644,7 +644,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     !
     ! ...Force = 0.0
     displ_vec = 0.0_DP
-    disp = VOID
+    !disp = VOID
+    disp = RELX
     !
     ! ...The search IS FINISHED
     RETURN
@@ -655,3 +656,9 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   istep = istep + 1
   !
 END SUBROUTINE artn
+
+
+
+
+
+
