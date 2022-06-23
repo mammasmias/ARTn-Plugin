@@ -244,7 +244,7 @@ Various files can be found in output.
 
 - Add the output filename custom 
 
-- 
+- Create option to read a configuration as a reference (energy and position) for the rest of the computation. Kind of `ref_config = file`. Usefule for the refine saddle
 
 - `nperp`: Follows antoine method: progressive increase of nperp after the inflection line. Or maybe to be proportional to the fperp magnitude because happen when the magnitude is too high the perp-relax lead the lost of saddle point. :ok:
 

@@ -735,7 +735,7 @@ void FixARTn::min_post_force( int /*vflag*/ ){
   if( iconv ){
 
     // ...Clean ARTn
-    clean_artn_();
+    //clean_artn_();  // This should be in post_run()
 
     // ...Reset the energy force tolerence
     update-> etol = etol;
