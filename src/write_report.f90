@@ -314,10 +314,9 @@ SUBROUTINE write_inter_report( iunartout, pushfactor, de )
       WRITE( iunartout,'(15X,"dEinit - dEfinal    =", F12.5,x,a)') unconvert_energy((de(3)-de(5))), unit_char('energy') 
       WRITE( iunartout,'(5X, "--------------------------------------------------")')
       WRITE( iunartout,'(5X, "|> Configuration Files:", X,A)') trim(artn_resume)
-      WRITE( iunartout,'(5x, "|> Configuration Files:", X,A)') trim(artn_resume)
+      WRITE( *,'(5x, "|> Configuration Files:", X,A)') trim(artn_resume)
       WRITE( iunartout,'(5X, "--------------------------------------------------")')
       !WRITE( u,'(/)')
-
 
     CASE DEFAULT
       WRITE(*,*) "********* ERROR write_inter_report:: pushfactor", pushfactor, " **************"
