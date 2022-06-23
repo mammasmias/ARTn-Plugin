@@ -62,6 +62,7 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         IF( C0  ) THEN
            lsaddle_conv = .true.
            CALL write_restart( restartfname )
+           RETURN  !! ANTOINE you remove this line !!!
         ENDIF
         !
         ! ... Check whether the fperp criterion should be tightened
@@ -120,10 +121,11 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         IF ( C1 .AND. iperp == 0) noperp = noperp + 1
         !
      ENDIF
+
      !
+     !    
+     ! ... Show Stop perp message
      IF (verbose >1) THEN
-        !    
-        ! ... Show Stop perp message
         OPEN( UNIT = iunartout, FILE = 'artn.out', FORM = 'formatted', ACCESS = 'append', STATUS = 'unknown', IOSTAT = ios )
         IF ( C0 ) WRITE(iunartout,'(5x,a46,x,f10.4,x,a1,x,f10.4,a20)') &
             "|> Stop perp relax because force < forc_thr  :",&
@@ -150,28 +152,31 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         CLOSE( iunartout )
         !
      ENDIF   
+
      !
      !... If perp relax is finished: update counter and update number of allowed perp_relax steps
      IF (.NOT. lperp ) THEN
          iperp_save = iperp  
          iperp      = 0
          IF ( .NOT. lbasin) THEN
-            nperp_step=nperp_step+1
+            nperp_step = nperp_step + 1
             nperp = nperp_limitation(MIN(SIZE(nperp_limitation), nperp_step))
          ELSE   
             nperp = nperp_limitation(1) 
          ENDIF   
      ENDIF    
      ! 
+
+
   ELSE IF ( lrelax ) THEN  
      !
      ! ... Check if Minimum has been reached
      C0 = ( maxforce < forc_thr )
      IF ( C0  ) THEN
         lforc_conv = .true.
-        IF ( verbose >1) THEN
-           !  
-           ! ... Show Stop relax message
+        !  
+        ! ... Show Stop relax message
+        IF( verbose > 1 )THEN
            OPEN( UNIT = iunartout, FILE = 'artn.out', FORM = 'formatted', ACCESS = 'append', STATUS = 'unknown', IOSTAT = ios )
            WRITE(iunartout,'(5x,a46,x,f10.4,x,a1,x,f10.4,a20)') &
            "|> Stop relax because force < forc_thr       :",&

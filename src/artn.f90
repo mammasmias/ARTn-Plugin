@@ -90,9 +90,13 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   !
   ! ... fpara_tot is used to scale the magnitude of the eigenvector
   fpara_tot = 0.D0
+
+
+
+
   !
   ! ... Initialize artn
-  IF( istep == 0 )THEN
+  IF( istep == 0 )THEN !! ---------------------------------------------------------------------------------------------  ISTEP = 0
     !
     ! ...Initialize if it is the first search
     IF( isearch == 0 )CALL setup_artn( nat, iunartin, filin )
@@ -155,8 +159,10 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     CALL write_struct( at, nat, tau, order, elements, ityp, push, etot_eng, 1.0_DP, iunstruct, struc_format_out, initpfname )
     artn_resume = '* Start: '//trim(initpfname)
     !
-  ELSE
-    !! ISTEP > 0
+
+
+
+  ELSE !! ---------------------------------------------------------------------------------------------------  ISTEP > 0
     !! receive variables from the engine, split force into perp and para, and check if it is converged
     !
     ! ...Fill the *_step Arrays
@@ -179,6 +185,11 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     CALL check_force_convergence( nat, force_step, if_pos, fperp, fpara, lforc_conv, lsaddle_conv )
     !
   ENDIF
+
+
+
+
+
   !
   disp =VOID
   !
@@ -194,6 +205,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !   - check_force_convergence()
      !   - here
      !.............................
+
+     ! ...User cancel the INIT push
      IF ( istep ==0 .AND. ninit==0 ) THEN
         !
         ! Pass to lanczos 
@@ -265,9 +278,12 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !
      !
      disp    = EIGN
+     ismooth = ismooth + 1
+     ieigen  = ieigen  + 1
+
+     ! ...reset the iterator of previous step
      ilanc   = 0
-     ismooth = ismooth +1
-     ieigen  = ieigen + 1
+
      !
      IF( nsmooth > 0 .AND. ismooth <= nsmooth ) THEN
        CALL smooth_interpol( ismooth, nsmooth, nat, force_step, push, eigenvec )
@@ -481,6 +497,9 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   END IF RELAX
 
 
+
+  !> WHAT FOR THIS BLOCK??? ANTOINE??
+  !!  This should be in check_force()
   IF( etot_step - etot_init > etot_diff_limit ) then
      error_message = 'ENERGY EXCEEDS THE LIMIT'
      call write_fail_report( iunartout, disp, etot_step )
