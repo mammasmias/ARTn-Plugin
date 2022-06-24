@@ -441,6 +441,9 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      disp      = RELX
      displ_vec = force_step
      irelax    = irelax + 1
+
+     prev_push = disp !! Save the previous displacement 
+
      !
      ! The convergence is reached:
      !  - Switch the push_over or
