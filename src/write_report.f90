@@ -148,47 +148,48 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
   REAL(DP), EXTERNAL   :: ddot, dsum
   INTEGER              :: disp
   INTEGER              :: ios
-  LOGICAL              :: new_step
+  LOGICAL              :: print_it
 
-  new_step = .false.
+  print_it = .false.
 
 
-  !
-  !...Define the displacement type 
-  disp = LANC
-  IF ( lrelax     )    disp=RELX
-  IF ( lpush_over )    disp= OVER
-  IF ( lperp      )    disp= PERP  
-  !
-  ! ... If it is the first perp relax, we where in Init or Eigen
-  IF ( lperp    .AND. iperp==0 ) THEN  
-                       disp=INIT
-      IF (.NOT.lbasin) disp=EIGN
-  ENDIF   
-  !
-  ! ... If it is the first lanczos, we where in Init or Eigen
-  IF ( llanczos .AND. ilanc==0 ) THEN  
-                       disp=INIT
-     IF (.NOT.lbasin)  disp=EIGN
-  ENDIF    
-  IF ( istep==0   )    disp=VOID
-  !
-  ! ... Maybe the eigen is in smooth mode
-  IF ( disp == EIGN .AND. ismooth <= nsmooth .AND. nsmooth>0) disp=SMTH
+! !
+! !...Define the displacement type 
+! disp = LANC
+! IF ( lrelax     )    disp=RELX
+! IF ( lpush_over )    disp= OVER
+! IF ( lperp      )    disp= PERP  
+! !
+! ! ... If it is the first perp relax, we where in Init or Eigen
+! IF ( lperp    .AND. iperp==0 ) THEN  
+!                      disp=INIT
+!     IF (.NOT.lbasin) disp=EIGN
+! ENDIF   
+! !
+! ! ... If it is the first lanczos, we where in Init or Eigen
+! IF ( llanczos .AND. ilanc==0 ) THEN  
+!                      disp=INIT
+!    IF (.NOT.lbasin)  disp=EIGN
+! ENDIF    
+! IF ( istep==0   )    disp=VOID
+! !
+! ! ... Maybe the eigen is in smooth mode
+! IF ( disp == EIGN .AND. ismooth <= nsmooth .AND. nsmooth>0) disp=SMTH
 
-  print*, " |> write_report :", disp , prev_disp, disp - prev_disp
+! print*, " |> write_report :", disp , prev_disp, disp - prev_disp
 
 
 
   ! 
-  ! ... Update iart counter & print
+  ! ... Update iart counter: ARTn step start by Lanczos or Init push
   IF( (prev_disp==LANC .AND. ilanc==1) .OR. &
       (prev_disp==INIT .AND. iinit<=ninit)  )THEN
-    new_step = .true.
+    !new_step = .true.
     iartn = iartn + 1
   ENDIF
 
-  IF( (prev_disp == RELX).AND.(mod(irelax,5) == 0) )new_step = .true.
+  IF( (prev_disp == RELX).AND.(mod(irelax,5) == 0) )print_it = .true.
+  IF( istep == 0 )print_it = .true.
 
 
 
@@ -203,26 +204,16 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
   ENDIF
 
 
-
   !
   ! ...Define when to print
-  IF( (verbose < 2).AND.(.NOT.new_step) )RETURN
-  !IF( verbose < 2 )THEN
-  !  IF(( .NOT.(prev_disp == VOID) ).AND. &
-  !     ( .NOT.(prev_disp == INIT) ).AND. &
-  !     ( .NOT.(prev_disp == EIGN) ).AND. &
-  !     ( .NOT.(prev_disp == SMTH) ).AND. &
-  !     ( .NOT.((mod(irelax,5)==0) .AND. prev_disp==RELX)) )  RETURN
-  !ENDIF
+  !IF( verbose < 2.AND.(.NOT.istep == 0) )RETURN
+  IF( verbose < 2.AND.(.NOT.print_it) )RETURN
 
   disp = prev_disp
 
   !
   ! ...Force processing
   IF( trim(converge_property) == 'norm' )THEN
-    !call sum_force( force*if_pos, nat, force_tot )
-    !call sum_force( fpara, nat, fpara_tot )
-    !call sum_force( fperp, nat, fperp_tot )
     force_tot = sqrt( dsum( 3*nat, force*if_pos ) )
     fpara_tot = sqrt( dsum( 3*nat, fpara ) )
     fperp_tot = sqrt( dsum( 3*nat, fperp ) )
@@ -251,45 +242,36 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
   evalf = istep+1
   dr    = 0.
   npart = 0
-  !IF( prev_disp==VOID ) THEN
-  !  !
-  !  ! ...Initialize Displacement processing
-  !  IF( .NOT.ALLOCATED(tau_init) ) THEN
-  !      ALLOCATE( tau_init, source = tau_step )
-  !  ELSE
-  !      tau_init = tau_step    
-  !  ENDIF
-  !ENDIF 
 
 
   !
   !IF( disp==INIT .OR. disp==EIGN .OR.   &
   !    disp==SMTH .OR. disp==RELX   ) THEN
-  IF( NEW_STEP )THEN
-    !  
-    ! ...Displacement processing
-    call compute_delr( nat, tau_step, tau_init, lat, delr )
-    npart = 0
-    rc2   = 0.1!*0.1  !! Miha: Why square? NS: Why not! 
-    DO i = 1, nat
-      IF( norm2(delr(:,i)) > rc2 ) npart = npart + 1
-    enddo
-    !! routine sum_force is equivalent to implicit: norm2( delr )
-    call sum_force( delr, nat, dr )
-    !
-  ENDIF
+! IF( NEW_STEP )THEN
+!   !  
+!   ! ...Displacement processing
+!   call compute_delr( nat, tau_step, tau_init, lat, delr )
+!   npart = 0
+!   rc2   = 0.1!*0.1  !! Miha: Why square? NS: Why not! 
+!   DO i = 1, nat
+!     IF( norm2(delr(:,i)) > rc2 ) npart = npart + 1
+!   enddo
+!   !! routine sum_force is equivalent to implicit: norm2( delr )
+!   call sum_force( delr, nat, dr )
+!   !
+! ENDIF
 
 
-  !
-  ! ...Fill bilan variable for the inter report
-  IF ( disp==INIT .OR. disp==EIGN .OR. disp==SMTH )THEN 
-    ctot = dr
-    cmax = real(npart,DP)
-  ELSE
-    ctot = bilan(7)
-    cmax = bilan(6)
-  ENDIF
-  bilan = [ detot, force_tot, fpara_tot, fperp_tot, lowEig, cmax, ctot, real(evalf,DP) ]
+! !
+! ! ...Fill bilan variable for the inter report
+! IF ( disp==INIT .OR. disp==EIGN .OR. disp==SMTH )THEN 
+!   ctot = dr
+!   cmax = real(npart,DP)
+! ELSE
+!   ctot = bilan(7)
+!   cmax = bilan(6)
+! ENDIF
+! bilan = [ detot, force_tot, fpara_tot, fperp_tot, lowEig, cmax, ctot, real(evalf,DP) ]
 
 
   !
@@ -329,7 +311,7 @@ END SUBROUTINE write_report
 !------------------------------------------------------------------------
 SUBROUTINE write_artn_step_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep, nat, iout)
   !> @brief
-  !!   a subroutine that writes a report of the current step to the output file  
+  !!   a subroutine that writes a report each new ARTn step 
   !
   !> @param [in]  etot          energy of the system
   !> @param [in]  force         List of atomic forces
