@@ -56,14 +56,17 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
      !
      ! ...Compute Force evolution
      IF ( leigen ) THEN ! ... NOT IN BASIN
+
         !
         ! ... Is the system converged to saddle?
         C0 = ( maxforce < forc_thr )
         IF( C0  ) THEN
            lsaddle_conv = .true.
            CALL write_restart( restartfname )
+           CALL write_ARTn_step_report( etot_step, force, fperp, fpara, lowest_eigval, if_pos, istep, nat,  iunartout )
            RETURN  !! ANTOINE you remove this line !!!
         ENDIF
+
         !
         ! ... Check whether the fperp criterion should be tightened
         IF( maxfpara <= fpara_thr ) THEN !> We are close to the saddle point 
@@ -71,6 +74,7 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         ELSE
            fperp_thr = init_forc_thr
         ENDIF
+
         ! 
         ! ... Conditions for stopping perp_relax
         C1 = ( maxfperp < fperp_thr )          ! check on the fperp field
@@ -91,6 +95,7 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
            ilanc    = 0
            !
            CALL write_restart( restartfname )
+           CALL write_ARTn_step_report( etot_step, force, fperp, fpara, lowest_eigval, if_pos, istep, nat,  iunartout )
            !
         ENDIF
         !
@@ -115,6 +120,8 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
             ilanc    = 0
           ENDIF    
            CALL write_restart( restartfname )
+           !!CALL write_ARTn_step_report()
+           CALL write_ARTn_step_report( etot_step, force, fperp, fpara, lowest_eigval, if_pos, istep, nat,  iunartout )
         ENDIF
         !
         ! ...Count if fperp is always to small after each init push
@@ -172,8 +179,10 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
      !
      ! ... Check if Minimum has been reached
      C0 = ( maxforce < forc_thr )
-     IF ( C0  ) THEN
+     IF ( C0 ) THEN
         lforc_conv = .true.
+        !!CALL write_ARTn_step_report()
+        CALL write_ARTn_step_report( etot_step, force, fperp, fpara, lowest_eigval, if_pos, istep, nat,  iunartout )
         !  
         ! ... Show Stop relax message
         IF( verbose > 1 )THEN

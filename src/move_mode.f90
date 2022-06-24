@@ -22,7 +22,7 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
   !> @param [in]    disp	Kind of actual displacement 
   !> @param [in]    displ_vec	Displacement field (unit lemgth/force/hessian ) 
   !
-  USE artn_params, ONLY:  lbasin, iperp, irelax, push, eigenvec, lanczos_disp, MOVE , istep
+  USE artn_params, ONLY:  lbasin, iperp, irelax, push, eigenvec, lanczos_disp, MOVE , istep, prev_disp
   USE UNITS
   !
   IMPLICIT NONE
@@ -51,10 +51,17 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
   dt  = convert_time( dt_curr )
   dt0 = convert_time( dt_init )   !%! Finally we don't touch dt_init
   u0  = 73
+
   !if( istep == 1 )write(u0,'("# -- FIRE PARAMETERS"/" istep  |  alpha   |   dt   |  nsteppos")')
   !10 format(x,i0,2x,a,2(x,f15.5),x,i0)
   !open(newunit=u0,file="fire_params.dat", )
   !
+
+
+  ! ...Save actuall displacement
+  prev_disp = disp
+
+
   SELECT CASE( MOVE(disp) )
   !
   CASE( 'init' )

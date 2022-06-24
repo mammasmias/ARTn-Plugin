@@ -127,7 +127,7 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
                         ,etot_init, iinit, iperp, ieigen, ilanc, irelax, delr, verbose, iartn, a1 &
                         ,tau_init, lat, tau_step, delr, converge_property, ninit, iperp_save, ilanc_save &
                         ,lrelax, linit, lbasin, lperp, llanczos, leigen, lpush_over, lpush_final, lbackward, lrestart,&
-                        VOID, INIT, PERP, EIGN, LANC, RELX, OVER, SMTH
+                        VOID, INIT, PERP, EIGN, LANC, RELX, OVER, SMTH, prev_disp, prev_push
 
   USE UNITS
   IMPLICIT NONE
@@ -148,6 +148,11 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
   REAL(DP), EXTERNAL   :: ddot, dsum
   INTEGER              :: disp
   INTEGER              :: ios
+  LOGICAL              :: new_step
+
+  new_step = .false.
+
+
   !
   !...Define the displacement type 
   disp = LANC
@@ -170,17 +175,48 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
   !
   ! ... Maybe the eigen is in smooth mode
   IF ( disp == EIGN .AND. ismooth <= nsmooth .AND. nsmooth>0) disp=SMTH
+
+  print*, " |> write_report :", disp , prev_disp, disp - prev_disp
+
+
+
   ! 
-  ! ... Update iart counter
-  IF( (disp==LANC .AND. ilanc==1) .OR. (disp==INIT .AND. iinit<=ninit)) iartn = iartn + 1
+  ! ... Update iart counter & print
+  IF( (prev_disp==LANC .AND. ilanc==1) .OR. &
+      (prev_disp==INIT .AND. iinit<=ninit)  )THEN
+    new_step = .true.
+    iartn = iartn + 1
+  ENDIF
+
+  IF( (prev_disp == RELX).AND.(mod(irelax,5) == 0) )new_step = .true.
+
+
+
+  !
+  ! ...Initialize Displacement processing
+  IF( prev_disp==VOID ) THEN
+    IF( .NOT.ALLOCATED(tau_init) ) THEN
+        ALLOCATE( tau_init, source = tau_step )
+    ELSE
+        tau_init = tau_step
+    ENDIF
+  ENDIF
+
+
+
   !
   ! ...Define when to print
-  IF (( .NOT.(disp==VOID) ).AND. &
-      ( .NOT.(disp==INIT) ).AND. &
-      ( .NOT.(disp==EIGN) ).AND. &
-      ( .NOT.(disp==SMTH) ).AND. &
-      ( .NOT.((mod(irelax,5)==0) .AND. disp==RELX)) .AND.&  ! can be changed to print more during relax
-      ( verbose<2 ) )  RETURN
+  IF( (verbose < 2).AND.(.NOT.new_step) )RETURN
+  !IF( verbose < 2 )THEN
+  !  IF(( .NOT.(prev_disp == VOID) ).AND. &
+  !     ( .NOT.(prev_disp == INIT) ).AND. &
+  !     ( .NOT.(prev_disp == EIGN) ).AND. &
+  !     ( .NOT.(prev_disp == SMTH) ).AND. &
+  !     ( .NOT.((mod(irelax,5)==0) .AND. prev_disp==RELX)) )  RETURN
+  !ENDIF
+
+  disp = prev_disp
+
   !
   ! ...Force processing
   IF( trim(converge_property) == 'norm' )THEN
@@ -202,6 +238,8 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
   fpara_tot = unconvert_force( fpara_tot )
   dEtot     = unconvert_energy(etot - etot_init)
   lowEig    = unconvert_hessian( lowest_eigval )
+
+
   !
   !%! More Complete Output
   Mstep              = "Mstep"
@@ -213,17 +251,21 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
   evalf = istep+1
   dr    = 0.
   npart = 0
-  IF( disp==VOID ) THEN
-    !
-    ! ...Initialize Displacement processing
-    IF( .NOT.ALLOCATED(tau_init) ) THEN
-        ALLOCATE( tau_init, source = tau_step )
-    ELSE
-        tau_init = tau_step    
-    ENDIF
-  ENDIF 
+  !IF( prev_disp==VOID ) THEN
+  !  !
+  !  ! ...Initialize Displacement processing
+  !  IF( .NOT.ALLOCATED(tau_init) ) THEN
+  !      ALLOCATE( tau_init, source = tau_step )
+  !  ELSE
+  !      tau_init = tau_step    
+  !  ENDIF
+  !ENDIF 
+
+
   !
-  IF( disp==INIT .OR. disp==EIGN .OR. disp==SMTH .OR. disp==RELX) THEN
+  !IF( disp==INIT .OR. disp==EIGN .OR.   &
+  !    disp==SMTH .OR. disp==RELX   ) THEN
+  IF( NEW_STEP )THEN
     !  
     ! ...Displacement processing
     call compute_delr( nat, tau_step, tau_init, lat, delr )
@@ -236,9 +278,11 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
     call sum_force( delr, nat, dr )
     !
   ENDIF
+
+
   !
   ! ...Fill bilan variable for the inter report
-  IF ( disp==INIT .OR. disp==EIGN .OR. disp==SMTH) THEN 
+  IF ( disp==INIT .OR. disp==EIGN .OR. disp==SMTH )THEN 
     ctot = dr
     cmax = real(npart,DP)
   ELSE
@@ -246,13 +290,15 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
     cmax = bilan(6)
   ENDIF
   bilan = [ detot, force_tot, fpara_tot, fperp_tot, lowEig, cmax, ctot, real(evalf,DP) ]
+
+
   !
   !
   OPEN( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'unknown', POSITION='append', IOSTAT = ios )
   SELECT CASE( verbose )
     !
     CASE( 0 )
-      WRITE(iunartout,6) iartn, Mstep, MOVE(disp), detot, iinit, ieigen, iperp_save, ilanc_save, irelax,  &
+      WRITE(iunartout,6) iartn, Mstep, MOVE(prev_push), detot, iinit, ieigen, iperp_save, ilanc_save, irelax,  &
                          force_tot, fperp_tot, fpara_tot, lowEig, dr, npart, evalf, a1
       6 FORMAT(5x,i4,3x,a,x,a,F10.4,x,5(x,i4),5(x,f10.4),2(x,i5),3X,f4.2)
     !
@@ -266,13 +312,187 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
   END SELECT
   CLOSE(iunartout)
   
+
   !! What happens here?
-  IF( disp==INIT .OR. disp==EIGN .OR. disp==SMTH .OR. disp==RELX) THEN
+  IF( disp == INIT .OR. disp == EIGN .OR. &
+      disp == SMTH .OR. disp == RELX )THEN
     ilanc_save  = 0
     iperp_save  = 0
   ENDIF  
   !
 END SUBROUTINE write_report
+
+
+
+
+
+!------------------------------------------------------------------------
+SUBROUTINE write_artn_step_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep, nat, iout)
+  !> @brief
+  !!   a subroutine that writes a report of the current step to the output file  
+  !
+  !> @param [in]  etot          energy of the system
+  !> @param [in]  force         List of atomic forces
+  !> @param [in]  fpara         List of parallel atomic forces
+  !> @param [in]  fperp         List of perpendicular atomic forces
+  !> @param [in]  lowest_eigval Lowest eigenvalue obtained by lanczos
+  !> @param [in]  if_pos        Fix the atom or not     
+  !> @param [in]  istep         actual step of ARTn 
+  !> @param [in]  iout          Channel of output
+  !
+  USE artn_params, ONLY: MOVE, verbose, rcurv, bilan, filout, ismooth, nsmooth  &
+                        ,etot_init, iinit, iperp, ieigen, ilanc, irelax, delr, verbose, iartn, a1 &
+                        ,tau_init, lat, tau_step, delr, converge_property, ninit, iperp_save, ilanc_save &
+                        ,lrelax, linit, lbasin, lperp, llanczos, leigen, lpush_over, lpush_final, lbackward, lrestart,&
+                        VOID, INIT, PERP, EIGN, LANC, RELX, OVER, SMTH, prev_disp, prev_push
+
+  USE UNITS
+  IMPLICIT NONE
+
+  ! -- Arguments
+  INTEGER,  INTENT(IN) :: nat, istep, iout
+  INTEGER,  INTENT(IN) :: if_pos(3,nat)
+  REAL(DP), INTENT(IN) :: force(3,nat),   &
+                          fpara(3,nat),   &
+                          fperp(3,nat)
+  REAL(DP), INTENT(IN) :: etot, lowest_eigval
+
+  ! -- Local Variables
+  CHARACTER(LEN=5)     :: Mstep
+  INTEGER              :: evalf, i, npart
+  REAL(DP)             :: force_tot, fperp_tot, fpara_tot, detot, lowEig, dr, rc2
+  REAL(DP)             :: ctot, cmax
+  REAL(DP), EXTERNAL   :: ddot, dsum
+  INTEGER              :: disp
+  INTEGER              :: ios
+  LOGICAL              :: new_step
+
+  new_step = .false.
+
+
+  ! 
+  ! ... Update iart counter & print
+  !IF( (prev_disp==LANC .AND. ilanc==1) .OR. &
+  !    (prev_disp==INIT .AND. iinit<=ninit)  )THEN
+  !  new_step = .true.
+  !  iartn = iartn + 1
+  !ENDIF
+
+  !IF( (prev_disp == RELX).AND.(mod(irelax,5) == 0) )new_step = .true.
+
+
+  !
+  ! ...Define when to print
+  !IF( (verbose < 2).AND.(.NOT.new_step) )RETURN
+
+  disp = prev_disp
+
+  !
+  ! ...Force processing
+  IF( trim(converge_property) == 'norm' )THEN
+    force_tot = sqrt( dsum( 3*nat, force*if_pos ) )
+    fpara_tot = sqrt( dsum( 3*nat, fpara ) )
+    fperp_tot = sqrt( dsum( 3*nat, fperp ) )
+  ELSE
+    force_tot = MAXVAL( ABS(force*if_pos) )
+    fperp_tot = MAXVAL( ABS(fperp) )
+    fpara_tot = MAXVAL( ABS(fpara) )
+  ENDIF
+  !
+  ! .. Conversion Units
+  force_tot = unconvert_force( force_tot )
+  fperp_tot = unconvert_force( fperp_tot )
+  fpara_tot = unconvert_force( fpara_tot )
+  dEtot     = unconvert_energy(etot - etot_init)
+  lowEig    = unconvert_hessian( lowest_eigval )
+
+
+  !
+  !%! More Complete Output
+  Mstep              = "Mstep"
+  IF( lbasin ) Mstep = 'Bstep'
+  IF( .NOT.lbasin ) Mstep = 'Sstep'
+  IF( lrelax ) Mstep = 'Rstep'
+  !
+  !delr = sum()
+  evalf = istep+1
+  dr    = 0.
+  npart = 0
+  IF( prev_disp==VOID ) THEN
+    !
+    ! ...Initialize Displacement processing
+    IF( .NOT.ALLOCATED(tau_init) ) THEN
+        ALLOCATE( tau_init, source = tau_step )
+    ELSE
+        tau_init = tau_step
+    ENDIF
+  ENDIF
+
+
+  !
+  !IF( disp==INIT .OR. disp==EIGN .OR.   &
+  !    disp==SMTH .OR. disp==RELX   ) THEN
+  !IF( NEW_STEP )THEN
+    !  
+    ! ...Displacement processing
+    call compute_delr( nat, tau_step, tau_init, lat, delr )
+    npart = 0
+    rc2   = 0.1!*0.1  !! Miha: Why square? NS: Why not! 
+    DO i = 1, nat
+      IF( norm2(delr(:,i)) > rc2 ) npart = npart + 1
+    enddo
+    !! routine sum_force is equivalent to implicit: norm2( delr )
+    call sum_force( delr, nat, dr )
+    !
+  !ENDIF
+
+
+  !
+  ! ...Fill bilan variable for the inter report
+  !IF ( disp==INIT .OR. disp==EIGN .OR. disp==SMTH )THEN
+    ctot = dr
+    cmax = real(npart,DP)
+  !ELSE
+  !  ctot = bilan(7)
+  !  cmax = bilan(6)
+  !ENDIF
+  bilan = [ detot, force_tot, fpara_tot, fperp_tot, lowEig, cmax, ctot, real(evalf,DP) ]
+
+
+  !
+  !
+  OPEN( UNIT = iout, FILE = filout, FORM = 'formatted', STATUS = 'unknown', POSITION='append', IOSTAT = ios )
+  SELECT CASE( verbose )
+    !
+    CASE( 0 )
+      WRITE(iout,6) iartn, trim(Mstep)//"/"//MOVE(prev_push), detot, iinit, ieigen, iperp_save, ilanc_save, irelax,  &
+                         force_tot, fperp_tot, fpara_tot, lowEig, dr, npart, evalf, a1
+      6 FORMAT(5x,i4,3x,a,F10.4,x,5(x,i4),5(x,f10.4),2(x,i5),3X,f4.2)
+    !
+    CASE( 1: )
+      WRITE(iout,5) iartn, trim(Mstep)//"/"//MOVE(prev_push), detot, iinit, ieigen, iperp, ilanc, irelax,  &
+                         force_tot, fperp_tot, fpara_tot, lowEig, dr, npart, evalf, lbasin,     &
+                         lpush_over, lrelax, linit, lperp, llanczos, leigen,  lpush_final,      &
+                         lbackward, lrestart , a1
+      5 format(5x,i4,3x,a,F10.4,x,5(x,i4),5(x,f10.4),2(x,i5),3X,10(L2),3X,f4.2)
+    ! 
+  END SELECT
+  CLOSE(iout)
+
+
+  !! What happens here?
+  !IF( disp == INIT .OR. disp == EIGN .OR. &
+  !    disp == SMTH .OR. disp == RELX )THEN
+  !  ilanc_save  = 0
+  !  iperp_save  = 0
+  !ENDIF
+
+
+END SUBROUTINE write_artn_step_report
+
+
+
+
 
 
 

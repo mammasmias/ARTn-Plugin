@@ -42,7 +42,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
        push_over, ran3, a1, old_lanczos_vec, lend, fill_param_step, &
        filin, filout, sadfname, initpfname, eigenfname, restartfname, warning, flag_false,  &
        prefix_min, nmin, prefix_sad, nsaddle, artn_resume, natoms, old_lowest_eigval, &
-       lanczos_always_random, etot_diff_limit, error_message
+       lanczos_always_random, etot_diff_limit, error_message, prev_push, SMTH
   !
   IMPLICIT NONE
 
@@ -191,7 +191,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
 
   !
-  disp =VOID
+  disp = VOID
   !
   ! initial displacement , then switch off linit, and pass to lperp
   !
@@ -218,7 +218,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         !
         ! Do init push, and switch to perp relax for next step
         iinit = iinit + 1
-        disp  = init
+        disp  = INIT
+        prev_push = disp !! save previous push
         !
         ! displacement equal to the push
         displ_vec = push
@@ -287,8 +288,10 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !
      IF( nsmooth > 0 .AND. ismooth <= nsmooth ) THEN
        CALL smooth_interpol( ismooth, nsmooth, nat, force_step, push, eigenvec )
+       prev_push = SMTH !! save previous push
      ELSE 
        push(:,:) = eigenvec(:,:)
+       prev_push = disp !! save previous push
      ENDIF
      !
      ! rescale the eigenvector according to the current force in the parallel direction
@@ -312,6 +315,10 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
           etot_eng, 1.0_DP, iunstruct, struc_format_out, eigenfname )
      !
   END IF
+
+
+
+
   !
   ! The saddle point is reached -> confirmed by check_force_convergence()
   !
@@ -346,6 +353,9 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      ENDIF
      !
   ENDIF
+
+
+
   !
   ! ...If saddle point is reached
   ! This block do only Push to adjacent minima after the saddle point
@@ -417,6 +427,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
      ENDIF
   ENDIF
+
+
 
 
   !
@@ -498,6 +510,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
 
 
+
   !> WHAT FOR THIS BLOCK??? ANTOINE??
   !!  This should be in check_force()
   IF( etot_step - etot_init > etot_diff_limit ) then
@@ -505,6 +518,10 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      call write_fail_report( iunartout, disp, etot_step )
      lconv = .true.
   ENDIF
+
+
+
+
 
   !
   ! check if we should perform the lanczos algorithm
@@ -634,6 +651,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      ENDIF
      ! 
   ENDIF LANCZOS_
+
+
 
   !
   !! --- Finalization Block

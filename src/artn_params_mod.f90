@@ -71,6 +71,9 @@ MODULE artn_params
   INTEGER :: ifound             !> Number of saddle point found
   INTEGER :: isearch            !> Number of saddle point research
   INTEGER :: natoms             !> Number of atoms in the system
+
+  INTEGER :: Prev_Disp          !> Save the previous displacement
+  INTEGER :: Prev_Push          !> Save the previous push
   ! 
   ! optional staf
   !! nperp
@@ -265,6 +268,9 @@ CONTAINS
       ifound            = 0
       isearch           = 0
       inewchance        = 0
+
+      prev_disp         = VOID
+      prev_push         = VOID
       !
       old_lowest_eigval = HUGE(lanczos_disp)
       lowest_eigval     = 0.D0
