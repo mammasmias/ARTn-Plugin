@@ -662,10 +662,11 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   !
   IF( lconv )THEN
     !
-    OPEN ( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'old', POSITION = 'append', IOSTAT = ios )
-    WRITE (iunartout,'(5x, "|> BLOCK FINALIZE..")')
-    WRITE (iunartout,'(5X, "|> number of steps:",x, i0)') istep
-    CLOSE (iunartout)
+    OPEN( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'old', POSITION = 'append', IOSTAT = ios )
+    WRITE( iunartout,'(5x, "|> BLOCK FINALIZE..")')
+    WRITE( *,'(5x, "|> BLOCK FINALIZE..")')
+    WRITE( iunartout,'(5X, "|> number of steps:",x, i0)') istep
+    CLOSE( iunartout )
     !> SCHEMA FINILIZATION
     lend = lconv
     !
@@ -685,8 +686,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     !
     ! ...Force = 0.0
     displ_vec = 0.0_DP
-    !disp = VOID
-    disp = RELX
+    disp = VOID
+    !disp = RELX
     !
     ! ...The search IS FINISHED
     RETURN

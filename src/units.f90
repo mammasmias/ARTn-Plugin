@@ -6,13 +6,14 @@
 
 module units
   !
-  !> @brief UNITS module contains all the tool to reconize the Engine and its units
+  !> @brief 
+  !!   UNITS module contains all the tool to reconize the Engine and its units
   !!   to convert the energy/force/length/time in atomic units
   !!   Atomic Units (au) in plugin-ARTn is the Rydberg-borh-aut
   !
   PRIVATE
 
-  PUBLIC :: DP, PI, AMU_RY, B2A,  make_units,   &
+  PUBLIC :: DP, PI, AMU_RY, Mass, B2A,  make_units,   &
             convert_length, unconvert_length,   &
             convert_force, unconvert_force,     &
             convert_hessian, unconvert_hessian, &
@@ -32,9 +33,9 @@ module units
   REAL(DP), PARAMETER :: HARTREE_SI       = 4.3597447222071E-18_DP ! J
   REAL(DP), PARAMETER :: RYDBERG_SI       = HARTREE_SI/2.0_DP      ! J
   REAL(DP), PARAMETER :: BOHR_RADIUS_SI   = 0.529177210903E-10_DP  ! m
-  REAL(DP), PARAMETER :: AMU_SI           = 1.66053906660E-27_DP  ! Kg
-  REAL(DP), PARAMETER :: C_SI             = 2.99792458E+8_DP    ! m sec^-1
-
+  REAL(DP), PARAMETER :: AMU_SI           = 1.66053906660E-27_DP   ! Kg
+  REAL(DP), PARAMETER :: C_SI             = 2.99792458E+8_DP       ! m sec^-1
+  REAL(DP), PARAMETER :: NA               = 6.022140857E+23        ! mol^-1
 
   REAL(DP), PARAMETER :: RY2EV =  13.605691930242388_DP  !> Ry to eV conversion 
   REAL(DP), PARAMETER :: B2A =  0.529177210903_DP        !> bohr to angstrom conversion
@@ -42,8 +43,8 @@ module units
   REAL(DP), PARAMETER :: ps2aut = 41341.374575751 / 2.
   REAL(DP), PARAMETER :: aut2s = 4.8278E-17_DP           !> atomic units of times to second conversion (Ry atomic unit)
 
-  REAL(DP), PARAMETER :: AMU_AU           = AMU_SI / ELECTRONMASS_SI
-  REAL(DP), PARAMETER :: AMU_RY           = AMU_AU / 2.0_DP
+  REAL(DP), PARAMETER :: AMU_AU           = AMU_SI / ELECTRONMASS_SI  ! Dimensionless Hartree
+  REAL(DP), PARAMETER :: AMU_RY           = AMU_AU / 2.0_DP           ! Dimensionless Rydberg
 
   !REAL(DP), PARAMETER :: AU_SEC           = H_PLANCK_SI/(2.*pi)/HARTREE_SI
   REAL(DP), PARAMETER :: AU_SEC           = H_PLANCK_SI/(2.*pi)/RYDBERG_SI
@@ -60,6 +61,7 @@ module units
   !> Units convertor
   CHARACTER(LEN=256) :: strg_units
   REAL(DP) :: E2au, au2E, L2au, au2L, T2au, au2T, F2au, au2F, H2au, au2H
+  REAL(DP) :: Mass
 
  contains
 
@@ -113,8 +115,13 @@ module units
     au2L = 1.0_DP
     T2au = 1.0_DP
     au2T = 1.0_DP
+    M2au = 1.0_DP
+    au2M = 1.0_DP
+
     F2au = 1.0_DP
     au2F = 1.0_DP
+    H2au = 1.0_DP
+    au2H = 1.0_DP
 
 
     ! ...Select the units as function of engine and mode
@@ -137,9 +144,13 @@ module units
         T2au = 1.
         au2T = 1.
 
+        !! Mass: au(Ry) AMU/2
+        Mass = AMU_RY
+
         !! Force: Ry/au
         F2au = 1. !/ au2E / L2au
         au2F = 1. !/ F2au
+
         !! Hessian
         H2au = 1.0_DP 
         au2H = 1.0_DP 
@@ -167,6 +178,9 @@ module units
             T2au = 1.0_DP / AU_PS
             au2T = AU_PS
 
+            !! Mass: gram/mol
+            Mass = AMU_RY
+
             !! Force
             F2au = E2au / L2au
             au2F = 1.0_DP / F2au
@@ -186,6 +200,8 @@ module units
             !! Length: 1
             L2au = 1.0_DP
             au2L = 1.0_DP
+            !! Mass: 1
+            Mass = 1.0_DP
             !! Time: 1
             T2au = 1.0_DP
             au2T = 1.0_DP
@@ -244,21 +260,24 @@ module units
                   cL//']-----------",2X,"['//cE//'/'//cL//to2//']   ['//cL//']")'
 
     if( verbose )then
+      write(*,*) repeat("-",50)
       write(*,1) " * ARTn::UNITS::E2au::", E2au, "au2E", au2E
       write(*,1) " * ARTn::UNITS::L2au::", L2au, "au2L", au2L
       write(*,1) " * ARTn::UNITS::T2au::", T2au, "au2T", au2T
       write(*,1) " * ARTn::UNITS::F2au::", F2au, "au2F", au2F
       write(*,1) " * ARTn::UNITS::H2au::", H2au, "au2H", au2H
+      write(*,1) " * ARTn::UNITS::Mass::", Mass
+      write(*,*) repeat("-",50)
       1 format(*(x,a,x,g15.5))
     endif
 
 
    contains
     !................................................................................
-    !> @breif Convert an Array of Capital letter to lower case letter
-    !> @param [in]  s1  input string, contain some capital letter
-    !> @return  a string with only lower case
     function lower( s1 )result( s2 )
+      !> @breif Convert an Array of Capital letter to lower case letter
+      !> @param [in]  s1  input string, contain some capital letter
+      !> @return  a string with only lower case
       character(*)       :: s1
       character(len(s1)) :: s2
       character          :: ch
@@ -280,19 +299,19 @@ module units
   !......................................................................................
   ! FORCE
 
-  !> @brief Convert the engine force to a.u.
-  !> param [in] f   force in engine unit
-  !> @return a force in atomic units a.u.
   elemental pure function convert_force( f )result( fau )
+    !> @brief Convert the engine force to a.u.
+    !> @param [in] f   force in engine unit
+    !> @return a force in atomic units a.u.
     real(DP), intent( in ) :: f
     real(DP) :: fau
     fau = f * F2au
   end function
 
-  !> @brief Convert the force in a.u. in engine units
-  !> param [in] f   force in a.u.
-  !> @return a force in engine units
   elemental pure function unconvert_force( fau )result( f )
+    !> @brief Convert the force in a.u. in engine units
+    !> @param [in] fau   force in a.u.
+    !> @return a force in engine units
     real(DP), intent( in ) :: fau
     real(DP) :: f
     f = fau * au2F
@@ -303,19 +322,19 @@ module units
   !......................................................................................
   ! HESSIAN
 
-  !> @brief Convert the engine hessian to a.u.
-  !> param [in] h   hessian in engine unit
-  !> @return a hessain in atomic units a.u.
   elemental pure function convert_hessian( h )result( hau )
+    !> @brief Convert the engine hessian to a.u.
+    !> @param [in] h   hessian in engine unit
+    !> @return a hessain in atomic units a.u.
     real(DP), intent( in ) :: h
     real(DP) :: hau
     hau = h * H2au
   end function
 
-  !> @brief Convert the force in a.u. in engine units
-  !> param [in] f   force in a.u.
-  !> @return a force in engine units
   elemental pure function unconvert_hessian( hau )result( h )
+    !> @brief Convert the force in a.u. in engine units
+    !> @param [in] hau   force in a.u.
+    !> @return a force in engine units
     real(DP), intent( in ) :: hau
     real(DP) :: h
     h = hau * au2H
@@ -326,19 +345,19 @@ module units
   !......................................................................................
   ! LENGTH
 
-  !> @brief Convert the engine length to a.u.
-  !> param [in] p   position in engine unit
-  !> @return a position in a.u.
   elemental pure function convert_length( p )result( pau )
+    !> @brief Convert the engine length to a.u.
+    !> @param [in] p   position in engine unit
+    !> @return a position in a.u.
     real(DP), intent( in ) :: p
     real(DP) :: pau
     pau = p * L2au
   end function convert_length
 
-  !> @brief Convert the a.u. length to engine unit
-  !> param [in] p   position in a.u.
-  !> @return a position in engine units
   elemental pure function unconvert_length( pau )result( p )
+    !> @brief Convert the a.u. length to engine unit
+    !> @param [in] pau   position in a.u.
+    !> @return a position in engine units
     real(DP), intent( in ) :: pau
     real(DP) :: p
     p = pau * au2L
@@ -349,19 +368,19 @@ module units
   !......................................................................................
   ! ENERGY
   
-  !> @brief Convert the engine energy to a.u.
-  !> param [in] e   enegy in engine unit
-  !> @return an energy in a.u.
   elemental pure function convert_energy( e )result( eau )
+    !> @brief Convert the engine energy to a.u.
+    !> @param [in] e   enegy in engine unit
+    !> @return an energy in a.u.
     real(DP), intent( in ) :: e
     real(DP) :: eau
     eau = e * E2au
   end function convert_energy
 
-  !> @brief Convert the a.u. energy to engine unit
-  !> param [in] eau   energy in a.u.
-  !> @return an energy in engine units
   elemental pure function unconvert_energy( eau )result( e )
+    !> @brief Convert the a.u. energy to engine unit
+    !> @param [in] eau   energy in a.u.
+    !> @return an energy in engine units
     real(DP), intent( in ) :: eau
     real(DP) :: e 
     e = eau * au2E
@@ -372,19 +391,19 @@ module units
   !......................................................................................
   ! TIME
 
-  !> @brief Convert the engine time to a.u.
-  !> param [in] t   time in engine unit
-  !> @return a time in a.u.
   elemental pure function convert_time( t )result( aut )
+    !> @brief Convert the engine time to a.u.
+    !> @param [in] t   time in engine unit
+    !> @return a time in a.u.
     real(DP), intent( in ) :: t
     real(DP) :: aut
     aut = t * T2au
   end function convert_time
 
-  !> @brief Convert the a.u. TIME to engine unit
-  !> param [in] aut   time in a.u.
-  !> @return a time in engine units
   elemental pure function unconvert_time( aut )result( t )
+    !> @brief Convert the a.u. TIME to engine unit
+    !> @param [in] aut   time in a.u.
+    !> @return a time in engine units
     real(DP), intent( in ) :: aut
     real(DP) :: t
     t = aut * au2T

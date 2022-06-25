@@ -22,8 +22,12 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
   !> @param [in]    disp	Kind of actual displacement 
   !> @param [in]    displ_vec	Displacement field (unit lemgth/force/hessian ) 
   !
-  USE artn_params, ONLY:  lbasin, iperp, irelax, push, eigenvec, lanczos_disp, MOVE , istep, prev_disp
-  USE UNITS
+  USE artn_params, ONLY:  lbasin, iperp, irelax, push, &
+                          eigenvec, lanczos_disp, MOVE , &
+                          istep, prev_disp
+
+  USE UNITS, Only: DP, convert_time, unconvert_time, &
+                   unconvert_force, mass
   !
   IMPLICIT NONE
   !
@@ -73,7 +77,8 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
      nsteppos = 0
      !
      ! ...Displ_vec should be a Length
-     force(:,:) = displ_vec(:,order(:))*amu_ry/dt**2
+     !force(:,:) = displ_vec(:,order(:))*amu_ry/dt**2
+     force(:,:) = displ_vec(:,order(:))*Mass/dt**2
      !
   CASE( 'perp' )
      !
@@ -117,32 +122,32 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
      ! ... set the velocity and acceleration and alpha of previous step to move correctly
      etot     = 0.D0
      vel(:,:) = 0.D0
-     !dt_curr = dt_init
      dt       = dt0
      alpha    = 0.D0
      nsteppos = 0
      !
      ! ... the step performed should be like this now translate it into the correct force
-     force(:,:) = displ_vec(:,order(:))*lanczos_disp*amu_ry/dt**2
+     !force(:,:) = displ_vec(:,order(:))*lanczos_disp*amu_ry/dt**2
+     force(:,:) = displ_vec(:,order(:))*lanczos_disp*Mass/dt**2
+     !print*, "MOVE MODE:lanc_disp, amu_ry, dt, C",lanczos_disp,amu_ry,dt, lanczos_disp*amu_ry/dt**2 
      !
   CASE( 'eign' )
      !
      etot       = 0.D0
      vel(:,:)   = 0.D0
      alpha      = 0.0_DP
-     !dt_curr   = dt_init
      dt         = dt0
      nsteppos   = 0
-     force(:,:) = displ_vec(:,order(:))*amu_ry/dt**2
+     !force(:,:) = displ_vec(:,order(:))*amu_ry/dt**2
+     force(:,:) = displ_vec(:,order(:))*Mass/dt**2
      !
   CASE( 'relx' )
      !forc_thr = 10D-8    !! QE dependent
      IF( irelax == 1 ) THEN
        alpha    = alpha_init
-       !dt_curr = dt_init
        dt       = dt0
      ENDIF
-     force(:,:) = displ_vec(:,order(:))
+     !force(:,:) = displ_vec(:,order(:))
      !
   CASE default
      ! 
