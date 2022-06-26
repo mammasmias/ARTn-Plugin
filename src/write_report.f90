@@ -7,13 +7,22 @@
 
 !------------------------------------------------------------
 SUBROUTINE write_initial_report(iunartout, filout)
+  !> @brief 
+  !!   Open and write the information of ARTn research in the ouput
+  !!   defined by the channel IUARTNOUT and the file name FILOUT
+  !
+  !> @param[in]  iuartnout    channel of the output
+  !! @param[in]  filout       name of the file
+  ! 
   use artn_params, ONLY: engine_units, ninit, nperp, neigen, nsmooth,  &
                          init_forc_thr, forc_thr, fpara_thr, eigval_thr, &
                          push_step_size, eigen_step_size, lanczos_max_size, lanczos_disp, &
                          push_mode, verbose, push_over, frelax_ene_thr, zseed, &
-                         converge_property, lanczos_eval_conv_thr
+                         converge_property, lanczos_eval_conv_thr, nperp_limitation
   use units, only : unconvert_force, &
                     unconvert_energy, unconvert_hessian, unconvert_length, unit_char
+  implicit none
+
   INTEGER,             INTENT(IN) :: iunartout
   CHARACTER (LEN=255), INTENT(IN) :: filout
   ! -- Local Variables
@@ -43,7 +52,8 @@ SUBROUTINE write_initial_report(iunartout, filout)
   WRITE (iunartout,'(13X,"* Iterators Parameter: ")')
   !WRITE (iunartout,'(15X,"Zseed           = ", I6)') zseed
   WRITE (iunartout,'(15X,"ninit           = ", I6)') ninit
-  WRITE (iunartout,'(15X,"nperp           = ", I6)') nperp
+  !WRITE (iunartout,'(15X,"nperp           = ", I6)') nperp
+  WRITE (iunartout,'(15X,"nperp           =",*(x,I6))') nperp_limitation
   WRITE (iunartout,'(15X,"neigen          = ", I6)') neigen
   WRITE (iunartout,'(15X,"nsmooth         = ", I6)') nsmooth
   WRITE (iunartout,'(13X,"* Threshold Parameter: ")')
