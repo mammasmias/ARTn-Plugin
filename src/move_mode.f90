@@ -24,7 +24,7 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
   !
   USE artn_params, ONLY:  lbasin, iperp, irelax, push, &
                           eigenvec, lanczos_disp, MOVE , &
-                          istep, prev_disp
+                          istep, prev_disp, iunartout,filout
 
   USE UNITS, Only: DP, convert_time, unconvert_time, &
                    unconvert_force, mass
@@ -45,7 +45,7 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
   ! -- Local Variables
   REAL(DP)                                  :: dt0, dt, tmp0, tmp1, dr(3,nat)
   REAL(DP), EXTERNAL                        :: ddot,dnrm2
-  INTEGER                                   :: u0
+  INTEGER                                   :: u0,ios
   !
   ! do things depending on mode of the move
   ! NOTE force units of Ry/a.u. are assumed ... 
@@ -85,6 +85,7 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
      ! ...Displ_vec is fperp
      force(:,:) = displ_vec(:,order(:))
      !
+
      IF( iperp - 1 .eq. 0 ) THEN  !%! Because I increment iperp before to enter in move_mode
         ! for the first step forget previous velocity (prevent P < 0)
         etot     = 0.D0
@@ -92,6 +93,10 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
         alpha    = alpha_init
         dt       = dt0
         nsteppos = 5
+          OPEN( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'unknown', POSITION='append', IOSTAT = ios )
+      WRITE(iunartout,*) 'iperp is ',iperp
+      CLOSE(iunartout)
+
         !
      ELSE
         ! 
@@ -147,7 +152,9 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
        alpha    = alpha_init
        dt       = dt0
      ENDIF
-     !force(:,:) = displ_vec(:,order(:))
+     !
+     ! ... We reaload because it is unconverted at this place
+     force(:,:) = displ_vec(:,order(:))
      !
   CASE default
      ! 

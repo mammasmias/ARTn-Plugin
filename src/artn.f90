@@ -612,10 +612,11 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            IF ( .NOT. lbasin .AND. lowest_eigval > 0.0) THEN
               ! 
               IF (inewchance < nnewchance) THEN
-                 ! Hope by continue pushing along init we find something 
+                 ! ... Continue pushing along init  
                  inewchance = inewchance +1
                  ismooth      = 0
-              ELSE
+              ELSE 
+                 ! ... Stop
                  error_message = 'EIGENVALUE LOST'
                  call write_fail_report( iunartout, disp, lowest_eigval )
                  lconv = .true.
