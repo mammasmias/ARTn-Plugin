@@ -87,6 +87,11 @@ END SUBROUTINE write_initial_report
 
 !------------------------------------------------------------
 SUBROUTINE write_header_report( iunartout )
+  !> @brief 
+  !!   write the header before the run. It contains the system units
+  !
+  !> @param[in]  iunartout    output unit channel 
+  !
   use artn_params, only : verbose, isearch, ifound, filout
   use units, only :  strg_units
   implicit none
@@ -120,7 +125,6 @@ END SUBROUTINE write_header_report
 
 !------------------------------------------------------------
 SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep, nat, iunartout)
-  !
   !> @brief
   !!   a subroutine that writes a report of the current step to the output file  
   !
@@ -389,6 +393,14 @@ END SUBROUTINE write_artn_step_report
 
 !------------------------------------------------------------
 SUBROUTINE write_inter_report( iunartout, pushfactor, de )
+  !> @brief 
+  !!   intermediate report between the saddle convergence and the
+  !!   various minimum relaxation
+  !
+  !> @param[in]  iunartout    output unit channel
+  !! @param[in]  pushfactor   sens of the push over at saddle point
+  !! @param[in]  de(*)        energetic parameters depending on which push over it is
+  !
   use units, only : DP, unconvert_energy, unit_char
   use artn_params, only : artn_resume, istep, bilan,filout
   implicit none
@@ -430,7 +442,8 @@ SUBROUTINE write_inter_report( iunartout, pushfactor, de )
       !WRITE( u,'(/)')
 
     CASE DEFAULT
-      WRITE(*,*) "********* ERROR write_inter_report:: pushfactor", pushfactor, " **************"
+      WRITE( iunartout,'(5x,"********* ERROR write_inter_report:: pushfactor",x,i0," **************")') pushfactor
+      WRITE( *,'(5x,"********* ERROR write_inter_report:: pushfactor",x,i0," **************")') pushfactor
       
 
   END SELECT
@@ -440,6 +453,7 @@ SUBROUTINE write_inter_report( iunartout, pushfactor, de )
      //unit_char('force')//' | EigenVal= ", f12.5,x,"'//unit_char('hessian')//' | npart= ",f4.0,x," | delr= ",f12.5,x,"' &
      //unit_char('length')//' | evalf= ",f5.0,x,"|")'
   Write(iunartout,Cbilan) Bilan
+  write(iunartout,'(5x,*(a))') repeat("-",50)
 
   CLOSE(iunartout)
 
@@ -449,7 +463,14 @@ END SUBROUTINE write_inter_report
 
 !------------------------------------------------------------
 SUBROUTINE write_end_report( iunartout, lsaddle, lpush_final, de )
- 
+  !> @brief
+  !!   Report to finish the search 
+  !
+  !> @param[in]   iunartout      output unit channel
+  !! @param[in]   lsaddle        flag for saddle point convergence
+  !! @param[in]   lpush_final    flag for final push
+  !! @paran[in]   de             energetic parameter
+  !
   use units, only : DP, unconvert_energy, unit_char
   use artn_params, only : artn_resume, istep, bilan,filout
   implicit none
@@ -474,25 +495,26 @@ SUBROUTINE write_end_report( iunartout, lsaddle, lpush_final, de )
         ' | EigenVal= ", f12.5,x,"'//unit_char('hessian')//' | npart= ",f4.0,x," | delr= ",f12.5,x,"'//unit_char('length')// &
         ' | evalf= ",f5.0,x,"|")'
     Write(iunartout,Cbilan) Bilan
+    write(iunartout,'(5x,*(a))') repeat("-",50)
 
 
     IF( lpush_final ) THEN
       WRITE(iunartout,'(5X,"       *** Pushing forward to a minimum  ***      ")')
-      WRITE(iunartout,'(5X, "-------------------------------------------------")')
+      WRITE(iunartout,'(5X,"-------------------------------------------------")')
     ELSE
       WRITE(iunartout,'(5X,"|> No push_final to Minimum :: ARTn search finished "/5x,*(a))') repeat("-",50)
       !WRITE(iunartout,'(5X,"       *** ARTn search finished ***")')
       !WRITE(iunartout,'(5X,"       *** no push_final minimal ***")')
-      WRITE(iunartout,'(5X, "-------------------------------------------------"/)')
+      WRITE(iunartout,'(5X,"-------------------------------------------------"/)')
     ENDIF
 
   else
-    WRITE (iunartout,'(5X, "--------------------------------------------------")')
-    WRITE (iunartout,'(5X, "        *** ARTn saddle search failed  ***        ")')
-    WRITE (iunartout,'(5X, "--------------------------------------------------")')
+    WRITE (iunartout,'(5X,"--------------------------------------------------")')
+    WRITE (iunartout,'(5X,"        *** ARTn saddle search failed  ***        ")')
+    WRITE (iunartout,'(5X,"--------------------------------------------------")')
   endif
 
-  WRITE (iunartout,'(5X, "|> number of steps:",x, i0)') istep
+  WRITE (iunartout,'(5X,"|> number of steps:",x, i0)') istep
   CLOSE(iunartout)
 
 END SUBROUTINE write_end_report
@@ -500,7 +522,13 @@ END SUBROUTINE write_end_report
 
 !------------------------------------------------------------
 SUBROUTINE write_fail_report( iunartout, disp, estep )
-
+  !> @brief 
+  !!   Fail report 
+  !   
+  !> @param[in]  inuartout   output unit channel
+  !! @param[in]  disp        displacement parameters
+  !! @param[in]  estep       Energy of actual step
+  !
   use units, only : DP, unconvert_energy, unit_char
   use artn_params, only : MOVE, ifails, error_message,filout
   implicit none
@@ -515,7 +543,7 @@ SUBROUTINE write_fail_report( iunartout, disp, estep )
   WRITE (iunartout,'(5X, "--------------------------------------------------")')
   WRITE (iunartout,'(5X, "        *** ARTn search failed ( ",i0," ) at ",a," *** ")') ifails, MOVE(DISP)
   WRITE (iunartout,'(5X, "Step Params: Etot = ",f10.4,x,a)') unconvert_energy(estep), unit_char('energy')
-  WRITE (iunartout, '(5X, "Failure message: ",a)') trim(adjustl(error_message))
+  WRITE (iunartout,'(5X, "Failure message: ",a)') trim(adjustl(error_message))
   WRITE (iunartout,'(5X, "--------------------------------------------------"//)')
   CLOSE (iunartout)
 END SUBROUTINE write_fail_report
@@ -523,6 +551,15 @@ END SUBROUTINE write_fail_report
 
 !------------------------------------------------------------
 subroutine compute_delr( nat, pos, old_pos, lat, delr )
+  !> @brief 
+  !!   compute the displacement 
+  !
+  !> @param[in]  nat       number of atoms
+  !! @param[in]  pos       actual position of atoms in 3 dimension
+  !! @param[in]  old_pos   reference atomic position
+  !! @param[in]  lat       box parameters
+  !! @param[out] delr      displacement of each atom
+  !
   use units, only : DP
   implicit none
 
@@ -542,3 +579,7 @@ subroutine compute_delr( nat, pos, old_pos, lat, delr )
   enddo
 
 end subroutine compute_delr
+
+
+
+
