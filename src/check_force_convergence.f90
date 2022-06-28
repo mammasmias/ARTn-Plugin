@@ -110,7 +110,7 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         !
         ! ... Stopping condition is filled, switch to lanczos or to init if we are still close to the minimum
         IF( C1 .OR. C2 )THEN
-          IF( iinit<ninit ) THEN 
+          IF( iinit < ninit ) THEN 
             lperp    = .false.
             linit    = .true.
           ELSE

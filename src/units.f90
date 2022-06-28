@@ -76,6 +76,11 @@ module units
     !!   Important to know:
     !!   Hessian, Force, Position, Time are exchange with Engine
     !!   Energy is converted only for the ouput
+    !!   Mass is needed for the fire integration. Defined in Ry can 
+    !!   change depending the unit used.
+    !
+    !> WARNING: The mass in LJ is 1 but can be defined by the user so
+    !!  we should take care about this
     !
     !> @param [inout]  txt   Engine Keyword 
     !

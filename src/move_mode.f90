@@ -27,7 +27,9 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
                           istep, prev_disp
 
   USE UNITS, Only: DP, convert_time, unconvert_time, &
-                   unconvert_force, mass
+                   unconvert_force, MASS
+
+  use debug, only: report_atom_prop
   !
   IMPLICIT NONE
   !
@@ -44,8 +46,9 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
   ! 
   ! -- Local Variables
   REAL(DP)                                  :: dt0, dt, tmp0, tmp1, dr(3,nat)
-  REAL(DP), EXTERNAL                        :: ddot,dnrm2
+  REAL(DP), EXTERNAL                        :: ddot,dnrm2, dsum
   INTEGER                                   :: u0
+  character(256) :: ctmp
   !
   ! do things depending on mode of the move
   ! NOTE force units of Ry/a.u. are assumed ... 
@@ -77,13 +80,17 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
      nsteppos = 0
      !
      ! ...Displ_vec should be a Length
-     !force(:,:) = displ_vec(:,order(:))*amu_ry/dt**2
      force(:,:) = displ_vec(:,order(:))*Mass/dt**2
      !
   CASE( 'perp' )
      !
      ! ...Displ_vec is fperp
      force(:,:) = displ_vec(:,order(:))
+     tmp0 = dsum( 3*nat, vel )
+     print*, "MOve_MODE:: iperp", iperp, tmp0
+     do u0 = 1, nat
+        print*, u0, vel(:,u0) / tmp0
+     enddo
      !
      IF( iperp - 1 .eq. 0 ) THEN  !%! Because I increment iperp before to enter in move_mode
         ! for the first step forget previous velocity (prevent P < 0)
@@ -104,18 +111,17 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
           tmp0     = ddot( 3*nat, vel(:,:)     , 1, eigenvec(:,order(:)), 1 )
           tmp1     = ddot( 3*nat, eigenvec(:,:), 1, eigenvec(:,:), 1 )  !> Don't need to be ordered
           vel(:,:) = vel(:,:) - tmp0 / tmp1 * eigenvec(:,order(:)) 
+          print*, "Move_MODE:: |Vel|", dsum( 3*nat, vel ), dsum( 3*nat, eigenvec ) 
         ENDIF
+        
+        !write(ctmp,'(i0)') istep
+        !ctmp = adjustl(ctmp)//" Column: Pos - eugenvec - vel - force"
+        !call report_atom_prop( "Atom_step_eigen.xyz", ctmp, nat, eigenvec, vel, force )
         !  
      ENDIF
      !
      !write(u0,10) istep, MOVE(disp), alpha, dt, nsteppos
      !
-     ! ...FIRE integration anticipation
-     !call FIRE2_integration( iperp, nat, unconvert_force(force), vel, unconvert_time(dt), alpha, nsteppos, tmp0 )
-     !if( tmp0 < 1.0e-2 )then
-     !   force = force * (1. + 0.02)
-     !   call FIRE2_integration( iperp, nat, unconvert_force(force), vel, unconvert_time(dt), alpha, nsteppos, tmp0 )
-     !endif
      !
   CASE( 'lanc' )
      !
@@ -127,9 +133,7 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
      nsteppos = 0
      !
      ! ... the step performed should be like this now translate it into the correct force
-     !force(:,:) = displ_vec(:,order(:))*lanczos_disp*amu_ry/dt**2
      force(:,:) = displ_vec(:,order(:))*lanczos_disp*Mass/dt**2
-     !print*, "MOVE MODE:lanc_disp, amu_ry, dt, C",lanczos_disp,amu_ry,dt, lanczos_disp*amu_ry/dt**2 
      !
   CASE( 'eign' )
      !
@@ -138,7 +142,6 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
      alpha      = 0.0_DP
      dt         = dt0
      nsteppos   = 0
-     !force(:,:) = displ_vec(:,order(:))*amu_ry/dt**2
      force(:,:) = displ_vec(:,order(:))*Mass/dt**2
      !
   CASE( 'relx' )
@@ -147,16 +150,25 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
        alpha    = alpha_init
        dt       = dt0
      ENDIF
-     !force(:,:) = displ_vec(:,order(:))
+     force(:,:) = displ_vec(:,order(:)) !! We reload the force because unconverted after
      !
   CASE default
      ! 
      write(*,'(5x,"|> No parameter conversion in move_mode:",x,a)') MOVE(disp)
      !  
   END SELECT
+
   !
   ! ...Unconvert the force & time
   dt_curr = unconvert_time( dt )
   force = unconvert_force( force )
   !
+
+
+  !
 END SUBROUTINE move_mode
+
+
+
+
+

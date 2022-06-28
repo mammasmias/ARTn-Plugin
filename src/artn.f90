@@ -659,7 +659,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
   !
   !! --- Finalization Block
-  !
+  ! 
   IF( lconv )THEN
     !
     ! ...Print in the OUTPUT

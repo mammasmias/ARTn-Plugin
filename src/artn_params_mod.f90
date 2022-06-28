@@ -949,6 +949,76 @@ subroutine info_field( u0, n, v, txt )
 end subroutine info_field
 
 
+
+
+!............................................................
+subroutine write_atom_prop( filename, istep, nat, prop, prop1, prop2 )
+  !> @brief
+  !!   write in file the atomic properties we want in more than the position
+  !
+  !> @param[in] filename    name of the output file
+  !! @param[in] istep
+  !
+  use units,       only : DP, unconvert_length
+  use artn_params, only : tau_step
+  implicit none 
+
+  character(*), intent(in) :: filename
+  integer, intent(in) :: istep, nat
+  real(DP), intent(in) :: prop(3,nat)
+
+  real(DP), intent(in) :: prop1(3,nat), prop2(3,nat)
+  !real(DP), intent(in), optional :: prop1(3,nat), prop2(3,nat)
+
+  integer :: i, u0
+
+  logical, save :: first_time = .true.
+!  logical :: opt1, opt2
+
+!  opt1 = present(prop1)
+!  opt2 = ( present(prop1).AND.present(prop2) )
+
+  if( first_time )then !! Open a new file
+    open( newunit=u0, file=trim(filename), status='replace', action='write', access='append')
+    first_time = .false.
+  else
+    open( newunit=u0, file=trim(filename), status='old', action='write', access='append')
+  endif
+
+  write(u0,*) nat
+  write(u0,'(5x,"STEP: ", i0)') istep
+
+! if( opt2 )then
+    do i = 1,nat
+       write(u0,15) i, tau_step(:,i), prop(:,i), prop1(:,i), prop2(:,i)
+    enddo
+    15 format(i0,x,*(f12.4)) 
+! else if( opt1 )then
+!   do i = 1,nat
+!      write(u0,*) i, tau_step(:,i), prop(:,i), prop1(:,i)
+!   enddo
+! else
+!    do i=1,nat
+!       write(u0,*) i, tau_step(:,i), prop(:,i)
+!    enddo
+!  endif
+  
+  close( u0 )
+
+end subroutine write_atom_prop
+
+
+
+
+
+
+
+
+
+
+
+
+!............................................................
 subroutine compute_curve( iter, n, r, f )
 
   use units, only : DP, convert_length
@@ -980,6 +1050,13 @@ subroutine compute_curve( iter, n, r, f )
 
 
 end subroutine compute_curve
+
+
+
+
+
+
+
 
 
 subroutine fire2_integration( istep, n, f, v, dt, alpha, delaystep, rmax )
