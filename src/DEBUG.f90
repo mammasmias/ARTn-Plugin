@@ -12,6 +12,42 @@ module debug
  contains
 
   !............................................................
+  subroutine info_field( u0, n, v, txt )
+    !> @brief 
+    !!   compute and print some information on the field (arrays rank 2)
+    !!   Can be upgrade for efficiency
+    !
+    !> @param[in] u0    output unit channel
+    !> @param[in] n     size of 2nd rank of array
+    !> @param[in] v     array of rank 2
+    !> @param[in] txt   comment on the array
+    ! 
+    use units, only : DP
+    implicit none
+ 
+    integer, intent(in) :: u0, n
+    real(DP), intent(in) :: v(3,n)
+    character(*), intent(in) :: txt
+ 
+    integer :: i
+    real(DP) :: lmax, vtot
+    real(DP), external :: dsum
+ 
+    write(u0,'("****** INFO FIELD:",x,a)') trim(txt)
+ 
+    lmax = 0.0_DP
+    do i = 1,n
+       lmax = max( lmax, norm2(v(:,i)) )
+    enddo
+    call sum_force( v, n, vtot )
+    vtot = dsum( 3*n, v )
+ 
+    write(u0,'("* total field: ",g12.4," | max norm: ",g12.4/)') vtot, lmax
+
+  end subroutine info_field
+
+
+  !............................................................
   subroutine report_atom_prop( filename, comment, nat, prop, prop1, prop2 )
     !> @brief
     !!   write in file the atomic properties we want in more than the position
