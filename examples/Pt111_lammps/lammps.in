@@ -1,0 +1,41 @@
+
+# ---------- Initialize Simulation --------------------- 
+clear 
+units metal 
+dimension 3 
+boundary p p f 
+atom_style atomic 
+atom_modify map array
+
+
+# ---------- Create Atoms --------------------- 
+read_data   pt111_heptamer.in
+
+# -- freeze the bottom 3 layers
+region rb block 0.0 19.2088 0.0 19.2088 0.0 6.0
+group bottom region rb
+fix 1 bottom setforce 0.0 0.0 0.0
+
+# ---------- Define Interatomic Potential --------------------- 
+pair_style morse/smooth/linear 9.5
+pair_coeff * * 0.7102 1.6047 2.897
+
+
+# ----------- OUTPUT
+dump 10  all custom 1 config.xyz id type x y z fx fy fz
+
+
+
+# ----------- ARTn
+fix             10 all artn
+#timestep 0.0003
+timestep 0.0002
+
+
+# ---------- Run Minimization --------------------- 
+reset_timestep 0 
+
+min_style fire 
+
+
+minimize 0 1e-3 8000 8000 

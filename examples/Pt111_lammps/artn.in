@@ -1,0 +1,35 @@
+&ARTN_PARAMETERS
+  !! Units definition::(eV,Ang,ps)  
+  engine_units='lammps/metal'
+  verbose = 2
+
+  converge_property = 'norm'
+  ninit = 1
+  lpush_final = .true. 
+  nsmooth = 2
+  init_forc_thr = 0.5
+  fpara_thr = 0.2
+  forc_thr = 0.001
+  etot_diff_limit = 42.0
+
+  !! parameters for the push
+  push_mode = 'file'
+  push_guess = 'ini_push.xyz'
+
+  !! define which atoms are to be pushed and the constraints ...
+  
+  !! lanczos parameters
+  lanczos_disp = 1e-4
+  lanczos_max_size = 16
+  lanczos_eval_conv_thr = 1e-2
+
+  eigval_thr = -0.05
+  
+  !! eigenpush parms
+  eigen_step_size = 0.25
+  frelax_ene_thr = -0.0002
+  push_over = 1.0
+
+  struc_format_out = 'xyz'
+  zseed=1234
+/

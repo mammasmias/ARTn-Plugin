@@ -24,7 +24,7 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
   !
   USE artn_params, ONLY:  lbasin, iperp, irelax, push, &
                           eigenvec, lanczos_disp, MOVE , &
-                          istep, prev_disp
+                          istep, prev_disp, iunartout,filout
 
   USE UNITS, Only: DP, convert_time, unconvert_time, &
                    unconvert_force, MASS
@@ -86,11 +86,6 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
      !
      ! ...Displ_vec is fperp
      force(:,:) = displ_vec(:,order(:))
-     tmp0 = dsum( 3*nat, vel )
-     print*, "MOve_MODE:: iperp", iperp, tmp0
-     do u0 = 1, nat
-        print*, u0, vel(:,u0) / tmp0
-     enddo
      !
      IF( iperp - 1 .eq. 0 ) THEN  !%! Because I increment iperp before to enter in move_mode
         ! for the first step forget previous velocity (prevent P < 0)
@@ -99,6 +94,10 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
         alpha    = alpha_init
         dt       = dt0
         nsteppos = 5
+        !OPEN( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'unknown', POSITION='append', IOSTAT = ios )
+        !WRITE(iunartout,*) 'iperp is ',iperp
+        !CLOSE(iunartout)
+
         !
      ELSE
         ! 
@@ -111,9 +110,9 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
           tmp0     = ddot( 3*nat, vel(:,:)     , 1, eigenvec(:,order(:)), 1 )
           tmp1     = ddot( 3*nat, eigenvec(:,:), 1, eigenvec(:,:), 1 )  !> Don't need to be ordered
           vel(:,:) = vel(:,:) - tmp0 / tmp1 * eigenvec(:,order(:)) 
-          print*, "Move_MODE:: |Vel|", dsum( 3*nat, vel ), dsum( 3*nat, eigenvec ) 
         ENDIF
         
+        ! ...Track the various field 
         !write(ctmp,'(i0)') istep
         !ctmp = adjustl(ctmp)//" Column: Pos - eugenvec - vel - force"
         !call report_atom_prop( "Atom_step_eigen.xyz", ctmp, nat, eigenvec, vel, force )
@@ -150,7 +149,9 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
        alpha    = alpha_init
        dt       = dt0
      ENDIF
-     force(:,:) = displ_vec(:,order(:)) !! We reload the force because unconverted after
+     !
+     ! ... We reaload because it is unconverted at this place
+     force(:,:) = displ_vec(:,order(:))
      !
   CASE default
      ! 
