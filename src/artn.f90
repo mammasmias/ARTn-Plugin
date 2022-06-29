@@ -282,10 +282,12 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      ismooth = ismooth + 1
      ieigen  = ieigen  + 1
 
+
      ! ...reset the iterator of previous step
      ilanc   = 0
 
-     !
+
+     ! ...Apply the smooth linear combination to the eigenvector
      IF( nsmooth > 0 .AND. ismooth <= nsmooth ) THEN
        CALL smooth_interpol( ismooth, nsmooth, nat, force_step, push, eigenvec )
        prev_push = SMTH !! save previous push
@@ -293,6 +295,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
        push(:,:) = eigenvec(:,:)
        prev_push = disp !! save previous push
      ENDIF
+
      !
      ! rescale the eigenvector according to the current force in the parallel direction
      ! see Cances_JCP130: some improvements of the ART technique doi:10.1063/1.3088532
@@ -301,6 +304,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      ! ...Recompute the norm of fpara because eigenvec change a bit
      fpara_tot = ddot(3*nat, force_step(:,:), 1, eigenvec(:,:), 1)
      current_step_size = -SIGN(1.0_DP,fpara_tot)*MIN(eigen_step_size,ABS(fpara_tot)/MAX( ABS(lowest_eigval), 0.01_DP ))
+
      !
      ! Put some test on current_step_size
      !
@@ -601,6 +605,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            lbasin = .false.
            ! ...push in eigenvector direction
            leigen = .true.
+           ieigen = 0  !! initialize with the flag
            ! ...Save the eigenvector
            ! ...No yet perp relax
            lperp  = .false.

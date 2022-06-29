@@ -67,15 +67,18 @@ MODULE artn_params
   INTEGER :: nlanc              !> max number of lanczos iterations
   INTEGER :: ismooth            !> number of smoothing steps
   INTEGER :: if_pos_ct          !> counter used to determine the number of fixed coordinates
-  INTEGER :: zseed              !> random number generator seed
   INTEGER :: ifound             !> Number of saddle point found
   INTEGER :: isearch            !> Number of saddle point research
-  INTEGER :: natoms             !> Number of atoms in the system
 
+  ! system parameter
+  INTEGER :: natoms             !> Number of atoms in the system
+  INTEGER :: zseed              !> random number generator seed
+
+  ! output parameter
   INTEGER :: Prev_Disp          !> Save the previous displacement
   INTEGER :: Prev_Push          !> Save the previous push
   ! 
-  ! optional staf
+  ! optional staff
   !! nperp
   INTEGER :: nperp, nperp_step, noperp
   INTEGER :: def_nperp_limitation(5) = [ 4, 8, 12, 16, -1 ]
