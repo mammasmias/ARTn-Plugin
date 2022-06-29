@@ -86,11 +86,7 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
      !
      ! ...Displ_vec is fperp
      force(:,:) = displ_vec(:,order(:))
-     tmp0 = dsum( 3*nat, vel )
-     print*, "MOve_MODE:: iperp", iperp, tmp0
-     do u0 = 1, nat
-        print*, u0, vel(:,u0) / tmp0
-     enddo
+
      !
      IF( iperp - 1 .eq. 0 ) THEN  !%! Because I increment iperp before to enter in move_mode
         ! for the first step forget previous velocity (prevent P < 0)
@@ -111,16 +107,19 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
           tmp0     = ddot( 3*nat, vel(:,:)     , 1, eigenvec(:,order(:)), 1 )
           tmp1     = ddot( 3*nat, eigenvec(:,:), 1, eigenvec(:,:), 1 )  !> Don't need to be ordered
           vel(:,:) = vel(:,:) - tmp0 / tmp1 * eigenvec(:,order(:)) 
-          print*, "Move_MODE:: |Vel|", dsum( 3*nat, vel ), dsum( 3*nat, eigenvec ) 
         ENDIF
-        
-        !write(ctmp,'(i0)') istep
-        !ctmp = adjustl(ctmp)//" Column: Pos - eugenvec - vel - force"
-        !call report_atom_prop( "Atom_step_eigen.xyz", ctmp, nat, eigenvec, vel, force )
         !  
      ENDIF
      !
      !write(u0,10) istep, MOVE(disp), alpha, dt, nsteppos
+
+     ! ...Print info in file Atom_step_eigen.xyz
+     !write(ctmp,'(i0)') istep
+     !ctmp = trim(ctmp)//" - "//trim(MOVE(disp))
+     !ctmp = trim(ctmp)//" Column: Pos - eigenvec - vel - force"
+     !call report_atom_prop( "Atom_step_eigen.xyz", ctmp, nat, order,  eigenvec(:,order(:)), vel/Mass*dt, force/Mass*dt**2 )
+     !call report_atom_prop( istep, disp, nat, "Atom_step_eigen.xyz", &
+     !   " Column: Pos - eigenvec - vel - force", eigenvec, vel, force )
      !
      !
   CASE( 'lanc' )
@@ -143,6 +142,12 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
      dt         = dt0
      nsteppos   = 0
      force(:,:) = displ_vec(:,order(:))*Mass/dt**2
+
+     ! ...Print info in file Atom_step_eigen.xyz
+        !write(ctmp,'(i0)') istep
+        !ctmp = trim(ctmp)//" - "//trim(MOVE(disp))
+        !ctmp = trim(ctmp)//" Column: Pos - eigenvec - vel - force"
+        !call report_atom_prop( "Atom_step_eigen.xyz", ctmp, nat, order, eigenvec(:,order(:)), vel/Mass*dt, force/Mass*dt**2 )
      !
   CASE( 'relx' )
      !forc_thr = 10D-8    !! QE dependent

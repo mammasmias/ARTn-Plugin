@@ -300,7 +300,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !
      ! ...Recompute the norm of fpara because eigenvec change a bit
      fpara_tot = ddot(3*nat, force_step(:,:), 1, eigenvec(:,:), 1)
-     current_step_size = -SIGN(-1.0_DP,fpara_tot)*MIN(eigen_step_size,ABS(fpara_tot)/MAX( ABS(lowest_eigval), 0.01_DP ))
+     current_step_size = -SIGN(1.0_DP,fpara_tot)*MIN(eigen_step_size,ABS(fpara_tot)/MAX( ABS(lowest_eigval), 0.01_DP ))
      !
      ! Put some test on current_step_size
      !

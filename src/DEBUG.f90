@@ -4,12 +4,15 @@ module debug
   !!   This module contains all the routine used to debug the code
 
   !> @Note
+  !!   - info_field
   !!   - report_atom_prop()
   !!   - compute_curve        ...Useless
   !!   - fire2_integration    ...Boh
 
 
  contains
+
+
 
   !............................................................
   subroutine info_field( u0, n, v, txt )
@@ -47,26 +50,30 @@ module debug
   end subroutine info_field
 
 
+
+
   !............................................................
-  subroutine report_atom_prop( filename, comment, nat, prop, prop1, prop2 )
+  subroutine report_atom_prop( filename, comment, nat, order, prop, prop1, prop2 )
+  !subroutine report_atom_prop( filename, comment, nat, prop, prop1, prop2 )
     !> @brief
     !!   write in file the atomic properties we want in more than the position
     !
     !> @param[in] filename    name of the output file
-    !! @param[in] istep
+    !! @param[in] comment     text for the comment line in xyz file
+    !! @param[in] nat     
     !
     use units,       only : DP, unconvert_length
     use artn_params, only : tau_step
     implicit none 
  
     character(*), intent(in) :: filename, comment
-    integer, intent(in) :: nat
+    integer, intent(in) :: nat, order(nat)
     real(DP), intent(in) :: prop(3,nat)
  
     real(DP), intent(in) :: prop1(3,nat), prop2(3,nat)
     !real(DP), intent(in), optional :: prop1(3,nat), prop2(3,nat)
  
-    integer :: i, u0
+    integer :: ii, i, u0
  
     logical, save :: first_time = .true.
     !logical :: opt1, opt2
@@ -75,7 +82,7 @@ module debug
     !opt2 = ( present(prop1).AND.present(prop2) )
   
     if( first_time )then !! Open a new file
-      open( newunit=u0, file=trim(filename), status='replace', action='write', access='append')
+      open( newunit=u0, file=trim(filename), status='replace', action='write')
       first_time = .false.
     else
       open( newunit=u0, file=trim(filename), status='old', action='write', access='append')
@@ -84,9 +91,11 @@ module debug
     write(u0,*) nat
     write(u0,'(5x,"STEP: ", a)') comment
   
+    !! We print in Engine ORDER
+
     !if( opt2 )then
        do i = 1,nat
-          write(u0,15) i, tau_step(:,i), prop(:,i), prop1(:,i), prop2(:,i)
+          write(u0,15) order(i), tau_step(:,order(i)), prop(:,i), prop1(:,i), prop2(:,i)
        enddo
        15 format(i0,x,*(f12.4))
     !else if( opt1 )then
@@ -102,6 +111,8 @@ module debug
     close( u0 )
   
   end subroutine report_atom_prop
+
+
 
 
   !............................................................
