@@ -24,7 +24,7 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
   !
   USE artn_params, ONLY:  lbasin, iperp, irelax, push, &
                           eigenvec, lanczos_disp, MOVE , &
-                          istep, prev_disp
+                          istep, prev_disp, iunartout,filout
 
   USE UNITS, Only: DP, convert_time, unconvert_time, &
                    unconvert_force, MASS
@@ -86,7 +86,6 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
      !
      ! ...Displ_vec is fperp
      force(:,:) = displ_vec(:,order(:))
-
      !
      IF( iperp - 1 .eq. 0 ) THEN  !%! Because I increment iperp before to enter in move_mode
         ! for the first step forget previous velocity (prevent P < 0)
@@ -95,6 +94,7 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
         alpha    = alpha_init
         dt       = dt0
         nsteppos = 5
+
         !
      ELSE
         ! 
@@ -155,7 +155,9 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
        alpha    = alpha_init
        dt       = dt0
      ENDIF
-     force(:,:) = displ_vec(:,order(:)) !! We reload the force because unconverted after
+     !
+     ! ... We reaload because it is unconverted at this place
+     force(:,:) = displ_vec(:,order(:))
      !
   CASE default
      ! 
