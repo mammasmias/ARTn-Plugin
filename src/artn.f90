@@ -395,7 +395,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            lpush_over = .false.
            !
         ELSE  !< It is a PUSH_OVER the saddle point
-           disp =EIGN 
+           disp = OVER 
            CALL PUSH_OVER_PROCEDURE( iover, nat, tau, eigenvec, fpush_factor, order, displ_vec, lconv )
            !
         END IF
@@ -597,7 +597,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         !
         ! check lowest eigenvalue, decide what to do in next step
         !
-        ilanc_save =ilanc
+        ilanc_save = ilanc
         IF ( lowest_eigval < eigval_thr ) THEN
            ! structure is out of the basin (above inflection),
            ! in next step make a push with the eigenvector

@@ -134,7 +134,7 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
      ! ... the step performed should be like this now translate it into the correct force
      force(:,:) = displ_vec(:,order(:))*lanczos_disp*Mass/dt**2
      !
-  CASE( 'eign' )
+  CASE( 'eign', 'over' )
      !
      etot       = 0.D0
      vel(:,:)   = 0.D0

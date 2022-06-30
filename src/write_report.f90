@@ -240,7 +240,7 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
   SELECT CASE( verbose )
     !
     CASE( 0 )
-      WRITE(iunartout,6) iartn, Mstep, MOVE(prev_push), detot, iinit, ieigen, iperp_save, ilanc_save, irelax,  &
+      WRITE(iunartout,6) iartn, Mstep, MOVE(prev_push), detot, iinit, ieigen, iperp, ilanc, irelax,  &
                          force_tot, fperp_tot, fpara_tot, lowEig, dr, npart, evalf, a1
       6 FORMAT(5x,i4,3x,a,x,a,F10.4,x,5(x,i4),5(x,f10.4),2(x,i5),3X,f4.2)
     !
@@ -256,11 +256,12 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
   
 
   !! What happens here?
-  IF( disp == INIT .OR. disp == EIGN .OR. &
-      disp == SMTH .OR. disp == RELX )THEN
-    ilanc_save  = 0
-    iperp_save  = 0
-  ENDIF  
+  !IF( disp == PERP )ilanc_save = 0
+  !IF( disp == INIT .OR. disp == EIGN .OR. &
+  !    disp == SMTH .OR. disp == RELX )THEN
+  !  !ilanc_save  = 0
+  !  iperp_save  = 0
+  !ENDIF  
   !
 END SUBROUTINE write_report
 
@@ -373,7 +374,7 @@ SUBROUTINE write_artn_step_report( etot, force, fperp, fpara, lowest_eigval, if_
       6 FORMAT(5x,i4,3x,a,F10.4,x,5(x,i4),5(x,f10.4),2(x,i5),3X,f4.2)
     !
     CASE( 1: )
-      WRITE(iout,5) iartn, trim(Mstep)//"/"//MOVE(prev_push), detot, iinit, ieigen, iperp, ilanc, irelax,  &
+      WRITE(iout,5) iartn, trim(Mstep)//"/"//MOVE(prev_push), detot, iinit, ieigen, iperp_save, ilanc_save, irelax,  &
                          force_tot, fperp_tot, fpara_tot, lowEig, dr, npart, evalf, lbasin,     &
                          lpush_over, lrelax, linit, lperp, llanczos, leigen,  lpush_final,      &
                          lbackward, lrestart , a1
@@ -381,6 +382,10 @@ SUBROUTINE write_artn_step_report( etot, force, fperp, fpara, lowest_eigval, if_
     ! 
   END SELECT
   CLOSE(iout)
+
+  ! ...Re-Initialize the counter_save
+  iperp_save = 0
+  ilanc_save = 0
 
 
 END SUBROUTINE write_artn_step_report

@@ -51,7 +51,7 @@ SUBROUTINE push_init( nat, tau, order, lat, idum, push_ids, dist_thr, add_const,
 
   !write(iunartout,*)" PUSH_INIT"
   !write(*,*)" PUSH_INIT"
-  write(*,*) "DEBUG initial push", init_step_size
+  !write(*,*) "DEBUG initial push", init_step_size
   !
   !  read the list of pushed atoms
   !

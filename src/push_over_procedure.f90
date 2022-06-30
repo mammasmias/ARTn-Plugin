@@ -3,9 +3,17 @@
 SUBROUTINE Push_Over_Procedure( iover, nat, pos, v0, push_factor, order, displ_vec, lstop )
   !
   !> @Brief
-  !!    Perform the 
-
-
+  !!    Perform the push over the saddle point
+  !
+  !> @param[inout] iover         iterator of push_over
+  !> @param[in]    nat           number of atoms
+  !> @param[out]   pos           atomic position
+  !> @param[in]    v0            Vector defining the push over
+  !> @param[in]    push_factor   +/- 1 depending the sens of the push 
+  !> @param[out]   order         atoms engine order 
+  !> @param[out]   displ_vec     displacement vector
+  !> @param[out]   lstop         flag to stop the computation
+  !
   use units, only : DP
   use artn_params, only : eigen_step_size, push_over, &
                    etot_step, etot_saddle, frelax_ene_thr, tau_saddle, tau_init, &
@@ -32,6 +40,8 @@ SUBROUTINE Push_Over_Procedure( iover, nat, pos, v0, push_factor, order, displ_v
   ! Decrease the push_over factor from 0.8^(iover-1)
   coeff = push_over * 0.8**(iover-1)  !merge( 1.0, 0.8**real(iover-1), iover == 1)
   displ_vec(:,:) = push_factor * v0(:,:) * eigen_step_size * coeff
+
+  print*, "PUSH_OVER:", iover, coeff, etot_step - etot_saddle
 
 
   ! ** WARNING **

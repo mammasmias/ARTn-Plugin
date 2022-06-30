@@ -84,8 +84,6 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         !
         ! ... If fperp is to far from fpara too many perp-relax can relax to an unconnected basin 
         !IF( C1.and. ABS(maxfperp - maxfpara) < maxfpara*1.20 ) C1 = .false.
-        ! ... Idea: check curvature
-        !C4 = ( rcurv > 0.5_DP )
         !
         ! ... Stopping condition is filled, switch to lanczos
         IF( C1 .OR. C2 .OR. C3 ) THEN
@@ -93,6 +91,7 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
            llanczos = .true. 
            leigen   = .false. 
            ilanc    = 0
+           iperp_save = iperp  !! save iperp before the write_report()
            !
            CALL write_restart( restartfname )
            CALL write_ARTn_step_report( etot_step, force, fperp, fpara, lowest_eigval, if_pos, istep, nat,  iunartout )
@@ -119,9 +118,10 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
             linit    = .false.
             ilanc    = 0
           ENDIF    
-           CALL write_restart( restartfname )
-           !!CALL write_ARTn_step_report()
-           CALL write_ARTn_step_report( etot_step, force, fperp, fpara, lowest_eigval, if_pos, istep, nat,  iunartout )
+          iperp_save = iperp  !! save iperp before the write_report()
+          !
+          CALL write_restart( restartfname )
+          CALL write_ARTn_step_report( etot_step, force, fperp, fpara, lowest_eigval, if_pos, istep, nat,  iunartout )
         ENDIF
         !
         ! ...Count if fperp is always to small after each init push
@@ -163,7 +163,7 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
      !
      !... If perp relax is finished: update counter and update number of allowed perp_relax steps
      IF (.NOT. lperp ) THEN
-         iperp_save = iperp  
+         !iperp_save = iperp  
          iperp      = 0
          IF ( .NOT. lbasin) THEN
             nperp_step = nperp_step + 1
@@ -181,7 +181,6 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
      C0 = ( maxforce < forc_thr )
      IF ( C0 ) THEN
         lforc_conv = .true.
-        !!CALL write_ARTn_step_report()
         CALL write_ARTn_step_report( etot_step, force, fperp, fpara, lowest_eigval, if_pos, istep, nat,  iunartout )
         !  
         ! ... Show Stop relax message
