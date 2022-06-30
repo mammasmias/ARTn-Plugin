@@ -62,6 +62,7 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         C0 = ( maxforce < forc_thr )
         IF( C0  ) THEN
            lsaddle_conv = .true.
+           iperp_save = iperp  !! save iperp before the write_report()
            CALL write_restart( restartfname )
            CALL write_ARTn_step_report( etot_step, force, fperp, fpara, lowest_eigval, if_pos, istep, nat,  iunartout )
            RETURN  !! ANTOINE you remove this line !!!
