@@ -156,7 +156,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, if_pos, istep, nat,  iunartout )
 
     ! ...Write the structure
-    CALL write_struct( at, nat, tau, order, elements, ityp, push, etot_eng, 1.0_DP, iunstruct, struc_format_out, initpfname )
+    CALL write_struct( at, nat, tau, order, elements, ityp, push, etot_eng, 0.01_DP, iunstruct, struc_format_out, initpfname )
     artn_resume = '* Start: '//trim(initpfname)
     !
 
@@ -315,8 +315,10 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         lperp = .true.
      ENDIF
      !
-     CALL write_struct( at, nat, tau, order, elements, ityp, force_step, &
-          etot_eng, 1.0_DP, iunstruct, struc_format_out, eigenfname )
+     ! Write the latest eigenvec to a file (eigenvec should be in force position)
+     ! 
+     CALL write_struct( at, nat, tau, order, elements, ityp, eigenvec, &
+          etot_eng, 0.01_DP, iunstruct, struc_format_out, eigenfname )
      !
   END IF
 
