@@ -77,9 +77,9 @@ SUBROUTINE push_init( nat, tau, order, lat, idum, push_ids, dist_thr, add_const,
             "push_mode = 'rad' need a list of atoms: define push_ids keyword ", push_ids )
      ! displace only atoms in list and all atoms within chosen a cutoff radius ...
      DO na=1,nat
-        !IF (ANY(push_ids == na)) THEN
+        IF (ANY(push_ids == na)) THEN
         iglob = order(na)
-        IF( ANY(push_ids == iglob) )THEN
+        !IF( ANY(push_ids == iglob) )THEN
            atom_displaced(na) = 1   !%! Array based on local index i           
            !
            tau0 = tau(:,na)
@@ -100,7 +100,7 @@ SUBROUTINE push_init( nat, tau, order, lat, idum, push_ids, dist_thr, add_const,
   ENDIF
 
   !%! Order the ADD_CONST Array: i = order(i)
-  add_const(:,:) = add_const(:,order(:))
+  !add_const(:,:) = add_const(:,order(:))  !! Now all array are ordered
   !
   !%! Now All the information are converted in local index
   INDEX:DO na=1,nat
