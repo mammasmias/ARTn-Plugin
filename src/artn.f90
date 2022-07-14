@@ -330,7 +330,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !
      ! Write the latest eigenvec to a file (eigenvec should be in force position)
      ! 
-     CALL write_struct( at, nat, tau, order, elements, ityp, eigenvec, &
+     CALL write_struct( at, nat, tau_step, order, elements, ityp, eigenvec, &
           etot_eng, 0.01_DP, iunstruct, struc_format_out, eigenfname )
      !
   END IF
@@ -344,23 +344,28 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   !> SHOULD BE A ROUTINE but not :: it's because we call write_struct() that needs
   !!  arguments exist only in artn()
   IF( lsaddle_conv )THEN
+
      !
      !> store the saddle point energy
      etot_saddle = etot_step
      tau_saddle = tau_step
      eigen_saddle = eigenvec
+
      !
      !lsaddle = .true.
      lpush_over = .true.
      ifound = ifound + 1
+
      !
-     !CALL write_struct( at, nat, tau, order, elements, ityp, force_step, 1.0_DP, iunstruct, struc_format_out, sadfname )
+     ! ...Save the structure
      call make_filename( outfile, prefix_sad, nsaddle )
-     CALL write_struct( at, nat, tau, order, elements, ityp, force_step, &
+     CALL write_struct( at, nat, tau_step, order, elements, ityp, force_step, &
           etot_eng, 1.0_DP, iunstruct, struc_format_out, outfile )
      artn_resume = trim(artn_resume)//" | "//trim(outfile)
-     !
+
+     ! ...write the report
      CALL write_end_report( iunartout, lpush_over, lpush_final, etot_step - etot_init )
+
      !
      !> If the saddle point is lower in energy
      !!  than the initial point: Mode refine
@@ -475,7 +480,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            ! ...It found the adjacent minimum!
            !   We save it and return to the saddle point
            CALL make_filename( outfile, prefix_min, nmin )
-           CALL write_struct( at, nat, tau, order, elements, ityp, force_step, &
+           CALL write_struct( at, nat, tau_step, order, elements, ityp, force_step, &
                 etot_eng, 1.0_DP, iunstruct, struc_format_out, outfile )
            artn_resume = trim(artn_resume)//" | "//trim(outfile)
            !
@@ -507,7 +512,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            !
            ! ...It found the starting minimum! (should be the initial configuration)
            CALL make_filename( outfile, prefix_min, nmin )
-           CALL write_struct( at, nat, tau, order, elements, ityp, &
+           CALL write_struct( at, nat, tau_step, order, elements, ityp, &
                 force_step, etot_eng, 1.0_DP, iunstruct, struc_format_out, outfile )
            ! ...Save the structure name file to print it
            artn_resume = trim(artn_resume)//" | "//trim(outfile)
