@@ -32,7 +32,7 @@ SUBROUTINE start_guess( idum, nat, order, force, push, eigenvec )
   INTEGER               :: mask(nat)
   INTEGER               :: i, j
   !
-  IF( verbose >1 ) OPEN ( UNIT = iunartout, FILE = filout, FORM = 'formatted', ACCESS = 'append', STATUS = 'unknown' )
+  IF( verbose >1 ) OPEN ( UNIT = iunartout, FILE = filout, FORM = 'formatted', ACCESS = 'append', STATUS = 'OLD' )
   !
   SELECT CASE( TRIM(push_mode) )
     !

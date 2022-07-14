@@ -97,23 +97,23 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   !
   ! ... Initialize artn
   IF( istep == 0 )THEN !! ---------------------------------------------------------------------------------------------  ISTEP = 0
+
     !
     ! ...Initialize if it is the first search
     IF( isearch == 0 )CALL setup_artn( nat, iunartin, filin )
+
     !
     ! ...Fill the *_step Arrays and parameters
     CALL Fill_param_step( nat, at, order, tau, etot_eng, force, lerror )
+    !! Something went wrong in filling the arrays!
     IF ( lerror ) THEN
-       ! 
-       ! ... Something went wrong in filling the arrays!
        disp =void 
+       error_message = 'PROBLEM IN FILL_PARAM_STEP()'
        call write_fail_report( iunartout, disp, etot_eng )
        lconv = .true.
-       !
     ENDIF
-    !
-    ! ... Initialize pushvect and eigenvec accoriding to user's choice
-    call start_guess( zseed, nat, order, force, push, eigenvec )
+
+
     !
     IF( lrestart ) THEN
       !
@@ -142,19 +142,35 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
       IF( isearch == 0 ) CALL write_initial_report( iunartout, filout )
       isearch = isearch + 1
 
+      !
       ! ...Initial parameter
       etot_init = etot_step
+      
       !
+      ! ...Initialize pushvect and eigenvec accoriding to user's choice
+      call start_guess( zseed, nat, order, force_step, push, eigenvec )
+
     ENDIF
+
+    !
+    ! ...Start to write the output
+    CALL write_header_report( iunartout )
+
+    !
+    ! ...Initialize pushvect and eigenvec accoriding to user's choice
+    !call start_guess( zseed, nat, order, force_step, push, eigenvec )
+    
     !
     ! ...Split the force field in para/perp field following the push field
     !CALL perpforce( force_step, if_pos, push, fperp, fpara, nat)
     CALL splitfield( 3*nat, force_step, if_pos, push, fperp, fpara )
 
-    ! ...Start to write the output
-    CALL write_header_report( iunartout )
+    !
+    ! ...Write the state of the initial configuration
     CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, if_pos, istep, nat,  iunartout )
 
+
+    !
     ! ...Write the structure
     CALL write_struct( at, nat, tau, order, elements, ityp, push, etot_eng, 0.01_DP, iunstruct, struc_format_out, initpfname )
     artn_resume = '* Start: '//trim(initpfname)
@@ -167,8 +183,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     !
     ! ...Fill the *_step Arrays
     CALL Fill_param_step( nat, at, order, tau, etot_eng, force, lerror )
+    !! somehing went wrong
     IF( lerror ) THEN
-       !! somehing went wrong
        call write_fail_report( iunartout, void, etot_step )
        !! finish current search
        displ_vec = 0.0_DP
@@ -551,7 +567,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         !
         v_in(:,:) = eigenvec(:,:)
         !
-        IF( lanczos_always_random ) THEN
+        IF( lanczos_always_random .OR. .not.allocated(old_lanczos_vec) )THEN
            ! generate random initial vector
            CALL random_number(z)
            z = z *1e8
@@ -600,7 +616,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         ! check lowest eigenvalue, decide what to do in next step
         !
         ilanc_save = ilanc
-        IF ( lowest_eigval < eigval_thr ) THEN
+        IF ( lowest_eigval < eigval_thr     .OR.  &
+             (.NOT.lbasin.AND.lowest_eigval<0.0_DP) )THEN
            ! structure is out of the basin (above inflection),
            ! in next step make a push with the eigenvector
            !! Next Mstep outside the basin

@@ -118,7 +118,7 @@ SUBROUTINE write_header_report( iunartout )
 
   ! -- Units
   WRITE( iunartout, strg_units )
-  CLOSE (iunartout)
+  CLOSE( iunartout )
 END SUBROUTINE write_header_report
 
 
