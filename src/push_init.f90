@@ -65,7 +65,8 @@ SUBROUTINE push_init( nat, tau, order, lat, idum, push_ids, dist_thr, add_const,
      ! displace only atoms in list 
      DO na=1,nat
         iglob = order(na)
-        IF( ANY(push_ids == iglob) )THEN
+        !IF( ANY(push_ids == iglob) )THEN
+        IF( ANY(push_ids == na) )THEN
            atom_displaced(na) = 1
         ENDIF
      ENDDO
@@ -107,6 +108,7 @@ SUBROUTINE push_init( nat, tau, order, lat, idum, push_ids, dist_thr, add_const,
         RDM:DO
            push(:,na) = (/0.5_DP - ran3(idum),0.5_DP - ran3(idum),0.5_DP - ran3(idum)/)
            dr2 = push(1,na)**2 + push(2,na)**2 + push(3,na)**2
+           !print*, "PUSH_INIT::DRAW", na, push(:,na)
 
            ! check if the atom is constrained
            IF(ANY(ABS(add_const(:,na)) > 0.D0)) THEN
@@ -114,7 +116,8 @@ SUBROUTINE push_init( nat, tau, order, lat, idum, push_ids, dist_thr, add_const,
               !CALL displacement_validation(na,add_const(:,na),push(:,na),lvalid )
               CALL displacement_validation( add_const(:,na), push(:,na), lvalid )
               IF( .not. lvalid )THEN; CYCLE RDM      ! draw another random vector
-              ELSE;                   CYCLE INDEX    ! go to the next atom index
+              !ELSE;                   CYCLE INDEX    ! go to the next atom index
+              ELSEIF( dr2 < 0.25_DP )THEN; CYCLE INDEX    ! go to the next atom index
               ENDIF
            ENDIF
            IF ( dr2 < 0.25_DP ) EXIT
@@ -133,8 +136,14 @@ SUBROUTINE push_init( nat, tau, order, lat, idum, push_ids, dist_thr, add_const,
   enddo
   push(:,:) = push(:,:)/ vmax
   ! scale initial push vector according to step size (ORDERED) 
-  push(:,order(:)) = init_step_size*push(:,:)
+  !push(:,order(:)) = init_step_size*push(:,:)
+  push = init_step_size*push
 
 
 
 END SUBROUTINE push_init
+
+
+
+
+

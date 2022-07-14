@@ -153,28 +153,22 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     ENDIF
 
     !
-    ! ...Start to write the output
-    CALL write_header_report( iunartout )
-
-    !
-    ! ...Initialize pushvect and eigenvec accoriding to user's choice
-    !call start_guess( zseed, nat, order, force_step, push, eigenvec )
-    
-    !
     ! ...Split the force field in para/perp field following the push field
     !CALL perpforce( force_step, if_pos, push, fperp, fpara, nat)
     CALL splitfield( 3*nat, force_step, if_pos, push, fperp, fpara )
 
     !
+    ! ...Start to write the output
+    CALL write_header_report( iunartout )
+
+    !
     ! ...Write the state of the initial configuration
     CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, if_pos, istep, nat,  iunartout )
 
-
     !
     ! ...Write the structure
-    CALL write_struct( at, nat, tau, order, elements, ityp, push, etot_eng, 0.01_DP, iunstruct, struc_format_out, initpfname )
+    CALL write_struct( at, nat, tau_step, order, elements, ityp, push, etot_eng, 0.01_DP, iunstruct, struc_format_out, initpfname )
     artn_resume = '* Start: '//trim(initpfname)
-    !
 
 
 
@@ -203,7 +197,10 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   ENDIF
 
 
-
+  !do i = 1, 10
+  !   print*, "ARTN()::", i, order(i), tau_step(:,i), push(:,i) 
+  !enddo
+  !STOP "ARTN():: STEP == 0"
 
 
   !
@@ -567,7 +564,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         !
         v_in(:,:) = eigenvec(:,:)
         !
-        IF( lanczos_always_random .OR. .not.allocated(old_lanczos_vec) )THEN
+        IF( lanczos_always_random )THEN
            ! generate random initial vector
            CALL random_number(z)
            z = z *1e8
@@ -617,7 +614,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         !
         ilanc_save = ilanc
         IF ( lowest_eigval < eigval_thr     .OR.  &
-             (.NOT.lbasin.AND.lowest_eigval<0.0_DP) )THEN
+             (.NOT.lbasin.AND.lowest_eigval < 0.0_DP) )THEN
            ! structure is out of the basin (above inflection),
            ! in next step make a push with the eigenvector
            !! Next Mstep outside the basin

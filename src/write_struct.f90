@@ -185,7 +185,8 @@ SUBROUTINE write_xyz( at, nat, tau, order, atm, ityp, f, ounit, ener )
      iloc = order(na)
      !WRITE( ounit, fmt='(a3,3x,6f15.9)', IOSTAT=ios ) atm(ityp(iloc)), unconvert_length( tau(:,iloc) ), unconvert_force( f(:,iloc) )
      !WRITE( ounit, fmt=10, IOSTAT=ios ) iloc, ityp(na), unconvert_length( tau(:,iloc) ), unconvert_force( f(:,iloc) )
-     WRITE( ounit, fmt=10, IOSTAT=ios ) ityp(na), tau(:,iloc) , unconvert_force( f(:,iloc) ), iloc
+     !WRITE( ounit, fmt=10, IOSTAT=ios ) ityp(na), tau(:,iloc) , unconvert_force( f(:,iloc) ), iloc
+     WRITE( ounit, fmt=10, IOSTAT=ios ) ityp(na), tau(:,na) , unconvert_force( f(:,na) ), na
      10 format(i2,3x,6f15.9,x,i0)
   ENDDO
 

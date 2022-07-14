@@ -81,7 +81,7 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         C1 = ( maxfperp < fperp_thr )          ! check on the fperp field
         C2 = ( nperp > 0.AND.iperp >= nperp )  ! check on the perp-relax iteration
         C3 = ( MAXfperp < MAXfpara )           ! check wheter fperp is lower than fpara
-        IF( C1 .and. iperp == 0 ) C1 = .false. ! Force to do at least one prep-relax. AJ Why?
+        IF( C3 .and. iperp == 0 ) C1 = .false. ! Force to do at least one prep-relax. AJ Why?
         !
         ! ... If fperp is to far from fpara too many perp-relax can relax to an unconnected basin 
         !IF( C1.and. ABS(maxfperp - maxfpara) < maxfpara*1.20 ) C1 = .false.
@@ -151,7 +151,7 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
             "|> Stop perp relax because fperp < fpara     :",&
             unconvert_force( maxfperp ),"<", unconvert_force( maxfpara ), TRIM(converge_property)
         !
-        IF ( C1 .AND. iperp == 0) WRITE(iunartout,'(5x,a46,x,f10.4,x,a1,x,f10.4,a20)') &
+        IF ( C3 .AND. iperp == 0) WRITE(iunartout,'(5x,a46,x,f10.4,x,a1,x,f10.4,a20)') &
             "|> No perp relax because fperp < fpara       :",&
             unconvert_force( maxfperp ),"<", unconvert_force( maxfpara ), TRIM(converge_property)
         !
