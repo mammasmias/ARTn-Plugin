@@ -401,7 +401,9 @@ void FixARTn::min_setup( int vflag ) {
 
 void FixARTn::min_post_force( int /*vflag*/ ){
 
-  // call pARTn library...
+  /*******************************
+   *   Call pARTn library...
+   *******************************/
 
 
   // ...Link the minimizer
@@ -437,7 +439,8 @@ void FixARTn::min_post_force( int /*vflag*/ ){
   // ------------------------------------------------------------------- RESIZE SYSTEM SIZE
 
 
-  // ...Resize total system 
+  // ...Resize total system: 
+  //    The Total Number of Atom Change 
 
   if( natoms != ntot )lresize = 1;
   if( lresize ){
@@ -457,9 +460,15 @@ void FixARTn::min_post_force( int /*vflag*/ ){
 
 
 
+
   // ...Resize local system
+  //    The atoms distribution between proc changes
 
   // verification of local size
+  // LRESIZE = logical(int) if number of local atom has been changed 
+  // -> Allgather it 
+  // -> sum them in ntot 
+  // -> if ntot > 0 => resize
   lresize = ( nloc[me] != oldnloc );
   for( int ipc(0); ipc < nproc; ipc++ )nlresize[ me ] = 0;
   MPI_Allgather( &lresize, 1, MPI_INT, nlresize, 1, MPI_INT, world );
@@ -470,9 +479,8 @@ void FixARTn::min_post_force( int /*vflag*/ ){
   // ...One of the local size change
   if( ntot > 0 ){
 
-
     // ...Array of old local size
-    int *oldloc;
+    int *oldloc;   
     memory->create( oldloc, nproc, "fix/artn:oldloc" );
     MPI_Allgather( &oldnloc, 1, MPI_INT, oldloc, 1, MPI_INT, world );
 
@@ -507,7 +515,7 @@ void FixARTn::min_post_force( int /*vflag*/ ){
       istart[ ipc ] = ( ipc > 0 ) ? istart[ ipc - 1 ] + oldloc[ ipc - 1 ] : 0 ;
 
     MPI_Gatherv( order, oldnloc, MPI_INT, 
-                    order_tot, oldloc, istart, MPI_INT, 0, world );
+                 order_tot, oldloc, istart, MPI_INT, 0, world );
 
 
   
@@ -703,7 +711,12 @@ void FixARTn::min_post_force( int /*vflag*/ ){
   memory->create( typ_tot, natoms, "fix/artn:typ_tot");
   Collect_Arrays( nloc, tau, vel, f, nat, xtot, vtot, ftot, order_tot, typ_tot );
 
-  //for( int i = 0; i < natoms-1; i++) cout<< i << " Order " << order_tot[i] <<endl;
+  // Print position to see
+  //if( !me )
+  // //for( int i = 0; i < natoms-1; i++) 
+  //  for( int i = 0; i < 10; i++)
+  //    //printf("fix_artn:: %d order %d : %f %f %f \n", i, order_tot[i], xtot[i][0], xtot[i][1], xtot[i][2]);
+  //    printf("fix_artn:: %d order %d : %f %f %f \n", i, order_tot[i], xtot[order_tot[i]][0], xtot[order_tot[i]][1], xtot[order_tot[i]][2]);
 
 
   // ...ARTn
@@ -719,6 +732,7 @@ void FixARTn::min_post_force( int /*vflag*/ ){
 
   // ...Spread the ARTn_Step (DISP) & Convergence
   int iconv = int(lconv);
+  //printf("[%d] CONV ? %d \n",me, iconv);
   MPI_Bcast( &iconv, 1, MPI_INT, 0, world );
   MPI_Bcast( &disp, 1, MPI_INT, 0, world );
 
@@ -738,8 +752,8 @@ void FixARTn::min_post_force( int /*vflag*/ ){
     //clean_artn_();
 
     // ...Reset the energy force tolerence
-    update-> etol = 1.; // etol;
-    update-> ftol = 1.; //ftol;
+    update-> etol = 10.; // etol;
+    update-> ftol = 10.; //ftol;
 
     // ...Spread the force 
     Spread_Arrays( nloc, xtot, vtot, ftot, nat, tau, vel, f );
