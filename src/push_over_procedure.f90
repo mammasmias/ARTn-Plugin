@@ -41,7 +41,7 @@ SUBROUTINE Push_Over_Procedure( iover, nat, pos, v0, push_factor, order, displ_v
   coeff = push_over * 0.8**(iover-1)  !merge( 1.0, 0.8**real(iover-1), iover == 1)
   displ_vec(:,:) = push_factor * v0(:,:) * eigen_step_size * coeff
 
-  print*, "PUSH_OVER:", iover, coeff, etot_step - etot_saddle
+  !print*, "PUSH_OVER:", iover, coeff, etot_step - etot_saddle
 
 
   ! ** WARNING **
