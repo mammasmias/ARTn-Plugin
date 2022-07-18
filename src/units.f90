@@ -165,7 +165,7 @@ Module units
     character(*), intent( inout ) :: txt
     ! -- Local variables
     character(:), allocatable :: engine, mode, words(:)
-    integer :: i, n 
+    integer :: n 
 
     logical :: verbose
     verbose = .true.
@@ -175,8 +175,8 @@ Module units
     ! ...Extract the Keyword from the engine_units
     engine = ""; mode = ""
     n = parser( trim(txt), "/",  words )
-    if( n >= 1 )engine = trim(words(1))
-    if( n > 1 )mode = trim(words(2))
+    if( n >= 1 )engine = lower( trim(words(1)) )
+    if( n > 1 )mode = lower( trim(words(2)) )
     
 
 !   n = LEN_TRIM(txt)

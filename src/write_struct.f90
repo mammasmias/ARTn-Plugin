@@ -98,7 +98,6 @@ SUBROUTINE write_xsf( lat, nat, tau, order, atm, ityp, force, ounit )
   REAL(DP),           INTENT(IN) :: force(3,nat)   !> forces
   ! -- LOCAL VARIABLES
   INTEGER :: na, iloc
-  REAL(DP) :: at_angs(3,3)
   character(:), allocatable :: words(:)
   logical :: lqe
 

@@ -137,11 +137,11 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
   !> @param [in]  istep		actual step of ARTn 
   !> @param [in]  iunartout	Channel of output
   !
-  USE artn_params, ONLY: MOVE, verbose, rcurv, bilan, filout, ismooth, nsmooth  &
-                        ,etot_init, iinit, iperp, ieigen, ilanc, irelax, delr, verbose, iartn, a1 &
-                        ,tau_init, lat, tau_step, delr, converge_property, ninit, iperp_save, ilanc_save &
+  USE artn_params, ONLY: MOVE, verbose, filout, nsmooth  &
+                        ,etot_init, iinit, iperp, ieigen, ilanc, irelax, verbose, iartn, a1 &
+                        ,tau_init, tau_step, converge_property, ninit  &
                         ,lrelax, linit, lbasin, lperp, llanczos, leigen, lpush_over, lpush_final, lbackward, lrestart,&
-                        VOID, INIT, PERP, EIGN, LANC, RELX, OVER, SMTH, prev_disp, prev_push
+                        VOID, INIT, LANC, RELX, prev_disp, prev_push
 
   USE UNITS
   IMPLICIT NONE
@@ -156,9 +156,9 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
 
   ! -- Local Variables
   CHARACTER(LEN=5)     :: Mstep
-  INTEGER              :: evalf, i, npart
-  REAL(DP)             :: force_tot, fperp_tot, fpara_tot, detot, lowEig, dr, rc2
-  REAL(DP)             :: ctot, cmax
+  INTEGER              :: evalf, npart
+  REAL(DP)             :: force_tot, fperp_tot, fpara_tot, detot, lowEig, dr
+  !REAL(DP)             :: ctot, cmax
   REAL(DP), EXTERNAL   :: ddot, dsum
   INTEGER              :: disp
   INTEGER              :: ios
@@ -199,6 +199,8 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
   ! ...Define when to print
   IF( verbose < 2.AND.(.NOT.print_it) )RETURN
 
+  ! ...Load the previous displacement step to be coherent 
+  !     with the informtion gave in report
   disp = prev_disp
 
   !
@@ -239,7 +241,7 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
   OPEN( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'unknown', POSITION='append', IOSTAT = ios )
   SELECT CASE( verbose )
     !
-    CASE( 0 )
+    CASE( 0 ) !! actually does not happen for write_report()
       WRITE(iunartout,6) iartn, Mstep, MOVE(prev_push), detot, iinit, ieigen, iperp, ilanc, irelax,  &
                          force_tot, fperp_tot, fpara_tot, lowEig, dr, npart, evalf, a1
       6 FORMAT(5x,i4,3x,a,x,a,F10.4,x,5(x,i4),5(x,f10.4),2(x,i5),3X,f4.2)
@@ -254,15 +256,6 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
   END SELECT
   CLOSE(iunartout)
   
-
-  !! What happens here?
-  !IF( disp == PERP )ilanc_save = 0
-  !IF( disp == INIT .OR. disp == EIGN .OR. &
-  !    disp == SMTH .OR. disp == RELX )THEN
-  !  !ilanc_save  = 0
-  !  iperp_save  = 0
-  !ENDIF  
-  !
 END SUBROUTINE write_report
 
 
@@ -283,11 +276,11 @@ SUBROUTINE write_artn_step_report( etot, force, fperp, fpara, lowest_eigval, if_
   !> @param [in]  istep         actual step of ARTn 
   !> @param [in]  iout          Channel of output
   !
-  USE artn_params, ONLY: MOVE, verbose, rcurv, bilan, filout, ismooth, nsmooth  &
-                        ,etot_init, iinit, iperp, ieigen, ilanc, irelax, delr, verbose, iartn, a1 &
+  USE artn_params, ONLY: MOVE, verbose, bilan, filout, nsmooth  &
+                        ,etot_init, iinit, ieigen, irelax, delr, verbose, iartn, a1 &
                         ,tau_init, lat, tau_step, delr, converge_property, ninit, iperp_save, ilanc_save &
                         ,lrelax, linit, lbasin, lperp, llanczos, leigen, lpush_over, lpush_final, lbackward, lrestart,&
-                        VOID, INIT, PERP, EIGN, LANC, RELX, OVER, SMTH, prev_disp, prev_push
+                        prev_push
 
   USE UNITS
   IMPLICIT NONE
@@ -304,15 +297,15 @@ SUBROUTINE write_artn_step_report( etot, force, fperp, fpara, lowest_eigval, if_
   CHARACTER(LEN=5)     :: Mstep
   INTEGER              :: evalf, i, npart
   REAL(DP)             :: force_tot, fperp_tot, fpara_tot, detot, lowEig, dr, rc2
-  REAL(DP)             :: ctot, cmax
+  !REAL(DP)             :: ctot, cmax
   REAL(DP), EXTERNAL   :: ddot, dsum
-  INTEGER              :: disp
+  !INTEGER              :: disp
   INTEGER              :: ios
   LOGICAL              :: new_step
 
   new_step = .false.
 
-  disp = prev_disp
+  !disp = prev_disp
 
   !
   ! ...Force processing
@@ -346,6 +339,7 @@ SUBROUTINE write_artn_step_report( etot, force, fperp, fpara, lowest_eigval, if_
   dr    = 0.
   npart = 0
 
+
   !  
   ! ...Displacement processing
   call compute_delr( nat, tau_step, tau_init, lat, delr )
@@ -356,9 +350,9 @@ SUBROUTINE write_artn_step_report( etot, force, fperp, fpara, lowest_eigval, if_
   enddo
   !! routine sum_force is equivalent to implicit: norm2( delr )
   call sum_force( delr, nat, dr )
+
+
   !
-
-
   ! ...Save the information for the resume of the search
   bilan = [ detot, force_tot, fpara_tot, fperp_tot, lowEig, real(npart,DP), dr, real(evalf,DP) ]
 
@@ -383,6 +377,7 @@ SUBROUTINE write_artn_step_report( etot, force, fperp, fpara, lowest_eigval, if_
   END SELECT
   CLOSE(iout)
 
+  !
   ! ...Re-Initialize the counter_save
   iperp_save = 0
   ilanc_save = 0

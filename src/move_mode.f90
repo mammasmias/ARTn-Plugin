@@ -24,7 +24,7 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
   !
   USE artn_params, ONLY:  lbasin, iperp, irelax, push, &
                           eigenvec, lanczos_disp, MOVE , &
-                          istep, prev_disp, iunartout,filout
+                          prev_disp, iunartout, filout
 
   USE UNITS, Only: DP, convert_time, unconvert_time, &
                    unconvert_force, MASS
@@ -45,10 +45,10 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
   INTEGER,                    INTENT(IN)    :: disp
   ! 
   ! -- Local Variables
-  REAL(DP)                                  :: dt0, dt, tmp0, tmp1, dr(3,nat)
+  REAL(DP)                                  :: dt0, dt, tmp0, tmp1 !, dr(3,nat)
   REAL(DP), EXTERNAL                        :: ddot,dnrm2, dsum
   INTEGER                                   :: u0
-  character(256) :: ctmp
+  !character(256) :: ctmp
   !
   ! do things depending on mode of the move
   ! NOTE force units of Ry/a.u. are assumed ... 

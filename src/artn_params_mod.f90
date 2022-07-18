@@ -75,8 +75,8 @@ MODULE artn_params
   INTEGER :: zseed              !> random number generator seed
 
   ! output parameter
-  INTEGER :: Prev_Disp          !> Save the previous displacement
-  INTEGER :: Prev_Push          !> Save the previous push
+  INTEGER :: prev_disp          !> Save the previous displacement
+  INTEGER :: prev_push          !> Save the previous push
   ! 
   ! optional staff
   !! nperp

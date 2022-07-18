@@ -38,7 +38,7 @@ SUBROUTINE lanczos( nat, v_in, pushdir, force, &
   REAL(DP), DIMENSION(3,nat), INTENT(OUT)   :: displ_vec
   !
   ! -- LOCAL VARIABLES
-  INTEGER                                   :: i, j, io, id_min
+  INTEGER                                   :: i, j, id_min
   REAL(DP), ALLOCATABLE                     :: v1(:,:), q(:,:), eigvals(:)
   REAL(DP)                                  :: dir
   REAL(DP), EXTERNAL                        :: ran3,dnrm2,ddot

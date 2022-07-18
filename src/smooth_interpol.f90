@@ -17,7 +17,7 @@ SUBROUTINE smooth_interpol( ismooth, nsmooth, nat, v0, v1, v2 )
   REAL(DP), INTENT( INOUT ) :: v2(3,nat) ! Orientation field 2
   !
   ! Local variables
-  REAL(DP)                  :: smoothing_factor, f_orient, vtmp(3,nat)
+  REAL(DP)                  :: smoothing_factor, f_orient
   REAL(DP), external        :: ddot
   INTEGER                   :: ios
   !
