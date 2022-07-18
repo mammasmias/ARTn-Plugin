@@ -1,0 +1,75 @@
+
+# Find minimum energy fcc configuration
+# Mark Tschopp, 2010
+
+
+# ---------- Loop over all the files ---------------
+variable iter loop 0 199 pad
+label bench
+print ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> MINIMIZE ITER: ${iter} \n"
+
+
+# ---------- Initialize Simulation --------------------- 
+clear 
+#units metal 
+units lj
+dimension 3 
+boundary f f f 
+atom_style atomic 
+atom_modify map array
+
+
+ 
+# ---------- Define Settings --------------------- 
+compute eng all pe/atom 
+compute eatoms all reduce sum c_eng 
+
+
+
+
+# ---------- Create Atoms ------------------------ 
+read_data   coords-lmp/0${iter}.lmp
+
+mass 1 1.00
+
+
+# ---------- Define Interatomic Potential --------------------- 
+pair_style lj/cut 3.5
+pair_coeff 1 1 1.0 1.0 3.5
+
+neighbor 2.0 bin 
+neigh_modify delay 10 check yes 
+
+
+# ----------- OUTPUT
+dump	  conf  all custom 1 config.xyz id type x y z fx fy fz
+
+thermo_style custom step pe fnorm lx ly lz press pxx pyy pzz c_eatoms 
+#thermo_style    custom step temp press pe ke etotal c_q_Al c_q_Oxy lx ly lz vol
+thermo 100
+
+# ----------- Run Minimization --------------------- 
+reset_timestep 0 
+min_style fire 
+
+# ----------- ARTn
+fix             10 all artn alpha0 0.2 alphashrink 0.99 tmax 10 dtshrink 0.5 dtgrow 1.1 delaystep 5 dmax 0.15
+#timestep 0.0003   # unit metal
+timestep 0.015     # unit LJ
+
+
+
+#min_modify: dma or delaystep or dtgrow or dtshrink or alpha0 or alphahrink or...
+#            tmax or tmin or halfstepback or initialdelay or vdfmax or line or...
+#            norm or discrete_factor or integrator or tmax  
+#            alpha_damp: does not work anymore
+
+minimize 1e-3 1e-3 5000 10000 
+
+
+next iter
+jump SELF bench
+
+
+print "All done!" 
+

@@ -1,0 +1,49 @@
+&ARTN_PARAMETERS
+  !! Units definition::(eV,Ang,ps)  
+  !engine_units='lammps/metal'
+  engine_units='lammps/lj'
+  verbose = 0
+
+  !zseed = 18837637
+
+
+  !lrestart = .true.
+  ninit = 0
+  lpush_final = .false. 
+  nsmooth = 0
+
+  lnperp_limitation = .true.
+  nperp_limitation = 10, 20, 30, 40, 50
+  !nperp_limitation = 12, 16, 24, 30
+  !nperp = 8
+
+  converge_property = "NORM"
+  init_forc_thr = 0.05
+  forc_thr = 1.0e-3
+  fpara_thr = 0.01
+
+  !! parameters for the push
+  push_step_size = 0.05
+  !push_mode = 'list'
+  push_mode = 'all'
+
+  !! define which atoms are to be pushed and the constraints ...
+  !push_ids = 4
+  !add_const(:,4) = 1.0, 1.0, 1.0, 180.0 
+  
+  !! lanczos parameters
+  lanczos_disp = 2.5e-6
+  !lanczos_disp = 0.1
+  lanczos_max_size = 30
+  !eigval_thr = -1.0
+  !lanczos_always_random = .true.
+  
+  !! eigenpush parms
+  eigen_step_size = 0.05
+  !eigen_step_size = 0.3
+  !frelax_ene_thr = -0.0005
+
+  push_over = 0.8
+
+  struc_format_out = 'xyz'
+/
