@@ -7,6 +7,20 @@
 !> @brief
 !!   This module contains all global variables that are used in the ARTn plugin
 !
+!> @note 
+!!   List of routine in-module:
+!!   - setup_artn()
+!!   - Fill_step_params()
+!!   - write_reastart()
+!!   - read_restart()
+!!   - warning_*
+!!   - flag_flase()
+!!   - ran3()
+!!   - dot_field()
+!!   List of routine out-module:
+!!   - get_iperp(), get_perp(), get_relx()
+!!   - make_filename()
+!
 MODULE artn_params
   !
   USE units, ONLY : DP
@@ -184,14 +198,26 @@ MODULE artn_params
        converge_property, lanczos_eval_conv_thr, push_guess, eigenvec_guess,  &
        nperp_limitation, lnperp_limitation, lanczos_min_size, lanczos_always_random, etot_diff_limit
   ! 
-  ! Curvature
+  ! Curvature (DEBUG thing)
   REAL(DP), allocatable :: f0(:)
   REAL(DP) :: rcurv
+
   !
   INTERFACE warning
     module procedure :: warning_nothing, warning_int, warning_real, warning_char
   END INTERFACE 
-  !
+
+  !> List of routine:
+  !! - setup_artn()
+  !! - Fill_step_params()
+  !! - write_reastart()
+  !! - read_restart()
+  !! - warning_*
+  !! - flag_flase()
+  !! - ran3()
+  !! - dot_field()  
+
+
 CONTAINS
   !
   !
@@ -850,6 +876,7 @@ CONTAINS
   END FUNCTION ran3
 
 
+  !..................................................
   function dot_field( n, dx, dy )result( res )
     use units, only : DP
     implicit none
@@ -866,8 +893,54 @@ CONTAINS
     enddo
     res = tmp
   end function dot_field
+
+  !..................................................
+  SUBROUTINE random_array( n, v, bias )
+    !> @brief
+    !!   make real(DP) random array normalized with a possibility to 
+    !!   give a bias to the randomness  
+    !
+    !> @param[in]      n     length of the arrays
+    !> @param[inout]   v     array has to be random
+    !> @param[in]      bias  specific direction use to orient the randomization (optional)
+    !
+    !use units, only : DP
+    !use artn_params, only : ran3
+    implicit none
+ 
+    integer, intent( in ) :: n
+    real(DP), intent( out ) :: v(*)
+    real(DP), intent( in ), optional :: bias(*)
+ 
+    integer :: i, iidum
+    REAL(DP) :: z, vnorm, vdir(n)
+    real(DP), external :: dsum
+ 
+    vdir = 1.0_DP
+    if( present(bias) )then
+      do i = 1,n
+         vdir(i) = bias(i)
+      enddo
+    endif
+ 
+    CALL random_number(z)
+    z = z *1e8
+    iidum = INT(z)
+    DO i = 1, n
+       !! Antoine update
+       v( i ) = 0.5_DP - ran3(iidum)*vdir( i )
+    ENDDO
+ 
+    ! normalize
+    vnorm = 1.0_DP / sqrt(dsum(n,v))
+    DO i = 1,n
+       v(i) = v(i) * vnorm
+    ENDDO
+
+  END SUBROUTINE random_array
     
 END MODULE artn_params
+! ======================================================================== END MODULE 
  
  
 

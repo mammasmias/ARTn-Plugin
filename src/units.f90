@@ -83,6 +83,7 @@ Module units
        s2(i:i) = ch
     end do
   end function lower
+
   !................................................................................
   integer function parser(instrg, FS, args )result( nargs )
     !> @brief 
@@ -358,25 +359,6 @@ Module units
       1 format(*(x,a,x,g15.5))
     endif
 
-
-   contains
-    !................................................................................
-    function lower( s1 )result( s2 )
-      !> @breif Convert an Array of Capital letter to lower case letter
-      !> @param [in]  s1  input string, contain some capital letter
-      !> @return  a string with only lower case
-      character(*)       :: s1
-      character(len(s1)) :: s2
-      character          :: ch
-      integer,parameter  :: duc = ichar('A') - ichar('a')
-      integer            :: i
-
-      do i = 1,len(s1)
-         ch = s1(i:i)
-         if (ch >= 'A'.and. ch <= 'Z') ch = char(ichar(ch)-duc)
-         s2(i:i) = ch
-      end do
-    end function lower
 
   end subroutine make_units
 
