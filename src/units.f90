@@ -19,6 +19,7 @@ Module units
             convert_hessian, unconvert_hessian, &
             convert_energy, unconvert_energy,   &
             convert_time, unconvert_time, strg_units, unit_char
+  PUBLIC :: parser, lower
              
   
 
@@ -66,6 +67,82 @@ Module units
  contains
 
   !......................................................................................
+  function lower( s1 )result( s2 )
+    !> @breif Convert an Array of Capital letter to lower case letter
+    !> @param [in]  s1  input string, contain some capital letter
+    !> @return  a string with only lower case
+    character(*)       :: s1
+    character(len(s1)) :: s2
+    character          :: ch
+    integer,parameter  :: duc = ichar('A') - ichar('a')
+    integer            :: i
+
+    do i = 1,len(s1)
+       ch = s1(i:i)
+       if (ch >= 'A'.and. ch <= 'Z') ch = char(ichar(ch)-duc)
+       s2(i:i) = ch
+    end do
+  end function lower
+  !................................................................................
+  integer function parser(instrg, FS, args )result( nargs )
+    !> @brief 
+    !!   Parse the instrg thank to the Field Separator FS and return 
+    !!   the list of string and the number of element in the list
+    !!!!!!!!!! HAVE TO BE ADAPTED FOR MULTIPLE FS
+    !
+    !> @param[in]   instrg 
+    !> @param[in]   FS
+    !> @param[out]  args 
+    !> @return      nargs 
+    !
+    implicit none
+ 
+    ! -- ARGUMENT
+    CHARACTER(len=*),              intent( in ) :: instrg
+    character(len=1),              intent( in ) :: FS
+    CHARACTER(len=:), allocatable, intent( inout ) :: args(:)
+ 
+    ! -- LOCAL VAR
+    character(len=:), allocatable :: str
+    character(len=25) :: mot
+    integer :: idx,leng
+ 
+    ! +++ Copy in local variable the input_string
+    str = adjustl(instrg)
+    nargs = 0
+    !
+    ! +++ Repeat for each field
+    do
+    !   +++ Verification the length of sentence
+        leng = len_TRIM( str )
+        if( leng == 0 )exit
+ 
+    !   +++ Find the Field Separator
+        idx = SCAN( str, FS )
+ 
+    !   +++ extract the word
+        if( idx == 0 )then
+          mot = trim(str)
+        else
+          mot = str( :idx-1 )
+        endif
+ 
+    !   +++ Add the word in args
+        nargs = nargs + 1
+        if( nargs == 1 )then
+          args = [ mot ]
+        else
+          args = [ args(:), mot ]
+        endif
+ 
+    !   +++ cut the word
+        if( idx == 0 )exit
+        str = trim(str(idx+1:))
+    !
+    enddo
+  end function parser
+
+  !......................................................................................
   subroutine make_units( txt )
     !
     !> @brief 
@@ -87,7 +164,7 @@ Module units
     ! -- Arguments
     character(*), intent( inout ) :: txt
     ! -- Local variables
-    character(:), allocatable :: engine, mode
+    character(:), allocatable :: engine, mode, words(:)
     integer :: i, n 
 
     logical :: verbose
@@ -96,20 +173,25 @@ Module units
 
 
     ! ...Extract the Keyword from the engine_units
+    engine = ""; mode = ""
+    n = parser( trim(txt), "/",  words )
+    if( n >= 1 )engine = trim(words(1))
+    if( n > 1 )mode = trim(words(2))
+    
 
-    n = LEN_TRIM(txt)
-    i = SCAN(trim(txt), "/" )
-    if( i /= 0.and. i < n )then
-      engine = lower(trim(txt(1:i-1)))
-      mode = lower(trim(txt(i+1:)))
-    else if( i /= 0.and. i == n )then
-      engine = lower(trim(txt(1:i-1)))
-      mode = ""
-    else
-      engine = lower(trim(txt))
-      mode = ""
-    endif
-    !txt = engine
+!   n = LEN_TRIM(txt)
+!   i = SCAN(trim(txt), "/" )
+!   if( i /= 0.and. i < n )then
+!     engine = lower(trim(txt(1:i-1)))
+!     mode = lower(trim(txt(i+1:)))
+!   else if( i /= 0.and. i == n )then
+!     engine = lower(trim(txt(1:i-1)))
+!     mode = ""
+!   else
+!     engine = lower(trim(txt))
+!     mode = ""
+!   endif
+!   !txt = engine
 
 
     ! ...Initialization
