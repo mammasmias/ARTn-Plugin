@@ -59,7 +59,7 @@ SUBROUTINE push_init( nat, tau, order, lat, idum, push_ids, dist_thr, add_const,
 
     CASE( 'all' )  !! displace all atoms 
 
-      atom_displaced(:) = 1
+      !atom_displaced(:) = 1
       bias = 1.0_DP
       lcenter = .true.
  
@@ -67,11 +67,10 @@ SUBROUTINE push_init( nat, tau, order, lat, idum, push_ids, dist_thr, add_const,
     CASE( 'list' ) !! displace only atoms in list 
 
       DO na=1,nat
-         iglob = order(na)
+         !iglob = order(na)
          !IF( ANY(push_ids == iglob) )THEN
          IF( ANY(push_ids == na) )THEN
-            atom_displaced(na) = 1
-            !bias( 1 + 3*(na-1):3*na ) = 1.0_DP
+            !atom_displaced(na) = 1
             bias(:,na) = 1.0_DP
          ENDIF
       ENDDO
@@ -85,10 +84,10 @@ SUBROUTINE push_init( nat, tau, order, lat, idum, push_ids, dist_thr, add_const,
 
       ! displace only atoms in list and all atoms within chosen a cutoff radius ...
       DO na=1,nat
-         IF (ANY(push_ids == na)) THEN
-         iglob = order(na)
-         !IF( ANY(push_ids == iglob) )THEN
-           atom_displaced(na) = 1   !%! Array based on local index i           
+         IF( ANY(push_ids == na) )THEN
+           !iglob = order(na)
+           !IF( ANY(push_ids == iglob) )THEN
+           !atom_displaced(na) = 1   !%! Array based on local index i           
            bias(:,na) = 1.0_DP
            !
            tau0 = tau(:,na)
@@ -99,8 +98,7 @@ SUBROUTINE push_init( nat, tau, order, lat, idum, push_ids, dist_thr, add_const,
                  CALL pbc( dist, lat)
                  IF ( dnrm2(3,dist,1) <= dist_thr ) THEN
                     ! found an atom within dist_thr 
-                    atom_displaced(ia) = 1
-                    !bias( 1 + 3*(na-1):3*na ) = 1.0_DP
+                    !atom_displaced(ia) = 1
                     bias(:,ia) = 1.0_DP
                  ENDIF
               ENDIF
@@ -133,35 +131,39 @@ SUBROUTINE push_init( nat, tau, order, lat, idum, push_ids, dist_thr, add_const,
 
   !%! Order the ADD_CONST Array: i = order(i)
   !add_const(:,:) = add_const(:,order(:))  !! Now all array are ordered
+
+
   !
-  !%! Now All the information are converted in local index
+  ! ...Now All the information are converted in local index
+
   INDEX:DO na=1,nat
-     !IF (atom_displaced(na) == 1 ) THEN
+
+
         RDM:DO
  
-           !push(:,na) = (/0.5_DP - ran3(idum),0.5_DP - ran3(idum),0.5_DP - ran3(idum)/)
            push(:,na) = (/ (0.5_DP - ran3(idum)) * bias(1,na),   &
                            (0.5_DP - ran3(idum)) * bias(2,na),   &
                            (0.5_DP - ran3(idum)) * bias(3,na) /)
-           !call random_array( 3, push(:,na), bias( :,na ), idum )
-
            dr2 = push(1,na)**2 + push(2,na)**2 + push(3,na)**2
            !print*, "PUSH_INIT::DRAW", na, push(:,na), dr2
 
+
            ! check if the atom is constrained
            IF(ANY(ABS(add_const(:,na)) > 0.D0)) THEN
+
               ! check if the displacement is within the chosen constraint
-              !CALL displacement_validation(na,add_const(:,na),push(:,na),lvalid )
               CALL displacement_validation( add_const(:,na), push(:,na), lvalid )
+
               IF( .not. lvalid )THEN; CYCLE RDM      ! draw another random vector
-              !ELSE;                   CYCLE INDEX    ! go to the next atom index
               ELSEIF( dr2 < 0.25_DP )THEN; CYCLE INDEX    ! go to the next atom index
               ENDIF
+
            ENDIF
            IF ( dr2 < 0.25_DP ) EXIT
 
         ENDDO RDM 
-     !ENDIF
+
+
   ENDDO INDEX
   
 

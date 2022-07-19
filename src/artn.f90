@@ -409,10 +409,12 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         !
         ! ...PUSH_OVER works => If diff Energy is negative
         IF( etot_step - etot_saddle < frelax_ene_thr ) THEN
+        !IF( iover == 1 )THEN  !! Accept all the time
            ! we started going downhill ...
            if( .NOT.lrelax )irelax = 0
            lrelax = .true.
            lpush_over = .false.
+           iover = 0  !! is also in IF( lforc_conv )
            !
         ELSE  !< It is a PUSH_OVER the saddle point
            disp = OVER 
@@ -506,6 +508,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            ! ...reverse direction for the push_over
            fpush_factor = -1.0
            irelax = 0
+           iover = 0  !! is also in push_over
            !
         !ELSEIF( .NOT.lend )THEN  !< If already pass before no need to rewrite again
         ELSE  !< If already pass before no need to rewrite again
@@ -538,7 +541,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
 
 
-  !> WHAT FOR THIS BLOCK??? ANTOINE??
+  !> WHAT FOR THIS BLOCK??? 
   !!  This should be in check_force()
   IF( etot_step - etot_init > etot_diff_limit ) then
      error_message = 'ENERGY EXCEEDS THE LIMIT'
