@@ -9,6 +9,15 @@ module debug
   !!   - compute_curve        ...Useless
   !!   - fire2_integration    ...Boh
 
+  use units, only : DP
+  implicit none
+
+  ! 
+  ! Curvature (DEBUG thing)
+  REAL(DP), allocatable :: f0(:)
+  REAL(DP) :: rcurv
+
+
 
  contains
 
@@ -119,7 +128,7 @@ module debug
   subroutine compute_curve( iter, n, r, f )
 
     use units, only : DP, convert_length
-    use artn_params, only : tau_step, f0, rcurv
+    use artn_params, only : tau_step
     implicit none
  
     integer, intent(in) :: iter, n

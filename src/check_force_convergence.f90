@@ -16,7 +16,8 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
   USE artn_params, ONLY : linit, leigen, llanczos, lperp, lrelax, lbasin, nperp_step, nperp_limitation,&
                           ilanc, iperp, nperp, nperp_step, noperp, istep, iperp_save, &
                           init_forc_thr, forc_thr, fpara_thr, verbose, iinit, ninit,&
-                          lowest_eigval, iunartout, restartfname, etot_step, write_restart, warning, converge_property
+                          lowest_eigval, iunartout, restartfname, etot_step, write_restart, warning,   &
+                          converge_property, ismooth, nsmooth
   IMPLICIT NONE
   REAL(DP), INTENT(IN)  :: force(3,nat)
   REAL(DP), INTENT(IN)  :: fperp(3,nat)
@@ -83,13 +84,12 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         C1 = ( maxfperp < fperp_thr )          ! check on the fperp field
         C2 = ( nperp > 0.AND.iperp >= nperp )  ! check on the perp-relax iteration
         C3 = ( MAXfperp < MAXfpara )           ! check wheter fperp is lower than fpara
-        IF( C3 .and. iperp == 0 ) C1 = .false. ! Force to do at least one prep-relax. AJ Why?
-        !
-        ! ... If fperp is to far from fpara too many perp-relax can relax to an unconnected basin 
-        !IF( C1.and. ABS(maxfperp - maxfpara) < maxfpara*1.20 ) C1 = .false.
+
+        IF( C3 .and. iperp == 0 ) C1 = .false. ! Force to do at least one prep-relax.
+        IF( nsmooth > 0 .AND. ismooth <= nsmooth )C3 = .False.  ! Force to do a perp relax during the smooth step
 
         !
-        ! ...Alignment fperp and min_dir (direction of minimum)
+        ! ...Alignment between fperp and direction of minimum
         C4 = fperp_min_alignment( 0.8_DP, 0.1_DP )
         !min_dir = tau_step - tau_init 
         !min_dir = min_dir / NORM2( min_dir )
