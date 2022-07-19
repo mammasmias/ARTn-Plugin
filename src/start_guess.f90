@@ -57,20 +57,10 @@ SUBROUTINE start_guess( idum, nat, order, force, push, eigenvec )
     !! random
     IF( verbose>1 ) WRITE(iunartout,'(5x,"|> First EIGEN vectors RANDOM")')
     add_const = 0
-    !! set up the mask according to input forces
-    mask(:) = 0
-    j = 1
-    DO i = 1, nat
-       !! Atoms with norm of the force > 1e-16 are most probably not fixed by the engine, use the array 'mask'
-       !! as list of push_ids to generate the initial eigenvec components.
-       !! This avoids generating components on atoms that are fixed.
-       IF( NORM2(force(:,i)) .GT. 1e-16 ) THEN
-          mask(j) = i
-          j = j + 1
-       ENDIF
-       !
-    ENDDO
-    call push_init( nat, tau_step, order, lat, idum, mask, dist_thr, add_const, eigen_step_size, eigenvec, 'list')
+    !! Replace Mask on norm(force) by keyword 'list_force'. 
+    !! keyword 'bias_force' = orient the randomness on the actual atomic forces
+    call push_init( nat, tau_step, order, lat, idum, mask, dist_thr, add_const, eigen_step_size, eigenvec, 'list_force')
+    !call push_init( nat, tau_step, order, lat, idum, mask, dist_thr, add_const, eigen_step_size, eigenvec, 'bias_force' )
     !
   ENDIF
   !

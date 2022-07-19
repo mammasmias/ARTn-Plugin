@@ -3,11 +3,15 @@
 !!  Matic Poberjnik,
 !!  Miha Gunde
 !
-!> @brief
-!!   takes as input a vector of size (3,nat) and centers it
 !
 SUBROUTINE center ( vec, nat)
-  USE artn_params, ONLY: DP
+  !> @brief
+  !!   takes as input a vector of size (3,nat) and centers it
+  !
+  !> @param[in]     nat
+  !! @param[inout]  vec
+  !
+  USE units, ONLY: DP
   !
   !
   IMPLICIT none
@@ -27,3 +31,4 @@ SUBROUTINE center ( vec, nat)
 
 
 END SUBROUTINE center
+

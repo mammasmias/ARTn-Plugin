@@ -895,7 +895,7 @@ CONTAINS
   end function dot_field
 
   !..................................................
-  SUBROUTINE random_array( n, v, bias )
+  SUBROUTINE random_array( n, v, bias, seed )
     !> @brief
     !!   make real(DP) random array normalized with a possibility to 
     !!   give a bias to the randomness  
@@ -911,24 +911,33 @@ CONTAINS
     integer, intent( in ) :: n
     real(DP), intent( out ) :: v(*)
     real(DP), intent( in ), optional :: bias(*)
+    integer, intent( in ), optional :: seed
  
     integer :: i, iidum
-    REAL(DP) :: z, vnorm, vdir(n)
+    REAL(DP) :: z, vnorm, vbias(n)
     real(DP), external :: dsum
  
-    vdir = 1.0_DP
+    ! ...BIAS OPTION
+    vbias = 1.0_DP
     if( present(bias) )then
       do i = 1,n
-         vdir(i) = bias(i)
+         vbias(i) = bias(i)
       enddo
     endif
  
-    CALL random_number(z)
-    z = z *1e8
-    iidum = INT(z)
+    ! ...SEED OPTION
+    if( present(seed) )then
+      iidum = seed
+    else
+      CALL random_number(z)
+      z = z *1e8
+      iidum = INT(z)
+    endif
+
+    ! ...Random Vector
     DO i = 1, n
        !! Antoine update
-       v( i ) = 0.5_DP - ran3(iidum)*vdir( i )
+       v( i ) = (0.5_DP - ran3(iidum))*vbias( i )
     ENDDO
  
     ! normalize

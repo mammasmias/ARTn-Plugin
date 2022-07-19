@@ -42,7 +42,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
        push_over, ran3, a1, old_lanczos_vec, lend, fill_param_step, &
        filin, filout, sadfname, initpfname, eigenfname, restartfname, warning, flag_false,  &
        prefix_min, nmin, prefix_sad, nsaddle, artn_resume, natoms, old_lowest_eigval, &
-       lanczos_always_random, etot_diff_limit, error_message, prev_push, SMTH
+       lanczos_always_random, etot_diff_limit, error_message, prev_push, SMTH, random_array
   !
   IMPLICIT NONE
 
@@ -565,20 +565,24 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      disp =LANC
      IF (ilanc == 0 ) THEN
         !
-        ! first iternation of current lanczos call
+        ! first iteraction of current lanczos call
         !
-        v_in(:,:) = eigenvec(:,:)
+        !v_in(:,:) = eigenvec(:,:)
         !
         IF( lanczos_always_random )THEN
-           ! generate random initial vector
-           CALL random_number(z)
-           z = z *1e8
-           iidum = INT(z)
-           DO na = 1, nat
-              v_in(:,na) = (/0.5_DP - ran3(iidum),0.5_DP - ran3(iidum),0.5_DP - ran3(iidum)/)
-           ENDDO
-           ! normalize
-           v_in = v_in / norm2(v_in)
+          ! generate random initial vector
+          call random_array( 3*nat, v_in, force_step, zseed )
+
+           !CALL random_number(z)
+           !z = z *1e8
+           !iidum = INT(z)
+           !DO na = 1, nat
+           !   v_in(:,na) = (/0.5_DP - ran3(iidum),0.5_DP - ran3(iidum),0.5_DP - ran3(iidum)/)
+           !ENDDO
+           !! normalize
+           !v_in = v_in / norm2(v_in)
+        ELSE
+          v_in(:,:) = eigenvec(:,:) 
         ENDIF
         !
         ! reset the eigenvalue flag
