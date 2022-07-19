@@ -16,8 +16,7 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
   USE artn_params, ONLY : linit, leigen, llanczos, lperp, lrelax, lbasin, nperp_step, nperp_limitation,&
                           ilanc, iperp, nperp, nperp_step, noperp, istep, iperp_save, &
                           init_forc_thr, forc_thr, fpara_thr, verbose, iinit, ninit,&
-                          lowest_eigval, iunartout, restartfname, etot_step, write_restart, warning, converge_property, &
-                          a1, tau_step, tau_init, push
+                          lowest_eigval, iunartout, restartfname, etot_step, write_restart, warning, converge_property
   IMPLICIT NONE
   REAL(DP), INTENT(IN)  :: force(3,nat)
   REAL(DP), INTENT(IN)  :: fperp(3,nat)
