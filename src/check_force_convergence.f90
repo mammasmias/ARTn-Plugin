@@ -12,11 +12,12 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
   !> @param [out]  lforc_conv      Force Convergence Flag
   !> @param [out]  lsaddle_conv    Saddle-point Convergence Flag
   !
-  USE units
+  USE units, ONLY : DP, unconvert_force
   USE artn_params, ONLY : linit, leigen, llanczos, lperp, lrelax, lbasin, nperp_step, nperp_limitation,&
                           ilanc, iperp, nperp, nperp_step, noperp, istep, iperp_save, &
                           init_forc_thr, forc_thr, fpara_thr, verbose, iinit, ninit,&
-                          lowest_eigval, iunartout, restartfname, etot_step, write_restart, warning, converge_property
+                          lowest_eigval, iunartout, restartfname, etot_step, write_restart, warning, converge_property, &
+                          a1, tau_step, tau_init, push
   IMPLICIT NONE
   REAL(DP), INTENT(IN)  :: force(3,nat)
   REAL(DP), INTENT(IN)  :: fperp(3,nat)
@@ -24,14 +25,16 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
   INTEGER,  INTENT(IN)  :: if_pos(3,nat)
   INTEGER,  INTENT(IN)  :: nat
   !INTEGER, INTENT(IN)  :: order(nat)
-  REAL(DP) :: fperp_thr
   LOGICAL,  INTENT(OUT) :: lforc_conv, lsaddle_conv
   !
   ! Local Variables
   LOGICAL               :: C0,C1, C2, C3, C4
   integer               :: ios
+  REAL(DP)              :: fperp_thr, dtmp
   REAL(DP)              :: maxforce, maxfperp, maxfpara
-  real(DP), external    :: dsum
+  REAL(DP)              :: min_dir(3,nat)
+  real(DP), external    :: dsum, ddot
+  logical, external     :: fperp_min_alignment
   !
   C0           = .false.
   C1           = .false.
@@ -60,7 +63,7 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         !
         ! ... Is the system converged to saddle?
         C0 = ( maxforce < forc_thr )
-        IF( C0  ) THEN
+        IF( C0 ) THEN
            lsaddle_conv = .true.
            iperp_save = iperp  !! save iperp before the write_report()
            CALL write_restart( restartfname )
@@ -85,9 +88,19 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         !
         ! ... If fperp is to far from fpara too many perp-relax can relax to an unconnected basin 
         !IF( C1.and. ABS(maxfperp - maxfpara) < maxfpara*1.20 ) C1 = .false.
+
         !
-        ! ... Stopping condition is filled, switch to lanczos
-        IF( C1 .OR. C2 .OR. C3 ) THEN
+        ! ...Alignment fperp and min_dir (direction of minimum)
+        C4 = fperp_min_alignment( 0.8_DP, 0.1_DP )
+        !min_dir = tau_step - tau_init 
+        !min_dir = min_dir / NORM2( min_dir )
+        !dtmp = ddot(3*nat,min_dir,1,push,1)
+        !! IF eigenVec change suddenlly AND direction of minimum is perp to the last push
+        !C4 = ( a1 < 0.8 .AND. ABS(dtmp) < 0.1 )   
+
+        !
+        ! ...Stopping condition is filled, switch to lanczos
+        IF( C1 .OR. C2 .OR. C3 .OR. C4 )THEN
            lperp    = .false.
            llanczos = .true. 
            leigen   = .false. 
@@ -197,3 +210,36 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
   ENDIF
   !
 ENDSUBROUTINE check_force_convergence
+
+
+
+logical function fperp_min_alignment( thr1, thr2 )result( res )
+  !> @brief 
+  !!   compute the 2 condition:
+  !!    - eigenVec has been suddenlly changed
+  !!    - direction of minimum is perp to the last push
+  !
+  !> @param[in] thr1    threshold on the eigenvec alignement
+  !> @param[in] thr2    threshold in the fperp - direction of minimum alignment
+  !
+  USE units, only : DP
+  USE artn_params, only : a1, tau_step, tau_init, push, natoms
+  implicit none
+
+  real(DP), intent(in) :: thr1, thr2
+
+  REAL(DP) :: min_dir(3,natoms), dtmp
+  REAL(DP), external :: ddot
+
+  min_dir = tau_step - tau_init
+  min_dir = min_dir / NORM2( min_dir )
+  dtmp = ddot(3*natoms,min_dir,1,push,1)
+  !! IF eigenVec change suddenlly AND direction of minimum is perp to the last push
+  res = ( a1 < thr1 .AND. ABS(dtmp) < thr2 )
+
+end function fperp_min_alignment
+
+
+
+
+
