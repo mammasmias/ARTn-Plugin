@@ -141,7 +141,7 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
                         ,etot_init, iinit, iperp, ieigen, ilanc, irelax, verbose, iartn, a1 &
                         ,tau_init, tau_step, converge_property, ninit  &
                         ,lrelax, linit, lbasin, lperp, llanczos, leigen, lpush_over, lpush_final, lbackward, lrestart,&
-                        VOID, INIT, LANC, RELX, prev_disp, prev_push
+                        VOID, INIT, LANC, RELX, prev_disp, prev_push, nrelax_print
 
   USE UNITS
   IMPLICIT NONE
@@ -177,7 +177,9 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
 
   !
   ! ...Print each 5 step for RELX mode
-  IF( (prev_disp == RELX).AND.(mod(irelax,5) == 0) )print_it = .true.
+  !IF( (prev_disp == RELX).AND.(mod(irelax,5) == 0) )print_it = .true.
+  IF( (prev_disp == RELX).AND.(mod(irelax,nrelax_print) == 0) )print_it = .true.
+
 
   ! ...Print for the step 0
   IF( istep == 0 )print_it = .true.

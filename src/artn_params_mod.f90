@@ -17,6 +17,7 @@
 !!   - flag_flase()
 !!   - ran3()
 !!   - dot_field()
+!!   - random_array()
 !!   List of routine out-module:
 !!   - get_iperp(), get_perp(), get_relx()
 !!   - make_filename()
@@ -152,6 +153,7 @@ MODULE artn_params
   INTEGER :: lanczos_min_size               !> minimal size of lanzos matrix (use with care)
   INTEGER :: nsmooth                        !> number of smoothing steps from push to eigenvec
   INTEGER :: nnewchance                     !> number of new attemps after loosing eigenvalue
+  INTEGER :: nrelax_print                   !> print at every nrelax step 
   CHARACTER(LEN = 4) :: push_mode           !> type of initial push (all , list or rad)
   ! convergence criteria
   REAL(DP) :: dist_thr                      !> distance threshold for push mode "rad"
@@ -196,11 +198,9 @@ MODULE artn_params
        push_ids, add_const, engine_units, zseed, struc_format_out, elements, &
        verbose, filout, sadfname, initpfname, eigenfname, restartfname, nnewchance,&
        converge_property, lanczos_eval_conv_thr, push_guess, eigenvec_guess,  &
-       nperp_limitation, lnperp_limitation, lanczos_min_size, lanczos_always_random, etot_diff_limit
-  ! 
-  ! Curvature (DEBUG thing)
-  REAL(DP), allocatable :: f0(:)
-  REAL(DP) :: rcurv
+       nperp_limitation, lnperp_limitation, lanczos_min_size, &
+       lanczos_always_random, etot_diff_limit, nrelax_print
+
 
   !
   INTERFACE warning
@@ -316,6 +316,7 @@ CONTAINS
       nmin              = 0
       nsaddle           = 0
       nnewchance        = 0
+      nrelax_print      = 5   ! print every 5 RELX step
       !
       dist_thr          = NAN
       init_forc_thr     = NAN
