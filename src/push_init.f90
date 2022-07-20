@@ -70,7 +70,7 @@ SUBROUTINE push_init( nat, tau, order, lat, idum, push_ids, dist_thr, add_const,
          !iglob = order(na)
          !IF( ANY(push_ids == iglob) )THEN
          IF( ANY(push_ids == na) )THEN
-            !atom_displaced(na) = 1
+            atom_displaced(na) = 1
             bias(:,na) = 1.0_DP
          ENDIF
       ENDDO
@@ -139,27 +139,33 @@ SUBROUTINE push_init( nat, tau, order, lat, idum, push_ids, dist_thr, add_const,
   INDEX:DO na=1,nat
 
 
+        ia = 0
         RDM:DO
+           ia = ia + 1
  
            push(:,na) = (/ (0.5_DP - ran3(idum)) * bias(1,na),   &
                            (0.5_DP - ran3(idum)) * bias(2,na),   &
                            (0.5_DP - ran3(idum)) * bias(3,na) /)
            dr2 = push(1,na)**2 + push(2,na)**2 + push(3,na)**2
-           !print*, "PUSH_INIT::DRAW", na, push(:,na), dr2
+
+           !if( atom_displaced(na) == 1 ) &
+           !  print'("PUSH_INIT::DRAW ",i0,4(x,g10.3),x,i0)', na, push(:,na), dr2, ia
 
 
            ! check if the atom is constrained
-           IF(ANY(ABS(add_const(:,na)) > 0.D0)) THEN
+           IF( ANY(ABS(add_const(:,na)) > 0.0_DP) ) THEN
 
               ! check if the displacement is within the chosen constraint
               CALL displacement_validation( add_const(:,na), push(:,na), lvalid )
 
-              IF( .not. lvalid )THEN; CYCLE RDM      ! draw another random vector
+              IF( .not. lvalid )THEN;      CYCLE RDM      ! draw another random vector
               ELSEIF( dr2 < 0.25_DP )THEN; CYCLE INDEX    ! go to the next atom index
               ENDIF
 
            ENDIF
-           IF ( dr2 < 0.25_DP ) EXIT
+
+           ! ...Isotrop Random Condition
+           IF ( dr2 < 0.25_DP ) CYCLE INDEX  !! next atom
 
         ENDDO RDM 
 

@@ -24,7 +24,7 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
   !
   USE artn_params, ONLY:  lbasin, iperp, irelax, push, &
                           eigenvec, lanczos_disp, MOVE , &
-                          prev_disp, iunartout, filout
+                          prev_disp, iunartout, filout, istep
 
   USE UNITS, Only: DP, convert_time, unconvert_time, &
                    unconvert_force, MASS
@@ -169,10 +169,8 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
   ! ...Unconvert the force & time
   dt_curr = unconvert_time( dt )
   force = unconvert_force( force )
-  !
+  
 
-
-  !
 END SUBROUTINE move_mode
 
 

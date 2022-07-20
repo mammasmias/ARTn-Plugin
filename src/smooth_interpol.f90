@@ -1,3 +1,9 @@
+
+!> @author
+!!  Matic Poberjnik,
+!!  Miha Gunde
+!!  Nicolas Salles
+!
 SUBROUTINE smooth_interpol( ismooth, nsmooth, nat, v0, v1, v2 )
   !
   !> @brief 
@@ -6,15 +12,15 @@ SUBROUTINE smooth_interpol( ismooth, nsmooth, nat, v0, v1, v2 )
   !!   v2= v1 when ismooth = 0       -> done in init
   !!   v2= V2 when ismooth = nsmooth -> done in eigen 
   !
-  !> @param[in]      ismooth
-  !> @param[in]      nsmooth
-  !> @param[in]      nat
+  !> @param[in]      ismooth  actual smooth step 
+  !> @param[in]      nsmooth  max smooth step 
+  !> @param[in]      nat      number of atom
   !> @param[in]      v0       the actual orientation
   !> @param[in]      v1       the direction we come
   !> @param[inout]   v2       the direction we go
   !
   USE units,       ONLY : DP
-  USE artn_params, ONLY : iunartout,  dot_field,filout, verbose
+  USE artn_params, ONLY : iunartout,  dot_field, filout, verbose
   !
   INTEGER,  INTENT( INOUT ) :: ismooth   ! degree of interpolation
   INTEGER,  INTENT( IN )    :: nsmooth   ! number of degree of interpolation
@@ -43,7 +49,7 @@ SUBROUTINE smooth_interpol( ismooth, nsmooth, nat, v0, v1, v2 )
 
   !
   ! ...Define the actual oriention from the final direction
-  f_orient = ddot( 3*nat, v0(:,:), 1, v2(:,:), 1 )
+  f_orient = ddot( 3*nat, v0, 1, v2, 1 )
 
   !
   ! ...Interpolation between Vi (initial) and Vf (final)
@@ -60,3 +66,6 @@ SUBROUTINE smooth_interpol( ismooth, nsmooth, nat, v0, v1, v2 )
   ENDIF
   !
 END SUBROUTINE smooth_interpol
+
+
+

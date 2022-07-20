@@ -408,8 +408,9 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         !
         !
         ! ...PUSH_OVER works => If diff Energy is negative
-        IF( etot_step - etot_saddle < frelax_ene_thr ) THEN
-        !IF( iover == 1 )THEN  !! Accept all the time
+        !IF( etot_step - etot_saddle < frelax_ene_thr ) THEN
+        IF( iover == 1 )THEN  !! Accept all the time
+           print*, " PUSH_OVER::Only once..."
            ! we started going downhill ...
            if( .NOT.lrelax )irelax = 0
            lrelax = .true.

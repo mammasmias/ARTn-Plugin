@@ -117,7 +117,7 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         fperp_thr = init_forc_thr 
         !
         ! ... Conditions for stopping perp_relax
-        C1 = ( MAXfperp < fperp_thr )           ! check on the fperp field
+        !C1 = ( MAXfperp < fperp_thr )           ! check on the fperp field   !! NS: NO C1 In the BASIN
         C2 = ( nperp > -1 .AND.iperp >= nperp ) ! check on the perp-relax iteration
         !
         ! ... Stopping condition is filled, switch to lanczos or to init if we are still close to the minimum
@@ -151,10 +151,12 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
             "|> Stop perp relax because force < forc_thr  :",&
             unconvert_force( maxforce ),"<", unconvert_force(forc_thr), TRIM(converge_property)
 
-        IF ( C1 .AND. iperp>0) WRITE(iunartout,'(5x,a46,x,f10.4,x,a1,x,f10.4,a20)') &
+        !IF ( C1 .AND. iperp>0) WRITE(iunartout,'(5x,a46,x,f10.4,x,a1,x,f10.4,a20)') &
+        !! NS: Remove the condition on iperp 
+        IF ( C1 ) WRITE(iunartout,'(5x,a46,x,f10.4,x,a1,x,f10.4,a20)') &
             "|> Stop perp relax because fperp < fperp_thr :",&
             unconvert_force( maxfperp ),"<", unconvert_force(fperp_thr), TRIM(converge_property)
-        !
+        
         IF ( C2 ) WRITE(iunartout,'(5x,a46,x,i3,a1,i3)') &
             "|> Stop perp relax because iperp = nperp max :",&
             iperp,"=",nperp 
@@ -167,7 +169,7 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
             "|> No perp relax because fperp < fpara       :",&
             unconvert_force( maxfperp ),"<", unconvert_force( maxfpara ), TRIM(converge_property)
         !
-        IF ( noperp>2 ) WRITE(iunartout,'(5x,a90)') &
+        IF ( noperp > 2 ) WRITE(iunartout,'(5x,a90)') &
             "|> WARNING -The Fperp is too small after each Push-INIT- You should increase push_step_size"
         CLOSE( iunartout )
         !
@@ -208,10 +210,11 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
      !
   ENDIF
   !
-ENDSUBROUTINE check_force_convergence
+END SUBROUTINE check_force_convergence
 
 
 
+!.......................................................................................
 logical function fperp_min_alignment( thr1, thr2 )result( res )
   !> @brief 
   !!   compute the 2 condition:
