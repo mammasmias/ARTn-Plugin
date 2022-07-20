@@ -1,20 +1,28 @@
 
 
 SUBROUTINE clean_artn()
-  use units, only : DP
-  use artn_params, only : lrelax, linit, lbasin, lperp, &
-           llanczos, leigen, lpush_over, lbackward, lend,  &
-           iartn, istep, iinit, iperp, ilanc, ieigen, nlanc, ifails,  &
-           irelax, iover, istep, fpush_factor, lowest_eigval,  &
-           artn_resume, old_lanczos_vec, H, Vmat, lanczos_max_size,  &
-           iunartout, filout, nperp_step, old_lowest_eigval
+  !> @brief
+  !!   Clean and end the ARTn research to be ready for another or to stop
+  !
+  use units,       only : DP
+  use artn_params, only : lrelax, linit, lbasin, lperp,                 &
+           llanczos, leigen, lpush_over, lbackward, lend,               &
+           iartn, istep, iinit, iperp, ilanc, ieigen, nlanc, ifails,    &
+           irelax, iover, istep, fpush_factor, lowest_eigval,           &
+           artn_resume, old_lanczos_vec, H, Vmat, lanczos_max_size,     &
+           iunartout, filout, nperp_step, old_lowest_eigval, prev_disp, &
+           error_message
   implicit none
 
   integer :: ios
 
 
   ! ...Fails if finished before it converged
-  IF( .NOT.lend ) ifails = ifails + 1
+  IF( .NOT.lend )then
+    ifails = ifails + 1
+    error_message = 'ARTn RESEARCH STOP BEFORE THE END'
+    call write_fail_report( iunartout, prev_disp, lowest_eigval )
+  ENDIF
 
   ! ...Write in output log
   WRITE(*,'(5x,"!> CLEANING ARTn | Fail:",x,i0)') ifails
