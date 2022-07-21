@@ -272,7 +272,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         z = max( z, norm2(displ_vec(:,i)) )
      enddo
      IF( nat /= natoms .OR. z > 1.0e4 )THEN
-       error_message = "Box explosion"
+       error_message = "BOX EXPLOSION"
        lconv = .true.  !! Stop the research
      ENDIF
      ! 
@@ -728,8 +728,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     !
     ! ...Force = 0.0
     displ_vec = 0.0_DP
-    disp = VOID
-    !disp = RELX
+    !disp = VOID
+    disp = RELX    !! Mode RELX to fill force = displ_vec and converge
     !
     ! ...The search IS FINISHED
     RETURN
