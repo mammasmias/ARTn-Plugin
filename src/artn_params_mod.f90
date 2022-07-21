@@ -523,6 +523,7 @@ CONTAINS
     IF( zseed .EQ. 0) THEN
       !
       ! generate random seed
+      CALL random_seed()
       CALL random_number(z)
       z     = z *1e8
       zseed = INT(z)
