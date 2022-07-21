@@ -27,7 +27,7 @@ SUBROUTINE smooth_interpol( ismooth, nsmooth, nat, v0, v1, v2 )
   INTEGER,  INTENT( IN )    :: nat       ! number of points in 3D field
   REAL(DP), INTENT( IN )    :: v0(3,nat) ! Actuel field
   REAL(DP), INTENT( INOUT ) :: v1(3,nat) ! Orientation field 1
-  REAL(DP), INTENT( INOUT ) :: v2(3,nat) ! Orientation field 2
+  REAL(DP), INTENT( IN )    :: v2(3,nat) ! Orientation field 2
   !
   ! Local variables
   REAL(DP)                  :: smoothing_factor, f_orient
@@ -49,7 +49,7 @@ SUBROUTINE smooth_interpol( ismooth, nsmooth, nat, v0, v1, v2 )
 
   !
   ! ...Define the actual oriention from the final direction
-  f_orient = ddot( 3*nat, v0, 1, v2, 1 )
+  f_orient = ddot( 3*nat, v0, 1, vf, 1 )
 
   !
   ! ...Interpolation between Vi (initial) and Vf (final)
