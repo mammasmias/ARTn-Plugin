@@ -113,7 +113,7 @@ MODULE artn_params
   REAL(DP), ALLOCATABLE :: tau_nextmin(:,:)      !> coordinates of the new minimum
   REAL(DP), ALLOCATABLE :: delr(:,:)             !> displacement vector  
   REAL(DP), ALLOCATABLE :: push(:,:)             !> initial push vector
-  REAL(DP), ALLOCATABLE, target :: eigenvec(:,:) !> lanczos eigenvector
+  REAL(DP), ALLOCATABLE :: eigenvec(:,:)         !> lanczos eigenvector
   REAL(DP), ALLOCATABLE :: tau_step(:,:)         !> current coordinates (restart)
   REAL(DP), ALLOCATABLE :: force_step(:,:)       !> current force (restart)
   REAL(DP), ALLOCATABLE :: tau_saddle(:,:)       !> coordinates of saddle point

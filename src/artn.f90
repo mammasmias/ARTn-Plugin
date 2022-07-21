@@ -179,6 +179,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     CALL Fill_param_step( nat, at, order, tau, etot_eng, force, lerror )
     !! somehing went wrong
     IF( lerror ) THEN
+       error_message = "PROBLEM WITH FILL_PARAM_STEP()"
        call write_fail_report( iunartout, void, etot_step )
        !! finish current search
        displ_vec = 0.0_DP
@@ -196,11 +197,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     !
   ENDIF
 
-
-  !do i = 1, 10
-  !   print*, "ARTN()::", i, order(i), tau_step(:,i), push(:,i) 
-  !enddo
-  !STOP "ARTN():: STEP == 0"
 
 
   !
@@ -220,7 +216,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !.............................
 
      ! ...User cancel the INIT push
-     IF ( istep ==0 .AND. ninit==0 ) THEN
+     IF ( istep == 0 .AND. ninit== 0 ) THEN
         !
         ! Pass to lanczos 
         llanczos = .true.
@@ -301,31 +297,33 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
 
      ! ...Apply the smooth linear combination to the eigenvector
-     IF( nsmooth > 0 .AND. ismooth <= nsmooth ) THEN
-       CALL smooth_interpol( ismooth, nsmooth, nat, force_step, push, eigenvec )
-       prev_push = SMTH !! save previous push
+     IF( nsmooth > 0 .AND. ismooth <= nsmooth )THEN
+       CALL smooth_interpol( ismooth, nsmooth, nat, force_step, push, eigenvec )  !! array PUSH change
+       disp = SMTH
      ELSE 
        push(:,:) = eigenvec(:,:)
-       prev_push = disp !! save previous push
      ENDIF
 
+     prev_push = disp !! save previous push
      !
      ! rescale the eigenvector according to the current force in the parallel direction
      ! see Cances_JCP130: some improvements of the ART technique doi:10.1063/1.3088532
      ! 0.13 is taken from ARTn, 0.5 eV/Angs^2 corresponds roughly to 0.01 Ry/Bohr^2
      !
      ! ...Recompute the norm of fpara because eigenvec change a bit
-     fpara_tot = ddot(3*nat, force_step(:,:), 1, eigenvec(:,:), 1)
+     !fpara_tot = ddot(3*nat, force_step(:,:), 1, eigenvec(:,:), 1)
+     fpara_tot = ddot(3*nat, force_step, 1, PUSH, 1)
      current_step_size = -SIGN(1.0_DP,fpara_tot)*MIN(eigen_step_size,ABS(fpara_tot)/MAX( ABS(lowest_eigval), 0.01_DP ))
 
      !
      ! Put some test on current_step_size
      !
-     displ_vec(:,:) = eigenvec(:,:)*current_step_size
+     !displ_vec(:,:) = eigenvec(:,:)*current_step_size
+     displ_vec = PUSH * current_step_size    !! Use PUSH insead of EIGNEVEC
      ! 
-     IF ( ieigen >= neigen  ) THEN
-        ! do a perpendicular relax
-        lperp = .true.
+     IF( ieigen >= neigen )THEN
+       ! do a perpendicular relax
+       lperp = .true.
      ENDIF
      !
      ! Write the latest eigenvec to a file (eigenvec should be in force position)
