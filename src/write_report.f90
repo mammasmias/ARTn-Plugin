@@ -7,13 +7,22 @@
 
 !------------------------------------------------------------
 SUBROUTINE write_initial_report(iunartout, filout)
+  !> @brief 
+  !!   Open and write the information of ARTn research in the ouput
+  !!   defined by the channel IUARTNOUT and the file name FILOUT
+  !
+  !> @param[in]  iuartnout    channel of the output
+  !! @param[in]  filout       name of the file
+  ! 
   use artn_params, ONLY: engine_units, ninit, nperp, neigen, nsmooth,  &
                          init_forc_thr, forc_thr, fpara_thr, eigval_thr, &
                          push_step_size, eigen_step_size, lanczos_max_size, lanczos_disp, &
                          push_mode, verbose, push_over, frelax_ene_thr, zseed, &
-                         converge_property, lanczos_eval_conv_thr
+                         converge_property, lanczos_eval_conv_thr, nperp_limitation
   use units, only : unconvert_force, &
                     unconvert_energy, unconvert_hessian, unconvert_length, unit_char
+  implicit none
+
   INTEGER,             INTENT(IN) :: iunartout
   CHARACTER (LEN=255), INTENT(IN) :: filout
   ! -- Local Variables
@@ -43,7 +52,8 @@ SUBROUTINE write_initial_report(iunartout, filout)
   WRITE (iunartout,'(13X,"* Iterators Parameter: ")')
   !WRITE (iunartout,'(15X,"Zseed           = ", I6)') zseed
   WRITE (iunartout,'(15X,"ninit           = ", I6)') ninit
-  WRITE (iunartout,'(15X,"nperp           = ", I6)') nperp
+  !WRITE (iunartout,'(15X,"nperp           = ", I6)') nperp
+  WRITE (iunartout,'(15X,"nperp           =",*(x,I6))') nperp_limitation
   WRITE (iunartout,'(15X,"neigen          = ", I6)') neigen
   WRITE (iunartout,'(15X,"nsmooth         = ", I6)') nsmooth
   WRITE (iunartout,'(13X,"* Threshold Parameter: ")')
@@ -77,6 +87,11 @@ END SUBROUTINE write_initial_report
 
 !------------------------------------------------------------
 SUBROUTINE write_header_report( iunartout )
+  !> @brief 
+  !!   write the header before the run. It contains the system units
+  !
+  !> @param[in]  iunartout    output unit channel 
+  !
   use artn_params, only : verbose, isearch, ifound, filout
   use units, only :  strg_units
   implicit none
@@ -110,7 +125,6 @@ END SUBROUTINE write_header_report
 
 !------------------------------------------------------------
 SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep, nat, iunartout)
-  !
   !> @brief
   !!   a subroutine that writes a report of the current step to the output file  
   !
@@ -153,33 +167,6 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
   print_it = .false.
 
 
-! !
-! !...Define the displacement type 
-! disp = LANC
-! IF ( lrelax     )    disp=RELX
-! IF ( lpush_over )    disp= OVER
-! IF ( lperp      )    disp= PERP  
-! !
-! ! ... If it is the first perp relax, we where in Init or Eigen
-! IF ( lperp    .AND. iperp==0 ) THEN  
-!                      disp=INIT
-!     IF (.NOT.lbasin) disp=EIGN
-! ENDIF   
-! !
-! ! ... If it is the first lanczos, we where in Init or Eigen
-! IF ( llanczos .AND. ilanc==0 ) THEN  
-!                      disp=INIT
-!    IF (.NOT.lbasin)  disp=EIGN
-! ENDIF    
-! IF ( istep==0   )    disp=VOID
-! !
-! ! ... Maybe the eigen is in smooth mode
-! IF ( disp == EIGN .AND. ismooth <= nsmooth .AND. nsmooth>0) disp=SMTH
-
-! print*, " |> write_report :", disp , prev_disp, disp - prev_disp
-
-
-
   ! 
   ! ... Update iart counter: ARTn step start by Lanczos or Init push
   IF( (prev_disp==LANC .AND. ilanc==1) .OR. &
@@ -188,7 +175,11 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
     iartn = iartn + 1
   ENDIF
 
+  !
+  ! ...Print each 5 step for RELX mode
   IF( (prev_disp == RELX).AND.(mod(irelax,5) == 0) )print_it = .true.
+
+  ! ...Print for the step 0
   IF( istep == 0 )print_it = .true.
 
 
@@ -206,7 +197,6 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
 
   !
   ! ...Define when to print
-  !IF( verbose < 2.AND.(.NOT.istep == 0) )RETURN
   IF( verbose < 2.AND.(.NOT.print_it) )RETURN
 
   disp = prev_disp
@@ -242,36 +232,6 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
   evalf = istep+1
   dr    = 0.
   npart = 0
-
-
-  !
-  !IF( disp==INIT .OR. disp==EIGN .OR.   &
-  !    disp==SMTH .OR. disp==RELX   ) THEN
-! IF( NEW_STEP )THEN
-!   !  
-!   ! ...Displacement processing
-!   call compute_delr( nat, tau_step, tau_init, lat, delr )
-!   npart = 0
-!   rc2   = 0.1!*0.1  !! Miha: Why square? NS: Why not! 
-!   DO i = 1, nat
-!     IF( norm2(delr(:,i)) > rc2 ) npart = npart + 1
-!   enddo
-!   !! routine sum_force is equivalent to implicit: norm2( delr )
-!   call sum_force( delr, nat, dr )
-!   !
-! ENDIF
-
-
-! !
-! ! ...Fill bilan variable for the inter report
-! IF ( disp==INIT .OR. disp==EIGN .OR. disp==SMTH )THEN 
-!   ctot = dr
-!   cmax = real(npart,DP)
-! ELSE
-!   ctot = bilan(7)
-!   cmax = bilan(6)
-! ENDIF
-! bilan = [ detot, force_tot, fpara_tot, fperp_tot, lowEig, cmax, ctot, real(evalf,DP) ]
 
 
   !
@@ -351,22 +311,6 @@ SUBROUTINE write_artn_step_report( etot, force, fperp, fpara, lowest_eigval, if_
 
   new_step = .false.
 
-
-  ! 
-  ! ... Update iart counter & print
-  !IF( (prev_disp==LANC .AND. ilanc==1) .OR. &
-  !    (prev_disp==INIT .AND. iinit<=ninit)  )THEN
-  !  new_step = .true.
-  !  iartn = iartn + 1
-  !ENDIF
-
-  !IF( (prev_disp == RELX).AND.(mod(irelax,5) == 0) )new_step = .true.
-
-
-  !
-  ! ...Define when to print
-  !IF( (verbose < 2).AND.(.NOT.new_step) )RETURN
-
   disp = prev_disp
 
   !
@@ -400,45 +344,22 @@ SUBROUTINE write_artn_step_report( etot, force, fperp, fpara, lowest_eigval, if_
   evalf = istep+1
   dr    = 0.
   npart = 0
-  IF( prev_disp==VOID ) THEN
-    !
-    ! ...Initialize Displacement processing
-    IF( .NOT.ALLOCATED(tau_init) ) THEN
-        ALLOCATE( tau_init, source = tau_step )
-    ELSE
-        tau_init = tau_step
-    ENDIF
-  ENDIF
 
-
+  !  
+  ! ...Displacement processing
+  call compute_delr( nat, tau_step, tau_init, lat, delr )
+  npart = 0
+  rc2   = 0.1!*0.1  !! Miha: Why square? NS: Why not! 
+  DO i = 1, nat
+    IF( norm2(delr(:,i)) > rc2 ) npart = npart + 1
+  enddo
+  !! routine sum_force is equivalent to implicit: norm2( delr )
+  call sum_force( delr, nat, dr )
   !
-  !IF( disp==INIT .OR. disp==EIGN .OR.   &
-  !    disp==SMTH .OR. disp==RELX   ) THEN
-  !IF( NEW_STEP )THEN
-    !  
-    ! ...Displacement processing
-    call compute_delr( nat, tau_step, tau_init, lat, delr )
-    npart = 0
-    rc2   = 0.1!*0.1  !! Miha: Why square? NS: Why not! 
-    DO i = 1, nat
-      IF( norm2(delr(:,i)) > rc2 ) npart = npart + 1
-    enddo
-    !! routine sum_force is equivalent to implicit: norm2( delr )
-    call sum_force( delr, nat, dr )
-    !
-  !ENDIF
 
 
-  !
-  ! ...Fill bilan variable for the inter report
-  !IF ( disp==INIT .OR. disp==EIGN .OR. disp==SMTH )THEN
-    ctot = dr
-    cmax = real(npart,DP)
-  !ELSE
-  !  ctot = bilan(7)
-  !  cmax = bilan(6)
-  !ENDIF
-  bilan = [ detot, force_tot, fpara_tot, fperp_tot, lowEig, cmax, ctot, real(evalf,DP) ]
+  ! ...Save the information for the resume of the search
+  bilan = [ detot, force_tot, fpara_tot, fperp_tot, lowEig, real(npart,DP), dr, real(evalf,DP) ]
 
 
   !
@@ -462,14 +383,6 @@ SUBROUTINE write_artn_step_report( etot, force, fperp, fpara, lowest_eigval, if_
   CLOSE(iout)
 
 
-  !! What happens here?
-  !IF( disp == INIT .OR. disp == EIGN .OR. &
-  !    disp == SMTH .OR. disp == RELX )THEN
-  !  ilanc_save  = 0
-  !  iperp_save  = 0
-  !ENDIF
-
-
 END SUBROUTINE write_artn_step_report
 
 
@@ -480,6 +393,14 @@ END SUBROUTINE write_artn_step_report
 
 !------------------------------------------------------------
 SUBROUTINE write_inter_report( iunartout, pushfactor, de )
+  !> @brief 
+  !!   intermediate report between the saddle convergence and the
+  !!   various minimum relaxation
+  !
+  !> @param[in]  iunartout    output unit channel
+  !! @param[in]  pushfactor   sens of the push over at saddle point
+  !! @param[in]  de(*)        energetic parameters depending on which push over it is
+  !
   use units, only : DP, unconvert_energy, unit_char
   use artn_params, only : artn_resume, istep, bilan,filout
   implicit none
@@ -521,7 +442,8 @@ SUBROUTINE write_inter_report( iunartout, pushfactor, de )
       !WRITE( u,'(/)')
 
     CASE DEFAULT
-      WRITE(*,*) "********* ERROR write_inter_report:: pushfactor", pushfactor, " **************"
+      WRITE( iunartout,'(5x,"********* ERROR write_inter_report:: pushfactor",x,i0," **************")') pushfactor
+      WRITE( *,'(5x,"********* ERROR write_inter_report:: pushfactor",x,i0," **************")') pushfactor
       
 
   END SELECT
@@ -531,6 +453,7 @@ SUBROUTINE write_inter_report( iunartout, pushfactor, de )
      //unit_char('force')//' | EigenVal= ", f12.5,x,"'//unit_char('hessian')//' | npart= ",f4.0,x," | delr= ",f12.5,x,"' &
      //unit_char('length')//' | evalf= ",f5.0,x,"|")'
   Write(iunartout,Cbilan) Bilan
+  write(iunartout,'(5x,*(a))') repeat("-",50)
 
   CLOSE(iunartout)
 
@@ -540,7 +463,14 @@ END SUBROUTINE write_inter_report
 
 !------------------------------------------------------------
 SUBROUTINE write_end_report( iunartout, lsaddle, lpush_final, de )
- 
+  !> @brief
+  !!   Report to finish the search 
+  !
+  !> @param[in]   iunartout      output unit channel
+  !! @param[in]   lsaddle        flag for saddle point convergence
+  !! @param[in]   lpush_final    flag for final push
+  !! @paran[in]   de             energetic parameter
+  !
   use units, only : DP, unconvert_energy, unit_char
   use artn_params, only : artn_resume, istep, bilan,filout
   implicit none
@@ -565,25 +495,26 @@ SUBROUTINE write_end_report( iunartout, lsaddle, lpush_final, de )
         ' | EigenVal= ", f12.5,x,"'//unit_char('hessian')//' | npart= ",f4.0,x," | delr= ",f12.5,x,"'//unit_char('length')// &
         ' | evalf= ",f5.0,x,"|")'
     Write(iunartout,Cbilan) Bilan
+    write(iunartout,'(5x,*(a))') repeat("-",50)
 
 
     IF( lpush_final ) THEN
       WRITE(iunartout,'(5X,"       *** Pushing forward to a minimum  ***      ")')
-      WRITE(iunartout,'(5X, "-------------------------------------------------")')
+      WRITE(iunartout,'(5X,"-------------------------------------------------")')
     ELSE
       WRITE(iunartout,'(5X,"|> No push_final to Minimum :: ARTn search finished "/5x,*(a))') repeat("-",50)
       !WRITE(iunartout,'(5X,"       *** ARTn search finished ***")')
       !WRITE(iunartout,'(5X,"       *** no push_final minimal ***")')
-      WRITE(iunartout,'(5X, "-------------------------------------------------"/)')
+      WRITE(iunartout,'(5X,"-------------------------------------------------"/)')
     ENDIF
 
   else
-    WRITE (iunartout,'(5X, "--------------------------------------------------")')
-    WRITE (iunartout,'(5X, "        *** ARTn saddle search failed  ***        ")')
-    WRITE (iunartout,'(5X, "--------------------------------------------------")')
+    WRITE (iunartout,'(5X,"--------------------------------------------------")')
+    WRITE (iunartout,'(5X,"        *** ARTn saddle search failed  ***        ")')
+    WRITE (iunartout,'(5X,"--------------------------------------------------")')
   endif
 
-  WRITE (iunartout,'(5X, "|> number of steps:",x, i0)') istep
+  WRITE (iunartout,'(5X,"|> number of steps:",x, i0)') istep
   CLOSE(iunartout)
 
 END SUBROUTINE write_end_report
@@ -591,7 +522,13 @@ END SUBROUTINE write_end_report
 
 !------------------------------------------------------------
 SUBROUTINE write_fail_report( iunartout, disp, estep )
-
+  !> @brief 
+  !!   Fail report 
+  !   
+  !> @param[in]  inuartout   output unit channel
+  !! @param[in]  disp        displacement parameters
+  !! @param[in]  estep       Energy of actual step
+  !
   use units, only : DP, unconvert_energy, unit_char
   use artn_params, only : MOVE, ifails, error_message,filout
   implicit none
@@ -606,7 +543,7 @@ SUBROUTINE write_fail_report( iunartout, disp, estep )
   WRITE (iunartout,'(5X, "--------------------------------------------------")')
   WRITE (iunartout,'(5X, "        *** ARTn search failed ( ",i0," ) at ",a," *** ")') ifails, MOVE(DISP)
   WRITE (iunartout,'(5X, "Step Params: Etot = ",f10.4,x,a)') unconvert_energy(estep), unit_char('energy')
-  WRITE (iunartout, '(5X, "Failure message: ",a)') trim(adjustl(error_message))
+  WRITE (iunartout,'(5X, "Failure message: ",a)') trim(adjustl(error_message))
   WRITE (iunartout,'(5X, "--------------------------------------------------"//)')
   CLOSE (iunartout)
 END SUBROUTINE write_fail_report
@@ -614,6 +551,15 @@ END SUBROUTINE write_fail_report
 
 !------------------------------------------------------------
 subroutine compute_delr( nat, pos, old_pos, lat, delr )
+  !> @brief 
+  !!   compute the displacement 
+  !
+  !> @param[in]  nat       number of atoms
+  !! @param[in]  pos       actual position of atoms in 3 dimension
+  !! @param[in]  old_pos   reference atomic position
+  !! @param[in]  lat       box parameters
+  !! @param[out] delr      displacement of each atom
+  !
   use units, only : DP
   implicit none
 
@@ -633,3 +579,7 @@ subroutine compute_delr( nat, pos, old_pos, lat, delr )
   enddo
 
 end subroutine compute_delr
+
+
+
+

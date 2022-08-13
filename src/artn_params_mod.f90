@@ -539,11 +539,11 @@ CONTAINS
 
 !---------------------------------------------------------------------------
   SUBROUTINE Fill_param_step( nat, box, order, pos, etot, force, error )
-    !
-    !> @brief fill the *_step arrays on which ARTn works on.
-    !! For parallel Engine each proc has list from 1 to natproc,
-    !! pos_eng( i ) such as order( i ) = iat means pos( iat ) = pos_eng( i )
-    !! So pos( order(i) ) = pos_eng( i )
+    !> @brief 
+    !!   fill the *_step arrays on which ARTn works on.
+    !!   For parallel Engine each proc has list from 1 to natproc,
+    !!   pos_eng( i ) such as order( i ) = iat means pos( iat ) = pos_eng( i )
+    !!   So pos( order(i) ) = pos_eng( i )
     !
     !> @param[in]  nat    number of atoms
     !> @param[in]  box    box parameters

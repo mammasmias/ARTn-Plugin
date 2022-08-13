@@ -612,10 +612,11 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            IF ( .NOT. lbasin .AND. lowest_eigval > 0.0) THEN
               ! 
               IF (inewchance < nnewchance) THEN
-                 ! Hope by continue pushing along init we find something 
+                 ! ... Continue pushing along init  
                  inewchance = inewchance +1
                  ismooth      = 0
-              ELSE
+              ELSE 
+                 ! ... Stop
                  error_message = 'EIGENVALUE LOST'
                  call write_fail_report( iunartout, disp, lowest_eigval )
                  lconv = .true.
@@ -662,10 +663,12 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   !
   IF( lconv )THEN
     !
-    OPEN ( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'old', POSITION = 'append', IOSTAT = ios )
-    WRITE (iunartout,'(5x, "|> BLOCK FINALIZE..")')
-    WRITE (iunartout,'(5X, "|> number of steps:",x, i0)') istep
-    CLOSE (iunartout)
+    ! ...Print in the OUTPUT
+    OPEN( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'old', POSITION = 'append', IOSTAT = ios )
+    WRITE( iunartout,'(5x, "|> BLOCK FINALIZE..")')
+    WRITE( *,'(5x, "|> BLOCK FINALIZE..")')
+    WRITE( iunartout,'(5X, "|> number of steps:",x, i0)') istep
+
     !> SCHEMA FINILIZATION
     lend = lconv
     !
@@ -681,12 +684,20 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
       CALL move_nextmin( nat, tau )
     ELSE
       tau(:,:) = tau_init(:,order(:))
+      WRITE( iunartout, '(5x, "|> Initial Configuration loaded...")')
     ENDIF
+
+    CLOSE( iunartout )
+
+    !
+    ! ...Tell to the engine it is finished
+    !call flag_false()
+
     !
     ! ...Force = 0.0
     displ_vec = 0.0_DP
-    !disp = VOID
-    disp = RELX
+    disp = VOID
+    !disp = RELX
     !
     ! ...The search IS FINISHED
     RETURN
