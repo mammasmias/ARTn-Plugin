@@ -56,6 +56,9 @@ SUBROUTINE displacement_validation( atom_const, push, lvalid)
      !print*, "**disp_valid",push, norm2(push)
   ENDIF
   !
+  ! When the atom is not pushed, constrain is useless
+  IF (all(push(:) .EQ. 0,1)) lvalid = .TRUE.
+  !
 END SUBROUTINE displacement_validation
 
 

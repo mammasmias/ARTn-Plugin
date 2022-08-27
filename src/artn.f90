@@ -168,7 +168,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     !
     ! ...Write the structure
     CALL write_struct( at, nat, tau_step, order, elements, ityp, push, etot_eng, 0.01_DP, iunstruct, struc_format_out, initpfname )
-    artn_resume = '* Start: '//trim(initpfname)
+    artn_resume = '* Start: '//trim(initpfname)//'.'//trim(struc_format_out)
+    !
 
 
 
@@ -359,8 +360,9 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      call make_filename( outfile, prefix_sad, nsaddle )
      CALL write_struct( at, nat, tau_step, order, elements, ityp, force_step, &
           etot_eng, 1.0_DP, iunstruct, struc_format_out, outfile )
-     artn_resume = trim(artn_resume)//" | "//trim(outfile)
 
+     artn_resume = trim(artn_resume)//" | "//trim(outfile)//'.'//trim(struc_format_out)
+     !
      ! ...write the report
      CALL write_end_report( iunartout, lpush_over, lpush_final, etot_step - etot_init )
 
@@ -483,7 +485,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            CALL make_filename( outfile, prefix_min, nmin )
            CALL write_struct( at, nat, tau_step, order, elements, ityp, force_step, &
                 etot_eng, 1.0_DP, iunstruct, struc_format_out, outfile )
-           artn_resume = trim(artn_resume)//" | "//trim(outfile)
+           artn_resume = trim(artn_resume)//" | "//trim(outfile)//'.'//trim(struc_format_out)
            !
            ! ...Save the minimum if it is new
            call save_min( nat, tau_step )
@@ -517,7 +519,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            CALL write_struct( at, nat, tau_step, order, elements, ityp, &
                 force_step, etot_eng, 1.0_DP, iunstruct, struc_format_out, outfile )
            ! ...Save the structure name file to print it
-           artn_resume = trim(artn_resume)//" | "//trim(outfile)
+           artn_resume = trim(artn_resume)//" | "//trim(outfile)//'.'//trim(struc_format_out)
            !
            ! ...Communicate to the engine it is finished
            CALL flag_false()

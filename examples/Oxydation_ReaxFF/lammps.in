@@ -1,0 +1,45 @@
+# ---------- Initialize Simulation --------------------- 
+clear 
+units real 
+dimension 3 
+boundary p p p 
+atom_style      charge 
+atom_modify map array
+
+
+# ---------- Create Atoms ------------------------------ 
+read_data       Cryst_Si_and_O.reax 
+mass            1 28.0855
+mass            2 16 
+mass            3 1
+
+# ---------- Define Interatomic Potential --------------
+pair_style reax/c  NULL 
+pair_coeff * * ffield.reax.SiOH Si O H
+fix 0 all qeq/reax 1 0.0 10.0 1e-6 reaxff
+neighbor  3.0  bin 
+neigh_modify delay 0 every 1 check yes
+
+# ---------- Define Frozen region ----------------------
+#region 11 block -5.0 INF -5.0 INF -5.0 0.0
+#group freeze region 11
+#group unfrozen subtract all freeze
+#fix 3  freeze setforce  0.0 0.0 0.0
+
+# ----------- OUTPUT -----------------------------------
+dump 10  all custom 1 config.xyz id type x y z fx fy fz
+
+# ----------- ARTn
+#displace_atoms	all random 0.05 0.05 0.05 1258475
+fix             10 all artn alpha0 0.2
+#fix            10 all artn alpha0 0.1 alphashrink 0.99 dtshrink 0.5 dmax 0.5 tmax 20 tmin 0.02
+timestep 1.0 
+
+# ---------- Run Minimization --------------------- 
+reset_timestep 0 
+min_style fire 
+minimize 1e-13 1e-14 10000 100000 
+#min_modify: dmax or delaystep or dtgrow or dtshrink or alpha0 or alphahrink or...
+#            tmax or tmin or halfstepback or initialdelay or vdfmax or line or...
+#            norm or discrete_factor or integrator or tmax  
+#            alpha_damp: does not work anymore

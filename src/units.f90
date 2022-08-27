@@ -36,13 +36,17 @@ Module units
   REAL(DP), PARAMETER :: BOHR_RADIUS_SI   = 0.529177210903E-10_DP  ! m
   REAL(DP), PARAMETER :: AMU_SI           = 1.66053906660E-27_DP   ! Kg
   REAL(DP), PARAMETER :: C_SI             = 2.99792458E+8_DP       ! m sec^-1
-  REAL(DP), PARAMETER :: NA               = 6.022140857E+23        ! mol^-1
+  REAL(DP), PARAMETER :: NA               = 6.022140857E+23_DP     ! mol^-1
 
-  REAL(DP), PARAMETER :: RY2EV =  13.605691930242388_DP  !> Ry to eV conversion 
-  REAL(DP), PARAMETER :: B2A =  0.529177210903_DP        !> bohr to angstrom conversion
-  REAL(DP), PARAMETER :: AMU_RY2 = 911.44424310865645_DP !> calculated from QE using DP
-  REAL(DP), PARAMETER :: ps2aut = 41341.374575751 / 2.
-  REAL(DP), PARAMETER :: aut2s = 4.8278E-17_DP           !> atomic units of times to second conversion (Ry atomic unit)
+  REAL(DP), PARAMETER :: RY2EV            = 13.605691930242388_DP  !> Ry to eV conversion 
+  REAL(DP), PARAMETER :: RY2KCAL          = 5.2065348237317E-22_DP !> Ry to kcal conversion 
+  REAL(DP), PARAMETER :: RY2KJ            = 2.17987197E-21_DP      !> Ry to kJoules conversion 
+  REAL(DP), PARAMETER :: RY2KCALPMOL      = RY2KCAL*NA             !> Ry to kcal/mole conversion 
+  REAL(DP), PARAMETER :: RY2KJPMOL        = RY2KJ*NA               !> Ry to kJoules per mole conversion 
+  REAL(DP), PARAMETER :: B2A              = 0.529177210903_DP      !> bohr to angstrom conversion
+  REAL(DP), PARAMETER :: AMU_RY2          = 911.44424310865645_DP  !> calculated from QE using DP
+  REAL(DP), PARAMETER :: ps2aut           = 41341.374575751 / 2.
+  REAL(DP), PARAMETER :: aut2s            = 4.8278E-17_DP          !> atomic units of times to second conversion (Ry atomic unit)
 
   REAL(DP), PARAMETER :: AMU_AU           = AMU_SI / ELECTRONMASS_SI  ! Dimensionless Hartree
   REAL(DP), PARAMETER :: AMU_RY           = AMU_AU / 2.0_DP           ! Dimensionless Rydberg
@@ -50,6 +54,7 @@ Module units
   !REAL(DP), PARAMETER :: AU_SEC           = H_PLANCK_SI/(2.*pi)/HARTREE_SI
   REAL(DP), PARAMETER :: AU_SEC           = H_PLANCK_SI/(2.*pi)/RYDBERG_SI
   REAL(DP), PARAMETER :: AU_PS            = AU_SEC * 1.0E+12_DP
+  REAL(DP), PARAMETER :: AU_FS            = AU_SEC * 1.0E+15_DP
 
 
   !> Units Character
@@ -305,10 +310,34 @@ Module units
             cL = "LJ"
 
 
-          !case( 'real' )
+          case( 'real' )
             !! Energy: Kcal/mol
+            E2au = 1.0_DP / Ry2kcalPmol
+            au2E = Ry2kcalPmol
+ 
             !! Length: Angstrom
+            L2au = 1.0_DP / B2A
+            au2L = B2A
+
             !! Time: femtosecond
+            T2au = 1.0_DP / AU_FS
+            au2T = AU_FS
+
+            !! Mass: gram/mol
+            Mass = AMU_RY
+
+            !! Force
+            F2au = E2au / L2au
+            au2F = 1.0_DP / F2au
+
+            !! Hessian
+            H2au = F2au / L2au
+            au2H = 1.0_DP / H2au
+
+            cE = "Kcal/mol"
+            !cL = AA
+            cL = "Ang"
+
           !case( 'si' )
             !! Energy: J
             !! Length: metre
@@ -498,11 +527,3 @@ Module units
 
 
 end module units
-
-
-
-
-
-
-
-
