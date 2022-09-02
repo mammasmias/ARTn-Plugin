@@ -26,7 +26,7 @@ static Fix *artn2creator( LAMMPS *lmp, int argc, char **argv ){
 }
 
 
-extern "C" void lammpsplugin_init(){
+extern "C" void lammpsplugin_init( void *lmp, void *handle, void *regfunc ){
 
   lammpsplugin_t plugin;
   lammpsplugin_regfunc register_plugin = (lammpsplugin_regfunc) regfunc;
