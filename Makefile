@@ -105,14 +105,14 @@ help:
 	@echo "* COMPILATION:"
 	@$(call verif_defined, F90)
 	@echo "make lib		compile the libartn.a library in src/ folder with ${F90} compiler"
-	@echo "make sharelib		compile dynamic library libartn.so with plugin interfaces for LAMMPS"
 	@echo "make clean		delete the object files and libartn.a from src/ "
 	@echo ""
 	@echo ""
 	@echo "* LAMMPS Interface:"
 	@$(call verif_defined, LAMMPS_PATH)
-	@echo "make patch-lammps	copy the Files_LAMMPS/fix_artn.* and Files_LAMMPS/artn.h to LAMMPS_PATH/src"
-	@echo "make unpatch-lammps	delete the fix_artn.* and artn.h files from  LAMMPS_PATH/src"
+	@echo "make sharelib		compile dynamic library libartn.so with plugin interfaces for LAMMPS"
+	@#echo "make patch-lammps	copy the Files_LAMMPS/fix_artn.* and Files_LAMMPS/artn.h to LAMMPS_PATH/src"
+	@#echo "make unpatch-lammps	delete the fix_artn.* and artn.h files from  LAMMPS_PATH/src"
 	@echo ""
 	@echo "* QE Interface:"
 	@$(call verif_defined, QE_PATH)

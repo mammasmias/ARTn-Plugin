@@ -1,5 +1,4 @@
 
-#include ${QE_PATH}/make.inc
 include ../environment_variables
 
 OBJ := Obj
@@ -42,7 +41,7 @@ ifeq ($(F90),ifort)
   FLAGS := $(FFLAGS) $(FDEBUG) $(LAPACK_LIBS) -fPIC
 else #($(F90),gfortran)
   MOD   := -I$(OBJ) -J$(OBJ) 
-  FLAGS := $(FFLAGS) $(FDEBUG) $(LAPACK_LIBS)
+  FLAGS := $(FFLAGS) $(FDEBUG) $(LAPACK_LIBS) -fPIC
 endif
 
 
