@@ -23,7 +23,7 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
   !> @param [in]    displ_vec	Displacement field (unit lemgth/force/hessian ) 
   !
   USE artn_params, ONLY:  lbasin, iperp, irelax, push, &
-                          eigenvec, lanczos_disp, MOVE , &
+                          eigenvec, MOVE , &
                           prev_disp, iunartout, filout, istep
 
   USE UNITS, Only: DP, convert_time, unconvert_time, &
@@ -122,19 +122,20 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
      !   " Column: Pos - eigenvec - vel - force", eigenvec, vel, force )
      !
      !
-  CASE( 'lanc' )
+  ! CASE( 'lanc' )
+  !    !
+  !    ! ... set the velocity and acceleration and alpha of previous step to move correctly
+  !    etot     = 0.D0
+  !    vel(:,:) = 0.D0
+  !    dt       = dt0
+  !    alpha    = 0.D0
+  !    nsteppos = 0
+  !    !
+  !    ! ... the step performed should be like this now translate it into the correct force
+  !    ! force(:,:) = displ_vec(:,order(:))*lanczos_disp*Mass/dt**2
+  !    force(:,:) = displ_vec(:,order(:))*Mass/dt**2
      !
-     ! ... set the velocity and acceleration and alpha of previous step to move correctly
-     etot     = 0.D0
-     vel(:,:) = 0.D0
-     dt       = dt0
-     alpha    = 0.D0
-     nsteppos = 0
-     !
-     ! ... the step performed should be like this now translate it into the correct force
-     force(:,:) = displ_vec(:,order(:))*lanczos_disp*Mass/dt**2
-     !
-  CASE( 'eign', 'over', 'smth' )
+  CASE( 'eign', 'over', 'smth', 'lanc' )
      !
      etot       = 0.D0
      vel(:,:)   = 0.D0
