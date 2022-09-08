@@ -14,12 +14,17 @@ clean :
 lammps:
 	@$(call check_defined, CXX)
 	@$(call check_defined, LAMMPS_PATH)
+	@echo cxx is: "${CXX}"
 	if  echo "${CXX}" | grep -q "mpi" ; then \
-	$(CXX) -fPIC -c Files_LAMMPS/fix_artn.cpp -o Files_LAMMPS/fix_artn.o -I${LAMMPS_PATH}/src ; else \
-	$(CXX) -fPIC -c Files_LAMMPS/fix_artn.cpp -o Files_LAMMPS/fix_artn.o -I${LAMMPS_PATH}/src -I${LAMMPS_PATH}/src/STUBS ; fi
+	$(CXX) -fPIC -c Files_LAMMPS/fix_artn.cpp -o Files_LAMMPS/fix_artn.o -I${LAMMPS_PATH}/src; \
+	$(CXX) -fPIC -c Files_LAMMPS/artnplugin.cpp -o Files_LAMMPS/artnplugin.o -I${LAMMPS_PATH}/src; \
+	else \
+	$(CXX) -fPIC -c Files_LAMMPS/fix_artn.cpp -o Files_LAMMPS/fix_artn.o -I${LAMMPS_PATH}/src -I${LAMMPS_PATH}/src/STUBS; \
+	$(CXX) -fPIC -c Files_LAMMPS/artnplugin.cpp -o Files_LAMMPS/artnplugin.o -I${LAMMPS_PATH}/src -I${LAMMPS_PATH}/src/STUBS; \
+	fi
 	
-	@#$(CXX) -fPIC -c Files_LAMMPS/fix_artn.cpp -o Files_LAMMPS/fix_artn.o -I${LAMMPS_PATH}/src $(LIBSTUBS)
-	$(CXX) -fPIC -c Files_LAMMPS/artnplugin.cpp -o Files_LAMMPS/artnplugin.o -I${LAMMPS_PATH}/src 
+	#$(CXX) -fPIC -c Files_LAMMPS/fix_artn.cpp -o Files_LAMMPS/fix_artn.o -I${LAMMPS_PATH}/src -I${LAMMPS_PATH}/src/STUBS
+	#$(CXX) -fPIC -c Files_LAMMPS/artnplugin.cpp -o Files_LAMMPS/artnplugin.o -I${LAMMPS_PATH}/src -I${LAMMPS_PATH}/src/STUBS 
 
 sharelib: lib lammps
 	@echo "";echo ">>>> environment_variable verification"
