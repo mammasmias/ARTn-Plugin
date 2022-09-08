@@ -282,7 +282,8 @@ SUBROUTINE lanczos( nat, v_in, pushdir, force, &
   !
   ! Overwrite displ_vec by the next vector displacement
   !
-  displ_vec(:,:) = v1(:,:)
+  ! displ_vec(:,:) = v1(:,:)
+  displ_vec(:,:) = v1(:,:)*lanczos_disp
   !
   DEALLOCATE( q, v1 )
   !

@@ -26,6 +26,7 @@
 #include "respa.h"
 #include "update.h"
 #include "variable.h"
+#include "comm.h"
 
 #include "min_fire.h"
 
@@ -50,8 +51,10 @@ FixARTn::FixARTn( LAMMPS *lmp, int narg, char **arg ): Fix( lmp, narg, arg )
 
 
   // ...Set mpi parameters
-  MPI_Comm_rank( world, &me );
-  MPI_Comm_size( world, &nproc );
+  me = comm->me;
+  nproc = comm->nprocs;
+  //MPI_Comm_rank( world, &me );
+  //MPI_Comm_size( world, &nproc );
 
   nloc = nullptr;
   ftot = nullptr;
