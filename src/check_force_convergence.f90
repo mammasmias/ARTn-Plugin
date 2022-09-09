@@ -73,11 +73,12 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
 
         !
         ! ... Check whether the fperp criterion should be tightened
-        IF( maxfpara <= fpara_thr ) THEN !> We are close to the saddle point 
+       ! IF( maxfpara <= fpara_thr ) THEN !> We are close to the saddle point 
            fperp_thr = forc_thr
-        ELSE
-           fperp_thr = init_forc_thr
-        ENDIF
+       ! ELSE
+       !    fperp_thr = init_forc_thr
+       ! ENDIF
+       !!! commented by NS
 
         ! 
         ! ... Conditions for stopping perp_relax

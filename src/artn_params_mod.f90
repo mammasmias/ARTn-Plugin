@@ -191,14 +191,18 @@ MODULE artn_params
   CHARACTER(:),     ALLOCATABLE :: converge_property
   CHARACTER(LEN=500)            :: error_message
   !
-  NAMELIST/artn_parameters/ lrestart, lrelax, lpush_final, lmove_nextmin, &
-       ninit, neigen, nperp, lanczos_max_size, nsmooth, push_mode, dist_thr,  &
+  NAMELIST/artn_parameters/ &
+       lrestart, lrelax, lpush_final, lmove_nextmin, &                                 !! FLAG
+       ninit, neigen, nperp, lanczos_max_size, nsmooth, &                              !! counter
+       push_mode, dist_thr, push_ids, add_const, &                                     !! constrain
        init_forc_thr,forc_thr, fpara_thr, eigval_thr, frelax_ene_thr, &
-       push_step_size, lanczos_disp, eigen_step_size, current_step_size, push_over, &
-       push_ids, add_const, engine_units, zseed, struc_format_out, elements, &
-       verbose, filout, sadfname, initpfname, eigenfname, restartfname, nnewchance,&
-       converge_property, lanczos_eval_conv_thr, push_guess, eigenvec_guess,  &
-       nperp_limitation, lnperp_limitation, lanczos_min_size, &
+       lanczos_eval_conv_thr, converge_property,   &                                   !! Threshold
+       push_step_size, lanczos_disp, eigen_step_size, current_step_size, push_over, &  !! Displacement length
+       engine_units, struc_format_out, elements, push_guess, eigenvec_guess,   &
+       filout, sadfname, initpfname, eigenfname, restartfname,  &                      !! Filename and format
+       verbose, zseed,  &
+       ! -- OPTION
+       nperp_limitation, lnperp_limitation, nnewchance,  &
        lanczos_always_random, etot_diff_limit, nrelax_print
 
 
