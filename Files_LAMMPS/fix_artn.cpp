@@ -44,7 +44,7 @@ using namespace FixConst;
 
 /* ---------------------------------------------------------------------- */
 
-FixARTn::FixARTn( LAMMPS *lmp, int narg, char **arg ): Fix( lmp, narg, arg ) 
+FixARTn::FixARTn( LAMMPS *lmp, int narg, char **arg ): Fix( lmp, narg, arg )
 {
 
   if (narg < 3) error->all(FLERR,"Illegal fix ARTn command");
@@ -80,14 +80,14 @@ FixARTn::FixARTn( LAMMPS *lmp, int narg, char **arg ): Fix( lmp, narg, arg )
   alpha_init = 0.0;
   alphashrink = 0.0;
   dt_init = 0.0;
-  dtsk = 0.0; 
+  dtsk = 0.0;
   dtgrow = 0.0;
   tmax = 0.0;
   tmin = 0.0;
   dtmax = 0.0;
   dtmin = 0.0;
 
-  fire_integrator = 0.0; 
+  fire_integrator = 0.0;
   ntimestep_start = 0.0;
 
   delaystep_start_flag = 1;
@@ -122,9 +122,9 @@ FixARTn::FixARTn( LAMMPS *lmp, int narg, char **arg ): Fix( lmp, narg, arg )
   int iarg(3);
   while( iarg < narg ){
 
-    /* Here we change the min_fire parameter 
+    /* Here we change the min_fire parameter
     */
-    
+
     if (strcmp(arg[iarg],"dmax") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal min_modify command");
       dmax = utils::numeric(FLERR,arg[iarg+1],false,lmp);
@@ -192,7 +192,7 @@ FixARTn::FixARTn( LAMMPS *lmp, int narg, char **arg ): Fix( lmp, narg, arg )
     }
 
   }
-  
+
 
 }
 
@@ -214,7 +214,7 @@ FixARTn::~FixARTn() {
   memory->destroy( xtot );
   memory->destroy( vtot );
   memory->destroy( order_tot );
-  
+
   memory->destroy(tab_comm);
 
   pe_compute = nullptr;
@@ -241,8 +241,8 @@ void FixARTn::init() {
 
   // Check if FIRE minimization is well define
 
-  if( strcmp(update->minimize_style, "fire") != 0 ) 
-    error->all(FLERR,"Fix/ARTn must be used with the FIRE minimization"); 
+  if( strcmp(update->minimize_style, "fire") != 0 )
+    error->all(FLERR,"Fix/ARTn must be used with the FIRE minimization");
 
 
   // compute for potential energy
@@ -283,7 +283,7 @@ void FixARTn::min_setup( int vflag ) {
   if( !me )cout<< " * FIX/ARTn::CHANGE PARAM..."<<endl;
 
   /*
-  -- Change & Save the initial Fire Parameter 
+  -- Change & Save the initial Fire Parameter
      Exept: delaystep_start_flag = 1 (ALWAYS)
   */
 
@@ -318,12 +318,13 @@ void FixARTn::min_setup( int vflag ) {
 
   dt_init = update->dt;
 
+
   dtmax = tmax*dt_init;
   dtmin = tmin*dt_init;
 
   //fire_integrator = 0;
   ntimestep_start = update->ntimestep;
-  
+
   etol = update->etol;
   ftol = update->ftol;
 
@@ -372,7 +373,7 @@ void FixARTn::min_setup( int vflag ) {
 
   // ...Define the constrains on the atomic movement
   memory->create(if_pos,nat,3,"fix/artn:if_pos");
-  //memset( if_pos, 1, 3*nat ); 
+  //memset( if_pos, 1, 3*nat );
   for( int i(0); i < nat; i++ ){
      if_pos[ i ][0] = 1;
      if_pos[ i ][1] = 1;
@@ -410,7 +411,7 @@ void FixARTn::min_post_force( int /*vflag*/ ){
 
 
   // ...Link the minimizer
-  class Min *minimize = update-> minimize; 
+  class Min *minimize = update-> minimize;
   if( !minimize )error->all(FLERR,"fix/ARTn::Min_vector is not linked");
 
 
@@ -442,8 +443,8 @@ void FixARTn::min_post_force( int /*vflag*/ ){
   // ------------------------------------------------------------------- RESIZE SYSTEM SIZE
 
 
-  // ...Resize total system: 
-  //    The Total Number of Atom Change 
+  // ...Resize total system:
+  //    The Total Number of Atom Change
 
   if( natoms != ntot )lresize = 1;
   if( lresize ){
@@ -468,9 +469,9 @@ void FixARTn::min_post_force( int /*vflag*/ ){
   //    The atoms distribution between proc changes
 
   // verification of local size
-  // LRESIZE = logical(int) if number of local atom has been changed 
-  // -> Allgather it 
-  // -> sum them in ntot 
+  // LRESIZE = logical(int) if number of local atom has been changed
+  // -> Allgather it
+  // -> sum them in ntot
   // -> if ntot > 0 => resize
   lresize = ( nloc[me] != oldnloc );
   for( int ipc(0); ipc < nproc; ipc++ )nlresize[ me ] = 0;
@@ -483,7 +484,7 @@ void FixARTn::min_post_force( int /*vflag*/ ){
   if( ntot > 0 ){
 
     // ...Array of old local size
-    int *oldloc;   
+    int *oldloc;
     memory->create( oldloc, nproc, "fix/artn:oldloc" );
     MPI_Allgather( &oldnloc, 1, MPI_INT, oldloc, 1, MPI_INT, world );
 
@@ -505,10 +506,10 @@ void FixARTn::min_post_force( int /*vflag*/ ){
     for( int ipc(0); ipc < nproc; ipc++ ) length[ ipc ] = 3*oldloc[ ipc ];
 
 
-    MPI_Gatherv( &f_prev[0][0], 3*oldnloc, MPI_DOUBLE, 
+    MPI_Gatherv( &f_prev[0][0], 3*oldnloc, MPI_DOUBLE,
                  &ftot[0][0], length, istart, MPI_DOUBLE, 0, world );
 
-    MPI_Gatherv( &v_prev[0][0], 3*oldnloc, MPI_DOUBLE, 
+    MPI_Gatherv( &v_prev[0][0], 3*oldnloc, MPI_DOUBLE,
                  &vtot[0][0], length, istart, MPI_DOUBLE, 0, world );
 
 
@@ -517,11 +518,11 @@ void FixARTn::min_post_force( int /*vflag*/ ){
     for( int ipc(0); ipc < nproc; ipc++ )
       istart[ ipc ] = ( ipc > 0 ) ? istart[ ipc - 1 ] + oldloc[ ipc - 1 ] : 0 ;
 
-    MPI_Gatherv( order, oldnloc, MPI_INT, 
+    MPI_Gatherv( order, oldnloc, MPI_INT,
                  order_tot, oldloc, istart, MPI_INT, 0, world );
 
 
-  
+
     // ...Resize order
     tagint *itag = atom->tag;
     memory->destroy( order );
@@ -540,7 +541,7 @@ void FixARTn::min_post_force( int /*vflag*/ ){
                     inew, nloc, istart, MPI_INT, 0, world );
 
 
-    // ...Change the order of force 
+    // ...Change the order of force
     if( !me ){
       if( !xtot )printf(" ERROR - *XTOT => NULL \n");
       if( !ftot )printf(" ERROR - *FTOT => NULL \n");
@@ -554,13 +555,13 @@ void FixARTn::min_post_force( int /*vflag*/ ){
             xtot[i][2] = ftot[j][2];
             break;
           }
-      }  
+      }
     } // ::: ME = 0
 
 
     // ...Resize f_prev
     memory->destroy( f_prev );
-    memory->create( f_prev, nlocal, 3, "fix/artn:f_prev" ); 
+    memory->create( f_prev, nlocal, 3, "fix/artn:f_prev" );
 
 
     // ...Starting point:
@@ -570,7 +571,7 @@ void FixARTn::min_post_force( int /*vflag*/ ){
     // ...Length of receiv buffer
     for( int ipc(0); ipc < nproc; ipc++ )length[ ipc ] = 3*nloc[ ipc ];
 
-    MPI_Scatterv( &xtot[0][0], length, istart, MPI_DOUBLE, 
+    MPI_Scatterv( &xtot[0][0], length, istart, MPI_DOUBLE,
                   &f_prev[0][0], 3*nlocal, MPI_DOUBLE, 0, world );
 
 
@@ -596,7 +597,7 @@ void FixARTn::min_post_force( int /*vflag*/ ){
     memory->destroy( v_prev );
     memory->create( v_prev, nlocal, 3, "fix/artn:v_prev" );
 
-    MPI_Scatterv( &xtot[0][0], length, istart, MPI_DOUBLE, 
+    MPI_Scatterv( &xtot[0][0], length, istart, MPI_DOUBLE,
                   &v_prev[0][0], 3*nlocal, MPI_DOUBLE, 0, world );
 ------*/
 
@@ -632,16 +633,16 @@ void FixARTn::min_post_force( int /*vflag*/ ){
 
 
 
-  // ---------------------------------------------------------------------  
-  // ...If v.f is 0 or under min_fire call the force to ajust 
+  // ---------------------------------------------------------------------
+  // ...If v.f is 0 or under min_fire call the force to ajust
   // the integrator step parameter dtv
   //cout<< me<< " * CONDITION: "<< vdotfall<< "  " << update->ntimestep<<"  " << nextblank<<endl;
   if( !(vdotfall > 0) && update-> ntimestep > 1 && nextblank ){
 
-    // ...Rescale the force if the dt has been change 
+    // ...Rescale the force if the dt has been change
     double rscl = dt_curr / update->dt;
 
-    // ...Reload the previous ARTn-force 
+    // ...Reload the previous ARTn-force
     for( int i(0); i < nlocal; i++){
       f[i][0] = f_prev[i][0] * rscl*rscl ;
       f[i][1] = f_prev[i][1] * rscl*rscl ;
@@ -683,7 +684,7 @@ void FixARTn::min_post_force( int /*vflag*/ ){
 
 
 
-  // ...Extract the energy in Ry for ARTn  
+  // ...Extract the energy in Ry for ARTn
   double etot = pe_compute->compute_scalar();
 
 
@@ -693,10 +694,10 @@ void FixARTn::min_post_force( int /*vflag*/ ){
 
 
 
-  // ...Build it with : domain-> boxlo[3], boxhi[3] and xy, xz, yz  
+  // ...Build it with : domain-> boxlo[3], boxhi[3] and xy, xz, yz
   double lat[3][3];
-  double dx = domain->boxhi[0] - domain->boxlo[0], 
-         dy = domain->boxhi[1] - domain->boxlo[1], 
+  double dx = domain->boxhi[0] - domain->boxlo[0],
+         dy = domain->boxhi[1] - domain->boxlo[1],
          dz = domain->boxhi[2] - domain->boxlo[2];
 
   lat[0][0] = dx;     lat[0][1] = domain->xy    ; lat[0][2] = domain->xz ;
@@ -705,7 +706,7 @@ void FixARTn::min_post_force( int /*vflag*/ ){
 
 
 
-  
+
 
 
 
@@ -716,7 +717,7 @@ void FixARTn::min_post_force( int /*vflag*/ ){
 
   // Print position to see
   //if( !me )
-  // //for( int i = 0; i < natoms-1; i++) 
+  // //for( int i = 0; i < natoms-1; i++)
   //  for( int i = 0; i < 10; i++)
   //    //printf("fix_artn:: %d order %d : %f %f %f \n", i, order_tot[i], xtot[i][0], xtot[i][1], xtot[i][2]);
   //    printf("fix_artn:: %d order %d : %f %f %f \n", i, order_tot[i], xtot[order_tot[i]][0], xtot[order_tot[i]][1], xtot[order_tot[i]][2]);
@@ -748,7 +749,7 @@ void FixARTn::min_post_force( int /*vflag*/ ){
 
 
 
-  // ---------------------------------------------------------------------- COMVERGENCE 
+  // ---------------------------------------------------------------------- COMVERGENCE
   if( iconv ){
 
     // ...Clean ARTn
@@ -758,7 +759,7 @@ void FixARTn::min_post_force( int /*vflag*/ ){
     update-> etol = 10.; // etol;
     update-> ftol = 10.; //ftol;
 
-    // ...Spread the force 
+    // ...Spread the force
     Spread_Arrays( nloc, xtot, vtot, ftot, nat, tau, vel, f );
 
 
@@ -782,7 +783,7 @@ void FixARTn::min_post_force( int /*vflag*/ ){
 
 
 
-  // ...Spread the force 
+  // ...Spread the force
   Spread_Arrays( nloc, xtot, vtot, ftot, nat, tau, vel, f );
 
 
@@ -795,14 +796,14 @@ void FixARTn::min_post_force( int /*vflag*/ ){
     // Comvert the force Ry to LAMMPS units
     if( rmass ){
       for( int i(0); i < nloc[me]; i++){
-        f[i][0] *= rmass[i]; 
-        f[i][1] *= rmass[i]; 
-        f[i][2] *= rmass[i]; 
+        f[i][0] *= rmass[i];
+        f[i][1] *= rmass[i];
+        f[i][2] *= rmass[i];
       }
     }else{
       for( int i(0); i < nloc[me]; i++){
-	f[i][0] *= mass[ityp[i]];      
-	f[i][1] *= mass[ityp[i]];      
+	f[i][0] *= mass[ityp[i]];
+	f[i][1] *= mass[ityp[i]];
 	f[i][2] *= mass[ityp[i]];
       }
     }
@@ -812,9 +813,9 @@ void FixARTn::min_post_force( int /*vflag*/ ){
 
 
 
-  // ...CHANGE FIRE PARAMETER as function of the value of 
+  // ...CHANGE FIRE PARAMETER as function of the value of
 
-  //if( (disp == get_perp_() && get_iperp_() == 1) 
+  //if( (disp == get_perp_() && get_iperp_() == 1)
   //  || (disp != get_perp_() && disp != get_relx_()) ){
 
 
@@ -822,14 +823,13 @@ void FixARTn::min_post_force( int /*vflag*/ ){
     //update->dt = dt_curr;
     string str;
 
-
     // ...Allocate/Deallocate word
     nword = 6;
     if( word )memory->destroy( word );
     memory->create( word, nword, 20, "fix:word" );
 
     strcpy( word[0], "alpha0" );
-    str = to_string(alpha); 
+    str = to_string(alpha);
     strcpy( word[1], str.c_str() );
 
     strcpy( word[2], "delaystep" );
@@ -838,7 +838,7 @@ void FixARTn::min_post_force( int /*vflag*/ ){
     strcpy( word[3], str.c_str() );
 
     // ...RELAX step -> halfstepback = yes
-    //if( disp == __artn_params_MOD_relx || disp == __artn_params_MOD_perp ){
+    //if( disp == __artn_pa befams_MOD_relx || disp == __artn_params_MOD_perp ){
     if( disp == get_relx_() || disp == get_perp_() ){
       strcpy( word[4], "halfstepback" );
       strcpy( word[5], "yes" );
@@ -848,18 +848,21 @@ void FixARTn::min_post_force( int /*vflag*/ ){
     }
 
   // ...Launch modification of FIRE parameter
-  if( (disp == get_perp_() && get_iperp_() == 1) 
-    || (disp != get_perp_() && disp != get_relx_()) ){
+
+  if( (disp == get_perp_() && get_iperp_() == 1)
+    || (disp != get_perp_() && disp != get_relx_())
+      || (disp == get_relx_() && get_irelx_() == 1) ){
 
     // ...Update the time
     update->dt = dt_curr;
 
-    //printf(" CHange Fire param: %d at %ld\n", disp, update->ntimestep );
-    //printf(" dt %f \n %s %s \n %s %s \n %s %s \n ", dt_curr, word[0], word[1], word[2], word[3], word[4], word[5]);
+    // printf(" CHange Fire param: %d at %ld\n", disp, update->ntimestep );
+    // printf(" dt %f \n %s %s \n %s %s \n %s %s \n ", dt_curr, word[0], word[1], word[2], word[3], word[4], word[5]);
 
     // ...Send the new parameter to minmize
     minimize-> modify_params( nword, word );
     minimize-> init();
+
   }
 
 
@@ -917,7 +920,6 @@ void FixARTn::post_run(){
 
 
 void FixARTn::Collect_Arrays( int* nloc, double **x, double **v, double **f, int nat, double **xtot, double **vtot, double **ftot, int *order_tot, int *typ_tot ){
-
 
 
   // ...Alloc temporary memory
@@ -999,14 +1001,14 @@ void FixARTn::Spread_Arrays( int *nloc, double **xtot, double **vtot, double **f
 
 
 /*
-// ---------------------------------------------------------------------- 
+// ----------------------------------------------------------------------
 
 int FixARTn::pack_reverse_comm(int n, int first, double *buf)
-{ 
+{
   int i,m,last;
-  
-  m = 0; 
-  last = first + n; 
+
+  m = 0;
+  last = first + n;
   for (i = first; i < last; i++) {
     buf[m++] = tab_comm[i];
     //    if (i<first+3) printf ("[%d] prc %d %d buf_send = %f \n",me,i,m-1,buf[m-1]);
@@ -1014,13 +1016,13 @@ int FixARTn::pack_reverse_comm(int n, int first, double *buf)
   return m;
 }
 
-// ---------------------------------------------------------------------- 
+// ----------------------------------------------------------------------
 
 void FixARTn::unpack_reverse_comm(int n, int *list, double *buf)
-{ 
+{
   int i,j,m;
-  
-  m = 0; 
+
+  m = 0;
   for (i = 0; i < n; i++) {
     j = list[i];
     //  tab_comm[j] += buf[m++];
@@ -1032,15 +1034,15 @@ void FixARTn::unpack_reverse_comm(int n, int *list, double *buf)
 // ----------------------------------------------------------------------
 
 void FixARTn::forward(double *tab)
-{ 
+{
   int i;
   int nlocal = atom->nlocal;
   int nghost = atom->nghost;
-  
+
   for (i=0; i<nlocal+nghost; i++) tab_comm[i] = tab[i];
-  
+
   comm->forward_comm_fix(this);
-  
+
   for (i=0; i<nlocal+nghost; i++) tab[i] = tab_comm[i];
 }
 

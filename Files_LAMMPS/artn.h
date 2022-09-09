@@ -12,6 +12,7 @@ extern "C"{
   int get_iperp_();
   int get_perp_();
   int get_relx_();
+  int get_irelx_();
 }
 
 #endif

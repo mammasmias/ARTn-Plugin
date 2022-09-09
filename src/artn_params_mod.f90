@@ -982,6 +982,13 @@ integer function get_relx()
   get_relx = relx
 end function get_relx
 
+integer function get_irelx()
+  !> @brief 
+  !!   give the parameters IRELX
+  !> @return  iperp
+  USE artn_params, only : irelax
+  get_irelax = irelax
+end function get_irelx
 
 
 SUBROUTINE make_filename( f, prefix, n )
