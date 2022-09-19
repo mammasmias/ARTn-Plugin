@@ -187,6 +187,7 @@ MODULE artn_params
   !
   CHARACTER(LEN=256)            :: engine_units
   CHARACTER(LEN=10)             :: struc_format_out
+  CHARACTER(LEN=10), PARAMETER  :: def_struc_format_out = 'xsf'
   CHARACTER(LEN=3), ALLOCATABLE :: elements(:)
   CHARACTER(:),     ALLOCATABLE :: converge_property
   CHARACTER(LEN=500)            :: error_message
@@ -333,7 +334,7 @@ CONTAINS
       eigen_step_size   = NAN
       !
       push_mode         = 'all'
-      struc_format_out  = 'xsf'
+      struc_format_out  = ''
      
       bilan = 0.0_DP
       !
@@ -449,6 +450,7 @@ CONTAINS
       2 format(*(x,a))
     endif
     !
+    !
     ! ...Convert the default values parameters from Engine_units
     !! For the moment the ARTn units is in a.u. (Ry, L, T)
     !! The default value are in ARTn units but the input values gives by the users
@@ -496,6 +498,12 @@ CONTAINS
     else;                   lanczos_eval_conv_thr = lanczos_eval_conv_thr ; endif
     !lanczos_eval_conv_thr = 1.D-2
     !
+    ! the default output format is xsf for QE, and xyz otherwise
+    if( struc_format_out == '' ) then
+       struc_format_out = def_struc_format_out
+       if( trim(engine_units) /= 'qe' ) struc_format_out = 'xyz'
+    endif
+    !
     if( verb )then
       write(*,2) repeat("*",50)
       write(*,2) "* Units:          ", trim(engine_units)
@@ -538,6 +546,8 @@ CONTAINS
     WRITE( u0, * )" zseed = ", zseed
     CLOSE( u0 )
     !
+
+
    CONTAINS
     !
     !........................................................
@@ -594,6 +604,7 @@ CONTAINS
     REAL(DP), INTENT(IN) :: box(3,3), etot, pos(3,nat), force(3,nat)
     LOGICAL, INTENT(OUT) :: error
 
+    !! reset the error message
     error = .false.
     error_message = ""
 
