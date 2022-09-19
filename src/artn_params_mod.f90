@@ -812,6 +812,7 @@ CONTAINS
     leigen = .false.
     !lsaddle = .false.
     lpush_over = .false.
+    lrestart = .false.
 
   end subroutine flag_false
 

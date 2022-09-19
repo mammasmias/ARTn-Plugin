@@ -96,7 +96,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
   !
   ! ... Initialize artn
-  IF( istep == 0 )THEN !! ---------------------------------------------------------------------------------------------  ISTEP = 0
+  istep0: IF( istep == 0 )THEN !! ---------------------------------------------------------------------------------------------  ISTEP = 0
 
     !
     ! ...Initialize if it is the first search
@@ -108,9 +108,11 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     !! Something went wrong in filling the arrays!
     IF ( lerror ) THEN
        disp =void 
-       error_message = 'PROBLEM IN FILL_PARAM_STEP()'
+       error_message = 'PROBLEM IN FILL_PARAM_STEP():'//error_message
        call write_fail_report( iunartout, disp, etot_eng )
        lconv = .true.
+       call flag_false()
+       exit istep0
     ENDIF
 
 
@@ -196,7 +198,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     ! ...Check the convergence forces  
     CALL check_force_convergence( nat, force_step, if_pos, fperp, fpara, lforc_conv, lsaddle_conv )
     !
-  ENDIF
+  ENDIF istep0
 
 
 
@@ -708,7 +710,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     !
     IF( lerror ) THEN
        ! STOP the search
-       error_message = 'STOPPING DUE TO ERROR'
+       error_message = 'STOPPING DUE TO ERROR:'//error_message
        call write_fail_report( iunartout, void, etot_step )
        STOP
     ENDIF
