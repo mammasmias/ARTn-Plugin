@@ -227,7 +227,7 @@ CONTAINS
   !
   !
   !
-  SUBROUTINE setup_artn( nat, iunartin, filnam )
+  SUBROUTINE setup_artn( nat, iunartin, filnam, error )
     !
     !> @breif
     !!   Sets defaults, reads input and creates ARTn output file
@@ -243,6 +243,7 @@ CONTAINS
     ! -- Arguments
     INTEGER,             INTENT(IN) :: nat,iunartin
     CHARACTER (LEN=255), INTENT(IN) :: filnam
+    LOGICAL,             INTENT(OUT) :: error
     !
     ! -- Local Variables
     LOGICAL                         :: file_exists, verb
@@ -253,6 +254,8 @@ CONTAINS
     !
     verb = .true.
     verb = .false.
+    !
+    error = .false.
     !
     INQUIRE( file = filnam, exist = file_exists )
     !
@@ -523,14 +526,33 @@ CONTAINS
     endif
     !
     !
+    ! Check for errors in input parameters:: (probably should be routine)
+    !
     ! ...Character verification
     converge_property = to_lower( converge_property )
     select case( converge_property )
       case( "norm", 'maxval' ); continue
       case default
         call warning( iunartout, "Initialize_artn",  &
-          "converge_property has no good keyword (norm or maxval)" )
+             "converge_property has no good keyword (norm or maxval)" )
+        error = .true.
+        error_message = " ;compute_property has unsupported value; "//error_message
     end select
+    !
+    select case( struc_format_out )
+    case( 'xsf', 'xyz' ); continue
+    case default
+       error = .true.
+       error_message = " ;struc_format_out has unsupported value; "//error_message
+    end select
+    !
+    select case( trim(engine_units) )
+    case( 'qe','quantum_espresso','lammps/real','lammps/metal','lammps/lj'); continue
+    case default
+       error = .true.
+       error_message = " ;engine_units has unsupported value; "
+    end select
+
     !
     ! set initial random seed from input, value zseed = 0 means generate random seed
     IF( zseed .EQ. 0) THEN

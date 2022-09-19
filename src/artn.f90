@@ -100,14 +100,22 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
     !
     ! ...Initialize if it is the first search
-    IF( isearch == 0 )CALL setup_artn( nat, iunartin, filin )
+    IF( isearch == 0 )CALL setup_artn( nat, iunartin, filin, lerror )
+    IF ( lerror ) THEN
+       disp =void
+       error_message = 'PROBLEM IN SETUP_ARTN():'//error_message
+       call write_fail_report( iunartout, disp, etot_eng )
+       lconv = .true.
+       call flag_false()
+       exit istep0
+    ENDIF
 
     !
     ! ...Fill the *_step Arrays and parameters
     CALL Fill_param_step( nat, at, order, tau, etot_eng, force, lerror )
     !! Something went wrong in filling the arrays!
     IF ( lerror ) THEN
-       disp =void 
+       disp =void
        error_message = 'PROBLEM IN FILL_PARAM_STEP():'//error_message
        call write_fail_report( iunartout, disp, etot_eng )
        lconv = .true.
