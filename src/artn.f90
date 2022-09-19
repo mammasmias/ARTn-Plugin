@@ -182,11 +182,13 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     CALL Fill_param_step( nat, at, order, tau, etot_eng, force, lerror )
     !! somehing went wrong
     IF( lerror ) THEN
-       error_message = "PROBLEM WITH FILL_PARAM_STEP()"
+       error_message = "PROBLEM WITH FILL_PARAM_STEP():"//error_message
        call write_fail_report( iunartout, void, etot_step )
        !! finish current search
        displ_vec = 0.0_DP
        lconv = .true.
+       call flag_false()
+       exit istep0
     ENDIF
     !
     ! ...Split the force field in para/perp field following the push field
