@@ -276,8 +276,8 @@ SUBROUTINE write_xyz( lat, nat, tau, order, atm, ityp, f, ounit, ener )
   WRITE(ounit,fmt=11) 'Lattice="',lat(:,:),'"', &
        ' properties=species:S:1:pos:R:3:force:R:3:id:I:1',' energy:',ener
 
-  11 format(a,x,9(f10.4,x),a,a,a,f15.9)
-  10 format(i2,3x,6f15.9,x,i0)
+  11 format(a,x,9(f0.6,x),a,a,a,f0.9)
+  10 format(i2,3x,3(f0.9,x),3x,3(f0.9,x),3x,i0)
 
   IF( lQE )THEN
     DO na=1,nat
@@ -288,8 +288,9 @@ SUBROUTINE write_xyz( lat, nat, tau, order, atm, ityp, f, ounit, ener )
   ELSE
     DO na=1,nat
        iloc = order(na)
-       !WRITE( ounit, fmt=10, IOSTAT=ios ) ityp(na), tau(:,iloc) , unconvert_force( f(:,iloc) ), iloc
-       WRITE( ounit, fmt=10, IOSTAT=ios ) ityp(na), tau(:,na) , unconvert_force( f(:,na) ), na
+       !! ityp is never permuted it seems. That's ok.
+       WRITE( ounit, fmt=10, IOSTAT=ios ) ityp(na), tau(:,iloc) , unconvert_force( f(:,iloc) ), iloc
+       ! WRITE( ounit, fmt=10, IOSTAT=ios ) ityp(na), tau(:,na) , unconvert_force( f(:,na) ), na
     ENDDO
   ENDIF
 
@@ -335,7 +336,8 @@ SUBROUTINE read_xyz( lat, nat, tau, order, atm, ityp, force, fname )
     DO na=1,nat
        iloc = order(na)
        !READ( u0,* ) atm(ityp(iloc)), tau(:,iloc), force(:,iloc)
-       READ( u0,* ) i, ios, tau(:,iloc), force(:,iloc)
+       ! READ( u0,* ) i, ios, tau(:,iloc), force(:,iloc)
+       READ( u0,* ) i, tau(:,iloc), force(:,iloc)
     ENDDO
     force = convert_force( force )
 
