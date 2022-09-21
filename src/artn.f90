@@ -660,6 +660,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
               ! 
               IF (inewchance < nnewchance) THEN
                  ! ... Continue pushing along init  
+                 call random_array( 3*nat, v_in, force_step, zseed )
+                 call nperp_limitation_step( -1 )
                  inewchance = inewchance +1
                  ismooth      = 0
               ELSE 
