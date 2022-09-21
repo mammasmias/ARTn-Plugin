@@ -91,6 +91,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   ! ... fpara_tot is used to scale the magnitude of the eigenvector
   fpara_tot = 0.D0
 
+  lerror = .false.
 
 
 

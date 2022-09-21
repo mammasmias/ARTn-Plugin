@@ -533,24 +533,31 @@ CONTAINS
     select case( converge_property )
       case( "norm", 'maxval' ); continue
       case default
-        call warning( iunartout, "Initialize_artn",  &
+        call warning( iunartout, "setup_artn",  &
              "converge_property has no good keyword (norm or maxval)" )
         error = .true.
         error_message = " ;compute_property has unsupported value; "//error_message
+       print*, error_message
     end select
     !
     select case( struc_format_out )
     case( 'xsf', 'xyz' ); continue
     case default
+        call warning( iunartout, "setup_artn",  &
+             "struc_format_out does not exist" )
        error = .true.
        error_message = " ;struc_format_out has unsupported value; "//error_message
+       print*, error_message
     end select
     !
     select case( trim(engine_units) )
     case( 'qe','quantum_espresso','lammps/real','lammps/metal','lammps/lj'); continue
     case default
+        call warning( iunartout, "setup_artn",  &
+             "engine_unit has unsupprted value" )
        error = .true.
        error_message = " ;engine_units has unsupported value; "
+       print*, error_message
     end select
 
     !
