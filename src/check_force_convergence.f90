@@ -170,6 +170,9 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
             "|> No perp relax because fperp < fpara       :",&
             unconvert_force( maxfperp ),"<", unconvert_force( maxfpara ), TRIM(converge_property)
         !
+        IF ( C4 ) WRITE(iunartout,'(5x,a46)') &
+            "|> No perp relax because C4      :"
+        !
         IF ( noperp > 2 ) WRITE(iunartout,'(5x,a90)') &
             "|> WARNING -The Fperp is too small after each Push-INIT- You should increase push_step_size"
         CLOSE( iunartout )
