@@ -275,3 +275,4 @@ Various files can be found in output.
 - **RESTART**: Fast Restart procedure for lammps and binary - Write the restart file with lammps take too mush time
 
 - Do **time profiler** for the ARTn library.
+- **NEXTMIN**: Verify the Threshold to load the new minimum. HARD-CODED!!
