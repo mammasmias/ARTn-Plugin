@@ -39,7 +39,7 @@ SUBROUTINE write_initial_report(iunartout, filout)
   WRITE (iunartout,'(5X, "|      |  ___/ |___| / /\ \ |  _  /  | |         |")')
   WRITE (iunartout,'(5X, "|      | |          / ____ \| | \ \  | |         |")')
   WRITE (iunartout,'(5X, "|      |_|         /_/    \_\_|  \_\ |_|         |")')
-  WRITE (iunartout,'(5X, "|                                    ARTn plugin |")')
+  WRITE (iunartout,'(5X, "|                                    ARTn plugin |")')   !> @author Antoine Jay
   WRITE (iunartout,'(5X, "--------------------------------------------------")')
   WRITE (iunartout,'(5X, " "                                                 )')
   WRITE (iunartout,'(5X, "               INPUT PARAMETERS                   ")')

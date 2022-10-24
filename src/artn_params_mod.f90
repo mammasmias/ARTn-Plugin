@@ -581,9 +581,11 @@ CONTAINS
     !
     !........................................................
     elemental Function to_lower( str )Result( string )
-      !   ==============================
-      !   Changes a string to lower case
-      !   ==============================
+      !> @brief
+      !!   Changes a string to lower case
+      !
+      !> @param[in]   str     input
+      !> @return      string  output
       Implicit None
       Character(*), Intent(IN) :: str
       Character(LEN(str))      :: string
@@ -786,7 +788,13 @@ CONTAINS
   !
   !---------------------------------------------------------------------------
   SUBROUTINE warning_nothing( u0, STEP, text )
-
+    !> @brief 
+    !!   routine write warning
+    !
+    !> @param[in]   u0     output unit chanel
+    !> @param[in]   STEP   name of function you call warning
+    !> @param[in]   text   comment for the user
+    !
     integer, intent( in ) :: u0
     character(*), intent( in ) :: STEP, text
 
@@ -797,6 +805,14 @@ CONTAINS
   END SUBROUTINE warning_nothing
 
   SUBROUTINE warning_int( u0, STEP, text, intv )
+    !> @brief 
+    !!   routine write warning
+    !
+    !> @param[in]   u0     output unit chanel
+    !> @param[in]   STEP   name of function you call warning
+    !> @param[in]   text   comment for the user
+    !> @param[in]   intv   vector of integer
+    !
 
     integer, intent( in ) :: u0, intv(:)
     character(*), intent( in ) :: STEP, text
@@ -811,6 +827,14 @@ CONTAINS
 
 
   SUBROUTINE warning_real( u0, STEP, text, realv )
+    !> @brief 
+    !!   routine write warning
+    !
+    !> @param[in]   u0     output unit chanel
+    !> @param[in]   STEP   name of function you call warning
+    !> @param[in]   text   comment for the user
+    !> @param[in]   realv   vector of real
+    !
 
     integer, intent( in ) :: u0
     REAL(DP), intent( in ) :: realv(:)
@@ -826,6 +850,14 @@ CONTAINS
 
 
   SUBROUTINE warning_char( u0, STEP, text, charv )
+    !> @brief 
+    !!   routine write warning
+    !
+    !> @param[in]   u0     output unit chanel
+    !> @param[in]   STEP   name of function you call warning
+    !> @param[in]   text   comment for the user
+    !> @param[in]   charv   vector of character
+    !
 
     integer, intent( in ) :: u0
     character(*), intent( in ) :: charv(:)
@@ -841,7 +873,9 @@ CONTAINS
 
   !---------------------------------------------------------------------------
   subroutine flag_false()
-
+    !> @brief 
+    !!   routine that turn off all the block flag 
+    !
     implicit none
 
     lrelax = .false.
@@ -1037,7 +1071,14 @@ end function get_irelx
 
 
 SUBROUTINE make_filename( f, prefix, n )
-
+  !> @brief
+  !!    build a filename from the prefix and the number n
+  !
+  !> @param[out]    f        filename
+  !> @param[in]     prefix   prefix for filename
+  !> @param[inout]  n        integer for the file name
+  !
+  implicit none
   character(*), intent(out) :: f
   character(*), intent(in) :: prefix
   integer,      intent(inout) :: n

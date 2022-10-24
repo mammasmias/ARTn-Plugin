@@ -5,8 +5,6 @@
 
 
 SUBROUTINE invmat3x3(mat,inv)
-  USE artn_params, ONLY : DP 
-  IMPLICIT none
   !
   !> @brief
   !!   Subroutine that calculates the inverse of a 3x3 matrix 
@@ -14,6 +12,9 @@ SUBROUTINE invmat3x3(mat,inv)
   !> @param [in]  mat	Matrix to inverse
   !> @param [out] inv	Inverse of the Matrix
   !
+  USE artn_params, ONLY : DP 
+  IMPLICIT none
+
   REAL(DP), INTENT(IN) :: mat(3,3)
   REAL(DP), INTENT(OUT) :: inv(3,3)
   !

@@ -21,6 +21,7 @@ SUBROUTINE smooth_interpol( ismooth, nsmooth, nat, v0, v1, v2 )
   !
   USE units,       ONLY : DP
   USE artn_params, ONLY : iunartout,  dot_field, filout, verbose
+  IMPLICIT NONE
   !
   INTEGER,  INTENT( INOUT ) :: ismooth   ! degree of interpolation
   INTEGER,  INTENT( IN )    :: nsmooth   ! number of degree of interpolation

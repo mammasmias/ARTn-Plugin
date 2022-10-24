@@ -1,12 +1,10 @@
+
 !> @author
 !!  Matic Poberznik,
 !!  Miha Gunde
+
 SUBROUTINE lanczos( nat, v_in, pushdir, force, &
      ilanc, nlanc, lowest_eigval, lowest_eigvec, displ_vec )
-  !
-  USE artn_params, ONLY: DP, Vmat, H, force_old, lanczos_disp, lanczos_eval_conv_thr, &
-                         lanczos_min_size
-  USE units,       ONLY: unconvert_length, unconvert_hessian
   !
   !> @brief
   !!   Lanczos subroutine for the ARTn algorithm;
@@ -24,6 +22,10 @@ SUBROUTINE lanczos( nat, v_in, pushdir, force, &
   !> @param [inout]   lowest_eigval   Lowest eigenvalue obtained by lanczos algo
   !> @param [inout]   ilanc	      current step of lanczos
   !
+  !
+  USE artn_params, ONLY: DP, Vmat, H, force_old, lanczos_disp, lanczos_eval_conv_thr, &
+                         lanczos_min_size
+  USE units,       ONLY: unconvert_length, unconvert_hessian
   IMPLICIT NONE
   !
   ! -- ARGUMENTS
