@@ -8,7 +8,10 @@ MODULE TOOLS
   !!   List of routine:
   !!   - read_line
   !!   - fparse
-  !!   - ...
+  !!   - is_numeric
+  !!   - random_displacement
+  !!   - neigh_random_displacement
+  !!   - READ_GUESS
   !
   use units, only : DP
   implicit none
@@ -273,15 +276,12 @@ SUBROUTINE READ_GUESS( idum, nat, vec, filename )
   do i = 1, n
 
      idx = 0
-     !read(u0,*) line
      call read_line( u0, line )
-
-     !print*, "line", trim(line)
      nwords = fparse( trim(line), " ", words )
-     !print*, nwords, "fparse", ("|",j,words(j)," ",j=1,nwords)
 
      select case( nwords )
 
+       !> Only the atom index
        case( 1 )
          IF( is_numeric(words(1)) )read(words(1),*) idx
          push_ids(i) = idx
@@ -289,6 +289,8 @@ SUBROUTINE READ_GUESS( idum, nat, vec, filename )
          call random_displacement( idum, vec(:,idx) )
          !print*, idx, "random disp:", vec(:,idx)
 
+
+       !> Atom index and push direction constrain
        case( 2: )
          IF( is_numeric(words(1)) )then
            read(words(1),*) idx
@@ -299,15 +301,16 @@ SUBROUTINE READ_GUESS( idum, nat, vec, filename )
 
          !print*, "   ** push_ids", idx
          do j = 2,4
-            !print*, j, "is num", is_numeric(words(j))
             IF( is_numeric(trim(words(j))) )then
               read(words(j),*) vec(j-1,idx)
-              !print*, "read", j, vec(j-1,idx)
-            else
+            !ELSEIF( words(j) == "*" )THEN         !> Idea for more flexibility 
+            !  mask(j-1,idx)
+            ELSE
               call warning( iunartout, 'READ_GUESS', 'Displacement propose are not valid', words )
-            endif
+            ENDIF
          enddo
          !print*, idx, "constrain disp:", vec(:,idx)
+
 
        case default
          call warning( iunartout, 'READ_GUESS', 'Empty line' )
@@ -315,9 +318,11 @@ SUBROUTINE READ_GUESS( idum, nat, vec, filename )
 
      end select
 
+     ! ...Add the neigbors
      if( neiglist )call neigh_random_displacement( idum, nat, idx, dist_thr, vec )
 
   enddo
+
 
   CLOSE( u0 )
 
