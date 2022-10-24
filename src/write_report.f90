@@ -411,6 +411,7 @@ SUBROUTINE write_inter_report( iunartout, pushfactor, de )
   integer, intent( in )     :: pushfactor
   real(DP), intent( in )    :: de(*)        !> list of energies 
   character(:), allocatable :: Cbilan
+  character(2) :: DIR
   INTEGER                   :: ios
 
   OPEN( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'unknown', POSITION='append', IOSTAT = ios )
@@ -423,6 +424,8 @@ SUBROUTINE write_inter_report( iunartout, pushfactor, de )
           unconvert_energy( de(1) ), unit_char('energy')
       WRITE( iunartout, '(5X, "--------------------------------------------------")')
       WRITE (iunartout,'(5X, "|> number of steps:",x, i0)') istep
+
+      DIR = "+1"
 
     CASE( -1 )
       ! de(1) = de_back
@@ -443,6 +446,8 @@ SUBROUTINE write_inter_report( iunartout, pushfactor, de )
       WRITE( iunartout,'(5X, "--------------------------------------------------")')
       !WRITE( u,'(/)')
 
+      DIR = "-1"
+
     CASE DEFAULT
       WRITE( iunartout,'(5x,"********* ERROR write_inter_report:: pushfactor",x,i0," **************")') pushfactor
       WRITE( *,'(5x,"********* ERROR write_inter_report:: pushfactor",x,i0," **************")') pushfactor
@@ -451,7 +456,7 @@ SUBROUTINE write_inter_report( iunartout, pushfactor, de )
   END SELECT
 
   ! ...Write the debrief line
-  Cbilan = '(5x,"|> DEBRIEF | dE= ",f12.5,x,"'//unit_char('energy')//' | F_{tot,para,perp}= ",3(f12.5,x),"' &
+  Cbilan = '(5x,"|> DEBRIEF(RELX'//DIR//') | dE= ",f12.5,x,"'//unit_char('energy')//' | F_{tot,para,perp}= ",3(f12.5,x),"' &
      //unit_char('force')//' | EigenVal= ", f12.5,x,"'//unit_char('hessian')//' | npart= ",f4.0,x," | delr= ",f12.5,x,"' &
      //unit_char('length')//' | evalf= ",f5.0,x,"|")'
   Write(iunartout,Cbilan) Bilan
@@ -492,7 +497,7 @@ SUBROUTINE write_end_report( iunartout, lsaddle, lpush_final, de )
     WRITE(iunartout,'(5X, "|> Stored in Configuration Files:", X,A)') trim(artn_resume)
     WRITE (iunartout,'(5X, "--------------------------------------------------")')
 
-    Cbilan = '(5x,"|> DEBRIEF | dE= ",f12.5,x,"'//unit_char('energy')//' | F_{tot,para,perp}= ",3(f12.5,x),"' &
+    Cbilan = '(5x,"|> DEBRIEF(SADDLE) | dE= ",f12.5,x,"'//unit_char('energy')//' | F_{tot,para,perp}= ",3(f12.5,x),"' &
         //unit_char('force')// &
         ' | EigenVal= ", f12.5,x,"'//unit_char('hessian')//' | npart= ",f4.0,x," | delr= ",f12.5,x,"'//unit_char('length')// &
         ' | evalf= ",f5.0,x,"|")'

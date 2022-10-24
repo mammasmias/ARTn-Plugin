@@ -143,7 +143,7 @@ Module units
  
     !   +++ cut the word
         if( idx == 0 )exit
-        str = trim(str(idx+1:))
+        str = adjustl(str(idx+1:))
     !
     enddo
   end function parser
