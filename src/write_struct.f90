@@ -172,7 +172,7 @@ SUBROUTINE read_xsf( lat, nat, tau, order, atm, ityp, force, fname )
   CHARACTER(*),       INTENT(IN) :: fname           !> file name
   ! -- LOCAL VARIABLES
   INTEGER :: na, u0, ios, iloc
-  REAL(DP) :: at_angs(3,3)
+  !REAL(DP) :: at_angs(3,3)
   character(:), allocatable :: words(:)
   logical :: lqe
 
@@ -323,7 +323,7 @@ SUBROUTINE read_xyz( lat, nat, tau, order, atm, ityp, force, fname )
   REAL(DP),           INTENT(OUT) :: force(3,nat)   !> forces
   CHARACTER(*),       INTENT(IN) :: fname           !> file name
   ! -- LOCAL VARIABLES
-  INTEGER :: na, u0, ios, iloc, i
+  INTEGER :: na, u0, iloc, i
   !REAL(DP) :: at_angs(3,3)
 
   OPEN( newunit=u0, file=fname)

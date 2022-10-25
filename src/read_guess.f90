@@ -1,147 +1,9 @@
 
+!> @author
+!!   Matic Poberznik
+!!   Miha Gunde
+!!   Nicolas Salles
 
-MODULE TOOLS
-  !> @brief 
-  !!   Module contains tools routine 
-  !
-  !> @note 
-  !!   List of routine:
-  !!   - read_line
-  !!   - fparse
-  !!   - is_numeric
-  !!   - random_displacement
-  !!   - neigh_random_displacement
-  !!   - READ_GUESS
-  !
-  use units, only : DP
-  implicit none
-  private
-  public :: read_guess
-
- CONTAINS
-
-  ! .............................................................................
-  subroutine read_line(fd, line, end_of_file)
-    !> @brief
-    !!   read a line, makes possible to use # for comment lines, skips empty lines, 
-    !!   is pretty much a copy from QE.
-    !
-    !> @note 
-    !!   Quantum ESPRESSO routine
-    !
-    !> @param[in]   fd           file descriptor
-    !! @param[out]  line         what it reads
-    !! @param[out]  end_of_file  logical to signal the EOF
-    !
-    implicit none
-    integer, intent(in) :: fd
-    integer             :: ios
-    character(len=256), intent(out) :: line
-    logical, optional, intent(out) :: end_of_file
-    logical :: tend
-
-    !print*, "in read_line", fd
-   
-    tend = .false.
-    101 read(unit=fd,fmt='(A256)',END=111, iostat=ios) line
-    if (ios /= 0) then
-       print*, " Reading Problem..."; stop; endif
-    if(line == ' ' .or. line(1:1) == '#') go to 101
-    go to 105
-    111     tend = .true.
-    !print*,"read_line", line
-    go to 105
-    105   continue
-
-    if( present(end_of_file)) then
-      end_of_file = tend
-    endif
-  end subroutine read_line
-
-
-
-
-  !............................................................
-  integer function fparse(instrg, FS, args )result( nargs )
-    !> @brief
-    !!   Function allows to parse the string in words/args as function 
-    !!   of the field separator FS
-    !
-    !> @param[in]      instrg    input string
-    !! @param[in]      FS        Fird Separator  
-    !! @param[inout]   args      array or words
-    !! @return         nargs     length of words array (args)
-    !
-    implicit none
- 
-    ! -- ARGUMENT
-    CHARACTER(len=*),              intent( in ) :: instrg
-    character(len=1),              intent( in ) :: FS
-    CHARACTER(len=:), allocatable, intent( inout ) :: args(:)
- 
-    ! -- LOCAL VAR
-    character(len=:), allocatable :: str
-    character(len=25) :: mot
-    integer :: idx,leng
- 
-    ! +++ Copy in local variable the input_string
-    str = adjustl(instrg)
-    nargs = 0
-    !
-    ! +++ Repeat for each field
-    do
-    !   +++ Verification the length of sentence
-        leng = len_TRIM( str )
-        if( leng == 0 )exit
- 
-    !   +++ Find the Field Separator
-        idx = SCAN( str, FS )
- 
-    !   +++ extract the word
-        if( idx == 0 )then
-          mot = trim(str)
-        else
-          mot = str( :idx-1 )
-        endif
- 
-    !   +++ Add the word in args
-        nargs = nargs + 1
-        if( nargs == 1 )then
-          args = [ mot ]
-        else
-          args = [ args(:), mot ]
-        endif
- 
-    !   +++ cut the word
-        if( idx == 0 )exit
-        !str = trim(str(idx+1:))
-        str = adjustl(str(idx+1:))
-    !
-    enddo
-
-  end function fparse
-
-
-  !......................................................
-  elemental FUNCTION is_numeric(string)
-    !> @breif
-    !!   test if the string represent a number or not
-    !
-    !> @param[in]    string   input string
-    !! @return       logical  
-    !
-    IMPLICIT NONE
-    CHARACTER(len=*), INTENT(IN) :: string
-    LOGICAL :: is_numeric
-    REAL :: x
-    INTEGER :: e,n
-    CHARACTER(len=12) :: fmt
-
-    n = LEN_TRIM(string)
-    WRITE(fmt,'("(F",I0,".0)")') n
-    READ(string,fmt,IOSTAT=e) x
-    is_numeric = (e == 0)
-  END FUNCTION is_numeric
 
 
   !......................................................
@@ -233,7 +95,7 @@ SUBROUTINE READ_GUESS( idum, nat, vec, filename )
   !> @param[out]    vec       initial push
   !> @param[in]     filename  input file name
   !
-  use units,       only : DP, unconvert_length
+  use units,       only : DP, unconvert_length, read_line, parser
   use artn_params, only : warning, iunartout, dist_thr, push_ids
   ! use tools
   implicit none
@@ -246,6 +108,7 @@ SUBROUTINE READ_GUESS( idum, nat, vec, filename )
   character(:), allocatable :: words(:)
   integer :: i, n, u0, nwords, idx, j
   logical :: ok, neiglist
+
 
   !PRINT*, "   ** ENTER IN READ_GUESS()"
 
@@ -277,7 +140,8 @@ SUBROUTINE READ_GUESS( idum, nat, vec, filename )
 
      idx = 0
      call read_line( u0, line )
-     nwords = fparse( trim(line), " ", words )
+     !nwords = fparse( trim(line), " ", words )
+     nwords = parser( trim(line), " ", words )
 
      select case( nwords )
 
@@ -326,10 +190,31 @@ SUBROUTINE READ_GUESS( idum, nat, vec, filename )
 
   CLOSE( u0 )
 
+CONTAINS
+  !......................................................
+  elemental FUNCTION is_numeric(string)
+    !> @breif
+    !!   test if the string represent a number or not
+    !
+    !> @param[in]    string   input string
+    !! @return       logical  
+    !
+    IMPLICIT NONE
+    CHARACTER(len=*), INTENT(IN) :: string
+    LOGICAL :: is_numeric
+    REAL :: x
+    INTEGER :: e,n
+    CHARACTER(len=12) :: fmt
+
+    n = LEN_TRIM(string)
+    WRITE(fmt,'("(F",I0,".0)")') n
+    READ(string,fmt,IOSTAT=e) x
+    is_numeric = (e == 0)
+  END FUNCTION is_numeric
+
 END SUBROUTINE READ_GUESS
 
 
 
-END MODULE TOOLS
 
 

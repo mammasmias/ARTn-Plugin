@@ -25,7 +25,7 @@ SUBROUTINE start_guess( idum, nat, order, push, eigenvec )
   USE artn_params, ONLY : push_mode, push_step_size, add_const, dist_thr,             &
                           lat, tau_step, eigen_step_size, push_guess, eigenvec_guess, &
                           push_ids, iunartout, filout, verbose
-  USE tools,       ONLY : read_guess
+  !USE tools,       ONLY : read_guess
   !
   IMPLICIT NONE
   ! 
