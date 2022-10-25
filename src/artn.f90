@@ -63,14 +63,12 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   ! -- LOCAL VARIABLES
   REAL(DP), EXTERNAL              :: dnrm2, ddot      ! lapack functions
   INTEGER                         :: na, icoor        ! integers for loops
-  INTEGER                         :: iidum            ! integers for loops
   REAL(DP)                        :: fpara(3,nat)     ! force parallel to push/eigenvec
   REAL(DP)                        :: fperp(3,nat)     ! force parallel to push/eigenvec
   REAL(DP)                        :: fpara_tot        ! total force in parallel direction
   INTEGER                         :: ios ,i           ! file IOSTAT
   LOGICAL                         :: lforc_conv       ! flag true when forces are converged 
   LOGICAL                         :: lsaddle_conv     ! flag true when saddle is reached
-  LOGICAL                         :: ArtnStep         ! Is it an artn step?
   LOGICAL                         :: lerror           ! flag for an error from the engine
   character(len=256)              :: outfile          ! file where are written the steps
   REAL(DP)                        :: z
@@ -104,7 +102,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     IF( isearch == 0 )CALL setup_artn( nat, iunartin, filin, lerror )
     IF ( lerror ) THEN
        disp =void
-       error_message = 'PROBLEM IN SETUP_ARTN():'//error_message
+       error_message = 'PROBLEM IN SETUP_ARTN():'//trim(error_message)
        call write_fail_report( iunartout, disp, etot_eng )
        lconv = .true.
        call flag_false()
@@ -117,7 +115,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     !! Something went wrong in filling the arrays!
     IF ( lerror ) THEN
        disp =void
-       error_message = 'PROBLEM IN FILL_PARAM_STEP():'//error_message
+       error_message = 'PROBLEM IN FILL_PARAM_STEP():'//trim(error_message)
        call write_fail_report( iunartout, disp, etot_eng )
        lconv = .true.
        call flag_false()
@@ -159,7 +157,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
       
       !
       ! ...Initialize pushvect and eigenvec accoriding to user's choice
-      call start_guess( zseed, nat, order, force_step, push, eigenvec )
+      !call start_guess( zseed, nat, order, force_step, push, eigenvec )
+      call start_guess( zseed, nat, order, push, eigenvec )
 
     ENDIF
 
@@ -191,7 +190,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     CALL Fill_param_step( nat, at, order, tau, etot_eng, force, lerror )
     !! somehing went wrong
     IF( lerror ) THEN
-       error_message = "PROBLEM WITH FILL_PARAM_STEP():"//error_message
+       error_message = "PROBLEM WITH FILL_PARAM_STEP():"//trim(error_message)
        call write_fail_report( iunartout, void, etot_step )
        !! finish current search
        displ_vec = 0.0_DP
@@ -589,15 +588,6 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         IF( lanczos_always_random )THEN
           ! generate random initial vector
           call random_array( 3*nat, v_in, force_step, zseed )
-
-           !CALL random_number(z)
-           !z = z *1e8
-           !iidum = INT(z)
-           !DO na = 1, nat
-           !   v_in(:,na) = (/0.5_DP - ran3(iidum),0.5_DP - ran3(iidum),0.5_DP - ran3(iidum)/)
-           !ENDDO
-           !! normalize
-           !v_in = v_in / norm2(v_in)
         ELSE
           v_in(:,:) = eigenvec(:,:) 
         ENDIF
@@ -723,7 +713,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     !
     IF( lerror ) THEN
        ! STOP the search
-       error_message = 'STOPPING DUE TO ERROR:'//error_message
+       error_message = 'STOPPING DUE TO ERROR:'//trim(error_message)
        call write_fail_report( iunartout, void, etot_step )
        STOP
     ENDIF

@@ -536,7 +536,7 @@ CONTAINS
         call warning( iunartout, "setup_artn",  &
              "converge_property has no good keyword (norm or maxval)" )
         error = .true.
-        error_message = " ;compute_property has unsupported value; "//error_message
+        error_message = " ;compute_property has unsupported value; "//trim(error_message)
        print*, error_message
     end select
     !
@@ -546,7 +546,7 @@ CONTAINS
         call warning( iunartout, "setup_artn",  &
              "struc_format_out does not exist" )
        error = .true.
-       error_message = " ;struc_format_out has unsupported value; "//error_message
+       error_message = " ;struc_format_out has unsupported value; "//trim(error_message)
        print*, error_message
     end select
     !
@@ -1066,7 +1066,7 @@ integer function get_irelx()
   !!   give the parameters IRELX
   !> @return  iperp
   USE artn_params, only : irelax
-  get_irelax = irelax
+  get_irelx = irelax
 end function get_irelx
 
 

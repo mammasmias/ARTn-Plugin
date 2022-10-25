@@ -37,9 +37,9 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
   ! Local Variables
   LOGICAL               :: C0,C1, C2, C3, C4
   integer               :: ios
-  REAL(DP)              :: fperp_thr, dtmp
+  REAL(DP)              :: fperp_thr
   REAL(DP)              :: maxforce, maxfperp, maxfpara
-  REAL(DP)              :: min_dir(3,nat)
+  !REAL(DP)              :: min_dir(3,nat)
   real(DP), external    :: dsum, ddot
   logical, external     :: fperp_min_alignment
   !
@@ -79,13 +79,8 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         ENDIF
 
         
-       ! ... Check whether the fperp criterion should be tightened
-       ! IF( maxfpara <= fpara_thr ) THEN !> We are close to the saddle point 
-           fperp_thr = forc_thr
-       ! ELSE
-       !    fperp_thr = init_forc_thr
-       ! ENDIF
-       !!! commented by NS
+        ! ... Check whether the fperp criterion should be tightened
+        fperp_thr = forc_thr  !! Should be removed
 
         ! 
         ! ... Conditions for stopping perp_relax

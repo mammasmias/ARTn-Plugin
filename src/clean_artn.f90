@@ -10,7 +10,7 @@ SUBROUTINE clean_artn()
            iartn, istep, iinit, iperp, ilanc, ieigen, nlanc, ifails,    &
            irelax, iover, istep, fpush_factor, lowest_eigval,           &
            artn_resume, old_lanczos_vec, H, Vmat, lanczos_max_size,     &
-           iunartout, filout, nperp_step, old_lowest_eigval, prev_disp, &
+           iunartout, filout, old_lowest_eigval, prev_disp, &
            error_message
   implicit none
 
@@ -55,9 +55,6 @@ SUBROUTINE clean_artn()
 
   ! ...Return the initial value of nperp
   call nperp_limitation_step( -1 )
-  !nperp = nperp_list(1)
-  !nperp_step = 1
-  !write(*,'(5x,"Reinitialize NPERP:",x,i0)') nperp
 
   
   old_lowest_eigval = huge( old_lowest_eigval ) 

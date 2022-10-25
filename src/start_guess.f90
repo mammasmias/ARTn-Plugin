@@ -1,9 +1,17 @@
-SUBROUTINE start_guess( idum, nat, order, force, push, eigenvec )
+
+!> @author
+!!  Matic Poberznik
+!!  Miha Gunde
+!!  Nicolas Salles
+
+
+!SUBROUTINE start_guess( idum, nat, order, force, push, eigenvec )
+SUBROUTINE start_guess( idum, nat, order, push, eigenvec )
   !
   !> @brief
   !!    Initialize the push and eigenvec arrays following the mode keyword
   !!
-  !! MIHA
+  !! MIHA <= Move in push_init
   !! use force input as mask for push_ids when calling push_init for eigenvec.
   !! Why? To not generate initial lanczos vec for fixed atoms.
   !
@@ -24,13 +32,12 @@ SUBROUTINE start_guess( idum, nat, order, force, push, eigenvec )
   ! Arguments
   INTEGER,  INTENT(IN)  :: nat, idum
   INTEGER,  INTENT(IN)  :: order(nat)
-  REAL(DP), INTENT(IN)  :: force(3,nat)
+  !REAL(DP), INTENT(IN)  :: force(3,nat)
   REAL(DP), INTENT(OUT) :: push(3,nat)
   REAL(DP), INTENT(OUT) :: eigenvec(3,nat)
   !
   ! Local variables
   INTEGER               :: mask(nat)
-  INTEGER               :: i, j
   !
   IF( verbose >1 ) OPEN ( UNIT = iunartout, FILE = filout, FORM = 'formatted', ACCESS = 'append', STATUS = 'OLD' )
   !
@@ -50,10 +57,13 @@ SUBROUTINE start_guess( idum, nat, order, force, push, eigenvec )
   !
   ! ...Define EIGENVEC:
   IF( LEN_TRIM(eigenvec_guess) /= 0 ) THEN
+
     !! read the file
     IF( verbose>1 ) WRITE(iunartout,'(5x,"|> First EIGEN vectors read in file",x,a)') TRIM(eigenvec_guess)
     CALL read_guess( idum, nat, eigenvec, eigenvec_guess )
+
   ELSE
+
     !! random
     IF( verbose>1 ) WRITE(iunartout,'(5x,"|> First EIGEN vectors RANDOM")')
     add_const = 0
@@ -61,9 +71,11 @@ SUBROUTINE start_guess( idum, nat, order, force, push, eigenvec )
     !! keyword 'bias_force' = orient the randomness on the actual atomic forces
     call push_init( nat, tau_step, order, lat, idum, mask, dist_thr, add_const, eigen_step_size, eigenvec, 'list_force')
     !call push_init( nat, tau_step, order, lat, idum, mask, dist_thr, add_const, eigen_step_size, eigenvec, 'bias_force' )
-    !
+
   ENDIF
   !
   IF( verbose>1 ) CLOSE(UNIT=iunartout, STATUS='KEEP')
   !
 END SUBROUTINE start_guess
+
+

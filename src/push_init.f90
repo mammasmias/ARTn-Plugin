@@ -39,7 +39,7 @@ SUBROUTINE push_init( nat, tau, order, lat, idum, push_ids, dist_thr, add_const,
   REAL(DP),         INTENT(OUT) :: push(3,nat)
   !
   ! -- LOCAL VARIABLE
-  INTEGER :: na, ia , iglob
+  INTEGER :: na, ia 
   REAL(DP) :: dr2, bias(3,nat)
   REAL(DP) :: dist(3), tau0(3), vmax
   LOGICAL :: lvalid, lcenter
