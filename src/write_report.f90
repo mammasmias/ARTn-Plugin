@@ -410,7 +410,7 @@ SUBROUTINE write_inter_report( iunartout, pushfactor, de )
   integer, intent( in )     :: iunartout             !> Ouput Unit 
   integer, intent( in )     :: pushfactor
   real(DP), intent( in )    :: de(*)        !> list of energies 
-  character(:), allocatable :: Cbilan
+  character(:), allocatable :: fmt_debrief
   character(2) :: DIR
   INTEGER                   :: ios
 
@@ -456,10 +456,10 @@ SUBROUTINE write_inter_report( iunartout, pushfactor, de )
   END SELECT
 
   ! ...Write the debrief line
-  Cbilan = '(5x,"|> DEBRIEF(RELX'//DIR//') | dE= ",f12.5,x,"'//unit_char('energy')//' | F_{tot,para,perp}= ",3(f12.5,x),"' &
+  fmt_debrief = '(5x,"|> DEBRIEF(RELX'//DIR//') | dE= ",f12.5,x,"'//unit_char('energy')//' | F_{tot,para,perp}= ",3(f12.5,x),"' &
      //unit_char('force')//' | EigenVal= ", f12.5,x,"'//unit_char('hessian')//' | npart= ",f4.0,x," | delr= ",f12.5,x,"' &
      //unit_char('length')//' | evalf= ",f5.0,x,"|")'
-  Write(iunartout,Cbilan) Bilan
+  Write(iunartout,fmt_debrief) Bilan
   write(iunartout,'(5x,*(a))') repeat("-",50)
 
   CLOSE(iunartout)
@@ -485,7 +485,7 @@ SUBROUTINE write_end_report( iunartout, lsaddle, lpush_final, de )
   integer, intent( in ) :: iunartout
   logical, intent( in ) :: lsaddle, lpush_final
   REAL(DP), intent( in ), value :: de
-  character(:), allocatable :: Cbilan
+  character(:), allocatable :: fmt_debrief
   INTEGER                   :: ios
   
   OPEN( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'unknown', POSITION='append', IOSTAT = ios )
@@ -497,11 +497,11 @@ SUBROUTINE write_end_report( iunartout, lsaddle, lpush_final, de )
     WRITE(iunartout,'(5X, "|> Stored in Configuration Files:", X,A)') trim(artn_resume)
     WRITE (iunartout,'(5X, "--------------------------------------------------")')
 
-    Cbilan = '(5x,"|> DEBRIEF(SADDLE) | dE= ",f12.5,x,"'//unit_char('energy')//' | F_{tot,para,perp}= ",3(f12.5,x),"' &
+    fmt_debrief = '(5x,"|> DEBRIEF(SADDLE) | dE= ",f12.5,x,"'//unit_char('energy')//' | F_{tot,para,perp}= ",3(f12.5,x),"' &
         //unit_char('force')// &
         ' | EigenVal= ", f12.5,x,"'//unit_char('hessian')//' | npart= ",f4.0,x," | delr= ",f12.5,x,"'//unit_char('length')// &
         ' | evalf= ",f5.0,x,"|")'
-    Write(iunartout,Cbilan) Bilan
+    Write(iunartout,fmt_debrief) Bilan
     write(iunartout,'(5x,*(a))') repeat("-",50)
 
 
