@@ -1,6 +1,6 @@
 #!/bin/bash
 #QE_PATH should be defined in environment_variables
-source ../../../environment_variables
+source ../../environment_variables
 cat > artn.in << EOF 
 &ARTN_PARAMETERS
   ! parameters for the push
@@ -15,7 +15,7 @@ cat > artn.in << EOF
 /
 EOF
 
-mpirun -np 16 ${QE_PATH}/bin/pw.x -partn  < artn.Al-hollow.Al100-5x5-6l.in > artn.Al-hollow.Al100-5x5-6l.out  
+${PARA_PREFIX} ${QE_PATH}/bin/pw.x -partn  < artn.Al-hollow.Al100-5x5-6l.in > artn.Al-hollow.Al100-5x5-6l.out  
 
 cp artn.out artn-exchange.out
 
@@ -31,7 +31,7 @@ cat > artn.in << EOF
 /
 EOF
 
-mpirun -np 16 ${QE_PATH}/bin/pw.x -partn  < artn.Al-hollow.Al100-5x5-6l.in > artn.Al-hollow.Al100-5x5-6l.out  
+${PARA_PREFIX} ${QE_PATH}/bin/pw.x -partn  < artn.Al-hollow.Al100-5x5-6l.in > artn.Al-hollow.Al100-5x5-6l.out  
 
 cp artn.out artn-hopping.out
 
