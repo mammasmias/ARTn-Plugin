@@ -19,7 +19,7 @@ Module units
             convert_hessian, unconvert_hessian, &
             convert_energy, unconvert_energy,   &
             convert_time, unconvert_time, strg_units, unit_char
-  PUBLIC :: parser, lower
+  PUBLIC :: parser, lower, read_line
              
   
 
@@ -143,10 +143,49 @@ Module units
  
     !   +++ cut the word
         if( idx == 0 )exit
-        str = trim(str(idx+1:))
+        str = adjustl(str(idx+1:))
     !
     enddo
   end function parser
+  
+  ! .............................................................................
+  subroutine read_line(fd, line, end_of_file)
+    !> @brief
+    !!   read a line, makes possible to use # for comment lines, skips empty lines, 
+    !!   is pretty much a copy from QE.
+    !
+    !> @note 
+    !!   Quantum ESPRESSO routine
+    !
+    !> @param[in]   fd           file descriptor
+    !! @param[out]  line         what it reads
+    !! @param[out]  end_of_file  logical to signal the EOF
+    !
+    implicit none
+    integer, intent(in) :: fd
+    integer             :: ios
+    character(len=256), intent(out) :: line
+    logical, optional, intent(out) :: end_of_file
+    logical :: tend
+
+    !print*, "in read_line", fd
+
+    tend = .false.
+    101 read(unit=fd,fmt='(A256)',END=111, iostat=ios) line
+    if (ios /= 0) then
+       print*, " Reading Problem..."; stop; endif
+    if(line == ' ' .or. line(1:1) == '#') go to 101
+    go to 105
+    111     tend = .true.
+    !print*,"read_line", line
+    go to 105
+    105   continue
+
+    if( present(end_of_file)) then
+      end_of_file = tend
+    endif
+  end subroutine read_line
+
 
   !......................................................................................
   subroutine make_units( txt )

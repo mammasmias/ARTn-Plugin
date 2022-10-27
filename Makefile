@@ -10,6 +10,7 @@ lib :
 clean :
 	( cd src; $(MAKE) clean; cd - )
 	@rm Files_LAMMPS/*.o 
+	@rm *.so
 
 lammps:
 	@$(call check_defined, CXX)

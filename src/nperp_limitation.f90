@@ -61,7 +61,7 @@ SUBROUTINE nperp_limitation_init( flag )
   !
   !> @param[in] flag true/false to use nperp_limitation
   ! 
-  use artn_params, only: nperp_limitation, nperp_step, nperp, &
+  use artn_params, only: nperp_limitation, nperp, &
                          def_nperp_limitation
   implicit none
 

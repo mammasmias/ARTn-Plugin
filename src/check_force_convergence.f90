@@ -1,4 +1,11 @@
 
+!> @author
+!!   Matic Poberznik
+!!   Miha Gunde
+!!   Nicolas Salles
+!!   Antoine Jay
+
+
 SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv, lsaddle_conv ) 
   !
   !> @breif 
@@ -30,9 +37,9 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
   ! Local Variables
   LOGICAL               :: C0,C1, C2, C3, C4
   integer               :: ios
-  REAL(DP)              :: fperp_thr, dtmp
+  REAL(DP)              :: fperp_thr
   REAL(DP)              :: maxforce, maxfperp, maxfpara
-  REAL(DP)              :: min_dir(3,nat)
+  !REAL(DP)              :: min_dir(3,nat)
   real(DP), external    :: dsum, ddot
   logical, external     :: fperp_min_alignment
   !
@@ -71,14 +78,9 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
            RETURN  !! ANTOINE you removed this line !!!
         ENDIF
 
-        !
+        
         ! ... Check whether the fperp criterion should be tightened
-       ! IF( maxfpara <= fpara_thr ) THEN !> We are close to the saddle point 
-           fperp_thr = forc_thr
-       ! ELSE
-       !    fperp_thr = init_forc_thr
-       ! ENDIF
-       !!! commented by NS
+        fperp_thr = forc_thr  !! Should be removed
 
         ! 
         ! ... Conditions for stopping perp_relax
@@ -115,14 +117,15 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
         !
      ELSE ! ... IN  BASIN
         !
-        fperp_thr = init_forc_thr 
+        !fperp_thr = init_forc_thr 
         !
         ! ... Conditions for stopping perp_relax
         !C1 = ( MAXfperp < fperp_thr )           ! check on the fperp field   !! NS: NO C1 In the BASIN
         C2 = ( nperp > -1 .AND.iperp >= nperp ) ! check on the perp-relax iteration
         !
         ! ... Stopping condition is filled, switch to lanczos or to init if we are still close to the minimum
-        IF( C1 .OR. C2 )THEN
+        !IF( C1 .OR. C2 )THEN
+        IF( C2 )THEN
           IF( iinit < ninit ) THEN 
             lperp    = .false.
             linit    = .true.
@@ -146,7 +149,7 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
      !
      !    
      ! ... Show Stop perp message
-     IF (verbose >1) THEN
+     IF( verbose >1 )THEN
         OPEN( UNIT = iunartout, FILE = 'artn.out', FORM = 'formatted', ACCESS = 'append', STATUS = 'unknown', IOSTAT = ios )
         IF ( C0 ) WRITE(iunartout,'(5x,a46,x,f10.4,x,a1,x,f10.4,a20)') &
             "|> Stop perp relax because force < forc_thr  :",&
@@ -217,33 +220,6 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
 END SUBROUTINE check_force_convergence
 
 
-
-!.......................................................................................
-logical function fperp_min_alignment( thr1, thr2 )result( res )
-  !> @brief 
-  !!   compute the 2 condition:
-  !!    - eigenVec has been suddenlly changed
-  !!    - direction of minimum is perp to the last push
-  !
-  !> @param[in] thr1    threshold on the eigenvec alignement
-  !> @param[in] thr2    threshold in the fperp - direction of minimum alignment
-  !
-  USE units, only : DP
-  USE artn_params, only : a1, tau_step, tau_init, push, natoms
-  implicit none
-
-  real(DP), intent(in) :: thr1, thr2
-
-  REAL(DP) :: min_dir(3,natoms), dtmp
-  REAL(DP), external :: ddot
-
-  min_dir = tau_step - tau_init
-  min_dir = min_dir / NORM2( min_dir )
-  dtmp = ddot(3*natoms,min_dir,1,push,1)
-  !! IF eigenVec change suddenlly AND direction of minimum is perp to the last push
-  res = ( a1 < thr1 .AND. ABS(dtmp) < thr2 )
-
-end function fperp_min_alignment
 
 
 

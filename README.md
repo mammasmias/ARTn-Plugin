@@ -240,8 +240,6 @@ Various files can be found in output.
 
 - nsteppos in ARTn doesn't have the same meaning for QE and LAMMPS in FIRE algo
 
-- nsteppos is customizable in LAMMPS (delaystep) :ok:
-
 - Add the output filename custom 
 
 - Create option to read a configuration as a reference (energy and position) for the rest of the computation. Kind of `ref_config = file`. Usefule for the refine saddle
@@ -275,3 +273,6 @@ Various files can be found in output.
 - **RESTART**: Fast Restart procedure for lammps and binary - Write the restart file with lammps take too mush time
 
 - Do **time profiler** for the ARTn library.
+- **NEXTMIN**: Verify the Threshold to load the new minimum. HARD-CODED!!
+- **displacement_validation**: Nico proposed a new way but has to be tested
+- Nico: I Have a doubt on the routine fpbc() in pbc.f90

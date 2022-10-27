@@ -3,7 +3,6 @@
 !!  Miha Gunde
 !
 SUBROUTINE diag(n, A, eigvals, vec)
-  USE artn_params,            ONLY : DP
   !> @brief
   !! assuming a general square matrix (can be nonsymmetric).
   !! On output A is overwritten by eigenvectors in rows, if vec=0, then
@@ -14,11 +13,16 @@ SUBROUTINE diag(n, A, eigvals, vec)
   !! @param [out]   eigvals   output vector of eigenvalues, not sorted!
   !! @param [in]    vec	      0 if don't want to compute eigenvectors, 1 otherwise
   !!
+  USE artn_params,            ONLY : DP
   IMPLICIT NONE
+
+  ! -- arguments
   INTEGER,              intent(in) :: n
   REAL(DP), DIMENSION(n,n), intent(inout) :: A
   REAL(DP), DIMENSION(n),   intent(out) :: eigvals
   INTEGER,              intent(in) :: vec
+
+  ! -- local variables
   REAL(DP), DIMENSION(n) :: eigvals_i !! imaginary part of the eigenvalues
   REAL(DP), DIMENSION(n,n) :: eigvec
   INTEGER :: lda

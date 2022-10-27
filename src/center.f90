@@ -4,12 +4,12 @@
 !!  Miha Gunde
 !
 !
-SUBROUTINE center ( vec, nat)
+SUBROUTINE center ( vec, nat )
   !> @brief
   !!   takes as input a vector of size (3,nat) and centers it
   !
-  !> @param[in]     nat
-  !! @param[inout]  vec
+  !> @param[in]     nat    number of atom
+  !! @param[inout]  vec    output vector
   !
   USE units, ONLY: DP
   !
