@@ -25,7 +25,7 @@ cat > artn.in << EOF
   push_mode = 'list'
   ! define which atoms are to be pushed and the constraints ...
   push_ids = 1
-  add_const(:,1) = 1.0, 1.0, -1.0, 0.
+  add_const(:,1) = 1.0, 0.0, 0.0, 0.
   ! eigenpush parms
   lpush_final = .true.
 /
