@@ -47,7 +47,8 @@ END SUBROUTINE perpforce
 
 
 !! N. Salles
-subroutine splitfield( n, field, mask, fref, fperp, fpara )
+!subroutine splitfield( n, field, mask, fref, fperp, fpara )
+subroutine field_split( n, field, mask, fref, fperp, fpara )
   !
   !> @brief Extract the parallel and perpendicular component of field 
   !!   followig a reference field (fref) according to a mask.
@@ -91,7 +92,7 @@ subroutine splitfield( n, field, mask, fref, fperp, fpara )
   endif
 
 
-end subroutine splitfield
+end subroutine field_split
 
 
 

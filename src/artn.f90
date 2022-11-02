@@ -165,7 +165,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     !
     ! ...Split the force field in para/perp field following the push field
     !CALL perpforce( force_step, if_pos, push, fperp, fpara, nat)
-    CALL splitfield( 3*nat, force_step, if_pos, push, fperp, fpara )
+    CALL field_split( 3*nat, force_step, if_pos, push, fperp, fpara )
 
     !
     ! ...Start to write the output
@@ -200,7 +200,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     ENDIF
     !
     ! ...Split the force field in para/perp field following the push field
-    CALL splitfield( 3*nat, force_step, if_pos, push, fperp, fpara )
+    CALL field_split( 3*nat, force_step, if_pos, push, fperp, fpara )
 
     ! ...Write Output
     CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, if_pos, istep, nat,  iunartout)
