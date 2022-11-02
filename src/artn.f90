@@ -29,7 +29,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   ! DEFINED IN: artn_params_mod.f90
   !
   USE units
-  USE artn_params, ONLY: iunartin, iunartout, iunstruct, &
+  USE artn_params, ONLY: iunartin, iunartout, iunstruct, verbose, &
        lrelax, linit, lperp, leigen, llanczos, lrestart, lbasin, lpush_over, lpush_final, lbackward, lmove_nextmin,  &
        irelax, istep, iperp, ieigen, iinit, ilanc, ismooth, iover, isearch, ifound, nlanc, nperp, noperp, nperp_step,  &
        if_pos_ct, lowest_eigval, etot_init, etot_step, etot_saddle, etot_final, de_back, de_fwd, &
@@ -703,10 +703,12 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   IF( lconv )THEN
     !
     ! ...Print in the OUTPUT
-    OPEN( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'old', POSITION = 'append', IOSTAT = ios )
-    WRITE( iunartout,'(5x, "|> BLOCK FINALIZE..")')
-    WRITE( *,'(5x, "|> BLOCK FINALIZE..")')
-    WRITE( iunartout,'(5X, "|> number of steps:",x, i0)') istep
+    IF( verbose > 0 )THEN
+      OPEN( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'old', POSITION = 'append', IOSTAT = ios )
+      WRITE( iunartout,'(5x, "|> BLOCK FINALIZE..")')
+      WRITE( *,'(5x, "|> BLOCK FINALIZE..")')
+      WRITE( iunartout,'(5X, "|> number of steps:",x, i0)') istep
+    ENDIF
 
     !> SCHEMA FINILIZATION
     lend = lconv
@@ -723,10 +725,10 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
       CALL move_nextmin( nat, tau )
     ELSE
       tau(:,:) = tau_init(:,order(:))
-      WRITE( iunartout, '(5x, "|> Initial Configuration loaded...")')
+      IF( verbose > 0 )WRITE( iunartout, '(5x, "|> Initial Configuration loaded...")')
     ENDIF
 
-    CLOSE( iunartout )
+    IF( verbose > 0 )CLOSE( iunartout )
 
     !
     ! ...Tell to the engine it is finished
