@@ -14,6 +14,10 @@
     !> @param[in]    idum    seed for rng
     !! @param[inout] vec     output vector
     !
+    !> @note
+    !!   the random vector is inside a cercle of radius 0.5
+    !!   because x, y, z \in [-.5:.5]
+    !
     use units, only : DP
     use artn_params, only : ran3
     implicit none

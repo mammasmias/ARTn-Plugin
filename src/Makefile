@@ -26,6 +26,8 @@ LIB_OBJECTS := \
 	    $(OBJ)/write_struct.o \
 	    $(OBJ)/restart.o \
             $(OBJ)/nextmin.o \
+            $(OBJ)/get_functions.o \
+            $(OBJ)/make_filename.o \
             $(OBJ)/read_guess.o \
             $(OBJ)/start_guess.o \
             $(OBJ)/nperp_limitation.o \

@@ -34,7 +34,7 @@ SUBROUTINE write_restart( filnres )
   CHARACTER(LEN=255), INTENT(IN) :: filnres
   INTEGER :: ios
 
-  print*, "WRITE_RESTART::", istep
+  !print*, "WRITE_RESTART::", istep
   OPEN( UNIT = iunartres, FILE = filnres, ACTION="WRITE", FORM = 'formatted', STATUS = 'REPLACE', IOSTAT = ios)
 
   WRITE ( iunartres, * ) linit, lperp, leigen, llanczos, lpush_over, lrelax, &
