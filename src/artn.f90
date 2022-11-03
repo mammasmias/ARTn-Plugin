@@ -3,15 +3,16 @@
 !!   Matic Poberznik
 !!   Miha Gunde
 !!   Nicolas Salles
-!
-!> @brief
-!!   Main ARTn plugin subroutine:
-!
-!> @details
-!!   Modifies the input force to perform the ARTn algorithm
+
 !------------------------------------------------------------------------------
 SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, displ_vec, lconv )
   !----------------------------------------------------------------------------
+  !> @brief
+  !!   Main ARTn plugin subroutine:
+  !
+  !> @details
+  !!   Modifies the input force to perform the ARTn algorithm
+  !
   !> @param[in]     force       force calculated by the engine
   !> @param[inout]  etot_eng    total energy of the engine
   !> @param[in]     nat         number of atoms
@@ -25,8 +26,9 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   !> @param[out]    displ_vec   displacement vector communicated to move_mode
   !> @param[out]    lconv       flag for controlling convergence
   !
-  ! artn_params for variables and counters that need to be stored in each step
-  ! DEFINED IN: artn_params_mod.f90
+  !> @note 
+  !!  artn_params for variables and counters that need to be stored in each step
+  !!  DEFINED IN: artn_params_mod.f90
   !
   USE units
   USE artn_params, ONLY: iunartin, iunartout, iunstruct, verbose, &
@@ -38,7 +40,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
        push_ids, add_const, push, eigenvec, tau_step, force_step, tau_init, tau_saddle, eigen_saddle, v_in, &
        VOID, INIT, PERP, EIGN, LANC, RELX, OVER, zseed, &
        engine_units, struc_format_out, elements, ilanc_save, &
-       setup_artn, read_restart, write_restart, inewchance, nnewchance,&
+       setup_artn, inewchance, nnewchance, & !read_restart, &
        push_over, ran3, a1, old_lanczos_vec, lend, fill_param_step, &
        filin, filout, sadfname, initpfname, eigenfname, restartfname, warning, flag_false,  &
        prefix_min, nmin, prefix_sad, nsaddle, artn_resume, natoms, old_lowest_eigval, &

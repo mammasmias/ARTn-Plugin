@@ -30,7 +30,8 @@ SUBROUTINE write_initial_report(iunartout, filout)
   !
   ! Writes the header to the artn output file
   !
-  OPEN( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'unknown', POSITION='rewind', IOSTAT = ios )
+  OPEN( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'REPLACE', POSITION='rewind', IOSTAT = ios )
+  PRINT*, "WRITE_INITIAL_REPORT"
 
   WRITE (iunartout,'(5X, "--------------------------------------------------")')
   WRITE (iunartout,'(5X, "|       _____                _____ _______       |")')
@@ -101,30 +102,16 @@ SUBROUTINE write_header_report( iunartout )
   !integer :: ios
 
 
-  OPEN( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'unknown', POSITION='append', IOSTAT = ios )
-  WRITE(iunartout,'(5x,"|> ARTn research :",2(x,i0)/,5x,*(a))') isearch, ifound, repeat("-",50)
-
-  !%! Condition on the engin_units..
   IF( verbose > 0 )THEN
+    OPEN( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'OLD', POSITION='append', IOSTAT = ios )
+    WRITE(iunartout,'(5x,"|> ARTn research :",2(x,i0)/,5x,*(a))') isearch, ifound, repeat("-",50)
+
     WRITE( iunartout,'(5X,"istep",4X,"ART_step",4X,"Etot",5x,"init/eign/perp/lanc/relx","&
                &"4X," Ftot ",5X," Fperp ",4X," Fpara ",4X,"eigval", 6X, "delr", 2X, "npart", X,"evalf",2X,"a1")')
     ! -- Units
     WRITE( iunartout, strg_units )
+    CLOSE( iunartout )
   ENDIF
-! select case( verbose )
-!   case( 0 )
-!   WRITE( iunartout,'(5X,"istep",4X,"ART_step",4X,"Etot",5x,"init/eign/perp/lanc/relx","&
-!              &"4X," Ftot ",5X," Fperp ",4X," Fpara ",4X,"eigval", 6X, "delr", 2X, "npart", X,"evalf",2X,"a1")')
-
-!   case( 1: )
-!   WRITE( iunartout,'(5X,"istep",4X,"ART_step",4X,"Etot",5x,"init/eign/perp/lanc/relx","&
-!              &"4X," Ftot ",5X," Fperp ",4X," Fpara ",4X,"eigval", 6X, "delr", 2X, "npart", X,"evalf","&
-!              &"4X,"B/O/R|I/P/L/E|P/B/R",4X,"a1")')
-! end select
-
-  ! -- Units
-!  WRITE( iunartout, strg_units )
-  CLOSE( iunartout )
 END SUBROUTINE write_header_report
 
 
@@ -248,25 +235,10 @@ SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep
   !
   !
   IF( verbose > 0 )THEN
-    OPEN( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'unknown', POSITION='append', IOSTAT = ios )
+    OPEN( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'OLD', POSITION='append', IOSTAT = ios )
     WRITE(iunartout,6) iartn, Mstep, MOVE(prev_push), detot, iinit, ieigen, iperp, ilanc, irelax,  &
                        force_tot, fperp_tot, fpara_tot, lowEig, dr, npart, evalf, a1
     6 FORMAT(5x,i4,3x,a,x,a,F10.4,x,5(x,i4),5(x,f10.4),2(x,i5),3X,f4.2)
-! SELECT CASE( verbose )
-!   !
-!   CASE( 0 ) !! actually does not happen for write_report()
-!     WRITE(iunartout,6) iartn, Mstep, MOVE(prev_push), detot, iinit, ieigen, iperp, ilanc, irelax,  &
-!                        force_tot, fperp_tot, fpara_tot, lowEig, dr, npart, evalf, a1
-!     6 FORMAT(5x,i4,3x,a,x,a,F10.4,x,5(x,i4),5(x,f10.4),2(x,i5),3X,f4.2)
-!   !
-!   CASE( 1: )
-!     WRITE(iunartout,5) iartn, Mstep, MOVE(disp), detot, iinit, ieigen, iperp, ilanc, irelax,  &
-!                        force_tot, fperp_tot, fpara_tot, lowEig, dr, npart, evalf, lbasin,     &
-!                        lpush_over, lrelax, linit, lperp, llanczos, leigen,  lpush_final,      &
-!                        lbackward, lrestart , a1
-!     5 format(5x,i4,3x,a,x,a,F10.4,x,5(x,i4),5(x,f10.4),2(x,i5),3X,10(L2),3X,f4.2)
-!   ! 
-! END SELECT
     CLOSE(iunartout)
   ENDIF
   
@@ -375,27 +347,12 @@ SUBROUTINE write_artn_step_report( etot, force, fperp, fpara, lowest_eigval, if_
   !
   !
   IF( verbose > 0 )THEN
-    OPEN( UNIT = iout, FILE = filout, FORM = 'formatted', STATUS = 'unknown', POSITION='append', IOSTAT = ios )
+    OPEN( UNIT = iout, FILE = filout, FORM = 'formatted', STATUS = 'OLD', POSITION='append', IOSTAT = ios )
 
     WRITE(iout,6) iartn, trim(Mstep)//"/"//MOVE(prev_push), detot, iinit, ieigen, iperp_save, ilanc_save, irelax,  &
                          force_tot, fperp_tot, fpara_tot, lowEig, dr, npart, evalf, a1
     6 FORMAT(5x,i4,3x,a,F10.4,x,5(x,i4),5(x,f10.4),2(x,i5),3X,f4.2)
 
-  !SELECT CASE( verbose )
-  !  !
-  !  CASE( 1: )
-  !    WRITE(iout,6) iartn, trim(Mstep)//"/"//MOVE(prev_push), detot, iinit, ieigen, iperp_save, ilanc_save, irelax,  &
-  !                       force_tot, fperp_tot, fpara_tot, lowEig, dr, npart, evalf, a1
-  !    6 FORMAT(5x,i4,3x,a,F10.4,x,5(x,i4),5(x,f10.4),2(x,i5),3X,f4.2)
-  !  !
-  !  CASE( 1: )
-  !    WRITE(iout,5) iartn, trim(Mstep)//"/"//MOVE(prev_push), detot, iinit, ieigen, iperp_save, ilanc_save, irelax,  &
-  !                       force_tot, fperp_tot, fpara_tot, lowEig, dr, npart, evalf, lbasin,     &
-  !                       lpush_over, lrelax, linit, lperp, llanczos, leigen,  lpush_final,      &
-  !                       lbackward, lrestart , a1
-  !    5 format(5x,i4,3x,a,F10.4,x,5(x,i4),5(x,f10.4),2(x,i5),3X,10(L2),3X,f4.2)
-  !  ! 
-  !END SELECT
     CLOSE(iout)
   ENDIF
 
@@ -435,14 +392,13 @@ SUBROUTINE write_inter_report( iunartout, pushfactor, de )
   character(2) :: DIR
   INTEGER                   :: ios
 
-  OPEN( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'unknown', POSITION='append', IOSTAT = ios )
+  OPEN( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'OLD', POSITION='append', IOSTAT = ios )
 
   IF( verbose == 0 )THEN
 
     !> 
     IF( lpush_final .AND. (fpush_factor == -1.0) .AND. .NOT.lbackward )  &
       WRITE(iunartout,'(5X,i0,X,A)') ifails, trim(artn_resume)
-    !WRITE( iunartout,'(5X, "|> Configuration Files:", X,A)') ifails, trim(artn_resume)
 
   ELSE
 
@@ -521,11 +477,8 @@ SUBROUTINE write_end_report( iunartout, lsaddle, lpush_final, de )
   character(:), allocatable :: fmt_debrief
   INTEGER                   :: ios
   
-  OPEN( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'unknown', POSITION='append', IOSTAT = ios )
+  OPEN( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'OLD', POSITION='append', IOSTAT = ios )
 
-  !IF( verbose == 0 )THEN
-  !  WRITE(iunartout,'(5X,i0,X,A)') ifails, trim(artn_resume)
-  !ELSE
   IF( verbose > 0 )THEN
 
     if( lsaddle )then
@@ -585,7 +538,7 @@ SUBROUTINE write_fail_report( iunartout, disp, estep )
 
   ifails = ifails + 1
 
-  OPEN  (UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'unknown', POSITION='append', IOSTAT = ios )
+  OPEN  (UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'OLD', POSITION='append', IOSTAT = ios )
 
   IF( verbose == 0 )THEN
 

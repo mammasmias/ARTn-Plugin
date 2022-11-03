@@ -9,7 +9,6 @@ SRC := .
 LIB_OBJECTS := \
 	    $(OBJ)/units.o \
             $(OBJ)/artn_params_mod.o \
-	    $(OBJ)/DEBUG.o \
             $(OBJ)/center.o \
             $(OBJ)/diag.o \
 	    $(OBJ)/lanczos.o \
@@ -25,6 +24,7 @@ LIB_OBJECTS := \
 	    $(OBJ)/move_mode.o \
 	    $(OBJ)/write_report.o \
 	    $(OBJ)/write_struct.o \
+	    $(OBJ)/restart.o \
             $(OBJ)/nextmin.o \
             $(OBJ)/read_guess.o \
             $(OBJ)/start_guess.o \
@@ -33,9 +33,10 @@ LIB_OBJECTS := \
             $(OBJ)/clean_artn.o \
             $(OBJ)/artn.o \
             $(OBJ)/artn_QE.o
+	    #$(OBJ)/DEBUG.o \
 
 
-FDEBUG := -g -fcheck=all #-check all  #-fcheck=all
+FDEBUG := -g -fcheck=all -Wall #-check all  #-fcheck=all
 
 ifeq ($(F90),ifort)
   MOD   := -module $(OBJ)
