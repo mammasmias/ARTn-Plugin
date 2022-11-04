@@ -1,6 +1,7 @@
 !> @author
-!!   Matic Poberznik,
+!!   Matic Poberznik
 !!   Miha Gunde
+!!   Nicolas Salles
 !!
 SUBROUTINE push_init( nat, tau, order, lat, idum, push_ids, dist_thr, add_const, init_step_size, push, mode)
   !

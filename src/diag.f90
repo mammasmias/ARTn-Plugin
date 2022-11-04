@@ -1,5 +1,5 @@
 !> @author
-!!  Matic Poberjnik,
+!!  Matic Poberznik
 !!  Miha Gunde
 !
 SUBROUTINE diag(n, A, eigvals, vec)

@@ -1,7 +1,8 @@
 
 !> @author
-!!   Matic Poberznik,
+!!   Matic Poberznik
 !!   Miha Gunde
+!!   Nicolas Salles
 
 SUBROUTINE perpforce( force, if_pos, push, fperp, fpara, nat )
   !
