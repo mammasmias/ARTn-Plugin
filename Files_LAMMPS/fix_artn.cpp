@@ -442,8 +442,6 @@ void FixARTn::min_post_force( int /*vflag*/ ){
 
 
   // ...Basic Array to work
-  int nlocal = atom->nlocal;
-  int nat = atom->natoms;
   double **tau = atom->x;
   double **f = atom->f;
   double **vel = atom->v ;
@@ -453,6 +451,7 @@ void FixARTn::min_post_force( int /*vflag*/ ){
 
   // ...Update and share the local system size
 
+  int nlocal = atom->nlocal;
   MPI_Allgather( &nlocal, 1, MPI_INT, nloc, 1, MPI_INT, world );
   int ntot(0), lresize(0);
   for( int ipc(0); ipc < nproc; ipc++ )ntot += nloc[ipc];
@@ -465,6 +464,10 @@ void FixARTn::min_post_force( int /*vflag*/ ){
 
   // ...Resize total system:
   //    The Total Number of Atom Change
+  resize_total_system( ntot );
+  int nat = natoms;
+
+/*  int nat = atom->natoms;
 
   if( natoms != ntot )lresize = 1;
   if( lresize ){
@@ -481,13 +484,15 @@ void FixARTn::min_post_force( int /*vflag*/ ){
     memory->create( order_tot, natoms, "fix/artn:order_tot");
     lresize = 0 ;
   }
-
+*/
 
 
 
   // ...Resize local system
   //    The atoms distribution between proc changes
+  resize_local_system( nlocal );
 
+/* ==================================================================
   // verification of local size
   // LRESIZE = logical(int) if number of local atom has been changed
   // -> Allgather it
@@ -595,7 +600,7 @@ void FixARTn::min_post_force( int /*vflag*/ ){
                   &f_prev[0][0], 3*nlocal, MPI_DOUBLE, 0, world );
 
 
-/*-------
+*//*-------
     // ...Change the order of velocity
     if( !me ){
       if( !xtot )printf(" ERROR - *XTOT => NULL \n");
@@ -619,7 +624,7 @@ void FixARTn::min_post_force( int /*vflag*/ ){
 
     MPI_Scatterv( &xtot[0][0], length, istart, MPI_DOUBLE,
                   &v_prev[0][0], 3*nlocal, MPI_DOUBLE, 0, world );
-------*/
+------*//*
 
 
 
@@ -636,7 +641,7 @@ void FixARTn::min_post_force( int /*vflag*/ ){
 
   } // -------------------------------------------------------------------------- END RESIZE SYSTEM
 
-
+ ================================================================== */
 
 
 
@@ -1024,52 +1029,204 @@ void FixARTn::Spread_Arrays( int *nloc, double **xtot, double **vtot, double **f
 }
 
 
-/*
-// ----------------------------------------------------------------------
 
-int FixARTn::pack_reverse_comm(int n, int first, double *buf)
-{
-  int i,m,last;
+// ------------------------------------------------------------------- RESIZE total SYSTEM SIZE
 
-  m = 0;
-  last = first + n;
-  for (i = first; i < last; i++) {
-    buf[m++] = tab_comm[i];
-    //    if (i<first+3) printf ("[%d] prc %d %d buf_send = %f \n",me,i,m-1,buf[m-1]);
+void FixARTn::resize_total_system( int ntot ){
+
+
+  // ...Resize total system:
+  //    The Total Number of Atom Change
+
+  int lresize(0);
+  if( natoms != ntot )lresize = 1;
+  if( lresize ){
+    // Resize FTOT
+    memory->destroy( ftot );
+    memory->destroy( xtot );
+    memory->destroy( vtot );
+    memory->destroy( order_tot );
+    natoms = atom->natoms;
+    //nat = natoms;
+    memory->create( ftot, natoms, 3, "fix/artn:ftot");
+    memory->create( xtot, natoms, 3, "fix/artn:xtot");
+    memory->create( vtot, natoms, 3, "fix/artn:vtot");
+    memory->create( order_tot, natoms, "fix/artn:order_tot");
+    //lresize = 0 ;
   }
-  return m;
+
 }
 
-// ----------------------------------------------------------------------
 
-void FixARTn::unpack_reverse_comm(int n, int *list, double *buf)
-{
-  int i,j,m;
+// ------------------------------------------------------------------- RESIZE local SYSTEM SIZE
 
-  m = 0;
-  for (i = 0; i < n; i++) {
-    j = list[i];
-    //  tab_comm[j] += buf[m++];
-    tab_comm[j] = buf[m++];
-    //    if (j<3) printf ("[%d] %d urc %d %d buf_recv = %f \n",me,n,i,m-1,buf[m-1]);
-  }
+void FixARTn::resize_local_system( int nlocal /*new nloc */ ){
+
+
+  // verification of local size
+  // LRESIZE = logical(int) if number of local atom has been changed
+  // -> Allgather it
+  // -> sum them in ntot
+  // -> if ntot > 0 => resize
+  int lresize = ( nloc[me] != oldnloc );
+
+  for( int ipc(0); ipc < nproc; ipc++ )nlresize[ me ] = 0;
+  MPI_Allgather( &lresize, 1, MPI_INT, nlresize, 1, MPI_INT, world );
+  int ntot(0);
+  for( int ipc(0); ipc < nproc; ipc++ )ntot += nlresize[ ipc ];
+
+  int lresize_sum(0);
+  MPI_Allreduce( &lresize, &lresize_sum, 1, MPI_INT, MPI_SUM, world );
+  if( ntot != lresize_sum )
+    printf("[%d] ntot %d | lresize_sum %d | %d \n ", me, ntot, lresize_sum, (ntot == lresize_sum) );
+
+
+  // ...One of the local size change
+  if( lresize_sum > 0 ){
+
+    // ...Array of old local size
+    int *oldloc;
+    memory->create( oldloc, nproc, "fix/artn:oldloc" );
+    MPI_Allgather( &oldnloc, 1, MPI_INT, oldloc, 1, MPI_INT, world );
+
+
+    // ...Create temporary Arrays
+    int *inew;
+    memory->create( inew, natoms, "fix/artn:inew" );
+    memory->create( istart, natoms, "fix/artn:istart" );
+    memory->create( length, natoms, "fix/artn:length" );
+
+
+    // ---------------------------------- Use AllGatherv for f_prev to ftot
+    //                                                       v_prev to vtot
+    // ...Starting point:
+    for( int ipc(0); ipc < nproc; ipc++ )
+      istart[ ipc ] = (ipc > 0) ? istart[ ipc - 1 ] + 3*oldloc[ ipc - 1 ] : 0 ;
+
+    // ...Length of receiv buffer
+    for( int ipc(0); ipc < nproc; ipc++ ) length[ ipc ] = 3*oldloc[ ipc ];
+
+
+    MPI_Gatherv( &f_prev[0][0], 3*oldnloc, MPI_DOUBLE,
+                 &ftot[0][0], length, istart, MPI_DOUBLE, 0, world );
+
+    MPI_Gatherv( &v_prev[0][0], 3*oldnloc, MPI_DOUBLE,
+                 &vtot[0][0], length, istart, MPI_DOUBLE, 0, world );
+
+
+    // --------------------------------- Use AllGatherv for order to order_tot
+    // ...Starting point:
+    for( int ipc(0); ipc < nproc; ipc++ )
+      istart[ ipc ] = ( ipc > 0 ) ? istart[ ipc - 1 ] + oldloc[ ipc - 1 ] : 0 ;
+
+    MPI_Gatherv( order, oldnloc, MPI_INT,
+                 order_tot, oldloc, istart, MPI_INT, 0, world );
+
+
+
+    // ...Resize order
+    tagint *itag = atom->tag;
+    memory->destroy( order );
+    memory->create( order, nlocal, "fix/artn:order" );
+
+    // ...Fill now order
+    for( int i(0); i < nlocal; i++ )order[ i ] = itag[ i ];
+
+
+    // --------------------------------- Use AllGatherv for order to inew
+    // ...Starting point:
+    for( int ipc(0); ipc < nproc; ipc++ )
+      istart[ ipc ] = ( ipc > 0 ) ? istart[ ipc - 1 ] + nloc[ ipc - 1 ] : 0 ;
+
+    MPI_Gatherv( order, nlocal, MPI_INT,
+                    inew, nloc, istart, MPI_INT, 0, world );
+
+
+    // ...Change the order of force
+    if( !me ){
+      if( !xtot )printf(" ERROR - *XTOT => NULL \n");
+      if( !ftot )printf(" ERROR - *FTOT => NULL \n");
+      for( int i(0); i < natoms; i++ ){
+
+        int j;
+        for( j = 0; j < natoms; j++ )
+          if( order_tot[ j ] == inew[ i ] ){
+            xtot[i][0] = ftot[j][0];
+            xtot[i][1] = ftot[j][1];
+            xtot[i][2] = ftot[j][2];
+            break;
+          }
+      }
+    } // ::: ME = 0
+
+
+    // ...Resize f_prev
+    memory->destroy( f_prev );
+    memory->create( f_prev, nlocal, 3, "fix/artn:f_prev" );
+
+
+    // ...Starting point:
+    for( int ipc(0); ipc < nproc; ipc++ )
+      istart[ ipc ] = (ipc > 0) ? istart[ ipc - 1 ] + 3*nloc[ ipc - 1 ] : 0 ;
+
+    // ...Length of receiv buffer
+    for( int ipc(0); ipc < nproc; ipc++ )length[ ipc ] = 3*nloc[ ipc ];
+
+    MPI_Scatterv( &xtot[0][0], length, istart, MPI_DOUBLE,
+                  &f_prev[0][0], 3*nlocal, MPI_DOUBLE, 0, world );
+
+
+/*-------
+    // ...Change the order of velocity
+    if( !me ){
+      if( !xtot )printf(" ERROR - *XTOT => NULL \n");
+      if( !vtot )printf(" ERROR - *VTOT => NULL \n");
+      for( int i(0); i < natoms; i++ ){
+
+        int j;
+        for( j = 0; j < natoms; j++ )
+          if( order_tot[ j ] == inew[ i ] )break;
+
+        xtot[i][0] = vtot[j][0];
+        xtot[i][1] = vtot[j][1];
+        xtot[i][2] = vtot[j][2];
+      }
+    } // ::: ME = 0
+
+
+    // ...Resize f_prev
+    memory->destroy( v_prev );
+    memory->create( v_prev, nlocal, 3, "fix/artn:v_prev" );
+
+    MPI_Scatterv( &xtot[0][0], length, istart, MPI_DOUBLE,
+                  &v_prev[0][0], 3*nlocal, MPI_DOUBLE, 0, world );
+------*/
+
+
+
+
+
+    // ...Save the new value
+    oldnloc = nloc[ me ];
+
+    // ...Destroy temporary arrays
+    memory->destroy( oldloc );
+    memory->destroy( inew );
+    memory->destroy( length );
+    memory->destroy( istart );
+
+  } // -------------------------------------------------------------------------- END RESIZE SYSTEM
+
 }
 
-// ----------------------------------------------------------------------
 
-void FixARTn::forward(double *tab)
-{
-  int i;
-  int nlocal = atom->nlocal;
-  int nghost = atom->nghost;
 
-  for (i=0; i<nlocal+nghost; i++) tab_comm[i] = tab[i];
 
-  comm->forward_comm_fix(this);
 
-  for (i=0; i<nlocal+nghost; i++) tab[i] = tab_comm[i];
-}
 
-*/
+
+
+
+
 
 
