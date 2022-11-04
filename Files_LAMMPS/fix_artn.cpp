@@ -280,7 +280,11 @@ void FixARTn::min_setup( int vflag ) {
 
   class Min *minimize = update-> minimize;
 
-  if( !me )cout<< " * FIX/ARTn::CHANGE PARAM..."<<endl;
+  // if( !me )cout<< " * FIX/ARTn::CHANGE PARAM..."<<endl;
+  if( comm->me == 0 ){
+    if( logfile ) fprintf(logfile," * FIX/ARTn::CHANGE PARAM...\n");
+    if( screen ) fprintf(screen," * FIX/ARTn::CHANGE PARAM...\n");
+  }
 
   /*
   -- Change & Save the initial Fire Parameter
@@ -336,14 +340,30 @@ void FixARTn::min_setup( int vflag ) {
   minimize-> setup_style();
 
   // ...Print the Initial Fire Parameters
-  if( !me ){
-    cout<< " * Alpha0->"<< alpha_init<< endl;
-    cout<< " * dt0->"<< dt_init<< endl;
-    cout<< " * dtmin->"<< dtmin<< endl;
-    cout<< " * dtmax->"<< dtmax<< endl;
-    cout<< " * ftm2v->"<< force->ftm2v << endl;
-    cout<< " * dmax->"<< dmax << endl;
-    cout<< " * delaystep->"<< nsteppos0 << endl;
+  // if( !me ){
+  //   cout<< " * Alpha0->"<< alpha_init<< endl;
+  //   cout<< " * dt0->"<< dt_init<< endl;
+  //   cout<< " * dtmin->"<< dtmin<< endl;
+  //   cout<< " * dtmax->"<< dtmax<< endl;
+  //   cout<< " * ftm2v->"<< force->ftm2v << endl;
+  //   cout<< " * dmax->"<< dmax << endl;
+  //   cout<< " * delaystep->"<< nsteppos0 << endl;
+  // }
+  if( comm->me == 0 ){
+    if( screen ) fprintf(screen, " * alpha0 -> %6g\n", alpha_init );
+    if( screen ) fprintf(screen, " * dt0 -> %6g\n", dt_init );
+    if( screen ) fprintf(screen, " * dtmin -> %4g\n", dtmin );
+    if( screen ) fprintf(screen, " * dtmax -> %4g\n", dtmax );
+    if( screen ) fprintf(screen, " * ftm2v -> %6g\n", force->ftm2v );
+    if( screen ) fprintf(screen, " * dmax -> %4g\n", dmax );
+    if( screen ) fprintf(screen, " * delaystep -> %9i\n", nsteppos0 );
+    if( logfile ) fprintf(logfile, " * alpha0 -> %6g\n", alpha_init );
+    if( logfile ) fprintf(logfile, " * dt0 -> %6g\n", dt_init );
+    if( logfile ) fprintf(logfile, " * dtmin -> %4g\n", dtmin );
+    if( logfile ) fprintf(logfile, " * dtmax -> %4g\n", dtmax );
+    if( logfile ) fprintf(logfile, " * ftm2v -> %6g\n", force->ftm2v );
+    if( logfile ) fprintf(logfile, " * dmax -> %4g\n", dmax );
+    if( logfile ) fprintf(logfile, " * delaystep -> %9i\n", nsteppos0 );
   }
 
 
@@ -764,7 +784,11 @@ void FixARTn::min_post_force( int /*vflag*/ ){
 
 
     MPI_Barrier( world );
-    if( !me )cout<< "     ************************** ARTn CONVERGED"<<endl;
+    // if( !me )cout<< "     ************************** ARTn CONVERGED"<<endl;
+    if( comm-> me == 0){
+      if( screen ) fprintf( screen, "     ************************** ARTn CONVERGED\n");
+      if( logfile ) fprintf( logfile, "     ************************** ARTn CONVERGED\n");
+    }
     return;
   } // --------------------------------------------------------------------------------
 

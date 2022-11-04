@@ -1,13 +1,13 @@
 /*
-!> @author 
-!!   Nicolas Salles,
-!!   Matic Poberznic,
-!!   Miha Gubde
+!> @author
+!!   Nicolas Salles
+!!   Matic Poberznik
+!!   Miha Gunde
 
 !> @brief
 !!   Plugin interface for the class FixARTn
 
-!> @note 
+!> @note
 !!   Should be compiled with lammps/src/
 */
 
@@ -35,7 +35,7 @@ extern "C" void lammpsplugin_init( void *lmp, void *handle, void *regfunc ){
   plugin.style = "fix";
   plugin.name = "artn";
   plugin.info = "ARTn plugin fix style v1.0";
-  plugin.author = "Nicoolas Salles (nsalles33@gmail.com)";
+  plugin.author = "Nicolas Salles (nsalles33@gmail.com)";
   plugin.creator.v2 = (lammpsplugin_factory2 *) &artn2creator;
   plugin.handle = handle;
   (*register_plugin)(&plugin, lmp);
