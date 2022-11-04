@@ -85,6 +85,10 @@ class FixARTn : public Fix {
   int *istart, *length, *nlresize;
   double *tab_comm;
 
+  // Resize routine
+  void resize_total_system( int );
+  void resize_local_system( int );
+
 };
 
 }
