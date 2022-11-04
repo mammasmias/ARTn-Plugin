@@ -1,7 +1,8 @@
 
 !> @author
-!!   Matic Poberznik,
+!!   Matic Poberznik
 !!   Miha Gunde
+!!   Nicolas Salles
 
 
 SUBROUTINE sum_force( force, nat, force_tot )

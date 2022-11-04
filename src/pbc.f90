@@ -1,7 +1,8 @@
 
 !> @author
-!!  Matic Poberjnik,
+!!  Matic Poberznik
 !!  Miha Gunde
+!!  Nicolas Salles
 
 SUBROUTINE pbc( vec, at )
   USE artn_params, ONLY : DP 

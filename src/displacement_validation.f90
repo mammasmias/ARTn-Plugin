@@ -1,7 +1,8 @@
 
 !> @author
-!!  Matic Poberjnik,
+!!  Matic Poberznik,
 !!  Miha Gunde
+!!  Nicolas Salles
 !
 SUBROUTINE displacement_validation( atom_const, push, lvalid)
   !

@@ -1,6 +1,6 @@
 
 !> @author
-!!  Matic Poberjnik,
+!!  Matic Poberznik
 !!  Miha Gunde
 !!  Nicolas Salles
 

@@ -1,7 +1,8 @@
 !
 !> @author
-!!  Matic Poberjnik,
+!!  Matic Poberznik
 !!  Miha Gunde
+!!  Nicolas Salles
 !
 !
 SUBROUTINE center ( vec, nat )
