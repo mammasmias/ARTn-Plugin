@@ -18,7 +18,7 @@ SUBROUTINE write_initial_report(iunartout, filout)
                          init_forc_thr, forc_thr, fpara_thr, eigval_thr, &
                          push_step_size, eigen_step_size, lanczos_max_size, lanczos_disp, &
                          push_mode, verbose, push_over, frelax_ene_thr, zseed, &
-                         converge_property, lanczos_eval_conv_thr, nperp_limitation
+                         converge_property, lanczos_eval_conv_thr, nperp_limitation, verbose
   use units, only : unconvert_force, &
                     unconvert_energy, unconvert_hessian, unconvert_length, unit_char
   implicit none
@@ -30,54 +30,65 @@ SUBROUTINE write_initial_report(iunartout, filout)
   !
   ! Writes the header to the artn output file
   !
-  OPEN( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'REPLACE', POSITION='rewind', IOSTAT = ios )
-  PRINT*, "WRITE_INITIAL_REPORT"
 
-  WRITE (iunartout,'(5X, "--------------------------------------------------")')
-  WRITE (iunartout,'(5X, "|       _____                _____ _______       |")')
-  WRITE (iunartout,'(5X, "|      /  _  |         /\   |  __ \__   __|      |")')
-  WRITE (iunartout,'(5X, "|      | (_) |  ___   /  \  | |__) | | |         |")')
-  WRITE (iunartout,'(5X, "|      |  ___/ |___| / /\ \ |  _  /  | |         |")')
-  WRITE (iunartout,'(5X, "|      | |          / ____ \| | \ \  | |         |")')
-  WRITE (iunartout,'(5X, "|      |_|         /_/    \_\_|  \_\ |_|         |")')
-  WRITE (iunartout,'(5X, "|                                    ARTn plugin |")')   !> @author Antoine Jay
-  WRITE (iunartout,'(5X, "--------------------------------------------------")')
-  WRITE (iunartout,'(5X, " "                                                 )')
-  WRITE (iunartout,'(5X, "               INPUT PARAMETERS                   ")')
-  WRITE (iunartout,'(5X, "--------------------------------------------------")')
-  WRITE (iunartout,'(5x, "engine_units:", *(x,A))') TRIM(engine_units)
-  WRITE (iunartout,'(5x, "Verbosity Level:", *(x,i2))') verbose
-  WRITE (iunartout,'(5X, "--------------------------------------------------")')
-  WRITE (iunartout,'(5X, "Simulation Parameters:")')
-  WRITE (iunartout,'(5X, "--------------------------------------------------")')
-  WRITE (iunartout,'(13X,"* Iterators Parameter: ")')
-  !WRITE (iunartout,'(15X,"Zseed           = ", I6)') zseed
-  WRITE (iunartout,'(15X,"ninit           = ", I6)') ninit
-  !WRITE (iunartout,'(15X,"nperp           = ", I6)') nperp
-  WRITE (iunartout,'(15X,"nperp           =",*(x,I6))') nperp_limitation
-  WRITE (iunartout,'(15X,"neigen          = ", I6)') neigen
-  WRITE (iunartout,'(15X,"nsmooth         = ", I6)') nsmooth
-  WRITE (iunartout,'(13X,"* Threshold Parameter: ")')
-  WRITE (iunartout,'(15X,"converge_property = ", A)') converge_property
-  WRITE (iunartout,'(15X,"init_forc_thr     = ", F6.3,2x,A)') unconvert_force( init_forc_thr ), unit_char('force')
-  WRITE (iunartout,'(15X,"forc_thr          = ", F6.3,2x,A)') unconvert_force( forc_thr ), unit_char('force')
-  WRITE (iunartout,'(15X,"fpara_thr         = ", F6.3,2x,A)') unconvert_force( fpara_thr ), unit_char('force')
-  WRITE (iunartout,'(15X,"eigval_thr        = ", F6.3,2x,A)') unconvert_hessian( eigval_thr ), unit_char('hessian')
-  WRITE (iunartout,'(15X,"frelax_ene_thr    = ", F6.3,2x,A)') unconvert_energy( frelax_ene_thr ), unit_char('energy')
-  WRITE (iunartout,'(13X,"* Step size Parameter: ")')
-  WRITE (iunartout,'(15X,"push_step_size  = ", F6.2,2x,A)') unconvert_length( push_step_size ), unit_char('length')
-  WRITE (iunartout,'(15X,"eigen_step_size = ", F6.2,2x,A)') unconvert_length( eigen_step_size ), unit_char('length')
-  WRITE (iunartout,'(15X,"push_over       = ", F6.3,2x,A)') push_over, "fraction of eigen_step_size"
-  WRITE (iunartout,'(15X,"push_mode       = ", A6)') push_mode
-  WRITE (iunartout,'(5X, "--------------------------------------------------")')
-  WRITE (iunartout,'(5X, "Lanczos algorithm:")' )
-  WRITE (iunartout,'(5X, "--------------------------------------------------")')
-  WRITE (iunartout,'(15X,"lanczos_max_size   = ", I6)') lanczos_max_size
-  WRITE (iunartout,'(15X,"lanczos_disp           = ", G11.4,2x,A)') unconvert_length( lanczos_disp ), unit_char('length')
-  WRITE (iunartout,'(15X,"lanczos_eval_conv_thr   = ", G11.4)') lanczos_eval_conv_thr
-  WRITE (iunartout,'(5X, "--------------------------------------------------")')
-  WRITE (iunartout,'(/,/)') 
-  !WRITE (iunartout,*) " "
+    
+
+
+  OPEN( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'REPLACE', POSITION='rewind', IOSTAT = ios )
+  !PRINT*, "WRITE_INITIAL_REPORT"
+
+  IF( verbose == 0 )THEN
+
+    WRITE(iunartout,'(5x,"ARTn-plugin::output")')
+
+  ELSE
+
+    WRITE (iunartout,'(5X, "--------------------------------------------------")')
+    WRITE (iunartout,'(5X, "|       _____                _____ _______       |")')
+    WRITE (iunartout,'(5X, "|      /  _  |         /\   |  __ \__   __|      |")')
+    WRITE (iunartout,'(5X, "|      | (_) |  ___   /  \  | |__) | | |         |")')
+    WRITE (iunartout,'(5X, "|      |  ___/ |___| / /\ \ |  _  /  | |         |")')
+    WRITE (iunartout,'(5X, "|      | |          / ____ \| | \ \  | |         |")')
+    WRITE (iunartout,'(5X, "|      |_|         /_/    \_\_|  \_\ |_|         |")')
+    WRITE (iunartout,'(5X, "|                                    ARTn plugin |")')   !> @author Antoine Jay
+    WRITE (iunartout,'(5X, "--------------------------------------------------")')
+    WRITE (iunartout,'(5X, " "                                                 )')
+    WRITE (iunartout,'(5X, "               INPUT PARAMETERS                   ")')
+    WRITE (iunartout,'(5X, "--------------------------------------------------")')
+    WRITE (iunartout,'(5x, "engine_units:", *(x,A))') TRIM(engine_units)
+    WRITE (iunartout,'(5x, "Verbosity Level:", *(x,i2))') verbose
+    WRITE (iunartout,'(5X, "--------------------------------------------------")')
+    WRITE (iunartout,'(5X, "Simulation Parameters:")')
+    WRITE (iunartout,'(5X, "--------------------------------------------------")')
+    WRITE (iunartout,'(13X,"* Iterators Parameter: ")')
+    !WRITE (iunartout,'(15X,"Zseed           = ", I6)') zseed
+    WRITE (iunartout,'(15X,"ninit           = ", I6)') ninit
+    !WRITE (iunartout,'(15X,"nperp           = ", I6)') nperp
+    WRITE (iunartout,'(15X,"nperp           =",*(x,I6))') nperp_limitation
+    WRITE (iunartout,'(15X,"neigen          = ", I6)') neigen
+    WRITE (iunartout,'(15X,"nsmooth         = ", I6)') nsmooth
+    WRITE (iunartout,'(13X,"* Threshold Parameter: ")')
+    WRITE (iunartout,'(15X,"converge_property = ", A)') converge_property
+    WRITE (iunartout,'(15X,"init_forc_thr     = ", F6.3,2x,A)') unconvert_force( init_forc_thr ), unit_char('force')
+    WRITE (iunartout,'(15X,"forc_thr          = ", F6.3,2x,A)') unconvert_force( forc_thr ), unit_char('force')
+    WRITE (iunartout,'(15X,"fpara_thr         = ", F6.3,2x,A)') unconvert_force( fpara_thr ), unit_char('force')
+    WRITE (iunartout,'(15X,"eigval_thr        = ", F6.3,2x,A)') unconvert_hessian( eigval_thr ), unit_char('hessian')
+    WRITE (iunartout,'(15X,"frelax_ene_thr    = ", F6.3,2x,A)') unconvert_energy( frelax_ene_thr ), unit_char('energy')
+    WRITE (iunartout,'(13X,"* Step size Parameter: ")')
+    WRITE (iunartout,'(15X,"push_step_size  = ", F6.2,2x,A)') unconvert_length( push_step_size ), unit_char('length')
+    WRITE (iunartout,'(15X,"eigen_step_size = ", F6.2,2x,A)') unconvert_length( eigen_step_size ), unit_char('length')
+    WRITE (iunartout,'(15X,"push_over       = ", F6.3,2x,A)') push_over, "fraction of eigen_step_size"
+    WRITE (iunartout,'(15X,"push_mode       = ", A6)') push_mode
+    WRITE (iunartout,'(5X, "--------------------------------------------------")')
+    WRITE (iunartout,'(5X, "Lanczos algorithm:")' )
+    WRITE (iunartout,'(5X, "--------------------------------------------------")')
+    WRITE (iunartout,'(15X,"lanczos_max_size   = ", I6)') lanczos_max_size
+    WRITE (iunartout,'(15X,"lanczos_disp           = ", G11.4,2x,A)') unconvert_length( lanczos_disp ), unit_char('length')
+    WRITE (iunartout,'(15X,"lanczos_eval_conv_thr   = ", G11.4)') lanczos_eval_conv_thr
+    WRITE (iunartout,'(5X, "--------------------------------------------------")')
+    WRITE (iunartout,'(/,/)') 
+
+  ENDIF
 
   CLOSE ( UNIT = iunartout, STATUS = 'KEEP')
 
