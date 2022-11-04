@@ -409,7 +409,7 @@ SUBROUTINE write_inter_report( iunartout, pushfactor, de )
 
     !> 
     IF( lpush_final .AND. (fpush_factor == -1.0) .AND. .NOT.lbackward )  &
-      WRITE(iunartout,'(5X,i0,X,A)') ifails, trim(artn_resume)
+      WRITE(iunartout,'(5X,A7,X,i0,X,A)') 'ifail: ',ifails, trim(artn_resume)
 
   ELSE
 
@@ -553,7 +553,7 @@ SUBROUTINE write_fail_report( iunartout, disp, estep )
 
   IF( verbose == 0 )THEN
 
-    WRITE(iunartout,'(5X,i0,X,A)') ifails, trim(artn_resume)
+    WRITE(iunartout,'(5X,A7,X,i0,X,A)') 'ifail: ', ifails, trim(artn_resume)
 
   ELSE
 
