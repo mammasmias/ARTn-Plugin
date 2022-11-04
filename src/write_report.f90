@@ -423,7 +423,7 @@ SUBROUTINE write_inter_report( iunartout, pushfactor, de )
         WRITE( iunartout, '(5X, "--------------------------------------------------")')
         WRITE (iunartout,'(5X, "|> number of steps:",x, i0)') istep
  
-        DIR = "+1"
+        DIR = ":1" !"+1"
  
       CASE( -1 )
         ! de(1) = de_back
@@ -432,7 +432,7 @@ SUBROUTINE write_inter_report( iunartout, pushfactor, de )
         ! de(4) = etot_final
         ! de(5) = etot   
         WRITE( iunartout,'(5X, "--------------------------------------------------")')
-        WRITE( iunartout,'(5X, "    *** ARTn converged to a backward minimum ***   ")')
+        WRITE( iunartout,'(5X, "|> ARTn converged to a backward minimum::")')
         WRITE( iunartout,'(5X, "--------------------------------------------------")')
         WRITE( iunartout,'(15X,"forward  E_act =", F12.5,x,a)') unconvert_energy(de(2)), unit_char('energy')
         WRITE( iunartout,'(15X,"backward E_act =", F12.5,x,a)') unconvert_energy(de(1)), unit_char('energy') 
@@ -444,7 +444,7 @@ SUBROUTINE write_inter_report( iunartout, pushfactor, de )
         WRITE( iunartout,'(5X, "--------------------------------------------------")')
         !WRITE( u,'(/)')
  
-        DIR = "-1"
+        DIR = ":2" !"-1"
  
       CASE DEFAULT
         WRITE( iunartout,'(5x,"********* ERROR write_inter_report:: pushfactor",x,i0," **************")') pushfactor
@@ -509,7 +509,7 @@ SUBROUTINE write_end_report( iunartout, lsaddle, lpush_final, de )
  
  
       IF( lpush_final ) THEN
-        WRITE(iunartout,'(5X,"       *** Pushing forward to a minimum  ***      ")')
+        WRITE(iunartout,'(5X,"|> Pushing forward to a minimum  ***      ")')
         WRITE(iunartout,'(5X,"-------------------------------------------------")')
       ELSE
         WRITE(iunartout,'(5X,"|> No push_final to Minimum :: ARTn search finished "/5x,*(a))') repeat("-",50)
@@ -518,7 +518,7 @@ SUBROUTINE write_end_report( iunartout, lsaddle, lpush_final, de )
  
     else
       WRITE (iunartout,'(5X,"--------------------------------------------------")')
-      WRITE (iunartout,'(5X,"        *** ARTn saddle search failed  ***        ")')
+      WRITE (iunartout,'(5X,"|> ARTn saddle search failed  ***        ")')
       WRITE (iunartout,'(5X,"--------------------------------------------------")')
     endif
  
