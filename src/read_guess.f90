@@ -100,7 +100,7 @@ SUBROUTINE READ_GUESS( idum, nat, vec, filename )
   !> @param[in]     filename  input file name
   !
   use units,       only : DP, unconvert_length, read_line, parser
-  use artn_params, only : warning, iunartout, dist_thr, push_ids
+  use artn_params, only : warning, iunartout, dist_thr, push_ids, push_step_size
   ! use tools
   implicit none
 
@@ -144,7 +144,6 @@ SUBROUTINE READ_GUESS( idum, nat, vec, filename )
 
      idx = 0
      call read_line( u0, line )
-     !nwords = fparse( trim(line), " ", words )
      nwords = parser( trim(line), " ", words )
 
      select case( nwords )
@@ -153,8 +152,8 @@ SUBROUTINE READ_GUESS( idum, nat, vec, filename )
        case( 1 )
          IF( is_numeric(words(1)) )read(words(1),*) idx
          push_ids(i) = idx
-         !call random_displacement( idum, idx, vec(:,idx) )
          call random_displacement( idum, vec(:,idx) )
+         vec(:,idx) = vec(:,idx) * push_step_size
          !print*, idx, "random disp:", vec(:,idx)
 
 
@@ -177,6 +176,8 @@ SUBROUTINE READ_GUESS( idum, nat, vec, filename )
               call warning( iunartout, 'READ_GUESS', 'Displacement propose are not valid', words )
             ENDIF
          enddo
+         !> @WARNING:: Maybe put a test the norm of the user vector to compare to the 
+         !!   push_step_size parameters. 
          !print*, idx, "constrain disp:", vec(:,idx)
 
 

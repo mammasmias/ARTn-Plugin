@@ -3,7 +3,7 @@
 !!   Miha Gunde
 !!   Nicolas Salles
 !!
-SUBROUTINE push_init( nat, tau, order, lat, idum, push_ids, dist_thr, add_const, init_step_size, push, mode)
+SUBROUTINE push_init( nat, tau, order, lat, idum, push_ids, dist_thr, add_const, step_size, push, mode)
   !
   !> @brief
   !!   subroutine that generates the initial push; options are specified by mode: 
@@ -17,7 +17,7 @@ SUBROUTINE push_init( nat, tau, order, lat, idum, push_ids, dist_thr, add_const,
   !> @param [in]    push_ids	    List of atoms on which apply a push
   !> @param [in]    order	    order of atom in the list
   !> @param [in]    dist_thr	    Threshold on the distance interatomic
-  !> @param [in]    init_step_size  length of initial step
+  !> @param [in]    step_size       length of initial step
   !> @param [in]    tau		    atomic position
   !> @param [in]    at		    Box length
   !> @param [inout] add_const	    list of atomic constrain
@@ -32,7 +32,7 @@ SUBROUTINE push_init( nat, tau, order, lat, idum, push_ids, dist_thr, add_const,
   INTEGER,          INTENT(IN)  :: push_ids(nat)
   INTEGER,          INTENT(IN)  :: order(nat)           !%! f: i --> id
   REAL(DP),         INTENT(IN)  :: dist_thr,    &
-                                   init_step_size
+                                   step_size
   REAL(DP),         INTENT(IN)  :: tau(3,nat),  &
                                    lat(3,3)
   REAL(DP),         INTENT(INOUT) ::  add_const(4,nat)
@@ -104,7 +104,7 @@ SUBROUTINE push_init( nat, tau, order, lat, idum, push_ids, dist_thr, add_const,
                  ENDIF
               ENDIF
            ENDDO
-        ENDIF
+         ENDIF
       ENDDO
 
 
@@ -190,7 +190,7 @@ SUBROUTINE push_init( nat, tau, order, lat, idum, push_ids, dist_thr, add_const,
   
   !
   ! ...scale initial push vector according to step size (ORDERED) 
-  push = init_step_size*push
+  push = step_size * push
 
 
 END SUBROUTINE push_init
