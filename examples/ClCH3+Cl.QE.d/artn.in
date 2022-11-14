@@ -1,7 +1,8 @@
 &ARTN_PARAMETERS
   lpush_final = .true.
-  ninit = 3 
+  ninit = 4 
   init_forc_thr = 5.0d-2
+  nperp = 3 
   push_step_size = 0.6
 ! parameters for the push
   push_mode = 'list'
@@ -12,9 +13,7 @@
   add_const(3,2) = 0.2
   add_const(3,6) = 1.0
   ! lanczos parameters
-  lanczos_disp = 5.D-3 
   lanczos_max_size = 16
   ! eigenpush parms
-  nsmooth = 3 
   eigen_step_size = 0.4
 /
