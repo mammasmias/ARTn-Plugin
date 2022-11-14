@@ -11,7 +11,7 @@ SUBROUTINE clean_artn()
            irelax, iover, istep, fpush_factor, lowest_eigval,           &
            artn_resume, old_lanczos_vec, H, Vmat, lanczos_max_size,     &
            iunartout, filout, old_lowest_eigval, prev_disp, &
-           error_message
+           error_message, verbose
   implicit none
 
   integer :: ios
@@ -26,8 +26,10 @@ SUBROUTINE clean_artn()
 
   ! ...Write in output log
   WRITE(*,'(5x,"!> CLEANING ARTn | Fail:",x,i0)') ifails
+  IF( verbose > 0 )THEN
   OPEN ( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'old', POSITION = 'append', IOSTAT = ios )
     WRITE(iunartout,'(5x,"!> CLEANING ARTn | Fail:",x,i0/5x,*(a))') ifails, repeat("-",50)
+  ENDIF
 
   lrelax = .false.
   linit = .true.
@@ -73,7 +75,12 @@ SUBROUTINE clean_artn()
   H = 0.0_DP
   Vmat = 0.0_DP
 
-  WRITE(iunartout,'(/)')
-  CLOSE ( UNIT = iunartout, STATUS = 'KEEP')
+  IF( verbose > 0 )THEN
+    WRITE(iunartout,'(/)')
+    CLOSE ( UNIT = iunartout, STATUS = 'KEEP')
+  ENDIF
 
 END SUBROUTINE clean_artn
+
+
+

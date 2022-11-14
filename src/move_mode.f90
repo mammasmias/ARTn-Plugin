@@ -1,6 +1,6 @@
 
 !> @author
-!!  Matic Poberjnik,
+!!  Matic Poberznik
 !!  Miha Gunde
 !!  Nicolas Salles
 
@@ -29,7 +29,7 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
   USE UNITS, Only: DP, convert_time, unconvert_time, &
                    unconvert_force, MASS
 
-  use debug, only: report_atom_prop
+  !use debug, only: report_atom_prop
   !
   IMPLICIT NONE
   !

@@ -3,15 +3,16 @@
 !!   Matic Poberznik
 !!   Miha Gunde
 !!   Nicolas Salles
-!
-!> @brief
-!!   Main ARTn plugin subroutine:
-!
-!> @details
-!!   Modifies the input force to perform the ARTn algorithm
+
 !------------------------------------------------------------------------------
 SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, displ_vec, lconv )
   !----------------------------------------------------------------------------
+  !> @brief
+  !!   Main ARTn plugin subroutine:
+  !
+  !> @details
+  !!   Modifies the input force to perform the ARTn algorithm
+  !
   !> @param[in]     force       force calculated by the engine
   !> @param[inout]  etot_eng    total energy of the engine
   !> @param[in]     nat         number of atoms
@@ -25,11 +26,12 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   !> @param[out]    displ_vec   displacement vector communicated to move_mode
   !> @param[out]    lconv       flag for controlling convergence
   !
-  ! artn_params for variables and counters that need to be stored in each step
-  ! DEFINED IN: artn_params_mod.f90
+  !> @note 
+  !!  artn_params for variables and counters that need to be stored in each step
+  !!  DEFINED IN: artn_params_mod.f90
   !
   USE units
-  USE artn_params, ONLY: iunartin, iunartout, iunstruct, &
+  USE artn_params, ONLY: iunartin, iunartout, iunstruct, verbose, &
        lrelax, linit, lperp, leigen, llanczos, lrestart, lbasin, lpush_over, lpush_final, lbackward, lmove_nextmin,  &
        irelax, istep, iperp, ieigen, iinit, ilanc, ismooth, iover, isearch, ifound, nlanc, nperp, noperp, nperp_step,  &
        if_pos_ct, lowest_eigval, etot_init, etot_step, etot_saddle, etot_final, de_back, de_fwd, &
@@ -38,7 +40,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
        push_ids, add_const, push, eigenvec, tau_step, force_step, tau_init, tau_saddle, eigen_saddle, v_in, &
        VOID, INIT, PERP, EIGN, LANC, RELX, OVER, zseed, &
        engine_units, struc_format_out, elements, ilanc_save, &
-       setup_artn, read_restart, write_restart, inewchance, nnewchance,&
+       setup_artn, inewchance, nnewchance, & !read_restart, &
        push_over, ran3, a1, old_lanczos_vec, lend, fill_param_step, &
        filin, filout, sadfname, initpfname, eigenfname, restartfname, warning, flag_false,  &
        prefix_min, nmin, prefix_sad, nsaddle, artn_resume, natoms, old_lowest_eigval, &
@@ -165,7 +167,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     !
     ! ...Split the force field in para/perp field following the push field
     !CALL perpforce( force_step, if_pos, push, fperp, fpara, nat)
-    CALL splitfield( 3*nat, force_step, if_pos, push, fperp, fpara )
+    CALL field_split( 3*nat, force_step, if_pos, push, fperp, fpara )
 
     !
     ! ...Start to write the output
@@ -200,7 +202,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
     ENDIF
     !
     ! ...Split the force field in para/perp field following the push field
-    CALL splitfield( 3*nat, force_step, if_pos, push, fperp, fpara )
+    CALL field_split( 3*nat, force_step, if_pos, push, fperp, fpara )
 
     ! ...Write Output
     CALL write_report( etot_step, force_step, fperp, fpara, lowest_eigval, if_pos, istep, nat,  iunartout)
@@ -703,10 +705,12 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   IF( lconv )THEN
     !
     ! ...Print in the OUTPUT
-    OPEN( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'old', POSITION = 'append', IOSTAT = ios )
-    WRITE( iunartout,'(5x, "|> BLOCK FINALIZE..")')
-    WRITE( *,'(5x, "|> BLOCK FINALIZE..")')
-    WRITE( iunartout,'(5X, "|> number of steps:",x, i0)') istep
+    IF( verbose > 0 )THEN
+      OPEN( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'old', POSITION = 'append', IOSTAT = ios )
+      WRITE( iunartout,'(5x, "|> BLOCK FINALIZE..")')
+      WRITE( *,'(5x, "|> BLOCK FINALIZE..")')
+      WRITE( iunartout,'(5X, "|> number of steps:",x, i0)') istep
+    ENDIF
 
     !> SCHEMA FINILIZATION
     lend = lconv
@@ -723,10 +727,10 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
       CALL move_nextmin( nat, tau )
     ELSE
       tau(:,:) = tau_init(:,order(:))
-      WRITE( iunartout, '(5x, "|> Initial Configuration loaded...")')
+      IF( verbose > 0 )WRITE( iunartout, '(5x, "|> Initial Configuration loaded...")')
     ENDIF
 
-    CLOSE( iunartout )
+    IF( verbose > 0 )CLOSE( iunartout )
 
     !
     ! ...Tell to the engine it is finished
