@@ -1,6 +1,6 @@
  &CONTROL
    calculation     =  'relax',
-   nstep           =  150,
+   nstep           =  250,
    outdir          =  './',
    pseudo_dir      =  './',
    restart_mode    =  'from_scratch',
