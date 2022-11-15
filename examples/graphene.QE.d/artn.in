@@ -1,7 +1,7 @@
 &ARTN_PARAMETERS
   lpush_final = .true. 
-  npush = 2 
-  convcrit_init = 1.0d-1
+  ninit = 2 
+  init_forc_thr = 1.0d-1
   push_step_size = 0.3
 ! parameters for the push
   push_mode = 'list'
