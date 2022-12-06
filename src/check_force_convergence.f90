@@ -84,11 +84,11 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
 
 
         ! ... Check whether the fperp criterion should be tightened
-        fperp_thr = forc_thr  !! Should be removed
+        !fperp_thr = forc_thr  !! Should be removed
 
         !
         ! ... Conditions for stopping perp_relax
-        C1 = ( maxfperp < fperp_thr )          ! check on the fperp field
+        !C1 = ( maxfperp < fperp_thr )          ! check on the fperp field
         C2 = ( nperp > 0.AND.iperp >= nperp )  ! check on the number of perp-relax iterations
         C3 = ( MAXfperp < MAXfpara )           ! check wheter fperp is lower than fpara
 
@@ -161,11 +161,9 @@ SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv
             "|> Stop perp relax because force < forc_thr  :",&
             unconvert_force( maxforce ),"<", unconvert_force(forc_thr), TRIM(converge_property)
 
-        !IF ( C1 .AND. iperp>0) WRITE(iunartout,'(5x,a46,x,f10.4,x,a1,x,f10.4,a20)') &
-        !! NS: Remove the condition on iperp
-        IF ( C1 ) WRITE(iunartout,'(5x,a46,x,f10.4,x,a1,x,f10.4,a20)') &
-            "|> Stop perp relax because fperp < fperp_thr :",&
-            unconvert_force( maxfperp ),"<", unconvert_force(fperp_thr), TRIM(converge_property)
+        !IF ( C1 ) WRITE(iunartout,'(5x,a46,x,f10.4,x,a1,x,f10.4,a20)') &
+        !    "|> Stop perp relax because fperp < fperp_thr :",&
+        !    unconvert_force( maxfperp ),"<", unconvert_force(fperp_thr), TRIM(converge_property)
 
         IF ( C2 ) WRITE(iunartout,'(5x,a46,x,i3,a1,i3)') &
             "|> Stop perp relax because iperp = nperp max :",&
