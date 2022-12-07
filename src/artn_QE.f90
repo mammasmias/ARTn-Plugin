@@ -109,8 +109,10 @@ SUBROUTINE artn_QE( force, etot, epsf_qe, nat, ntyp, ityp, atm, tau, at, alat, i
 
 
   ! ...Compare the Threshold
-  if( epsf_qe < forc_thr )then
-    write( *,* ) "WARNING:: QE force threshold is lower than ARTn", epsf_qe, forc_thr
+  !!  After artn() because has to read the artn input to know forc_thr
+  !if( epsf_qe < forc_thr )then
+  if( epsf_qe /= forc_thr )then
+    write( *,* ) "WARNING:: QE force threshold is different than ARTn", epsf_qe, forc_thr
     epsf_qe = forc_thr  
   endif
   

@@ -42,7 +42,7 @@ SUBROUTINE plugin_ext_forces()
 
   if( istep == 0 )then
     eps = [ epse, epsf ]
-    epsf = 1.0D-8
+    !epsf = 1.0D-8   !! Modify it in artn_QE()
   endif
 
   IF ( ionode .and. use_partn ) THEN
