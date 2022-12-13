@@ -1,15 +1,19 @@
 # plugin-ARTn
 
-This is a working repo for the current version of the plugin-ARTn; currently it can be used with Quantum ESPRESSO and LAMMPS   
+This is a working repository of the current version of the plugin-ARTn; currently it can be used with Quantum ESPRESSO and LAMMPS.
+This code has been developped in collaboration by Matic Poberznic, Miha Gunde, Nicolas Salles and Antoine Jay.
+
+The repository is developped on [GiLab](https://gitlab.com/mammasmias/artn-plugin) and a copy of the `master` branch is on [GitHub](https://github.com/mammasmias/ARTn-Plugin). Please put your issue on [GiLab](https://gitlab.com/mammasmias/artn-plugin).
+
 
 ## Contains:
 
 
 - `examples/`: Contains many example including `Al-vacancy.d` and `H2+H.d` 
-- `src/`: ARTn plugin subroutines 
-- `README.md`: The file you are reading
 - `Files_LAMMPS/`: Contains the fix of lammps to interface LAMMPS/ARTn
 - `Files_QE/`: Contains the file plugin_ext_forces.f90 which call the ARTn library
+- `README.md`: The file you are reading
+- `src/`: ARTn plugin subroutines 
 - `Makefile`: Command to patch the engine and compile the library. Use the variables defined in file `environment_variables`
 - `environment_variables`: User costum file in which it should be define the fortran compiler to compile the library in the variable `F90` and the path where the engine can be found in variables `LAMMPS+PATH` or `QE_PATH`
 
@@ -74,9 +78,62 @@ Finally Quantum ESPRESSO must be launched with the flag -partn as follow:
 
 
 
-### Installation/Compilation
 
-We test this interface only with gnu compiler. 
+
+
+### LAMMPS version after June 2022
+
+#### Installation/Compilation
+
+For the version after June 2022, LAMMPS include the a `Plugin` Class which allows to link LAMMPS with a dynamical library without to recompile at each time.
+
+- **In LAMMPS folder**:
+So first step is to compile LAMMPS in *"shared library"* mode in mpi or serial.
+
+```bash
+$ make mode=shared mpi
+``` 
+- **In the plugin-ARTn repository**:
+Put the correct path in variable `LAMMPS_PATH` in file `environment_variables` as well as the fortran compiler use to compile library libartn.a in variable  `F90`.
+Therefore in the variable `CXX` put the sample compiler you used to compile LAMMPS.
+Then compile ARTn with the command:
+
+```bash
+$ make sharelib
+```
+At the end of the compilation the file `libartn.so` must appear in the folder `artn-plugin/`.
+
+
+#### Use fix/artn
+
+To be able to use the `Fix/ARTn` the plugin ARTn has to be loaded.
+To load the library `libartn.so` use the command:
+
+```bash
+plugin  load  /Path-to-artn-plugin/libartn.so
+```
+
+Then you can activate the `Fix/ARTn` like all other fix in lammps:
+
+```bash
+fix ID group-ID style args value
+```
+
+with `style = artn`. For the moment we only test `group-ID = all`. It is possible to custom the FIRE parameters you want to use with the fix ARTn. For each parameter  you give the `name` following by the `value`. The parameters can be:
+
+-  `alpha `
+- `alphashrink` 
+- `dtshrink`  
+- `dmax `
+- `tmax `
+- `tmin` 
+
+To see the meaning of these parameters refere to the min_fire web page of LAMMPS.
+
+
+### LAMMPS version before June 2022
+
+We tested this interface only with gnu compiler. 
 
 **In the plugin-ARTn repository**: First put the correct path in variable `LAMMPS_PATH` in file `environment_variables` as well as the fortran compiler use to compile library libartn.a in variable  `F90`. Afterwards compile the library `libartn.a`:
 
@@ -117,7 +174,7 @@ make yourmakefile
 
 
 
-### Use fix_artn
+#### Use fix/artn
 
 To activate fix ARTn is like all other fix in lammps:
 
@@ -236,43 +293,11 @@ Various files can be found in output.
 - During the ARTn convergence to the saddle point, the followed eigenvector is store in the file `lastest_engenvec.*` with `*` follows the format defined by the variable `struc_format_out`.
 - For each convergence reached, saddle point and locals minimum, the configuration are stored following the format defined in variable `struc_format_out` and the name are build thank to the variables `prefix_sad` and `prefix_min`, customizable by the user, and a counter that allows to don't overwrite file if mulpile ARTn research are done in the same file.
 
-## TODO
 
-- nsteppos in ARTn doesn't have the same meaning for QE and LAMMPS in FIRE algo
 
-- Add the output filename custom 
 
-- Create option to read a configuration as a reference (energy and position) for the rest of the computation. Kind of `ref_config = file`. Usefule for the refine saddle
 
-- `nperp`: Follows antoine method: progressive increase of nperp after the inflection line. Or maybe to be proportional to the fperp magnitude because happen when the magnitude is too high the perp-relax lead the lost of saddle point. :ok:
 
-  - Done by the routine `nperp_limitation_*()` routines:
 
-  - ```fortran
-    module artn_param_mod
-    	logical :: lnperp_limitation
-    	integer, allocatable :: nperp_limitation(:)
-    	integer :: def_nperp_limitation(5) = [4,8,12,16,0]
-    	integer :: noperp, nperp_step
-    	
-    subroutine initialize_artn()
-    	[...]
-    	!! After read artn_params namelist
-    	call nperp_limitation_init( lnperp_limitation )
-    	
-    subroutine check_force()
-    	[...]
-    	call nperp_limitation_step( 0 ) !! stay in same nperp_step
-        [...]
-    	call nperp_limitation_step( 1 ) !! go to the next nperp_step
-    	[...]
-    	call nperp_limitation_step( -1 ) !! return to the first nperp to the list
-    	
-    ```
 
-- **RESTART**: Fast Restart procedure for lammps and binary - Write the restart file with lammps take too mush time
 
-- Do **time profiler** for the ARTn library.
-- **NEXTMIN**: Verify the Threshold to load the new minimum. HARD-CODED!!
-- **displacement_validation**: Nico proposed a new way but has to be tested
-- Nico: I Have a doubt on the routine fpbc() in pbc.f90
