@@ -1,35 +1,37 @@
 !
-!> @author
-!!   Matic Poberznik
-!!   Miha Gunde
-!!   Nicolas Salles
-
 !------------------------------------------------------------------------------
+!> @brief \b ARTN
+!!
+!> @author Matic Poberznik
+!! @author Miha Gunde
+!! @author Nicolas Salles
+!!
+!! @par Purpose
+!  ============
+!!   Main ARTn plugin subroutine:
+!
+!> @details
+!!   Modifies the input force to perform the ARTn algorithm
+!!
+!> @param[in]     force       force calculated by the engine
+!> @param[inout]  etot_eng    total energy of the engine
+!> @param[in]     nat         number of atoms
+!> @param[in]     ityp        list of type of atoms
+!> @param[in]     atm         list of the element's name relative to the atomic type
+!> @param[inout]  tau         atomic position
+!> @param[in]     order       order of atomic index in the list: force, tau, ityp
+!> @param[in]     at          lattice parameter
+!> @param[in]     if_pos      list of fixed atomic dof (0 or 1)
+!> @param[out]    disp        stage for move_mode
+!> @param[out]    displ_vec   displacement vector communicated to move_mode
+!> @param[out]    lconv       flag for controlling convergence
+!!
+!> @note 
+!!  artn_params for variables and counters that need to be stored in each step
+!!  DEFINED IN: artn_params_mod.f90
+!
 SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, displ_vec, lconv )
-  !----------------------------------------------------------------------------
-  !> @brief
-  !!   Main ARTn plugin subroutine:
-  !
-  !> @details
-  !!   Modifies the input force to perform the ARTn algorithm
-  !
-  !> @param[in]     force       force calculated by the engine
-  !> @param[inout]  etot_eng    total energy of the engine
-  !> @param[in]     nat         number of atoms
-  !> @param[in]     ityp        list of type of atoms
-  !> @param[in]     atm         list of the element's name relative to the atomic type
-  !> @param[inout]  tau         atomic position
-  !> @param[in]     order       order of atomic index in the list: force, tau, ityp
-  !> @param[in]     at          lattice parameter
-  !> @param[in]     if_pos      list of fixed atomic dof (0 or 1)
-  !> @param[out]    disp        stage for move_mode
-  !> @param[out]    displ_vec   displacement vector communicated to move_mode
-  !> @param[out]    lconv       flag for controlling convergence
-  !
-  !> @note 
-  !!  artn_params for variables and counters that need to be stored in each step
-  !!  DEFINED IN: artn_params_mod.f90
-  !
+
   USE units
   USE artn_params, ONLY: iunartin, iunartout, iunstruct, verbose, &
        lrelax, linit, lperp, leigen, llanczos, lrestart, lbasin, lpush_over, lpush_final, lbackward, lmove_nextmin,  &

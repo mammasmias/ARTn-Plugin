@@ -4,12 +4,11 @@
 !!  Miha Gunde,
 !!  Nicolas Salles
 
+!> @brief 
+!!   UNITS module contains all the tool to reconize the Engine and its units
+!!   to convert the energy/force/length/time in atomic units
+!!   Atomic Units (au) in plugin-ARTn is the Rydberg-borh-aut
 Module units
-  !
-  !> @brief 
-  !!   UNITS module contains all the tool to reconize the Engine and its units
-  !!   to convert the energy/force/length/time in atomic units
-  !!   Atomic Units (au) in plugin-ARTn is the Rydberg-borh-aut
   !
   PRIVATE
 
@@ -73,9 +72,11 @@ Module units
 
   !......................................................................................
   function lower( s1 )result( s2 )
-    !> @breif Convert an Array of Capital letter to lower case letter
-    !> @param [in]  s1  input string, contain some capital letter
-    !> @return  a string with only lower case
+    !> @brief  Convert an Array of Capital letter to lower case letter
+    !
+    !> @param[in]  s1   input string, contain some capital letter
+    !! @return     s2   string with only lower case
+    !
     character(*)       :: s1
     character(len(s1)) :: s2
     character          :: ch
@@ -94,7 +95,9 @@ Module units
     !> @brief 
     !!   Parse the instrg thank to the Field Separator FS and return 
     !!   the list of string and the number of element in the list
-    !!!!!!!!!! HAVE TO BE ADAPTED FOR MULTIPLE FS
+    !
+    !> @note 
+    !!   !! HAVE TO BE ADAPTED FOR MULTIPLE FS
     !
     !> @param[in]   instrg 
     !> @param[in]   FS
@@ -149,23 +152,24 @@ Module units
   end function parser
   
   ! .............................................................................
+  !> @brief
+  !!   Read a line, makes possible to use # for comment lines, skips empty lines, 
+  !!   is pretty much a copy from QE.
+  !!
+  !> @details  Quantum ESPRESSO routine
+  !
   subroutine read_line(fd, line, end_of_file)
-    !> @brief
-    !!   read a line, makes possible to use # for comment lines, skips empty lines, 
-    !!   is pretty much a copy from QE.
     !
-    !> @note 
-    !!   Quantum ESPRESSO routine
-    !
-    !> @param[in]   fd           file descriptor
-    !! @param[out]  line         what it reads
-    !! @param[out]  end_of_file  logical to signal the EOF
+    !> @param[in]                 file descriptor
+    !! @param[out]  line          what it reads
+    !! @param[out]  end_of_file   logical to signal the EOF
     !
     implicit none
     integer, intent(in) :: fd
-    integer             :: ios
     character(len=256), intent(out) :: line
     logical, optional, intent(out) :: end_of_file
+
+    integer             :: ios
     logical :: tend
 
     !print*, "in read_line", fd
@@ -204,7 +208,7 @@ Module units
     !> WARNING: The mass in LJ is 1 but can be defined by the user so
     !!  we should take care about this
     !
-    !> @param [inout]  txt   Engine Keyword 
+    !> @param[in,out]  Engine Keyword 
     !
     ! -- Arguments
     character(*), intent( inout ) :: txt
@@ -223,20 +227,6 @@ Module units
     if( n >= 1 )engine = lower( trim(words(1)) )
     if( n > 1 )mode = lower( trim(words(2)) )
     
-
-!   n = LEN_TRIM(txt)
-!   i = SCAN(trim(txt), "/" )
-!   if( i /= 0.and. i < n )then
-!     engine = lower(trim(txt(1:i-1)))
-!     mode = lower(trim(txt(i+1:)))
-!   else if( i /= 0.and. i == n )then
-!     engine = lower(trim(txt(1:i-1)))
-!     mode = ""
-!   else
-!     engine = lower(trim(txt))
-!     mode = ""
-!   endif
-!   !txt = engine
 
 
     ! ...Initialization

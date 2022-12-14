@@ -12,12 +12,12 @@ SUBROUTINE smooth_interpol( ismooth, nsmooth, nat, v0, v1, v2 )
   !!   v2= v1 when ismooth = 0       -> done in init
   !!   v2= V2 when ismooth = nsmooth -> done in eigen 
   !
-  !> @param[in]      ismooth  actual smooth step 
+  !> @param[in,out]  ismooth  actual smooth step 
   !> @param[in]      nsmooth  max smooth step 
   !> @param[in]      nat      number of atom
   !> @param[in]      v0       the actual orientation
-  !> @param[in]      v1       the direction we come
-  !> @param[inout]   v2       the direction we go
+  !> @param[in,out]  v1       the direction we come
+  !> @param[in]      v2       the direction we go
   !
   USE units,       ONLY : DP
   USE artn_params, ONLY : iunartout,  dot_field, filout, verbose
