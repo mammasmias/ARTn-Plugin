@@ -296,6 +296,11 @@ Various files can be found in output.
 
 
 
+## Issues, bugs, requests
+
+Use the [issue](https://gitlab.com/mammasmias/artn-plugin/-/issues) traker to report the bugs.
+
+
 
 
 

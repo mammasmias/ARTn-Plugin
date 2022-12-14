@@ -1,8 +1,7 @@
 
-!> @author
-!!  Matic Poberznik,
-!!  Miha Gunde,
-!!  Nicolas Salles
+!> @author Matic Poberznik,
+!! @author Miha Gunde,
+!! @author Nicolas Salles
 
 !> @brief 
 !!   UNITS module contains all the tool to reconize the Engine and its units
@@ -22,44 +21,44 @@ Module units
              
   
 
-  INTEGER, PARAMETER ::  DP = selected_real_kind(14,200)           !> double precision
-  REAL(DP), PARAMETER :: PI     = 3.14159265358979323846_DP        !> pi 
+  INTEGER, PARAMETER ::  DP = selected_real_kind(14,200)           !< @brief double precision
+  REAL(DP), PARAMETER :: PI     = 3.14159265358979323846_DP        !< @brief pi number 
 
-  REAL(DP), PARAMETER :: H_PLANCK_SI      = 6.62607015E-34_DP      ! J s
-  REAL(DP), PARAMETER :: K_BOLTZMANN_SI   = 1.380649E-23_DP        ! J K^-1 
-  REAL(DP), PARAMETER :: ELECTRON_SI      = 1.602176634E-19_DP     ! C
-  REAL(DP), PARAMETER :: ELECTRONVOLT_SI  = 1.602176634E-19_DP     ! J  
-  REAL(DP), PARAMETER :: ELECTRONMASS_SI  = 9.1093837015E-31_DP    ! Kg
-  REAL(DP), PARAMETER :: HARTREE_SI       = 4.3597447222071E-18_DP ! J
-  REAL(DP), PARAMETER :: RYDBERG_SI       = HARTREE_SI/2.0_DP      ! J
-  REAL(DP), PARAMETER :: BOHR_RADIUS_SI   = 0.529177210903E-10_DP  ! m
-  REAL(DP), PARAMETER :: AMU_SI           = 1.66053906660E-27_DP   ! Kg
-  REAL(DP), PARAMETER :: C_SI             = 2.99792458E+8_DP       ! m sec^-1
-  REAL(DP), PARAMETER :: NA               = 6.022140857E+23_DP     ! mol^-1
+  REAL(DP), PARAMETER :: H_PLANCK_SI      = 6.62607015E-34_DP      !< @brief J s
+  REAL(DP), PARAMETER :: K_BOLTZMANN_SI   = 1.380649E-23_DP        !< @brief J K^-1 
+  REAL(DP), PARAMETER :: ELECTRON_SI      = 1.602176634E-19_DP     !< @brief C
+  REAL(DP), PARAMETER :: ELECTRONVOLT_SI  = 1.602176634E-19_DP     !< @brief J  
+  REAL(DP), PARAMETER :: ELECTRONMASS_SI  = 9.1093837015E-31_DP    !< @brief Kg
+  REAL(DP), PARAMETER :: HARTREE_SI       = 4.3597447222071E-18_DP !< @brief J
+  REAL(DP), PARAMETER :: RYDBERG_SI       = HARTREE_SI/2.0_DP      !< @brief J
+  REAL(DP), PARAMETER :: BOHR_RADIUS_SI   = 0.529177210903E-10_DP  !< @brief m
+  REAL(DP), PARAMETER :: AMU_SI           = 1.66053906660E-27_DP   !< @brief Kg
+  REAL(DP), PARAMETER :: C_SI             = 2.99792458E+8_DP       !< @brief m sec^-1
+  REAL(DP), PARAMETER :: NA               = 6.022140857E+23_DP     !< @brief mol^-1
 
-  REAL(DP), PARAMETER :: RY2EV            = 13.605691930242388_DP  !> Ry to eV conversion 
-  REAL(DP), PARAMETER :: RY2KCAL          = 5.2065348237317E-22_DP !> Ry to kcal conversion 
-  REAL(DP), PARAMETER :: RY2KJ            = 2.17987197E-21_DP      !> Ry to kJoules conversion 
-  REAL(DP), PARAMETER :: RY2KCALPMOL      = RY2KCAL*NA             !> Ry to kcal/mole conversion 
-  REAL(DP), PARAMETER :: RY2KJPMOL        = RY2KJ*NA               !> Ry to kJoules per mole conversion 
-  REAL(DP), PARAMETER :: B2A              = 0.529177210903_DP      !> bohr to angstrom conversion
-  REAL(DP), PARAMETER :: AMU_RY2          = 911.44424310865645_DP  !> calculated from QE using DP
-  REAL(DP), PARAMETER :: ps2aut           = 41341.374575751 / 2.
-  REAL(DP), PARAMETER :: aut2s            = 4.8278E-17_DP          !> atomic units of times to second conversion (Ry atomic unit)
+  REAL(DP), PARAMETER :: RY2EV            = 13.605691930242388_DP  !< @brief Ry to eV conversion 
+  REAL(DP), PARAMETER :: RY2KCAL          = 5.2065348237317E-22_DP !< @brief Ry to kcal conversion 
+  REAL(DP), PARAMETER :: RY2KJ            = 2.17987197E-21_DP      !< @brief Ry to kJoules conversion 
+  REAL(DP), PARAMETER :: RY2KCALPMOL      = RY2KCAL*NA             !< @brief Ry to kcal/mole conversion 
+  REAL(DP), PARAMETER :: RY2KJPMOL        = RY2KJ*NA               !< @brief Ry to kJoules per mole conversion 
+  REAL(DP), PARAMETER :: B2A              = 0.529177210903_DP      !< @brief bohr to angstrom conversion
+  REAL(DP), PARAMETER :: AMU_RY2          = 911.44424310865645_DP  !< @brief calculated from QE using DP
+  REAL(DP), PARAMETER :: ps2aut           = 41341.374575751 / 2.   !< @brief picosecond to atomic unit of time
+  REAL(DP), PARAMETER :: aut2s            = 4.8278E-17_DP          !< @brief atomic units of times to second conversion (Ry atomic unit)
 
-  REAL(DP), PARAMETER :: AMU_AU           = AMU_SI / ELECTRONMASS_SI  ! Dimensionless Hartree
-  REAL(DP), PARAMETER :: AMU_RY           = AMU_AU / 2.0_DP           ! Dimensionless Rydberg
+  REAL(DP), PARAMETER :: AMU_AU           = AMU_SI / ELECTRONMASS_SI  !< @brief Dimensionless Hartree
+  REAL(DP), PARAMETER :: AMU_RY           = AMU_AU / 2.0_DP           !< @brief Dimensionless Rydberg
 
   !REAL(DP), PARAMETER :: AU_SEC           = H_PLANCK_SI/(2.*pi)/HARTREE_SI
-  REAL(DP), PARAMETER :: AU_SEC           = H_PLANCK_SI/(2.*pi)/RYDBERG_SI
-  REAL(DP), PARAMETER :: AU_PS            = AU_SEC * 1.0E+12_DP
-  REAL(DP), PARAMETER :: AU_FS            = AU_SEC * 1.0E+15_DP
+  REAL(DP), PARAMETER :: AU_SEC           = H_PLANCK_SI/(2.*pi)/RYDBERG_SI    !< @brief Atomic unit of time to second
+  REAL(DP), PARAMETER :: AU_PS            = AU_SEC * 1.0E+12_DP               !< @brief Atomic unit of time to picosecond
+  REAL(DP), PARAMETER :: AU_FS            = AU_SEC * 1.0E+15_DP               !< @brief Atomic unit of time to femtosecond
 
 
   !> Units Character
-  character(*), parameter :: AA = char(197) ! Angstrom (ANSI code)
+  character(*), parameter :: AA = char(197)    !< @brief  Angstrom (ANSI code)
   !character(*), parameter :: to2 = char(178)  ! exponent 2
-  character(*), parameter :: to2 = "**2"  ! exponent 2
+  character(*), parameter :: to2 = "**2"       !< @brief exponent 2
 
   character(:), allocatable :: cL, cE
 
@@ -96,13 +95,13 @@ Module units
     !!   Parse the instrg thank to the Field Separator FS and return 
     !!   the list of string and the number of element in the list
     !
-    !> @note 
-    !!   !! HAVE TO BE ADAPTED FOR MULTIPLE FS
+    !> @todo 
+    !!   HAVE TO BE ADAPTED FOR MULTIPLE FS
     !
-    !> @param[in]   instrg 
-    !> @param[in]   FS
-    !> @param[out]  args 
-    !> @return      nargs 
+    !> @param[in]   instrg   input string 
+    !> @param[in]   FS       Field Separator (one for the moment)
+    !> @param[out]  args     arrays of string
+    !> @return      nargs    number of string in output
     !
     implicit none
  
@@ -158,12 +157,10 @@ Module units
   !!
   !> @details  Quantum ESPRESSO routine
   !
+  !> @param[in]                 file descriptor
+  !! @param[out]  line          what it reads
+  !! @param[out]  end_of_file   logical to signal the EOF
   subroutine read_line(fd, line, end_of_file)
-    !
-    !> @param[in]                 file descriptor
-    !! @param[out]  line          what it reads
-    !! @param[out]  end_of_file   logical to signal the EOF
-    !
     implicit none
     integer, intent(in) :: fd
     character(len=256), intent(out) :: line
@@ -192,24 +189,23 @@ Module units
 
 
   !......................................................................................
+  !> @brief 
+  !!   Receive the keyword of Engine which contains the engine name and 
+  !!   type of unit. Maybe we can also define the units for the output
+  !
+  !> @note
+  !!   Important to know:
+  !!   Hessian, Force, Position, Time are exchange with Engine
+  !!   Energy is converted only for the ouput
+  !!   Mass is needed for the fire integration. Defined in Ry can 
+  !!   change depending the unit used.
+  !
+  !> WARNING: The mass in LJ is 1 but can be defined by the user so
+  !!  we should take care about this
+  !
+  !> @param[in,out]  txt Name of the Engine 
+  !
   subroutine make_units( txt )
-    !
-    !> @brief 
-    !!   Receive the keyword of Engine which contains the engine name and 
-    !!   type of unit. Maybe we can also define the units for the output
-    !
-    !> @note
-    !!   Important to know:
-    !!   Hessian, Force, Position, Time are exchange with Engine
-    !!   Energy is converted only for the ouput
-    !!   Mass is needed for the fire integration. Defined in Ry can 
-    !!   change depending the unit used.
-    !
-    !> WARNING: The mass in LJ is 1 but can be defined by the user so
-    !!  we should take care about this
-    !
-    !> @param[in,out]  Engine Keyword 
-    !
     ! -- Arguments
     character(*), intent( inout ) :: txt
     ! -- Local variables
@@ -484,7 +480,7 @@ Module units
   elemental pure function unconvert_length( pau )result( p )
     !> @brief Convert the a.u. length to engine unit
     !> @param [in] pau   position in a.u.
-    !> @return a position in engine units
+    !> @return  position in engine units
     real(DP), intent( in ) :: pau
     real(DP) :: p
     p = pau * au2L
@@ -540,7 +536,9 @@ Module units
   !......................................................................................
   ! Return UNIT
   function unit_char( quantity )result( uchar )
-
+    !> @brief Give the unit in character
+    !> @param[in] quantity   which quantity you ask (length, energy, force or hessian)
+    !> @return correct unit in character
     character(*), intent(in) :: quantity
     character(:), allocatable :: uchar
 
