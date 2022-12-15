@@ -4,14 +4,13 @@
 !!  Miha Gunde
 !!  Nicolas Salles
 
-
+!> @brief
+!!   Subroutine that calculates the inverse of a 3x3 matrix 
+!
+!> @param [in]  mat   Matrix to inverse
+!> @param [out] inv   Inverse of the Matrix
+!
 SUBROUTINE invmat3x3(mat,inv)
-  !
-  !> @brief
-  !!   Subroutine that calculates the inverse of a 3x3 matrix 
-  !
-  !> @param [in]  mat	Matrix to inverse
-  !> @param [out] inv	Inverse of the Matrix
   !
   USE artn_params, ONLY : DP 
   IMPLICIT none

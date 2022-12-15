@@ -1,25 +1,24 @@
 
+!---------------------------------------------------------------------------
 !> @authors
 !!   Matic Poberznik
 !!   Miha gunde
 !!   Nicolas Salles
 
+!> @brief 
+!!   Subroutine that writes the minimum parameters required for restart of a calculation
+!!   to a file
 !
-!---------------------------------------------------------------------------
+!> @param[in]    filnres   restart filename
+! 
+!> @note 
+!!   LOGICAL FLAGS: linit, lperp, leigen, llanczos, lsaddle, lrelax
+!!   COUNTERS : istep, iinit, ilanc, ieigen, ismooth, nlanc
+!!   ARRAYS:
+!!   - LANCZOS: eigenvec, H, Vmat, force_old, lowest_eigval
+!!   - (INIT/SADDLE/STEP): etot, tau, force (, current_step_size, fpush_factor)
+!
 SUBROUTINE write_restart( filnres )
-  !
-  !> @breif 
-  !!   Subroutine that writes the minimum parameters required for restart of a calculation
-  !!   to a file
-  !
-  !> @param[in]    filnres   restart filename
-  ! 
-  !> @note 
-  !!   LOGICAL FLAGS: linit, lperp, leigen, llanczos, lsaddle, lrelax
-  !!   COUNTERS : istep, iinit, ilanc, ieigen, ismooth, nlanc
-  !!   ARRAYS:
-  !!   - LANCZOS: eigenvec, H, Vmat, force_old, lowest_eigval
-  !!   - (INIT/SADDLE/STEP): etot, tau, force (, current_step_size, fpush_factor)
   !
   use artn_params, only : linit, lperp, leigen, llanczos, lpush_over, lrelax, &
                           iartn, istep, iinit, ieigen, iperp, ilanc, irelax, ismooth,   &
@@ -53,26 +52,26 @@ END SUBROUTINE write_restart
 
 !
 !---------------------------------------------------------------------------
+!> @brief
+!!   Subroutine that reads the restart file, if a restart is requested
+!
+!> @param[in]   filnres     restart filename
+!> @param[in]   nat         number of atoms
+!> @param[in]   order       index order of atoms
+!> @param[in]   ityp       type of atoms
+!> @param[out]  ierr        flag for the error
+!
+!> @note
+!!   LOGICAL FLAGS: lpush_init, lperp, leigen, llanczos, lsaddle, lrelax
+!!   COUNTERS : istep, ipush, ilanc, ieigen, ismooth, nlanc
+!!   ARRAYS: eigenvec, H, Vmat
+!
+!> @warning
+!!   - Maybe doing a verification on the nat parameter in case...
+!!   - order argument is not used in the routine
+!!   - ityp is not used in the routine
+!
 SUBROUTINE read_restart( filnres, nat, order, ityp, ierr )
-  !
-  !> @brief
-  !!   Subroutine that reads the restart file, if a restart is requested
-  !
-  !> @param[in]   filnres     restart filename
-  !> @param[in]   nat         number of atoms
-  !> @param[in]   order       index order of atoms
-  !> @param[in]   itype       type of atoms
-  !> @param[out]  ierr        flag for the error
-  !
-  !> @note
-  !!   LOGICAL FLAGS: lpush_init, lperp, leigen, llanczos, lsaddle, lrelax
-  !!   COUNTERS : istep, ipush, ilanc, ieigen, ismooth, nlanc
-  !!   ARRAYS: eigenvec, H, Vmat
-  !
-  !> @warning
-  !!   - Maybe doing a verification on the nat parameter in case...
-  !!   - order argument is not used in the routine
-  !!   - ityp is not used in the routine
   !
   use artn_params, only : linit, lperp, leigen, llanczos, lpush_over, lrelax, &
                           iartn, istep, iinit, ieigen, iperp, ilanc, irelax, ismooth,   &

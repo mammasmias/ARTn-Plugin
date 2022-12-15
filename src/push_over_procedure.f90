@@ -1,18 +1,23 @@
 
+!> @author
+!!   Matic Poberznik,
+!!   Miha Gunde,
+!!   Nicolas Salles
+
+!> @brief
+!!    Perform the push over the saddle point
+!
+!> @param[inout] iover         iterator of push_over
+!> @param[in]    nat           number of atoms
+!> @param[out]   pos           atomic position
+!> @param[in]    v0            Vector defining the push over
+!> @param[in]    push_factor   +/- 1 depending the sens of the push 
+!> @param[out]   order         atoms engine order 
+!> @param[out]   displ_vec     displacement vector
+!> @param[out]   lstop         flag to stop the computation
+!
 
 SUBROUTINE Push_Over_Procedure( iover, nat, pos, v0, push_factor, order, displ_vec, lstop )
-  !
-  !> @Brief
-  !!    Perform the push over the saddle point
-  !
-  !> @param[inout] iover         iterator of push_over
-  !> @param[in]    nat           number of atoms
-  !> @param[out]   pos           atomic position
-  !> @param[in]    v0            Vector defining the push over
-  !> @param[in]    push_factor   +/- 1 depending the sens of the push 
-  !> @param[out]   order         atoms engine order 
-  !> @param[out]   displ_vec     displacement vector
-  !> @param[out]   lstop         flag to stop the computation
   !
   use units, only : DP
   use artn_params, only : eigen_step_size, push_over, &

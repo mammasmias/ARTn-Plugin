@@ -1,103 +1,115 @@
 
+!......................................................
 !> @author
 !!   Matic Poberznik
 !!   Miha Gunde
 !!   Nicolas Salles
 
+!> @brief
+!!   provide a 3 random number \in [-0.5:0.5] with norm < 0.25
+! 
+!> @param[in]    idum    seed for rng
+!! @param[inout] vec     output vector
+!
+!> @note
+!!   the random vector is inside a cercle of radius 0.5
+!!   because x, y, z \in [-.5:.5]
+!
+subroutine random_displacement( idum, vec )
+  !
+  use units, only : DP
+  use artn_params, only : ran3
+  implicit none
+
+  integer, intent(in) :: idum
+  real(DP), intent(inout ) :: vec(3)
+
+  real(DP) :: dr
+  real(DP), external :: dnrm2
+
+  RDM:DO
+     vec(:) = (/ 0.5_DP - ran3(idum), 0.5_DP - ran3(idum), 0.5_DP - ran3(idum) /)
+     dr = dnrm2( 3, vec, 1 )
+     IF ( dr < 0.25_DP ) RETURN
+  ENDDO RDM
+
+end subroutine random_displacement
 
 
-  !......................................................
-  subroutine random_displacement( idum, vec )
-    !> @breif
-    !!   provide a 3 random number \in [-0.5:0.5] with norm < 0.25
-    ! 
-    !> @param[in]    idum    seed for rng
-    !! @param[inout] vec     output vector
-    !
-    !> @note
-    !!   the random vector is inside a cercle of radius 0.5
-    !!   because x, y, z \in [-.5:.5]
-    !
-    use units, only : DP
-    use artn_params, only : ran3
-    implicit none
+!......................................................
+!> @author
+!!   Matic Poberznik
+!!   Miha Gunde
+!!   Nicolas Salles
 
-    integer, intent(in) :: idum
-    real(DP), intent(inout ) :: vec(3)
+!> @brief 
+!!   provide a randim displacement to the atom's ID neighbors relative to the 
+!!   threshold distance Rcut
+!
+!> @param[in]    idum    seed 
+!> @param[in]    nat     number of atom
+!> @param[in]    id      atom's Id
+!> @param[in]    rcut    distance threshold
+!> @param[out]   vec     output displacement
+!
+subroutine neigh_random_displacement( idum, nat, id, rcut, vec )
+  !
+  use units, only : DP, unconvert_length
+  use artn_params, only : lat, tau_step, push_ids
+  implicit none
 
-    real(DP) :: dr
-    real(DP), external :: dnrm2
+  integer, intent( in ) :: idum, id, nat
+  real(DP), intent( in ) :: rcut
+  real(DP), intent( out ) :: vec(3,nat)
 
-    RDM:DO
-       vec(:) = (/ 0.5_DP - ran3(idum), 0.5_DP - ran3(idum), 0.5_DP - ran3(idum) /)
-       dr = dnrm2( 3, vec, 1 )
-       IF ( dr < 0.25_DP ) RETURN
-    ENDDO RDM
+  integer :: na
+  real(DP) :: x0(3), dr(3), d, rc
+  real(DP), external :: dnrm2
 
-  end subroutine random_displacement
+  !
+  ! -- WARNING : The position and lattice are stil in engine units
+  !       we unconvert the rcut which should be in 
+  !
+  rc = unconvert_length( rcut )
 
+  x0 = tau_step(:,id)
+  DO na = 1,nat
+     IF( id == na)cycle
+     !IF( ANY(push_ids == na) )cycle
+     dr(:) = tau_step(:,na) - x0(:)
 
-  subroutine neigh_random_displacement( idum, nat, id, rcut, vec )
-    !> @brief 
-    !!   provide a randim displacement to the atom's ID neighbors relative to the 
-    !!   threshold distance Rcut
-    !
-    !> @param[in]    idum    seed 
-    !> @param[in]    nat     number of atom
-    !> @param[in]    id      atom's Id
-    !> @param[in]    rcut    distance threshold
-    !> @param[out]   vec     output displacement
-    !
-    use units, only : DP, unconvert_length
-    use artn_params, only : lat, tau_step, push_ids
-    implicit none
-
-    integer, intent( in ) :: idum, id, nat
-    real(DP), intent( in ) :: rcut
-    real(DP), intent( out ) :: vec(3,nat)
-
-    integer :: na
-    real(DP) :: x0(3), dr(3), d, rc
-    real(DP), external :: dnrm2
-
-    !
-    ! -- WARNING : The position and lattice are stil in engine units
-    !       we unconvert the rcut which should be in 
-    !
-    rc = unconvert_length( rcut )
-
-    x0 = tau_step(:,id)
-    DO na = 1,nat
-       IF( id == na)cycle
-       !IF( ANY(push_ids == na) )cycle
-       dr(:) = tau_step(:,na) - x0(:)
-
-       CALL pbc( dr, lat)
-       d = dnrm2(3,dr,1) 
-       IF( d <= rc )THEN
-         ! found an atom within dist_thr 
-         !call random_displacement( idum, na, vec(:,na)) 
-         call random_displacement( idum, vec(:,na)) 
-         !print*, id, na, d, "neigh random disp:", vec(:,na)
-       ENDIF
-    ENDDO
+     CALL pbc( dr, lat)
+     d = dnrm2(3,dr,1) 
+     IF( d <= rc )THEN
+       ! found an atom within dist_thr 
+       !call random_displacement( idum, na, vec(:,na)) 
+       call random_displacement( idum, vec(:,na)) 
+       !print*, id, na, d, "neigh random disp:", vec(:,na)
+     ENDIF
+  ENDDO
 
 
-  end subroutine neigh_random_displacement
+end subroutine neigh_random_displacement
 
 
 
 !.....................................................................................................
+!> @author
+!!   Matic Poberznik
+!!   Miha Gunde
+!!   Nicolas Salles
+!
+!> @brief
+!!   Read the configuration from a file formatted xyz but as we want to customise 
+!!   the push the position are the push, no position means random displacement
+!!   Can list only a part of particle in the system.
+!
+!> @param[in]     nat       number of atoms  
+!> @param[in]     idum      seed for random number generator
+!> @param[out]    vec       initial push
+!> @param[in]     filename  input file name
+!
 SUBROUTINE READ_GUESS( idum, nat, vec, filename )
-  !> @brief
-  !!   Read the configuration from a file formatted xyz but as we want to customise 
-  !!   the push the position are the push, no position means random displacement
-  !!   Can list only a part of particle in the system.
-  !
-  !> @param[in]     nat       number of atoms  
-  !> @param[in]     idum      seed for random number generator
-  !> @param[out]    vec       initial push
-  !> @param[in]     filename  input file name
   !
   use units,       only : DP, unconvert_length, read_line, parser
   use artn_params, only : warning, iunartout, dist_thr, push_ids, push_step_size
@@ -197,13 +209,13 @@ SUBROUTINE READ_GUESS( idum, nat, vec, filename )
 
 CONTAINS
   !......................................................
+  !> @brief
+  !!   test if the string represent a number or not
+  !
+  !> @param[in]    string   input string
+  !! @return       logical  
+  !
   elemental FUNCTION is_numeric(string)
-    !> @breif
-    !!   test if the string represent a number or not
-    !
-    !> @param[in]    string   input string
-    !! @return       logical  
-    !
     IMPLICIT NONE
     CHARACTER(len=*), INTENT(IN) :: string
     LOGICAL :: is_numeric

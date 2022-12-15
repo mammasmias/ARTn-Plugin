@@ -1,18 +1,18 @@
 
+!------------------------------------------------------------
 !> @author
 !!   Matic Poberznik,
 !!   Miha Gunde
 !!   Nicolas Salles
 
-
-!------------------------------------------------------------
-SUBROUTINE write_initial_report(iunartout, filout)
-  !> @brief
-  !!   Open and write the information of ARTn research in the ouput
-  !!   defined by the channel IUARTNOUT and the file name FILOUT
-  !
-  !> @param[in]  iuartnout    channel of the output
-  !! @param[in]  filout       name of the file
+!> @brief
+!!   Open and write the information of ARTn research in the ouput
+!!   defined by the channel IUARTNOUT and the file name FILOUT
+!
+!> @param[in]  iunartout    channel of the output
+!! @param[in]  filout       name of the file
+!
+SUBROUTINE write_initial_report( iunartout, filout )
   !
   use artn_params, ONLY: engine_units, ninit, nperp, neigen, nsmooth,  &
                          init_forc_thr, forc_thr, fpara_thr, eigval_thr, &
@@ -98,11 +98,17 @@ END SUBROUTINE write_initial_report
 
 
 !------------------------------------------------------------
+!> @author
+!!   Matic Poberznik,
+!!   Miha Gunde
+!!   Nicolas Salles
+
+!> @brief
+!!   write the header before the run. It contains the system units
+!
+!> @param[in]  iunartout    output unit channel
+!
 SUBROUTINE write_header_report( iunartout )
-  !> @brief
-  !!   write the header before the run. It contains the system units
-  !
-  !> @param[in]  iunartout    output unit channel
   !
   use artn_params, only : verbose, isearch, ifound, filout
   use units, only :  strg_units
@@ -128,18 +134,25 @@ END SUBROUTINE write_header_report
 
 
 !------------------------------------------------------------
+!> @author
+!!   Matic Poberznik,
+!!   Miha Gunde
+!!   Nicolas Salles
+
+!> @brief
+!!   a subroutine that writes a report of the current step to the output file
+!
+!> @param [in]  etot          energy of the system
+!> @param [in]  force         List of atomic forces
+!> @param [in]  fpara         List of parallel atomic forces
+!> @param [in]  fperp         List of perpendicular atomic forces
+!> @param [in]  lowest_eigval Lowest eigenvalue obtained by lanczos
+!> @param [in]  if_pos        Fix the atom or not     
+!> @param [in]  istep         actual step of ARTn
+!> @param [in]  nat           Number of atoms
+!> @param [in]  iunartout     Channel of output
+!
 SUBROUTINE write_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep, nat, iunartout)
-  !> @brief
-  !!   a subroutine that writes a report of the current step to the output file
-  !
-  !> @param [in]  etot		energy of the system
-  !> @param [in]  force		List of atomic forces
-  !> @param [in]  fpara		List of parallel atomic forces
-  !> @param [in]  fperp		List of perpendicular atomic forces
-  !> @param [in]  lowest_eigval	Lowest eigenvalue obtained by lanczos
-  !> @param [in]  if_pos	Fix the atom or not	
-  !> @param [in]  istep		actual step of ARTn
-  !> @param [in]  iunartout	Channel of output
   !
   USE artn_params, ONLY: MOVE, verbose, filout, nsmooth  &
                         ,etot_init, iinit, iperp, ieigen, ilanc, irelax, iartn, a1 &
@@ -260,18 +273,25 @@ END SUBROUTINE write_report
 
 
 !------------------------------------------------------------------------
+!> @author
+!!   Matic Poberznik,
+!!   Miha Gunde
+!!   Nicolas Salles
+
+!> @brief
+!!   a subroutine that writes a report each new ARTn step
+!
+!> @param[in]  etot          energy of the system
+!> @param[in]  force         List of atomic forces
+!> @param[in]  fpara         List of parallel atomic forces
+!> @param[in]  fperp         List of perpendicular atomic forces
+!> @param[in]  lowest_eigval Lowest eigenvalue obtained by lanczos
+!> @param[in]  if_pos        Fix the atom or not
+!> @param[in]  istep         actual step of ARTn
+!> @param[in]  nat           Number of atoms
+!> @param[in]  iout          Channel of output
+!
 SUBROUTINE write_artn_step_report( etot, force, fperp, fpara, lowest_eigval, if_pos, istep, nat, iout)
-  !> @brief
-  !!   a subroutine that writes a report each new ARTn step
-  !
-  !> @param [in]  etot          energy of the system
-  !> @param [in]  force         List of atomic forces
-  !> @param [in]  fpara         List of parallel atomic forces
-  !> @param [in]  fperp         List of perpendicular atomic forces
-  !> @param [in]  lowest_eigval Lowest eigenvalue obtained by lanczos
-  !> @param [in]  if_pos        Fix the atom or not
-  !> @param [in]  istep         actual step of ARTn
-  !> @param [in]  iout          Channel of output
   !
   USE artn_params, ONLY: MOVE, verbose, bilan, filout, nsmooth  &
                         ,etot_init, iinit, ieigen, irelax, delr, iartn, a1 &
@@ -382,14 +402,20 @@ END SUBROUTINE write_artn_step_report
 
 
 !------------------------------------------------------------
+!> @author
+!!   Matic Poberznik,
+!!   Miha Gunde
+!!   Nicolas Salles
+
+!> @brief
+!!   intermediate report between the saddle convergence and the
+!!   various minimum relaxation
+!
+!> @param[in]  iunartout    output unit channel
+!! @param[in]  pushfactor   sens of the push over at saddle point
+!! @param[in]  de(*)        energetic parameters depending on which push over it is
+!
 SUBROUTINE write_inter_report( iunartout, pushfactor, de )
-  !> @brief
-  !!   intermediate report between the saddle convergence and the
-  !!   various minimum relaxation
-  !
-  !> @param[in]  iunartout    output unit channel
-  !! @param[in]  pushfactor   sens of the push over at saddle point
-  !! @param[in]  de(*)        energetic parameters depending on which push over it is
   !
   use units, only : DP, unconvert_energy, unit_char
   use artn_params, only : artn_resume, istep, ifails,  bilan, filout, verbose, &
@@ -467,14 +493,20 @@ END SUBROUTINE write_inter_report
 
 
 !------------------------------------------------------------
+!> @author
+!!   Matic Poberznik,
+!!   Miha Gunde
+!!   Nicolas Salles
+
+!> @brief
+!!   Report to finish the search
+!
+!> @param[in]   iunartout      output unit channel
+!! @param[in]   lsaddle        flag for saddle point convergence
+!! @param[in]   lpush_final    flag for final push
+!! @param[in]   de             energetic parameter
+
 SUBROUTINE write_end_report( iunartout, lsaddle, lpush_final, de )
-  !> @brief
-  !!   Report to finish the search
-  !
-  !> @param[in]   iunartout      output unit channel
-  !! @param[in]   lsaddle        flag for saddle point convergence
-  !! @param[in]   lpush_final    flag for final push
-  !! @paran[in]   de             energetic parameter
   !
   use units, only : DP, unconvert_energy, unit_char
   use artn_params, only : artn_resume, verbose, istep, bilan, filout
@@ -529,13 +561,19 @@ END SUBROUTINE write_end_report
 
 
 !------------------------------------------------------------
+!> @author
+!!   Matic Poberznik,
+!!   Miha Gunde
+!!   Nicolas Salles
+
+!> @brief
+!!   Fail report
+!
+!> @param[in]  iunartout   output unit channel
+!! @param[in]  disp        displacement parameters
+!! @param[in]  estep       Energy of actual step
+!
 SUBROUTINE write_fail_report( iunartout, disp, estep )
-  !> @brief
-  !!   Fail report
-  !
-  !> @param[in]  inuartout   output unit channel
-  !! @param[in]  disp        displacement parameters
-  !! @param[in]  estep       Energy of actual step
   !
   use units, only : DP, unconvert_energy, unit_char
   use artn_params, only : MOVE, ifails, error_message, filout, artn_resume, verbose
@@ -564,16 +602,24 @@ SUBROUTINE write_fail_report( iunartout, disp, estep )
 END SUBROUTINE write_fail_report
 
 
+
+
 !------------------------------------------------------------
+!> @author
+!!   Matic Poberznik,
+!!   Miha Gunde
+!!   Nicolas Salles
+
+!> @brief
+!!   compute the displacement
+!
+!> @param[in]  nat       number of atoms
+!! @param[in]  pos       actual position of atoms in 3 dimension
+!! @param[in]  old_pos   reference atomic position
+!! @param[in]  lat       box parameters
+!! @param[out] delr      displacement of each atom
+!
 subroutine compute_delr( nat, pos, old_pos, lat, delr )
-  !> @brief
-  !!   compute the displacement
-  !
-  !> @param[in]  nat       number of atoms
-  !! @param[in]  pos       actual position of atoms in 3 dimension
-  !! @param[in]  old_pos   reference atomic position
-  !! @param[in]  lat       box parameters
-  !! @param[out] delr      displacement of each atom
   !
   use units, only : DP
   implicit none

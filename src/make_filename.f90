@@ -4,13 +4,14 @@
 !!  Miha Gune
 !!  Nicolas Salles
 
+!> @brief
+!!    build a filename from the prefix and the number n
+!
+!> @param[out]    f        filename
+!> @param[in]     prefix   prefix for filename
+!> @param[inout]  n        integer for the file name
+!
 SUBROUTINE make_filename( f, prefix, n )
-  !> @brief
-  !!    build a filename from the prefix and the number n
-  !
-  !> @param[out]    f        filename
-  !> @param[in]     prefix   prefix for filename
-  !> @param[inout]  n        integer for the file name
   !
   implicit none
   character(*), intent(out) :: f

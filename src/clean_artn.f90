@@ -1,8 +1,13 @@
 
-
+!> @author 
+!!   Nicolas Salles,
+!!   Matic Poberznic,
+!!   Miha Gunde
+!
+!> @brief
+!!   Clean and end the ARTn research to be ready for another or to stop
+!
 SUBROUTINE clean_artn()
-  !> @brief
-  !!   Clean and end the ARTn research to be ready for another or to stop
   !
   use units,       only : DP
   use artn_params, only : lrelax, linit, lbasin, lperp,                 &
@@ -40,7 +45,7 @@ SUBROUTINE clean_artn()
   lpush_over = .false.
   lend = .false.
 
-  !> Internal param
+  ! Internal param
   lbackward = .true.
   fpush_factor = 1.0
 

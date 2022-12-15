@@ -4,12 +4,13 @@
 !!   Matic Poberznik
 !!   Miha Gunde
 
+!> @brief
+!!   Allow to load the new minimum found at the end of the research
+!
+!> @param[in]      nat     number of atom
+!! @param[inout]   pos     atomic position
+!
 SUBROUTINE move_nextmin( nat, pos )
-  !> @brief
-  !!   Allow to load the new minimum found at the end of the research
-  !
-  !> @param[in]      nat     number of atom
-  !! @param[inout]   pos     atomic position
   !
   USE UNITS, only : DP
   USE artn_params, only : tau_nextmin, etot_init, etot_final
@@ -39,15 +40,19 @@ SUBROUTINE move_nextmin( nat, pos )
 END SUBROUTINE move_nextmin
 
 
+!> @author
+!!   Nicolas Salles
+!!   Matic Poberznik
+!!   Miha Gunde
 
+!> @brief 
+!!   Save the configuration of new minimum if the distance from the 
+!!   initial minimum is greater than a threshold Rc
+!
+!> @param[in]      nat     number of atom
+!! @param[inout]   pos     atomic position
+!
 SUBROUTINE save_min( nat, pos )
-  !> @brief 
-  !!   Save the configuration of new minimum if the distance from the 
-  !!   initial minimum is greater than a threshold Rc
-  !
-  !> @param[in]      nat     number of atom
-  !! @param[inout]   pos     atomic position
-  !
   USE UNITS, only : DP, unconvert_length
   USE artn_params, only : tau_init, lat, tau_nextmin
   implicit none

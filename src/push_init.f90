@@ -2,27 +2,31 @@
 !!   Matic Poberznik
 !!   Miha Gunde
 !!   Nicolas Salles
-!!
+!
+!> @brief
+!!   subroutine that generates the initial push
+!
+!> @par Purpose
+!  ============
+!>   options are specified by mode: \n 
+!!           (1) 'all' generates a push on all atoms \n
+!!           (2) 'list' generates a push on a list of atoms \n
+!!           (3) 'rad' generates a push on a list of atoms and all atoms within dist_thr \n
+!!   the user should supply: number and list of atoms to push; and add_constraints on these atoms
+!
+!> @param [in]    nat             Size of list: number of atoms 
+!> @param [in]    idum            looks like it is the seed for random gen
+!> @param [in]    push_ids        List of atoms on which apply a push
+!> @param [in]    order           order of atom in the list
+!> @param [in]    dist_thr        Threshold on the distance interatomic
+!> @param [in]    step_size       length of initial step
+!> @param [in]    tau             atomic position
+!> @param [in]    lat             Box length
+!> @param [inout] add_const       list of atomic constrain
+!> @param [in]    mode            Actual kind displacement 
+!> @param [out]   push            list of push applied on the atoms (ORDERED)
+!
 SUBROUTINE push_init( nat, tau, order, lat, idum, push_ids, dist_thr, add_const, step_size, push, mode)
-  !
-  !> @brief
-  !!   subroutine that generates the initial push; options are specified by mode: 
-  !!           (1) 'all' generates a push on all atoms 
-  !!           (2) 'list' generates a push on a list of atoms
-  !!           (3) 'rad' generates a push on a list of atoms and all atoms within dist_thr 
-  !!   the user should supply: number and list of atoms to push; and add_constraints on these atoms
-  !
-  !> @param [in]    nat		    Size of list: number of atoms 
-  !> @param [in]    idum	    looks like it is the seed for random gen
-  !> @param [in]    push_ids	    List of atoms on which apply a push
-  !> @param [in]    order	    order of atom in the list
-  !> @param [in]    dist_thr	    Threshold on the distance interatomic
-  !> @param [in]    step_size       length of initial step
-  !> @param [in]    tau		    atomic position
-  !> @param [in]    at		    Box length
-  !> @param [inout] add_const	    list of atomic constrain
-  !> @param [in]    mode	    Actual kind displacement 
-  !> @param [out]   push	    list of push applied on the atoms (ORDERED)
   !
   USE units, only : DP
   USE artn_params, ONLY : ran3, iunartout, warning, force_step, random_array

@@ -1,11 +1,15 @@
 
+!> @author
+!!   Nicolas Salles
+!!   Matic Poberznik
+!!   Miha Gunde
 
-
+!> @brief
+!!   increment in the list only if the actual perp-relax finished
+!
+!> @param[in]  increment   command {-1,0,1} allows to show what it does
+!
 SUBROUTINE nperp_limitation_step( increment )
-  !> @brief
-  !!   increment in the list only if the actual perp-relax finished
-  !
-  !> @param[in]  increment   command {-1,0,1} allows to show what it does
   !
   use artn_params, only: nperp_limitation, nperp_step, nperp
   implicit none
@@ -22,14 +26,6 @@ SUBROUTINE nperp_limitation_step( increment )
   endif
 
   n = size(nperp_limitation)
-  !n = 5 !! By default
-
-  !select case( nperp_step )
-  !  case(:n-1); nperp = nperp_limitation( nperp_step )
-  !  case(n:); nperp = nperp_limitation( n )
-  !end select
-
-  !nperp = merge( nperp_limitation( nperp_step ), nperp_limitation( n ), nperp_step < n )
 
   if( nperp_step < n )then
     nperp = nperp_limitation( nperp_step )
@@ -49,17 +45,23 @@ end SUBROUTINE nperp_limitation_step
 
 
 !...........................................................................................
+!> @author
+!!   Nicolas Salles
+!!   Matic Poberznik
+!!   Miha Gunde
+
+!> @brief
+!!   the nperp are stored in array nperp_limitation() with in 
+!!   first element the value of nperp if exist and in last the 
+!!   nperp_end. The last element is repeated until the end of research
+!!   Values: 
+!!    -2 nothing
+!!    -1 no limitation
+!!    {0,1,...} nperp limit
+!
+!> @param[in] flag true/false to use nperp_limitation
+
 SUBROUTINE nperp_limitation_init( flag )
-  !> @brief
-  !!   the nperp are stored in array nperp_limitation() with in 
-  !!   first element the value of nperp if exist and in last the 
-  !!   nperp_end. The last element is repeated until the end of research
-  !!   Values: 
-  !!    -2 nothing
-  !!    -1 no limitation
-  !!    {0,1,...} nperp limit
-  !
-  !> @param[in] flag true/false to use nperp_limitation
   ! 
   use artn_params, only: nperp_limitation, nperp, &
                          def_nperp_limitation

@@ -4,16 +4,16 @@
 !!   Miha Gunde
 !!   Nicolas Salles
 
+!> @brief subroutine that subtracts parallel components to push from force
+!
+!> @param[in]     force       Field input
+!! @param[in]     if_pos      Constrain in field
+!! @param[in]     push        Parallel field reference
+!! @param[out]    fperp       Perpendicular force field following Push field
+!! @param[out]    fpara       Parallel force field following Push field
+!! @param[in]     nat         number of point in the field 
+!
 SUBROUTINE perpforce( force, if_pos, push, fperp, fpara, nat )
-  !
-  !> @brief subroutine that subtracts parallel components to push from force
-  !
-  !> @param[in]     force	Field input
-  !! @param[in]	    if_pos	Constrain in field
-  !! @param[in]	    push	Parallel field reference
-  !! @param[out]    fperp	Perpendicular force field following Push field
-  !! @param[out]    fpara	Parallel force field following Push field
-  !! @param[in]	    nat		number of point in the field 
   !
   USE units, only : DP
   USE artn_params, ONLY : iunartout, filout
@@ -47,20 +47,22 @@ SUBROUTINE perpforce( force, if_pos, push, fperp, fpara, nat )
 END SUBROUTINE perpforce
 
 
-!! N. Salles
+!> @author N. Salles
+!
+!> @brief Extract the parallel and perpendicular component of field 
+!!   followig a reference field (fref) according to a mask.
+!!   (Generalization of perpforce)
+!
+!> @param[in]     n           number of point in the field 
+!! @param[in]     field       Field input
+!! @param[in]     mask        Constrain in field
+!! @param[in]     fref        Parallel direction field reference
+!! @param[out]    fperp       Perpendicular force field following dir field
+!! @param[out]    fpara       Parallel force field following dir field
+!
+
 !subroutine splitfield( n, field, mask, fref, fperp, fpara )
 subroutine field_split( n, field, mask, fref, fperp, fpara )
-  !
-  !> @brief Extract the parallel and perpendicular component of field 
-  !!   followig a reference field (fref) according to a mask.
-  !!   (Generalization of perpforce)
-  !
-  !> @param[in]     nat         number of point in the field 
-  !! @param[in]     field       Field input
-  !! @param[in]     mask        Constrain in field
-  !! @param[in]     fref        Parallel direction field reference
-  !! @param[out]    fperp       Perpendicular force field following dir field
-  !! @param[out]    fpara       Parallel force field following dir field
   !
   USE units, only : DP
   USE artn_params, ONLY : iunartout, filout

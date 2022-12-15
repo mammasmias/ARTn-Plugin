@@ -1,17 +1,14 @@
 !
 !------------------------------------------------------------------------------
-!> @brief \b ARTN
+!> @brief Main ARTn plugin subroutine
 !!
 !> @author Matic Poberznik
 !! @author Miha Gunde
 !! @author Nicolas Salles
 !!
-!! @par Purpose
+!> @par Purpose
 !  ============
-!!   Main ARTn plugin subroutine:
-!
-!> @details
-!!   Modifies the input force to perform the ARTn algorithm
+!>   Modifies the input force to perform the ARTn algorithm
 !!
 !> @param[in]     force       force calculated by the engine
 !> @param[inout]  etot_eng    total energy of the engine
@@ -78,12 +75,13 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   REAL(DP)                        :: z
 
   !
-  ! The ARTn algorithm proceeds as follows:
-  ! (1) push atoms in the direction specified by user & relax in the perpendicular direction;
-  ! (2) use the lanczos algorithm calculate the lowest eigenvalue/eigenvec
-  ! (3) a negative eigenvalue, update push direction otherwise push again
-  ! (4) follow the lanczos direction twoard the saddle point
-  ! (5) push twoards adjacent minimum & initial minimum
+  !> @par The ARTn algorithm proceeds as follows:
+  !  ============================================
+  !> (1) push atoms in the direction specified by user & relax in the perpendicular direction \n
+  !> (2) use the lanczos algorithm calculate the lowest eigenvalue/eigenvec \n
+  !> (3) a negative eigenvalue, update push direction otherwise push again \n
+  !> (4) follow the lanczos direction twoard the saddle point \n
+  !> (5) push twoards adjacent minimum & initial minimum \n
   !
   ! ... Flags that controls convergence
   lconv        = .false.
@@ -281,7 +279,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      !
      iperp = iperp + 1
      !
-     !> Here we do a last verification on displ_vec to detect
+     !! Here we do a last verification on displ_vec to detect
      !! the box explosion
      !! -> Stop the search if one of displacement has 5 number
      z = 0.0_DP
@@ -356,12 +354,12 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
   !
   ! The saddle point is reached -> confirmed by check_force_convergence()
   !
-  !> SHOULD BE A ROUTINE but not :: it's because we call write_struct() that needs
+  !! SHOULD BE A ROUTINE but not :: it's because we call write_struct() that needs
   !!  arguments exist only in artn()
   IF( lsaddle_conv )THEN
 
      !
-     !> store the saddle point energy
+     !! store the saddle point energy
      etot_saddle = etot_step
      tau_saddle = tau_step
      eigen_saddle = eigenvec
@@ -383,7 +381,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
      CALL write_end_report( iunartout, lpush_over, lpush_final, etot_step - etot_init )
 
      !
-     !> If the saddle point is lower in energy
+     !! If the saddle point is lower in energy
      !!  than the initial point: Mode refine
      IF ( etot_step < etot_init ) THEN
         ! ...HERE Warning to says we should be in refine saddle mode
@@ -441,7 +439,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
         !
      ELSE  ! --- NO FINAL_PUSH
         !
-        !> At this point the saddle point is already wrote by write_struct before
+        !! At this point the saddle point is already wrote by write_struct before
         !! Here we finish the ARTn search.
         !! Preparation of the possible new ARTn search following this step.
         !! - Cleaning the flag/parameter
@@ -558,7 +556,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
 
 
 
-  !> WHAT FOR THIS BLOCK??? 
+  !! WHAT FOR THIS BLOCK??? 
   !!  This should be in check_force()
   IF( etot_step - etot_init > etot_diff_limit ) then
      error_message = 'ENERGY EXCEEDS THE LIMIT'
@@ -674,8 +672,8 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
            leigen = .false.
            linit  = .true.
            lbasin = .true.
-           noperp = 0      !> count the init-perp fail
-           nperp_step = 1  !> count the out-basin perp relax step
+           noperp = 0      !! count the init-perp fail
+           nperp_step = 1  !! count the out-basin perp relax step
            !
         ENDIF
         !
@@ -714,7 +712,7 @@ SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, 
       WRITE( iunartout,'(5X, "|> number of steps:",x, i0)') istep
     ENDIF
 
-    !> SCHEMA FINILIZATION
+    !... SCHEMA FINILIZATION
     lend = lconv
     !
     IF( lerror ) THEN

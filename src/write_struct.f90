@@ -16,7 +16,7 @@
 !> @param [in]  tau       atomic positions
 !> @param [in]  lat       lattice parameters in alat units
 !> @param [in]  force     list of atomic forces
-!> @param [in]  ene       energy of the current structure, in engine units
+!> @param [in]  ener      energy of the current structure, in engine units
 !> @param [in]  fscale    factor for scaling the force
 !> @param [in]  form      format of the structure file (default xsf)
 !> @param [in]  fname     file name
@@ -70,6 +70,10 @@ END SUBROUTINE write_struct
 
 
 ! .......................................................................................... XSF
+!> @author Matic Poberznik
+!! @author  Miha Gunde
+!! @author  Nicolas Salles
+
 !> @brief
 !!   write the position in xsf format
 !
@@ -144,6 +148,10 @@ END SUBROUTINE write_xsf
 
 
 ! .......................................................................................... XSF
+!> @author Matic Poberznik
+!! @author  Miha Gunde
+!! @author  Nicolas Salles
+
 !> @brief
 !!   read the position in xsf format
 !
@@ -228,6 +236,10 @@ END SUBROUTINE read_xsf
 
 
 ! .......................................................................................... XYZ
+!> @author Matic Poberznik
+!! @author  Miha Gunde
+!! @author  Nicolas Salles
+
 !> @brief
 !!   write the position in xyz format
 !
@@ -239,6 +251,7 @@ END SUBROUTINE read_xsf
 !> @param [in]  ityp      atom type
 !> @param [in]  f         list of atomic forces
 !> @param [in]  ounit     output fortran unit
+!> @param [in]  ener      Energy of actual step
 !
 SUBROUTINE write_xyz( lat, nat, tau, order, atm, ityp, f, ounit, ener )
   !
@@ -301,6 +314,10 @@ END SUBROUTINE write_xyz
 
 
 ! .......................................................................................... XYZ
+!> @author Matic Poberznik
+!! @author  Miha Gunde
+!! @author  Nicolas Salles
+
 !> @brief
 !!   read the position in xyz format
 !

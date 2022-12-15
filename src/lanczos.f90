@@ -4,26 +4,28 @@
 !!  Miha Gunde
 !!  Nicolas Salles
 
+!
+!> @brief
+!!   Lanczos subroutine for the ARTn algorithm
+!!
+!> @par Purpose
+!  ============
+!> The idea is to overwrite the 'force' with the vector of desired move,
+!! according to Lanczos diagonalisation algorithm. \n The array 'force' (input)
+!! contains the real forces on structure.
+!
+!> @param [in]      nat              number of atoms
+!> @param [in]      v_in            Input lanczos vector: only used in first step of each lanczos call
+!> @param [in]      pushdir         List of Direction of push on atoms
+!> @param [in]      force            array of Forces on the atoms
+!> @param [in,out]   ilanc           current step of lanczos
+!> @param [in,out]   nlanc        maximal number of Lanczos steps, at convergence gets overwritten with ilanc value
+!> @param [in,out]   lowest_eigval   Lowest eigenvalue obtained by lanczos algo
+!> @param [in,out]   lowest_eigvec   Lowest eigenvector obtained by lanczos algo
+!> @param [out]     displ_vec       The displacement to perform
+!
 SUBROUTINE lanczos( nat, v_in, pushdir, force, &
      ilanc, nlanc, lowest_eigval, lowest_eigvec, displ_vec )
-  !
-  !> @brief
-  !!   Lanczos subroutine for the ARTn algorithm;
-  !!
-  !! The idea is to overwrite the 'force' with the vector of desired move,
-  !! according to Lanczos diagonalisation algorithm. The array 'force' (input)
-  !! contans the real forces on structure.
-  !
-  !> @param [in]      nat	       number of atoms
-  !> @param [in]      v_in	      Input lanczos vector: only used in first step of each lanczos call
-  !> @param [in]      pushdir	      List of Direction of push on atoms
-  !> @param [in]      force	       array of Forces on the atoms
-  !> @param [inout]   ilanc	      current step of lanczos
-  !> @param [inout]   nlanc        maximal number of Lanczos steps, at convergence gets overwritten with ilanc value
-  !> @param [inout]   lowest_eigval   Lowest eigenvalue obtained by lanczos algo
-  !> @param [inout]   lowest_eigvec   Lowest eigenvector obtained by lanczos algo
-  !> @param [out]     displ_vec       The displacement to perform
-  !
   !
   USE artn_params, ONLY: DP, Vmat, H, force_old, lanczos_disp, lanczos_eval_conv_thr, &
                          lanczos_min_size

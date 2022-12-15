@@ -1,19 +1,23 @@
 
+!.......................................................................................
 !> @author
 !!   Matic Poberznik
 !!   Miha Gunde
 !!   Nicolas Salles
-
-!.......................................................................................
+!
+!> @brief Alignment Fperp/min
+!
+!> @par Purpose
+!  ============ 
+!>   compute the 2 conditions:
+!!    - eigenVec has been suddenlly changed
+!!    - direction of minimum is perp to the last push
+!
+!> @param[in] thr1    threshold on the eigenvec alignement
+!> @param[in] thr2    threshold in the fperp - direction of minimum alignment
+!> @return   Logical .true. if Fperp is aligned with min direction
+!
 logical function fperp_min_alignment( thr1, thr2 )result( res )
-  !> @brief 
-  !!   compute the 2 condition:
-  !!    - eigenVec has been suddenlly changed
-  !!    - direction of minimum is perp to the last push
-  !
-  !> @param[in] thr1    threshold on the eigenvec alignement
-  !> @param[in] thr2    threshold in the fperp - direction of minimum alignment
-  !
   USE units, only : DP
   USE artn_params, only : a1, tau_step, tau_init, push, natoms
   implicit none

@@ -1,12 +1,35 @@
 ! 
-!> @author
-!!   Matic Poberznik,
-!!   Miha Gunde, 
+!> @author Matic Poberznik,
+!! @author  Miha Gunde
+!! @author Nicolas Salles 
 !
 !> @brief 
-!!   Main ARTn plugin subroutine:
-!> @details
+!!   Interface Quantum ESPRESSO/ARTn:
+!
+!> @par Purpose
+!  ============
+!>   We convert/compute/adapt some variables, 
 !!   modifies the input force to perform the ARTn algorithm 
+!
+!> @param[in,out]   force              force calculated by the engine
+!! @param[in]       etot               total energy in current step
+!! @param[in,out]   epsf_qe            force convergence threshold of the engine
+!! @param[in]       nat                number of atoms
+!! @param[in]       ntyp               number of atomic types
+!! @param[in]       ityp               atom types
+!! @param[in]       atm                name of atom corresponding to ityp
+!! @param[in,out]   tau                atomic positions (needed for output only)
+!! @param[in]       at                 lattice parameters in alat units
+!! @param[in]       alat               lattice parameter of QE
+!! @param[in]       istep              current step
+!! @param[in]       if_pos             coordinates fixed by engine
+!! @param[in,out]   vel                velocity of previous FIRE step
+!! @param[in]       dt_init            default time step in FIRE
+!! @param[in]       fire_alpha_init    initial value of alpha in FIRE
+!! @param[out]      lconv              flag for controlling convergence
+!! @param[in]       prefix_qe          prefix for scratch files of engine
+!! @param[in]       tmp_dir_qe         scratch directory of engine
+!
 !------------------------------------------------------------------------------
 SUBROUTINE artn_QE( force, etot, epsf_qe, nat, ntyp, ityp, atm, tau, at, alat, istep, if_pos,   &
                     vel, dt_init, fire_alpha_init, lconv, prefix_qe, tmp_dir_qe )
@@ -15,29 +38,26 @@ SUBROUTINE artn_QE( force, etot, epsf_qe, nat, ntyp, ityp, atm, tau, at, alat, i
   USE units, ONLY : DP
   USE artn_params, ONLY: forc_thr, elements 
   !
-  !  Interface Quantum ESPRESSO/ARTn:
-  !  We convert/compute/adapt some variables 
-  !
   ! 
   IMPLICIT NONE
-  REAL(DP),           INTENT(INOUT) :: force(3,nat)     !> force calculated by the engine
-  REAL(DP),           INTENT(INOUT) :: vel(3,nat)       !> velocity of previous FIRE step
-  REAL(DP),           INTENT(INOUT) :: tau(3,nat)       !> atomic positions (needed for output only)
-  REAL(DP),           INTENT(INOUT) :: epsf_qe          !> force convergence threshold of the engine
-  REAL(DP),           INTENT(IN) ::    etot             !> total energy in current step
-  REAL(DP),           INTENT(IN) ::    dt_init          !> default time step in FIRE  
-  REAL(DP),           INTENT(IN) ::    fire_alpha_init  !> initial value of alpha in FIRE 
-  REAL(DP),           INTENT(IN) ::    alat             !> lattice parameter of QE
-  REAL(DP),           INTENT(IN) ::    at(3,3)          !> lattice parameters in alat units 
-  INTEGER,            INTENT(IN) ::    nat              !> number of atoms
-  INTEGER,            INTENT(IN) ::    ntyp             !> number of atomic types 
-  INTEGER,            INTENT(IN) ::    ityp(nat)        !> atom types
-  INTEGER,            INTENT(IN) ::    istep            !> current step
-  INTEGER,            INTENT(IN) ::    if_pos(3,nat)    !> coordinates fixed by engine 
-  CHARACTER(LEN=3),   INTENT(IN) :: atm(*)              !> name of atom corresponding to ityp
-  CHARACTER(LEN=255), INTENT(IN) :: tmp_dir_qe          !> scratch directory of engine 
-  CHARACTER(LEN=255), INTENT(IN) :: prefix_qe           !> prefix for scratch files of engine 
-  LOGICAL,            INTENT(OUT) :: lconv              !> flag for controlling convergence 
+  REAL(DP),           INTENT(INOUT) :: force(3,nat)     !  force calculated by the engine
+  REAL(DP),           INTENT(INOUT) :: vel(3,nat)       !  velocity of previous FIRE step
+  REAL(DP),           INTENT(INOUT) :: tau(3,nat)       !  atomic positions (needed for output only)
+  REAL(DP),           INTENT(INOUT) :: epsf_qe          !  force convergence threshold of the engine
+  REAL(DP),           INTENT(IN) ::    etot             !  total energy in current step
+  REAL(DP),           INTENT(IN) ::    dt_init          !  default time step in FIRE  
+  REAL(DP),           INTENT(IN) ::    fire_alpha_init  !  initial value of alpha in FIRE 
+  REAL(DP),           INTENT(IN) ::    alat             !  lattice parameter of QE
+  REAL(DP),           INTENT(IN) ::    at(3,3)          !  lattice parameters in alat units 
+  INTEGER,            INTENT(IN) ::    nat              !  number of atoms
+  INTEGER,            INTENT(IN) ::    ntyp             !  number of atomic types 
+  INTEGER,            INTENT(IN) ::    ityp(nat)        !  atom types
+  INTEGER,            INTENT(IN) ::    istep            !  current step
+  INTEGER,            INTENT(IN) ::    if_pos(3,nat)    !  coordinates fixed by engine 
+  CHARACTER(LEN=3),   INTENT(IN) :: atm(*)              !  name of atom corresponding to ityp
+  CHARACTER(LEN=255), INTENT(IN) :: tmp_dir_qe          !  scratch directory of engine 
+  CHARACTER(LEN=255), INTENT(IN) :: prefix_qe           !  prefix for scratch files of engine 
+  LOGICAL,            INTENT(OUT) :: lconv              !  flag for controlling convergence 
   !  
   REAL(DP)                  :: box(3,3)
   REAL(DP)                  :: pos(3,nat)

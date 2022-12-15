@@ -3,7 +3,7 @@
 !! @author Miha Gunde
 !! @author Nicolas Salles
 
-!> @breif
+!> @brief
 !!   translate specified move to appropriate force and set FIRE parameters accordingly  
 !
 !> @param [in]    nat         Size of list: Number of atoms

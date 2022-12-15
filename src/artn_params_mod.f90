@@ -52,8 +52,8 @@ MODULE artn_params
   CHARACTER(LEN=4) :: MOVE(8)
   PARAMETER( MOVE = [ 'void', 'init', 'perp', 'eign', 'lanc', 'relx', 'over', 'smth'])
   !
-  !> @par Control Flags
-  !  ==================
+  !! Control Flags
+  !  =============
   LOGICAL :: linit              !< @brief initial push OF THE MACROSTEP
   LOGICAL :: lperp              !< @brief perpendicular relax
   LOGICAL :: leigen             !< @brief push with lanczos eigenvector
@@ -74,7 +74,7 @@ MODULE artn_params
   INTEGER :: inewchance         !< @brief number of new attemps after loosing eigenvalue 
   INTEGER :: iperp              !< @brief number of steps in perpendicular relaxation
   INTEGER :: iperp_save         !< @brief number of steps in perpendicular relaxation
-  INTEGER :: iover
+  INTEGER :: iover              !< @brief number of push_over step
   INTEGER :: irelax             !< @brief Number of relaxation iteration
   INTEGER :: ieigen             !< @brief number of steps made with eigenvector
   INTEGER :: iinit              !< @brief number of pushes made
@@ -214,7 +214,7 @@ MODULE artn_params
 
   !> @interface warning
   !! @brief 
-  !!   generic name for \b warning_nothing \b, \b warning_int \b, \b warning_real \b and \b warning_char \b subroutine
+  !!   generic name for \b warning_nothing \b , \b warning_int \b , \b warning_real \b and \b warning_char \b subroutine
   INTERFACE warning
     module procedure :: warning_nothing, warning_int, warning_real, warning_char
   END INTERFACE 
@@ -231,9 +231,10 @@ CONTAINS
   !  ============
   !> Sets defaults, reads input and creates ARTn output file
   !
-  !> @param[in] nat Number of Atoms
-  !> @param[in] iunartin Channel of input
-  !> @param[in] filnam Input file name
+  !> @param[in] nat        INTEGER, Number of Atoms
+  !> @param[in] iunartin   INTEGER, Channel of input
+  !> @param[in] filnam     CHARACTER, Input file name
+  !> @param[in] error      LOGICAL, flag if there is an error
   !
   SUBROUTINE setup_artn( nat, iunartin, filnam, error )
 
@@ -624,18 +625,17 @@ CONTAINS
 
 
   !---------------------------------------------------------------------------
-  !!> @brief \b FILL_PARAM_STEP
+  !> @brief \b FILL_PARAM_STEP
   !
   !> @par Purpose
   !  ============
-  !>
-  !!   Fill the *_step arrays on which ARTn works on.\n
+  !>   Fill the *_step arrays on which ARTn works on. \n
   !!   For parallel Engine each proc has list from 1 to natproc:
-  !! @verbatim
+  !> @verbatim
   !!   pos_eng( i ) is ordered such that order( i ) = iat 
   !!   => pos( iat ) = pos_eng( i )
   !!   Then pos( order(i) ) = pos_eng( i )
-  !! @endverbatim
+  !> @endverbatim
   !
   !> @param[in]  nat    number of atoms
   !! @param[in]  box    box parameters
@@ -896,6 +896,7 @@ CONTAINS
   !> @param[in]      n     length of the arrays
   !> @param[inout]   v     array has to be random
   !> @param[in]      bias  specific direction use to orient the randomization (optional)
+  !! @param[in]      seed  Seed for random number generator (optional)
   !
   SUBROUTINE random_array( n, v, bias, seed )
     implicit none

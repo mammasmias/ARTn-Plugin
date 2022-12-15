@@ -4,28 +4,28 @@
 !!  Miha Gunde
 !!  Nicolas Salles
 
-
+!> @brief
+!!    Initialize the push and eigenvec arrays following the mode keyword
+!
+!> @par Purpose
+!  ============
+!> MIHA <= Move in push_init \n
+!! use force input as mask for push_ids when calling push_init for eigenvec. \n
+!! Why? To not generate initial lanczos vec for fixed atoms.
+!
+!> @param[in]   idum       seed for random number
+!> @param[in]   nat        number of point
+!! @param[in]   order      atom order of engine
+!! @param[out]  push       array(3*nat) push of atom   
+!! @param[out]  eigenvec   array(3*nat) eigenvec for lanczos
+!
 !SUBROUTINE start_guess( idum, nat, order, force, push, eigenvec )
 SUBROUTINE start_guess( idum, nat, order, push, eigenvec )
-  !
-  !> @brief
-  !!    Initialize the push and eigenvec arrays following the mode keyword
-  !!
-  !! MIHA <= Move in push_init
-  !! use force input as mask for push_ids when calling push_init for eigenvec.
-  !! Why? To not generate initial lanczos vec for fixed atoms.
-  !
-  !> @param[in]  idum       seed for random number
-  !> @param[in]  nat        number of point
-  !! @param[in]  order      atom order of engine
-  !! @param[in]  push
-  !! @param[in]  eigenvec
   !
   USE units,       ONLY : DP
   USE artn_params, ONLY : push_mode, push_step_size, add_const, dist_thr,             &
                           lat, tau_step, eigen_step_size, push_guess, eigenvec_guess, &
                           push_ids, iunartout, filout, verbose
-  !USE tools,       ONLY : read_guess
   !
   IMPLICIT NONE
   ! 

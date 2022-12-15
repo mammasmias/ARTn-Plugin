@@ -1,23 +1,25 @@
 
 !> @author
-!!   Matic Poberznik
-!!   Miha Gunde
-!!   Nicolas Salles
+!!   Matic Poberznik,
+!!   Miha Gunde,
+!!   Nicolas Salles,
 !!   Antoine Jay
-
-
+!
+!> @brief Check the force convergence
+!
+!> @par Purpose
+!  ============
+!>  A subroutine that checks the force convergence of a particular step in the artn algorithm
+!
+!> @param [in]   nat             Size of list: number of atoms
+!> @param [in]   force           Force field
+!> @param [in]   if_pos          List of atom move or not
+!> @param [in]   fperp           Perpendicular Force Field
+!> @param [in]   fpara           Parallel Force Field
+!> @param [out]  lforc_conv      Force Convergence Flag
+!> @param [out]  lsaddle_conv    Saddle-point Convergence Flag
+!
 SUBROUTINE check_force_convergence( nat, force, if_pos, fperp, fpara, lforc_conv, lsaddle_conv )
-  !
-  !> @breif
-  !!   A subroutine that checks the force convergence of a particular step in the artn algorithm
-  !
-  !> @param [in]   nat             Size of list: number of atoms
-  !> @param [in]   force           Force field
-  !> @param [in]   if_pos          List of atom move or not
-  !> @param [in]   fperp           Perpendicular Force Field
-  !> @param [in]   fpara           Parallel Force Field
-  !> @param [out]  lforc_conv      Force Convergence Flag
-  !> @param [out]  lsaddle_conv    Saddle-point Convergence Flag
   !
   USE units, ONLY : DP, unconvert_force
   USE artn_params, ONLY : linit, leigen, llanczos, lperp, lrelax, lbasin, nperp_step, nperp_limitation,&

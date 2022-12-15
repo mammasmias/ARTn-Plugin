@@ -1,16 +1,15 @@
 !
-!> @author
-!!  Matic Poberznik
-!!  Miha Gunde
-!!  Nicolas Salles
+!> @author Matic Poberznik
+!! @author Miha Gunde
+!! @author Nicolas Salles
 !
+!> @brief 
+!!   takes as input a vector of size (3,nat) and centers it
+!
+!> @param[in]     nat    number of atom
+!! @param[inout]  vec    output vector
 !
 SUBROUTINE center ( vec, nat )
-  !> @brief
-  !!   takes as input a vector of size (3,nat) and centers it
-  !
-  !> @param[in]     nat    number of atom
-  !! @param[inout]  vec    output vector
   !
   USE units, ONLY: DP
   !

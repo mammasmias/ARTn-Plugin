@@ -1,18 +1,18 @@
 
+! ....................................................................................
 !> @author
 !!   Matic Poberznik
 !!   Miha Gunde
 !!   Nicolas Salles
 
-
+!> @brief
+!!   subroutine that sums the forces on all atoms and returns the total force
+!
+!> @param [in]  nat       Size of list: number of atoms
+!> @param [in]  force     List of atomic forces
+!> @param [out] force_tot Sum of the list of forces
+!
 SUBROUTINE sum_force( force, nat, force_tot )
-  !
-  !> @brief
-  !!   subroutine that sums the forces on all atoms and returns the total force
-  !
-  !> @param [in]  nat	    Size of list: number of atoms
-  !> @param [in]  force	    List of atomic forces
-  !> @param [out] force_tot Sum of the list of forces
   !
   USE artn_params, ONLY : DP
   IMPLICIT NONE
@@ -32,14 +32,25 @@ SUBROUTINE sum_force( force, nat, force_tot )
 END SUBROUTINE sum_force
 
 
+
+
+
+
+! ....................................................................................
+!> @author
+!!   Matic Poberznik
+!!   Miha Gunde
+!!   Nicolas Salles
+
+!> @brief
+!!   sum the component square of the field in the mood of ddot of lib lapack
+!!   The unroll loop can be faster than previous version
+!
+!> @param[in]   n     number of field's component 
+!! @param[in]   f     field f(n)
+!! @return      res   sum of square if the field f
+!
 FUNCTION dsum( n, f )result( res )
-  !> @brief
-  !!   sum the component square of the field in the mood of ddot of lib lapack
-  !!   The unroll loop can be faster than previous version
-  !
-  !> @param[in]   n     number of field's component 
-  !! @param[in]   f     field f(n)
-  !! @returm      res   sum of square if the field f
   !
   use units, only : DP
   implicit none

@@ -164,7 +164,7 @@ Module units
   !!
   !> @details  Quantum ESPRESSO routine
   !
-  !> @param[in]                 file descriptor
+  !> @param[in]   fd            file descriptor
   !! @param[out]  line          what it reads
   !! @param[out]  end_of_file   logical to signal the EOF
   !

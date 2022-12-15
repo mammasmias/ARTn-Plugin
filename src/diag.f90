@@ -2,17 +2,20 @@
 !!  Matic Poberznik
 !!  Miha Gunde
 !
+!> @brief Diagonalize Matrix
+!
+!> @par Purpose
+!  ============
+!> assuming a general square matrix (can be nonsymmetric). \n
+!! On output A is overwritten by eigenvectors in rows, if vec=0, then
+!! A is just 0.0 on output.
+!
+!> @param[in]     n         dimension of matrix A
+!! @param[in,out] A         matrix to be diagonalised, overwritten by eigenvectors on output
+!! @param[out]    eigvals   output vector of eigenvalues, not sorted!
+!! @param[in]     vec       0 if don't want to compute eigenvectors, 1 otherwise
+!!
 SUBROUTINE diag(n, A, eigvals, vec)
-  !> @brief
-  !! assuming a general square matrix (can be nonsymmetric).
-  !! On output A is overwritten by eigenvectors in rows, if vec=0, then
-  !! A is just 0.0 on output.
-  !!
-  !! @param [in]    n	      dimension of matrix A
-  !! @param [inout] A	      matrix to be diagonalised, overwritten by eigenvectors on output
-  !! @param [out]   eigvals   output vector of eigenvalues, not sorted!
-  !! @param [in]    vec	      0 if don't want to compute eigenvectors, 1 otherwise
-  !!
   USE artn_params,            ONLY : DP
   IMPLICIT NONE
 

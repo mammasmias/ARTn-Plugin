@@ -4,16 +4,16 @@
 !!  Miha Gunde
 !!  Nicolas Salles
 
+!> @brief
+!!   A function that takes into account periodic boundary conditions,
+!!   based on the pbc function of the contraints_module of QE
+!
+!> @param [inout] vec   input vector in atomic units
+!> @param [in]    at    lattice vectors
+!
 SUBROUTINE pbc( vec, at )
+
   USE artn_params, ONLY : DP 
-  ! 
-  !> @brief
-  !!   A function that takes into account periodic boundary conditions,
-  !!   based on the pbc function of the contraints_module of QE
-  !
-  !> @param [inout] vec	  input vector in atomic units
-  !> @param [in]    at	  lattice vectors
-  ! 
   IMPLICIT none 
   ! -- ARGUMENTS
   REAL(DP), INTENT(INOUT) :: vec(3) !> input vector in atomic units  
@@ -37,11 +37,17 @@ SUBROUTINE pbc( vec, at )
 END SUBROUTINE pbc
 
 
+!> @author
+!!  Matic Poberznik
+!!  Miha Gunde
+!!  Nicolas Salles
 
-function fpbc( vec, at )RESULT( res )
   !> @brief 
   !!   A function that takes into account periodic boundary conditions,
   !!   based on the pbc function of the contraints_module of QE
+  !
+
+function fpbc( vec, at )RESULT( res )
   ! 
   USE artn_params, ONLY : DP
   IMPLICIT none
