@@ -1,28 +1,27 @@
 
-!> @author
-!!   Matic Poberznik,
-!!   Miha Gunde,
-!!   Nicolas Salles
+!---------------------------------------------------------------------------------------------------------
+!> @author Matic Poberznik
+!! @author  Miha Gunde
+!! @author  Nicolas Salles
 
-
+!> @brief
+!!   A subroutine that writes the structure to a file (based on xsf_struct of QE)
+!!   All the list (position/force) are supposed ordered
+!
+!> @param [in]  nat       number of atoms
+!> @param [in]  ityp      atom type
+!> @param [in]  order     atom type
+!> @param [in]  atm       contains information on atomic types
+!> @param [in]  ounit     output fortran unit
+!> @param [in]  tau       atomic positions
+!> @param [in]  lat       lattice parameters in alat units
+!> @param [in]  force     list of atomic forces
+!> @param [in]  ene       energy of the current structure, in engine units
+!> @param [in]  fscale    factor for scaling the force
+!> @param [in]  form      format of the structure file (default xsf)
+!> @param [in]  fname     file name
+!
 SUBROUTINE write_struct( lat, nat, tau, order, atm, ityp, force, ener, fscale, ounit, form, fname )
-  !
-  !> @brief
-  !!   A subroutine that writes the structure to a file (based on xsf_struct of QE)
-  !!   All the list (position/force) are supposed ordered
-  !
-  !> @param [in]  nat       number of atoms
-  !> @param [in]  ityp      atom type
-  !> @param [in]  order     atom type
-  !> @param [in]  atm       contains information on atomic types
-  !> @param [in]  ounit     output fortran unit
-  !> @param [in]  tau       atomic positions
-  !> @param [in]  lat       lattice parameters in alat units
-  !> @param [in]  force     list of atomic forces
-  !> @param [in]  ene       energy of the current structure, in engine units
-  !> @param [in]  fscale    factor for scaling the force
-  !> @param [in]  form      format of the structure file (default xsf)
-  !> @param [in]  fname     file name
   !
   USE UNITS, only : DP
   IMPLICIT NONE
@@ -71,18 +70,19 @@ END SUBROUTINE write_struct
 
 
 ! .......................................................................................... XSF
+!> @brief
+!!   write the position in xsf format
+!
+!> @param [in]  lat       lattice parameters in alat units
+!> @param [in]  nat       number of atoms
+!> @param [in]  tau       atomic positions
+!> @param [in]  order     atom type
+!> @param [in]  atm       contains information on atomic types
+!> @param [in]  ityp      atom type
+!> @param [in]  force     list of atomic forces
+!> @param [in]  ounit     output fortran unit
+!
 SUBROUTINE write_xsf( lat, nat, tau, order, atm, ityp, force, ounit )
-  !> @brief
-  !!   write the position in xsf format
-  !
-  !> @param [in]  lat       lattice parameters in alat units
-  !> @param [in]  nat       number of atoms
-  !> @param [in]  tau       atomic positions
-  !> @param [in]  order     atom type
-  !> @param [in]  atm       contains information on atomic types
-  !> @param [in]  ityp      atom type
-  !> @param [in]  force     list of atomic forces
-  !> @param [in]  ounit     output fortran unit
   !
   USE UNITS, only : DP, unconvert_force, parser, lower, B2A
   USE artn_params, only : engine_units
@@ -143,18 +143,20 @@ SUBROUTINE write_xsf( lat, nat, tau, order, atm, ityp, force, ounit )
 END SUBROUTINE write_xsf
 
 
+! .......................................................................................... XSF
+!> @brief
+!!   read the position in xsf format
+!
+!> @param [out]  lat       lattice parameters in alat units
+!> @param [in]   nat       number of atoms
+!> @param [out]  tau       atomic positions
+!> @param [in]   order     atom type
+!> @param [in]   atm       contains information on atomic types
+!> @param [in]   ityp      atom type
+!> @param [out]  force     list of atomic forces
+!> @param [in]   fname     output file name
+!
 SUBROUTINE read_xsf( lat, nat, tau, order, atm, ityp, force, fname )
-  !> @brief
-  !!   read the position in xsf format
-  !
-  !> @param [out]  lat       lattice parameters in alat units
-  !> @param [in]   nat       number of atoms
-  !> @param [out]  tau       atomic positions
-  !> @param [in]   order     atom type
-  !> @param [in]   atm       contains information on atomic types
-  !> @param [in]   ityp      atom type
-  !> @param [out]  force     list of atomic forces
-  !> @param [in]   fname     output file name
   !
   USE UNITS, only : DP, convert_force, B2A, parser, lower,   &
                     convert_length
@@ -226,18 +228,19 @@ END SUBROUTINE read_xsf
 
 
 ! .......................................................................................... XYZ
+!> @brief
+!!   write the position in xyz format
+!
+!> @param [in]  lat       lattice parameters in alat units
+!> @param [in]  nat       number of atoms
+!> @param [in]  tau       atomic positions
+!> @param [in]  order     atom type
+!> @param [in]  atm       contains information on atomic types
+!> @param [in]  ityp      atom type
+!> @param [in]  f         list of atomic forces
+!> @param [in]  ounit     output fortran unit
+!
 SUBROUTINE write_xyz( lat, nat, tau, order, atm, ityp, f, ounit, ener )
-  !> @brief
-  !!   write the position in xyz format
-  !
-  !> @param [in]  lat       lattice parameters in alat units
-  !> @param [in]  nat       number of atoms
-  !> @param [in]  tau       atomic positions
-  !> @param [in]  order     atom type
-  !> @param [in]  atm       contains information on atomic types
-  !> @param [in]  ityp      atom type
-  !> @param [in]  f         list of atomic forces
-  !> @param [in]  ounit     output fortran unit
   !
   USE UNITS, only : DP, unconvert_force, B2A, parser, lower
   USE artn_params, only : engine_units
@@ -297,18 +300,20 @@ SUBROUTINE write_xyz( lat, nat, tau, order, atm, ityp, f, ounit, ener )
 END SUBROUTINE write_xyz
 
 
+! .......................................................................................... XYZ
+!> @brief
+!!   read the position in xyz format
+!
+!> @param [out]  lat       lattice parameters in alat units
+!> @param [in]   nat       number of atoms
+!> @param [out]  tau       atomic positions
+!> @param [in]   order     atom type
+!> @param [in]   atm       contains information on atomic types
+!> @param [in]   ityp      atom type
+!> @param [out]  force     list of atomic forces
+!> @param [in]   fname     output file name
+!
 SUBROUTINE read_xyz( lat, nat, tau, order, atm, ityp, force, fname )
-  !> @brief
-  !!   read the position in xyz format
-  !
-  !> @param [out]  lat       lattice parameters in alat units
-  !> @param [in]   nat       number of atoms
-  !> @param [out]  tau       atomic positions
-  !> @param [in]   order     atom type
-  !> @param [in]   atm       contains information on atomic types
-  !> @param [in]   ityp      atom type
-  !> @param [out]  force     list of atomic forces
-  !> @param [in]   fname     output file name
   !
   USE UNITS, only : DP, convert_force
   implicit none

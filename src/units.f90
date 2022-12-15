@@ -6,17 +6,23 @@
 !> @brief 
 !!   UNITS module contains all the tool to reconize the Engine and its units
 !!   to convert the energy/force/length/time in atomic units
-!!   Atomic Units (au) in plugin-ARTn is the Rydberg-borh-aut
+!!   Atomic Units (au) in plugin-ARTn is the Rydberg-bohr-aut
+!
+!> @todo
+!!   Change the unit philosophy: In principle ARTn could work whitout 
+!!   to convert the quantities. 
+!
 Module units
   !
   PRIVATE
 
-  PUBLIC :: DP, PI, AMU_RY, Mass, B2A,  make_units,   &
+  PUBLIC :: DP, PI, Mass, B2A,  make_units,   &
             convert_length, unconvert_length,   &
             convert_force, unconvert_force,     &
             convert_hessian, unconvert_hessian, &
             convert_energy, unconvert_energy,   &
             convert_time, unconvert_time, strg_units, unit_char
+
   PUBLIC :: parser, lower, read_line
              
   
@@ -41,7 +47,7 @@ Module units
   REAL(DP), PARAMETER :: RY2KJ            = 2.17987197E-21_DP      !< @brief Ry to kJoules conversion 
   REAL(DP), PARAMETER :: RY2KCALPMOL      = RY2KCAL*NA             !< @brief Ry to kcal/mole conversion 
   REAL(DP), PARAMETER :: RY2KJPMOL        = RY2KJ*NA               !< @brief Ry to kJoules per mole conversion 
-  REAL(DP), PARAMETER :: B2A              = 0.529177210903_DP      !< @brief bohr to angstrom conversion
+  REAL(DP), PARAMETER :: B2A              = 0.529177210903_DP      !< @brief bohr to angstrom conversion (Used for QE engine)
   REAL(DP), PARAMETER :: AMU_RY2          = 911.44424310865645_DP  !< @brief calculated from QE using DP
   REAL(DP), PARAMETER :: ps2aut           = 41341.374575751 / 2.   !< @brief picosecond to atomic unit of time
   REAL(DP), PARAMETER :: aut2s            = 4.8278E-17_DP          !< @brief atomic units of times to second conversion (Ry atomic unit)
@@ -55,23 +61,23 @@ Module units
   REAL(DP), PARAMETER :: AU_FS            = AU_SEC * 1.0E+15_DP               !< @brief Atomic unit of time to femtosecond
 
 
-  !> Units Character
+  !! Units Character
   character(*), parameter :: AA = char(197)    !< @brief  Angstrom (ANSI code)
   !character(*), parameter :: to2 = char(178)  ! exponent 2
   character(*), parameter :: to2 = "**2"       !< @brief exponent 2
 
   character(:), allocatable :: cL, cE
 
-  !> Units convertor
-  CHARACTER(LEN=256) :: strg_units
+  !! Units convertor
+  CHARACTER(LEN=256) :: strg_units             !< @brief String containing the unit of the system with the output format 
+  REAL(DP) :: Mass                             !< @brief Mass in Rydberg to buid the force - ARTn is in Rydberg (QE)
   REAL(DP) :: E2au, au2E, L2au, au2L, T2au, au2T, F2au, au2F, H2au, au2H
-  REAL(DP) :: Mass
 
  contains
 
   !......................................................................................
+  !> @brief  Convert an Array of Capital letter to lower case letter
   function lower( s1 )result( s2 )
-    !> @brief  Convert an Array of Capital letter to lower case letter
     !
     !> @param[in]  s1   input string, contain some capital letter
     !! @return     s2   string with only lower case
@@ -89,11 +95,12 @@ Module units
     end do
   end function lower
 
+
   !................................................................................
+  !> @brief 
+  !!   Parse the instrg thank to the Field Separator FS and return 
+  !!   the list of string and the number of element in the list
   integer function parser(instrg, FS, args )result( nargs )
-    !> @brief 
-    !!   Parse the instrg thank to the Field Separator FS and return 
-    !!   the list of string and the number of element in the list
     !
     !> @todo 
     !!   HAVE TO BE ADAPTED FOR MULTIPLE FS
@@ -160,6 +167,7 @@ Module units
   !> @param[in]                 file descriptor
   !! @param[out]  line          what it reads
   !! @param[out]  end_of_file   logical to signal the EOF
+  !
   subroutine read_line(fd, line, end_of_file)
     implicit none
     integer, intent(in) :: fd
@@ -422,19 +430,19 @@ Module units
   !......................................................................................
   ! FORCE
 
+  !> @brief Convert the engine force to a.u.
+  !> @param[in] f   force in engine unit
+  !> @return a force in atomic units a.u.
   elemental pure function convert_force( f )result( fau )
-    !> @brief Convert the engine force to a.u.
-    !> @param [in] f   force in engine unit
-    !> @return a force in atomic units a.u.
     real(DP), intent( in ) :: f
     real(DP) :: fau
     fau = f * F2au
   end function
 
-  elemental pure function unconvert_force( fau )result( f )
     !> @brief Convert the force in a.u. in engine units
     !> @param [in] fau   force in a.u.
     !> @return a force in engine units
+  elemental pure function unconvert_force( fau )result( f )
     real(DP), intent( in ) :: fau
     real(DP) :: f
     f = fau * au2F
@@ -445,19 +453,19 @@ Module units
   !......................................................................................
   ! HESSIAN
 
-  elemental pure function convert_hessian( h )result( hau )
     !> @brief Convert the engine hessian to a.u.
     !> @param [in] h   hessian in engine unit
     !> @return a hessain in atomic units a.u.
+  elemental pure function convert_hessian( h )result( hau )
     real(DP), intent( in ) :: h
     real(DP) :: hau
     hau = h * H2au
   end function
 
-  elemental pure function unconvert_hessian( hau )result( h )
     !> @brief Convert the force in a.u. in engine units
     !> @param [in] hau   force in a.u.
     !> @return a force in engine units
+  elemental pure function unconvert_hessian( hau )result( h )
     real(DP), intent( in ) :: hau
     real(DP) :: h
     h = hau * au2H
@@ -468,19 +476,19 @@ Module units
   !......................................................................................
   ! LENGTH
 
-  elemental pure function convert_length( p )result( pau )
     !> @brief Convert the engine length to a.u.
     !> @param [in] p   position in engine unit
     !> @return a position in a.u.
+  elemental pure function convert_length( p )result( pau )
     real(DP), intent( in ) :: p
     real(DP) :: pau
     pau = p * L2au
   end function convert_length
 
-  elemental pure function unconvert_length( pau )result( p )
     !> @brief Convert the a.u. length to engine unit
     !> @param [in] pau   position in a.u.
     !> @return  position in engine units
+  elemental pure function unconvert_length( pau )result( p )
     real(DP), intent( in ) :: pau
     real(DP) :: p
     p = pau * au2L
@@ -491,19 +499,19 @@ Module units
   !......................................................................................
   ! ENERGY
   
-  elemental pure function convert_energy( e )result( eau )
     !> @brief Convert the engine energy to a.u.
     !> @param [in] e   enegy in engine unit
     !> @return an energy in a.u.
+  elemental pure function convert_energy( e )result( eau )
     real(DP), intent( in ) :: e
     real(DP) :: eau
     eau = e * E2au
   end function convert_energy
 
-  elemental pure function unconvert_energy( eau )result( e )
     !> @brief Convert the a.u. energy to engine unit
     !> @param [in] eau   energy in a.u.
     !> @return an energy in engine units
+  elemental pure function unconvert_energy( eau )result( e )
     real(DP), intent( in ) :: eau
     real(DP) :: e 
     e = eau * au2E
@@ -514,19 +522,19 @@ Module units
   !......................................................................................
   ! TIME
 
-  elemental pure function convert_time( t )result( aut )
     !> @brief Convert the engine time to a.u.
     !> @param [in] t   time in engine unit
     !> @return a time in a.u.
+  elemental pure function convert_time( t )result( aut )
     real(DP), intent( in ) :: t
     real(DP) :: aut
     aut = t * T2au
   end function convert_time
 
-  elemental pure function unconvert_time( aut )result( t )
     !> @brief Convert the a.u. TIME to engine unit
     !> @param [in] aut   time in a.u.
     !> @return a time in engine units
+  elemental pure function unconvert_time( aut )result( t )
     real(DP), intent( in ) :: aut
     real(DP) :: t
     t = aut * au2T
@@ -535,10 +543,10 @@ Module units
 
   !......................................................................................
   ! Return UNIT
+  !> @brief Return the unit in character of the quantity received 
+  !> @param[in] quantity   (length, energy, force or hessian)
+  !> @return correct unit in character
   function unit_char( quantity )result( uchar )
-    !> @brief Give the unit in character
-    !> @param[in] quantity   which quantity you ask (length, energy, force or hessian)
-    !> @return correct unit in character
     character(*), intent(in) :: quantity
     character(:), allocatable :: uchar
 

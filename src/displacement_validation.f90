@@ -15,7 +15,6 @@ SUBROUTINE displacement_validation( atom_const, push, lvalid)
   !> @param [inout]   lvalid	  Flag to know if the random displacement correspond to the constrain
   !
   USE units, only : DP, PI
-  !USE artn_params, ONLY : DP, PI 
   !
   IMPLICIT NONE
   !INTEGER, INTENT(IN) :: atom_id
