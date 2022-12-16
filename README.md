@@ -1,9 +1,9 @@
 # plugin-ARTn
 
 This is a working repository of the current version of the plugin-ARTn; currently it can be used with Quantum ESPRESSO and LAMMPS.
-This code has been developped in collaboration by Matic Poberznic, Miha Gunde, Nicolas Salles and Antoine Jay.
+This code has been developed in collaboration by Matic Poberznic, Miha Gunde, Nicolas Salles and Antoine Jay.
 
-The repository is developped on [GiLab](https://gitlab.com/mammasmias/artn-plugin) and a copy of the `master` branch is on [GitHub](https://github.com/mammasmias/ARTn-Plugin). Please put your issue on [GiLab](https://gitlab.com/mammasmias/artn-plugin).
+The repository is developed on [GiLab](https://gitlab.com/mammasmias/artn-plugin) and a copy of the `master` branch is on [GitHub](https://github.com/mammasmias/ARTn-Plugin). Please put your issue on [GiLab](https://gitlab.com/mammasmias/artn-plugin).
 
 <img src="./.extra/ARTn_workflow-1.png" alt="ARTn-Plugin Work Flow" width="400" size="auto" />
 
@@ -21,20 +21,19 @@ The repository is developped on [GiLab](https://gitlab.com/mammasmias/artn-plugi
 
 ## Interface with engine
 
-[QE Interface](./Files_QE/README.md)
+Two interfaces has been developed for the moment:
 
-[LAMMPS-old Interface](./Files_LAMMPS/README-old.md)
-
-[LAMMPS-plugin interface](./Files_LAMMPS/README.md)
+- One for **Quantum ESPRESSO**. To use it read the [manual](./Files_QE/README.md).
+- One for **LAMMPS**. Two version exist, one using the class [Plugin](https://docs.lammps.org/plugin.html) of LAMMPS, for this version please read the [manual](./Files_LAMMPS/README.md); The second one does not use the class plugin of LAMMPS because this class exist only since 2022. If you use a version older than 2022 please read the [manual](./Files_LAMMPS/README-old.md)
 
 ## Example
 
-The list of [example](./examples/README.md)
+The list of [example](./examples/README.md) using the both interfaces.
 
 
 ## Issues, bugs, requests
 
-Use the [issue](https://gitlab.com/mammasmias/artn-plugin/-/issues) traker to report the bugs.
+Use the [issue](https://gitlab.com/mammasmias/artn-plugin/-/issues) tracker to report the bugs.
 
 ## License
 
