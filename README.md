@@ -1,9 +1,10 @@
 # plugin-ARTn
 
 This is a working repository of the current version of the plugin-ARTn; currently it can be used with Quantum ESPRESSO and LAMMPS.
-This code has been developed in collaboration by Matic Poberznic, Miha Gunde, Nicolas Salles and Antoine Jay.
+This code has been developed in collaboration by Matic Poberznik, Miha Gunde, Nicolas Salles and Antoine Jay.
 
-The repository is developed on [GiLab](https://gitlab.com/mammasmias/artn-plugin) and a copy of the `master` branch is on [GitHub](https://github.com/mammasmias/ARTn-Plugin). Please put your issue on [GiLab](https://gitlab.com/mammasmias/artn-plugin).
+The repository is developed on [GitLab](https://gitlab.com/mammasmias/artn-plugin) and a copy of the `master` branch is on [GitHub](https://github.com/mammasmias/ARTn-Plugin).
+Please post your issue(s) on [GitLab](https://gitlab.com/mammasmias/artn-plugin).
 
 <img src="./.extra/ARTn_workflow-1.png" alt="ARTn-Plugin Work Flow" width="400" size="auto" />
 
@@ -11,13 +12,16 @@ The repository is developed on [GiLab](https://gitlab.com/mammasmias/artn-plugin
 ## Contains:
 
 
-- `examples/`: Contains many example from molecules, to surfaces
-- `Files_LAMMPS/`: Contains the fix of lammps to interface LAMMPS/ARTn
-- `Files_QE/`: Contains the file plugin_ext_forces.f90 which call the ARTn library
-- `README.md`: The file you are reading
-- `src/`: ARTn plugin subroutines 
-- `Makefile`: Command to patch the engine and compile the library. Use the variables defined in file `environment_variables`
-- `environment_variables`: User costum file in which it should be define the fortran compiler to compile the library in the variable `F90` and the path where the engine can be found in variables `LAMMPS+PATH` or `QE_PATH`
+- `examples/`: Contains many examples, from molecules to surfaces;
+- `Files_LAMMPS/`: Contains the lammps fix, for the LAMMPS/ARTn interface;
+- `Files_QE/`: Contains the file `plugin_ext_forces.f90`, for the QE/ARTn interface;
+- `README.md`: This file;
+- `src/`: ARTn plugin subroutines;
+- `Makefile`: Compilation commands, uses the environment variables defined in `environment_variables`;
+- `environment_variables`: custom file defining:
+    - compilers `F90`, `CXX`/`CC`;
+    - the paths to ARTn (current directory), BLAS and FORTRAN libraries, and chosen engine(s) QE/LAMMPS;
+    - `PARA_PREFIX` prefix for launching examples via provided run scripts.
 
 ## Interface with engine
 
@@ -26,9 +30,9 @@ Two interfaces has been developed for the moment:
 - One for **Quantum ESPRESSO**. To use it read the [manual](./Files_QE/README.md).
 - One for **LAMMPS**. Two version exist, one using the class [Plugin](https://docs.lammps.org/plugin.html) of LAMMPS, for this version please read the [manual](./Files_LAMMPS/README.md); The second one does not use the class plugin of LAMMPS because this class exist only since 2022. If you use a version older than 2022 please read the [manual](./Files_LAMMPS/README-old.md)
 
-## Example
+## Examples
 
-The list of [example](./examples/README.md) using the both interfaces.
+The list of [examples](./examples/README.md) using both interfaces.
 
 
 ## Issues, bugs, requests
