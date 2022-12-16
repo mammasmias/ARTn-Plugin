@@ -35,6 +35,10 @@ Two interfaces has been developed for the moment:
 The list of [examples](./examples/README.md) using both interfaces.
 
 
+## Using ARTn
+
+To customise the input of ARTn please read the [manual](./MANUAL.md)
+
 ## Issues, bugs, requests
 
 Use the [issue](https://gitlab.com/mammasmias/artn-plugin/-/issues) tracker to report the bugs.
