@@ -12,6 +12,8 @@
 !!   Change the unit philosophy: In principle ARTn could work whitout 
 !!   to convert the quantities. 
 !
+!> @ingroup ARTn
+!
 Module units
   !
   PRIVATE

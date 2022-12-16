@@ -45,25 +45,28 @@ end SUBROUTINE nperp_limitation_step
 
 
 !...........................................................................................
-!> @author
+!> @authors
 !!   Nicolas Salles
 !!   Matic Poberznik
 !!   Miha Gunde
-
+!
+!> @brief manage the max perp-relax iteration 
+!
 !> @par Purpose
-!  ============
+!!  ============
+!>
 !> @verbatim
-!>   the nperp are stored in array nperp_limitation() with in 
-!!   first element the value of nperp if exist and in last the 
-!!   nperp_end. The last element is repeated until the end of research
-!!   Values: 
-!!    -2 nothing
-!!    -1 no limitation
-!!    {0,1,...} nperp limit
+!> the nperp are stored in array nperp_limitation() with in 
+!> first element the value of nperp if exist and in last the 
+!> nperp_end. The last element is repeated until the end of research
+!> Values: 
+!>  -2 nothing
+!>  -1 no limitation
+!>  {0,1,...} nperp limit
 !> @endverbatim
 !
 !> @param[in] flag true/false to use nperp_limitation
-
+!
 SUBROUTINE nperp_limitation_init( flag )
   ! 
   use artn_params, only: nperp_limitation, nperp, &

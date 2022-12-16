@@ -1,11 +1,14 @@
 !
 !! Group definition for all the code
 !
-!> @defgroup WorkFlow_1 Work Flow level 1
-!> Main routine of the ARTn work flow 
-!> @{
-!>   @defgroup WorkFlow_2 Work Flow level 2
-!> @}
+!> @defgroup ARTn ARTn algorithm
+!>    Main routine of the ARTn algorithm
+!>
+!> @defgroup Control Routine Control
+!>    Routine allows to control the work flow
+!> 
+!> @defgroup Block ARTn block 
+!>    Computation block 
 
 
 
@@ -32,6 +35,8 @@
 !!   List of routine out-module:
 !!   - get_iperp(), get_perp(), get_relx()
 !!   - make_filename()
+
+!> @ingroup ARTn
 !
 MODULE artn_params
   !

@@ -43,7 +43,7 @@ end subroutine random_displacement
 !!   Nicolas Salles
 
 !> @brief 
-!!   provide a randim displacement to the atom's ID neighbors relative to the 
+!!   provide a random displacement to the atom's ID neighbors relative to the 
 !!   threshold distance Rcut
 !
 !> @param[in]    idum    seed 
@@ -94,23 +94,34 @@ end subroutine neigh_random_displacement
 
 
 !.....................................................................................................
-!> @author
+!> @authors
 !!   Matic Poberznik
 !!   Miha Gunde
 !!   Nicolas Salles
 !
-!> @brief
-!!   Read the configuration from a file formatted xyz but as we want to customise 
-!!   the push the position are the push, no position means random displacement
-!!   Can list only a part of particle in the system.
+!> @brief Read field direction from file
+!
+!> @par Purpose
+!  ============
+!
+!> @verbatim
+!>   Read the configuration from a file formatted xyz but as we want to customise 
+!>   the push the position are the push, no position means random displacement
+!>   Can list only a part of particle in the system.
+!> @endverbatim
+!
+!> @ingroup Control
 !
 !> @param[in]     nat       number of atoms  
 !> @param[in]     idum      seed for random number generator
 !> @param[out]    vec       initial push
 !> @param[in]     filename  input file name
 !
+!> @snippet read_guess.f90 read_guess
+!>
 SUBROUTINE READ_GUESS( idum, nat, vec, filename )
   !
+  !> [read_guess]
   use units,       only : DP, unconvert_length, read_line, parser
   use artn_params, only : warning, iunartout, dist_thr, push_ids, push_step_size
   ! use tools
@@ -160,7 +171,7 @@ SUBROUTINE READ_GUESS( idum, nat, vec, filename )
 
      select case( nwords )
 
-       !> Only the atom index
+       !! Only the atom index
        case( 1 )
          IF( is_numeric(words(1)) )read(words(1),*) idx
          push_ids(i) = idx
@@ -169,7 +180,7 @@ SUBROUTINE READ_GUESS( idum, nat, vec, filename )
          !print*, idx, "random disp:", vec(:,idx)
 
 
-       !> Atom index and push direction constrain
+       !! Atom index and push direction constrain
        case( 2: )
          IF( is_numeric(words(1)) )then
            read(words(1),*) idx
@@ -182,13 +193,13 @@ SUBROUTINE READ_GUESS( idum, nat, vec, filename )
          do j = 2,4
             IF( is_numeric(trim(words(j))) )then
               read(words(j),*) vec(j-1,idx)
-            !ELSEIF( words(j) == "*" )THEN         !> Idea for more flexibility 
+            !ELSEIF( words(j) == "*" )THEN         !! Idea for more flexibility 
             !  mask(j-1,idx)
             ELSE
               call warning( iunartout, 'READ_GUESS', 'Displacement propose are not valid', words )
             ENDIF
          enddo
-         !> @WARNING:: Maybe put a test the norm of the user vector to compare to the 
+         !!> @warning :: Maybe put a test the norm of the user vector to compare to the 
          !!   push_step_size parameters. 
          !print*, idx, "constrain disp:", vec(:,idx)
 
@@ -206,6 +217,7 @@ SUBROUTINE READ_GUESS( idum, nat, vec, filename )
 
 
   CLOSE( u0 )
+  !> [read_guess]
 
 CONTAINS
   !......................................................

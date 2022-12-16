@@ -18,7 +18,7 @@
 !> @param [in]    disp        Kind of actual displacement 
 !> @param [in]    displ_vec   Displacement field (unit lemgth/force/hessian ) 
 !
-!> @ingroup WorkFlow_1
+!> @ingroup ARTn
 !> @snippet move_mode.f90 move_mode
 SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, alpha_init, dt_init, disp, displ_vec )
 

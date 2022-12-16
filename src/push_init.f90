@@ -1,4 +1,4 @@
-!> @author
+!> @authors
 !!   Matic Poberznik
 !!   Miha Gunde
 !!   Nicolas Salles
@@ -8,12 +8,17 @@
 !
 !> @par Purpose
 !  ============
+!>
+!> @verbatim
 !>   options are specified by mode: \n 
 !!           (1) 'all' generates a push on all atoms \n
 !!           (2) 'list' generates a push on a list of atoms \n
 !!           (3) 'rad' generates a push on a list of atoms and all atoms within dist_thr \n
 !!   the user should supply: number and list of atoms to push; and add_constraints on these atoms
+!> @endverbatim
 !
+!> @ingroup Control
+!>
 !> @param [in]    nat             Size of list: number of atoms 
 !> @param [in]    idum            looks like it is the seed for random gen
 !> @param [in]    push_ids        List of atoms on which apply a push
@@ -25,9 +30,11 @@
 !> @param [inout] add_const       list of atomic constrain
 !> @param [in]    mode            Actual kind displacement 
 !> @param [out]   push            list of push applied on the atoms (ORDERED)
-!
+!>
+!> @snippet push_init.f90 push_init
 SUBROUTINE push_init( nat, tau, order, lat, idum, push_ids, dist_thr, add_const, step_size, push, mode)
   !
+  !> [push_init]
   USE units, only : DP
   USE artn_params, ONLY : ran3, iunartout, warning, force_step, random_array
   IMPLICIT none
@@ -197,6 +204,7 @@ SUBROUTINE push_init( nat, tau, order, lat, idum, push_ids, dist_thr, add_const,
   push = step_size * push
 
 
+  !> [push_init]
 END SUBROUTINE push_init
 
 

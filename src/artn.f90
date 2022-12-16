@@ -5,9 +5,9 @@
 !! @author Nicolas Salles
 !
 !> @par Purpose
-!  ============
+!!  ============
 !>   Modifies the input force to perform the ARTn algorithm
-!
+!!
 !> @param[in]     force       force calculated by the engine
 !> @param[inout]  etot_eng    total energy of the engine
 !> @param[in]     nat         number of atoms
@@ -25,7 +25,7 @@
 !!  artn_params for variables and counters that need to be stored in each step
 !!  DEFINED IN: artn_params_mod.f90
 !>
-!> @ingroup WorkFlow_1 
+!> @ingroup ARTn 
 !> @snippet artn.f90 artn
 SUBROUTINE artn( force, etot_eng, nat, ityp, atm, tau, order, at, if_pos, disp, displ_vec, lconv )
 

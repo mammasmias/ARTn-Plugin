@@ -9,9 +9,9 @@
 !> @par Purpose
 !  ============ 
 !>   Return a smooth interpolation v2 betwwen 2 field v1 and v2:
-!!   - v2 is a linear combination between v1 and v2
-!!   - v2= v1 when ismooth = 0       -> done in init
-!!   - v2= V2 when ismooth = nsmooth -> done in eigen 
+!>   - v2 is a linear combination between v1 and v2
+!>   - v2= v1 when ismooth = 0       -> done in init
+!>   - v2= V2 when ismooth = nsmooth -> done in eigen 
 !
 !> @param[in,out]  ismooth  actual smooth step 
 !> @param[in]      nsmooth  max smooth step 
@@ -19,9 +19,13 @@
 !> @param[in]      v0       the actual orientation
 !> @param[in,out]  v1       the direction we come
 !> @param[in]      v2       the direction we go
-!
+!!
+!> @ingroup Control
+!!
+!> @snippet smooth_interpol.f90 smooth
 SUBROUTINE smooth_interpol( ismooth, nsmooth, nat, v0, v1, v2 )
   !
+!> [smooth]
   USE units,       ONLY : DP
   USE artn_params, ONLY : iunartout,  dot_field, filout, verbose
   IMPLICIT NONE
@@ -68,6 +72,7 @@ SUBROUTINE smooth_interpol( ismooth, nsmooth, nat, v0, v1, v2 )
            "|> Smooth interpolation", ismooth,"/",nsmooth, "factor=",smoothing_factor
     CLOSE(iunartout)
   ENDIF
+!> [smooth]
   !
 END SUBROUTINE smooth_interpol
 

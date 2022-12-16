@@ -10,8 +10,13 @@
 !> @param[in]      nat     number of atom
 !! @param[inout]   pos     atomic position
 !
+!> @ingroup Control
+!
+!> @snippet nextmin.f90 nextmin
+!
 SUBROUTINE move_nextmin( nat, pos )
   !
+!> [nextmin]
   USE UNITS, only : DP
   USE artn_params, only : tau_nextmin, etot_init, etot_final
   implicit none
@@ -36,6 +41,7 @@ SUBROUTINE move_nextmin( nat, pos )
     write(*,'(5x,"*** ARTn:: Next minimum loaded ")')
 
   endif
+!> [nextmin]
 
 END SUBROUTINE move_nextmin
 
@@ -51,8 +57,12 @@ END SUBROUTINE move_nextmin
 !
 !> @param[in]      nat     number of atom
 !! @param[inout]   pos     atomic position
-!
+!!
+!> @ingroup Control
+!!
+!> @snippet nextmin.f90 nextmin
 SUBROUTINE save_min( nat, pos )
+!> [nextmin]
   USE UNITS, only : DP, unconvert_length
   USE artn_params, only : tau_init, lat, tau_nextmin
   implicit none
@@ -94,6 +104,7 @@ SUBROUTINE save_min( nat, pos )
     write(*,*) " *** ARTn:: The minimum found is the initial minimum "
 
   endif
+!> [nextmin]
 
 END SUBROUTINE save_min
 

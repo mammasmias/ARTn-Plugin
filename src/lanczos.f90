@@ -23,10 +23,15 @@
 !> @param [in,out]   lowest_eigval   Lowest eigenvalue obtained by lanczos algo
 !> @param [in,out]   lowest_eigvec   Lowest eigenvector obtained by lanczos algo
 !> @param [out]     displ_vec       The displacement to perform
-!
+!!
+!> @ingroup Control Block
+!!
+!> @snippet lanczos.f90 lanczos
+!!
 SUBROUTINE lanczos( nat, v_in, pushdir, force, &
      ilanc, nlanc, lowest_eigval, lowest_eigvec, displ_vec )
   !
+!> [lanczos]
   USE artn_params, ONLY: DP, Vmat, H, force_old, lanczos_disp, lanczos_eval_conv_thr, &
                          lanczos_min_size
   USE units,       ONLY: unconvert_length, unconvert_hessian
@@ -296,5 +301,6 @@ SUBROUTINE lanczos( nat, v_in, pushdir, force, &
   displ_vec(:,:) = v1(:,:)*lanczos_disp
   !
   DEALLOCATE( q, v1 )
+!> [lanczos]
   !
 END SUBROUTINE lanczos
