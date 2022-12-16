@@ -1,8 +1,8 @@
 # Examples
 
-here the list of official example of the ARTn-plugin (pARTn) interfaced with Quantum ESPRESSO and LAMMPS
+here the list of official example of the ARTn-plugin (pARTn) interfaced with [Quantum ESPRESSO](#Quantum ESPRESSO) and [LAMMPS](#LAMMPS)
 
-## Qauntum ESPRESSO
+## Quantum ESPRESSO
 
 - **Al-vacancy.QE.d**:
 - **Alad.Al100.QE.d**

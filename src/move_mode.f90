@@ -1,8 +1,7 @@
-
 !> @author Matic Poberznik
 !! @author Miha Gunde
 !! @author Nicolas Salles
-
+!
 !> @brief
 !!   translate specified move to appropriate force and set FIRE parameters accordingly  
 !
@@ -18,9 +17,12 @@
 !> @param [inout] nsteppos    ??
 !> @param [in]    disp        Kind of actual displacement 
 !> @param [in]    displ_vec   Displacement field (unit lemgth/force/hessian ) 
-
+!
+!> @ingroup WorkFlow_1
+!> @snippet move_mode.f90 move_mode
 SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, alpha_init, dt_init, disp, displ_vec )
-  !
+
+!> [move_mode]
   USE artn_params, ONLY:  lbasin, iperp, irelax, push, &
                           eigenvec, MOVE , &
                           prev_disp, iunartout, filout
@@ -97,11 +99,11 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
         ! subtract the components that are parallel
         IF( lbasin ) THEN
           tmp0     = ddot( 3*nat, vel(:,:), 1, push(:,order(:)), 1 )
-          tmp1     = ddot( 3*nat, push(:,:), 1, push(:,:), 1 )          !> Don't need to be ordered
+          tmp1     = ddot( 3*nat, push(:,:), 1, push(:,:), 1 )          !! Don't need to be ordered
           vel(:,:) = vel(:,:) - tmp0 / tmp1 * push(:,order(:)) 
         ELSE
           tmp0     = ddot( 3*nat, vel(:,:)     , 1, eigenvec(:,order(:)), 1 )
-          tmp1     = ddot( 3*nat, eigenvec(:,:), 1, eigenvec(:,:), 1 )  !> Don't need to be ordered
+          tmp1     = ddot( 3*nat, eigenvec(:,:), 1, eigenvec(:,:), 1 )  !! Don't need to be ordered
           vel(:,:) = vel(:,:) - tmp0 / tmp1 * eigenvec(:,order(:)) 
         ENDIF
         !  
@@ -139,6 +141,7 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
   force = unconvert_force( force )
   
 
+!> [move_mode]
 END SUBROUTINE move_mode
 
 

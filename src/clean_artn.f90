@@ -7,8 +7,11 @@
 !> @brief
 !!   Clean and end the ARTn research to be ready for another or to stop
 !
+!> @ingroup WorkFlow_1
+!> @snippet clean_artn.f90  clean_artn
 SUBROUTINE clean_artn()
   !
+!> [clean_artn]
   use units,       only : DP
   use artn_params, only : lrelax, linit, lbasin, lperp,                 &
            llanczos, leigen, lpush_over, lbackward, lend,               &
@@ -86,6 +89,7 @@ SUBROUTINE clean_artn()
   ENDIF
 
 END SUBROUTINE clean_artn
+!> [clean_artn]
 
 
 

@@ -1,4 +1,14 @@
 !
+!! Group definition for all the code
+!
+!> @defgroup WorkFlow_1 Work Flow level 1
+!> Main routine of the ARTn work flow 
+!> @{
+!>   @defgroup WorkFlow_2 Work Flow level 2
+!> @}
+
+
+
 !> @author Matic Poberznik
 !! @author Miha Gunde
 !! @author Nicolas Salles

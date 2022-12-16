@@ -269,7 +269,7 @@ ALIASES                =
 # members will be omitted, etc.
 # The default value is: NO.
 
-OPTIMIZE_OUTPUT_FOR_C  = NO
+OPTIMIZE_OUTPUT_FOR_C  = YES
 
 # Set the OPTIMIZE_OUTPUT_JAVA tag to YES if your project consists of Java or
 # Python sources only. Doxygen will then generate output that is more tailored
@@ -321,7 +321,10 @@ OPTIMIZE_OUTPUT_SLICE  = NO
 # Note see also the list of default file extension mappings.
 
 EXTENSION_MAPPING      = f=FortranFixed \
-                         f90=FortranFree
+                         f90=FortranFree \
+                         h=C++ \
+                         cpp=C++ \
+                         md=md
 
 # If the MARKDOWN_SUPPORT tag is enabled then doxygen pre-processes all comments
 # according to the Markdown format, which allows for more readable
@@ -997,7 +1000,7 @@ EXCLUDE_SYMBOLS        =
 # that contain example code fragments that are included (see the \include
 # command).
 
-EXAMPLE_PATH           = ../
+EXAMPLE_PATH           = ../Files_QE ../Files_LAMMPS ./
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the
 # EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp and
