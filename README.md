@@ -5,6 +5,10 @@ This code has been developped in collaboration by Matic Poberznic, Miha Gunde, N
 
 The repository is developped on [GiLab](https://gitlab.com/mammasmias/artn-plugin) and a copy of the `master` branch is on [GitHub](https://github.com/mammasmias/ARTn-Plugin). Please put your issue on [GiLab](https://gitlab.com/mammasmias/artn-plugin).
 
+<img src="./.extra/ARTn_workflow-1.png" alt="ARTn-Plugin Work Flow" style="zoom:25%;" />
+
+
+
 
 ## Contains:
 
@@ -92,7 +96,7 @@ So first step is to compile LAMMPS in *"shared library"* mode in mpi or serial.
 
 ```bash
 $ make mode=shared mpi
-``` 
+```
 - **In the plugin-ARTn repository**:
 Put the correct path in variable `LAMMPS_PATH` in file `environment_variables` as well as the fortran compiler use to compile library libartn.a in variable  `F90`.
 Therefore in the variable `CXX` put the sample compiler you used to compile LAMMPS.
