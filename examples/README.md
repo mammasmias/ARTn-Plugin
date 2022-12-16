@@ -17,17 +17,11 @@ here the list of official example of the ARTn-plugin (pARTn) interfaced with Qua
 ## LAMMPS
 
 - **a-Si.LAMMPS.d**
-
 - **Al-vac-EAM.LAMMPS.d**
-
 - **LJ.SaddleRefine.LAMMPS.d**
-
 - **Oxydation.ReaxFF.LAMMPS.d**
-
 - **Pt111.LAMMPS.d**
-
 - **Si-vac.LAMMPS.d**
-
 - **Si-vac.local.LAMMPS.d**
 
   
