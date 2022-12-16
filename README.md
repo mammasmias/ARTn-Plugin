@@ -5,7 +5,7 @@ This code has been developped in collaboration by Matic Poberznic, Miha Gunde, N
 
 The repository is developped on [GiLab](https://gitlab.com/mammasmias/artn-plugin) and a copy of the `master` branch is on [GitHub](https://github.com/mammasmias/ARTn-Plugin). Please put your issue on [GiLab](https://gitlab.com/mammasmias/artn-plugin).
 
-<img src="/home/mammasmias-1/Nico/Project_pARTn/artn-plugin/.extra/ARTn_workflow-1.png" alt="ARTn-Plugin Work Flow" width="400" size="auto" />
+<img src="./.extra/ARTn_workflow-1.png" alt="ARTn-Plugin Work Flow" width="400" size="auto" />
 
 
 ## Contains:
