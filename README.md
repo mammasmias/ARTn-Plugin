@@ -11,7 +11,7 @@ The repository is developped on [GiLab](https://gitlab.com/mammasmias/artn-plugi
 ## Contains:
 
 
-- `examples/`: Contains many example including `Al-vacancy.d` and `H2+H.d` 
+- `examples/`: Contains many example from molecules, to surfaces
 - `Files_LAMMPS/`: Contains the fix of lammps to interface LAMMPS/ARTn
 - `Files_QE/`: Contains the file plugin_ext_forces.f90 which call the ARTn library
 - `README.md`: The file you are reading
