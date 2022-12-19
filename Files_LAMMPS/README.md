@@ -1,11 +1,5 @@
-## LAMMPS/pARTn Interface
 
-
-
-
-
-
-### LAMMPS version after June 2022
+## Interface LAMMPS version after June 2022
 
 #### Installation/Compilation
 

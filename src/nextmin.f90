@@ -12,11 +12,11 @@
 !
 !> @ingroup Control
 !
-!> @snippet nextmin.f90 nextmin
+!> @snippet nextmin.f90 move
 !
 SUBROUTINE move_nextmin( nat, pos )
   !
-!> [nextmin]
+!> [move]
   USE UNITS, only : DP
   USE artn_params, only : tau_nextmin, etot_init, etot_final
   implicit none
@@ -41,7 +41,7 @@ SUBROUTINE move_nextmin( nat, pos )
     write(*,'(5x,"*** ARTn:: Next minimum loaded ")')
 
   endif
-!> [nextmin]
+!> [move]
 
 END SUBROUTINE move_nextmin
 
@@ -60,9 +60,9 @@ END SUBROUTINE move_nextmin
 !!
 !> @ingroup Control
 !!
-!> @snippet nextmin.f90 nextmin
+!> @snippet nextmin.f90 save
 SUBROUTINE save_min( nat, pos )
-!> [nextmin]
+!> [save]
   USE UNITS, only : DP, unconvert_length
   USE artn_params, only : tau_init, lat, tau_nextmin
   implicit none
@@ -104,7 +104,7 @@ SUBROUTINE save_min( nat, pos )
     write(*,*) " *** ARTn:: The minimum found is the initial minimum "
 
   endif
-!> [nextmin]
+!> [save]
 
 END SUBROUTINE save_min
 

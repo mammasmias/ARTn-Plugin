@@ -1,8 +1,4 @@
-## LAMMPS/pARTn Interface
-
-
-
-### LAMMPS version before June 2022
+## Interface LAMMPS version before June 2022
 
 We tested this interface only with gnu compiler. 
 

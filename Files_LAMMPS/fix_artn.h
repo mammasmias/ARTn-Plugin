@@ -25,6 +25,21 @@ FixStyle(artn,FixARTn)
 
 namespace LAMMPS_NS {
 
+/** 
+ * @authors 
+ *   Matic Poberznic,
+ *   Miha Gunde,
+ *   Nicolas Salles
+ * 
+ * @brief Class Fix/ARTn for LAMMPS 
+ * 
+ * @par Purpose
+ * ============
+ * Interface for LAMMPS to apply the ARTn algorithm 
+ * associate with the FIRE algorithm
+ * 
+ * @ingroup Interface 
+*/
 class FixARTn : public Fix {
  public:
   FixARTn(class LAMMPS *, int, char **);
@@ -36,73 +51,82 @@ class FixARTn : public Fix {
   void post_run();
 
 
+ protected:
+
   // Communication
   void Collect_Arrays( int*, double**, double**, double**, int, double**, double**, double**, int*, int* );
   void Spread_Arrays( int*, double**, double**, double**, int, double**, double**, double** );
-
-
-
-
- protected:
-
-  // Following and interaction with lammps
-  int istep, nword, natoms, nmax;
-  char **word;
-
-  // Engine atomic order
-  int *order, *order_tot;
-
-  // Constrains on atomic movement
-  int **if_pos;
-
-  // Element of type
-  char *elt;
-
-  // Store the previous force
-  int nextblank;
-  double **f_prev, **v_prev, **ftot, **xtot, **vtot;
-
-  // energy/force tolerance
-  double etol, ftol;
-
-  // Fire parameters
-  double alpha_init, alphashrink;
-  double dt_init, dtsk, dtgrow;
-  double tmax, tmin, dtmax, dtmin, dmax;
-  int fire_integrator, ntimestep_start;
-  int delaystep_start_flag;
-
-  int nsteppos, nsteppos0;   // current and defined delaystep (for the relax step)
-  double dt_curr;
-  double alpha;
-
-  class Compute *pe_compute;        // compute for potential energy
-  const char *alphab = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";  // Should disappear
-
-  // Parallelisation
-  int me, nproc;
-  int *nloc, oldnloc;
-  int *istart, *length, *nlresize;
-  double *tab_comm;
 
   // Resize routine
   void resize_total_system( int );
   void resize_local_system( int );
 
+  // Following and interaction with lammps
+  int istep,        //!< Number of time lammps call min_post_force() 
+      nword,        //!< Number of arguments  for min->modify_params()
+      natoms,       //!< Total number of atoms
+      nmax;         //!< Number of atoms and ghost
+  char **word;      //!< Array of string for min->modify_params()
+
+  // Engine atomic order
+  int *order,              //!< Array with the local order of atoms
+      *order_tot;          //!< Array with global order of atoms following the ascending order of id proc
+
+  // Constrains on atomic movement
+  int **if_pos;            //!< array of 0/1 if the atoms can move or not
+
+  // Element of type
+  char *elt;               //!< Array of Atoms Name (Chemical name)
+
+  // Store the previous force
+  int nextblank;           //!< Flag telling if the nexcall is at the same step
+  double **f_prev,         //!< 2D array store the previous forces field
+         **v_prev,         //!< 2D array store the previous velocity field
+         **ftot,           //!< 2D array of global forces over the N procs
+         **xtot,           //!< 2D array of global positions over the N procs
+         **vtot;           //!< 2D array of global velocities over the N procs
+
+  // energy/force tolerance
+  double etol,    //!< Tolerence on energies
+         ftol;    //!< Tolerence on forces
+
+  // Fire parameters
+  double alpha_init,      //!<  FIRE: \f$ \alpha_0 \f$
+         alphashrink;     //!<  FIRE: alpha reduction parameter
+  double dt_init,         //!<  FIRE: dt\f$_0\f$
+         dtsk,            //!<  FIRE: dt reduction parameter
+         dtgrow;          //!<  FIRE: dt increase parameter
+  double tmax,            //!<  FIRE: 
+         tmin, 
+         dtmax, 
+         dtmin, 
+         dmax;
+  int fire_integrator,       //!< FIRE integrator Selector 
+      ntimestep_start;       //!< Save the time step when it start
+  int delaystep_start_flag;  //!< FIRE control the parameters initialization
+
+  int nsteppos,         //!< Current delaystep (for the relax step)
+      nsteppos0;        //!< Defined delaystep (for the relax step)
+  double dt_curr;       //!< Current dt
+  double alpha;         //!< Current alpha
+
+  class Compute *pe_compute;                          //!< compute for potential energy
+  const char *alphab = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";  //!< Should disappear
+
+  // Parallelisation
+  int me,                //!< Rank of the procs
+      nproc;             //!< Number of Procs
+  int *nloc,             //!< Local number of atoms
+      oldnloc;           //!< Array to store the local number of atoms
+  int *istart,           //!< Array for the resize routines
+      *length,           //!< Array for the resize routines
+      *nlresize;         //!< Array for the resize routines
+  double *tab_comm;      //!< Array for the communication
+
+
 };
 
 }
-
-// Routines from the library pARTn
-/*
-extern "C"{
-  void artn_( double *const f, double* etot, const int nat, const int *ityp, const char *elt, double *const tau, const int *order, const double *lat, const int *if_pos, int* disp, double *disp_vec, bool* lconv );
-  void move_mode_( const int nat, const int* order, double *const f, double *const vel, double* etot, int* nsteppos, double* dt_curr, double* alpha, const double* alpha_init, const double* dt_init, int* disp, double *disp_vec );
-  int get_iperp_();
-  int get_perp_();
-  int get_relx_();
-}*/
-
 
 
 #endif

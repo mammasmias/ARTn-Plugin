@@ -9,6 +9,10 @@
 !> 
 !> @defgroup Block ARTn block 
 !>    Computation block 
+!>
+!> @defgroup Interface Routine Interface 
+!>    Interface with E/F engine
+!>    
 
 
 

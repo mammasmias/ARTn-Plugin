@@ -43,7 +43,19 @@ using namespace FixConst;
 
 
 /* ---------------------------------------------------------------------- */
-
+/**
+ * @authors 
+ *   Matic Poberznic
+ *   Miha Gunde
+ *   Nicolas Salles
+ *
+ * @brief Constructor of the Class FixARTn
+ *
+ * @param[in]   lmp        PTR, on the Class lammps
+ * @param[in]   narg       INT, number words are in arguments of the executable
+ * @param[in]   arg        CHAR, Array of string of the argument
+ *
+ */
 FixARTn::FixARTn( LAMMPS *lmp, int narg, char **arg ): Fix( lmp, narg, arg )
 {
 
@@ -87,7 +99,7 @@ FixARTn::FixARTn( LAMMPS *lmp, int narg, char **arg ): Fix( lmp, narg, arg )
   dtmax = 0.0;
   dtmin = 0.0;
 
-  fire_integrator = 0.0;
+  fire_integrator = 0;
   ntimestep_start = 0.0;
 
   delaystep_start_flag = 1;
@@ -199,6 +211,9 @@ FixARTn::FixARTn( LAMMPS *lmp, int narg, char **arg ): Fix( lmp, narg, arg )
 
 /* ---------------------------------------------------------------------- */
 
+/**
+ * @brief Destructor
+ */
 FixARTn::~FixARTn() {
 
   /* deallocate the array */
@@ -224,6 +239,9 @@ FixARTn::~FixARTn() {
 
 /* ---------------------------------------------------------------------- */
 
+/**
+ * @brief Set mask to define when this fix must be active
+ */
 int FixARTn::setmask()
 {
   int mask = 0;
@@ -236,6 +254,9 @@ int FixARTn::setmask()
 
 /* ---------------------------------------------------------------------- */
 
+/**
+ * @brief Initialize the class
+ */
 void FixARTn::init() {
 
 
@@ -272,6 +293,9 @@ void FixARTn::init() {
 
 /* ---------------------------------------------------------------------- */
 
+/**
+ * @brief Setup the class
+ */
 void FixARTn::min_setup( int vflag ) {
 
   // Call here if it is needed - To confirm
@@ -423,6 +447,9 @@ void FixARTn::min_setup( int vflag ) {
 
 /* ---------------------------------------------------------------------- */
 
+/**
+ * @brief Apply the ARTn algorithm
+ */
 void FixARTn::min_post_force( int /*vflag*/ ){
 
   /*******************************
@@ -932,6 +959,9 @@ void FixARTn::min_post_force( int /*vflag*/ ){
 
 /* ---------------------------------------------------------------------- */
 
+/**
+ * @brief Finilize ARTn algorithm (clean_artn)
+ */
 void FixARTn::post_run(){
 
   // End of the ARTn research - we reset the ARTn counters & flag
@@ -948,6 +978,31 @@ void FixARTn::post_run(){
 /* ============================================================================ COMMUNICATION */
 
 
+/**
+ * @authors 
+ *   Matic Poberznic
+ *   Miha Gunde
+ *   Nicolas Salles
+ *
+ * @brief Collect distributed arrays
+ *
+ * @par Purpose
+ * ============
+ * Collect the distributed array, position, velicity, and force, trough the N processor.
+ * Return uniq array for each quantities in order as it received
+ *
+ * @param[in]    nloc        number of element of the arrays is on the processor
+ * @param[in]    x           2D array of Position
+ * @param[in]    v           2D array of Velocity
+ * @param[in]    f           2D array of Force
+ * @param[in]    nat         Number total of element of arrays
+ * @param[out]   xtot        2D array contains the distributed Position over the N procs 
+ * @param[out]   vtot        2D array contains the distributed Velocity over the N procs
+ * @param[out]   ftot        2D array contains the distributed Forces over the N procs
+ * @param[in]    order_tot   1D array contains the order of atoms over the N procs following the rank od the procs
+ * @param[in]    typ_tot     1D array contains the type of each atoms
+ *
+ */
 void FixARTn::Collect_Arrays( int* nloc, double **x, double **v, double **f, int nat, double **xtot, double **vtot, double **ftot, int *order_tot, int *typ_tot ){
 
 
@@ -997,6 +1052,28 @@ void FixARTn::Collect_Arrays( int* nloc, double **x, double **v, double **f, int
 
 /* --------------------------------------------------------------------------------------------------------------------------------- */
 
+/**
+ * @authors 
+ *   Matic Poberznic
+ *   Miha Gunde
+ *   Nicolas Salles
+ *
+ * @brief Spread distributed arrays
+ *
+ * @par Purpose
+ * ============
+ * Redistribut/Spread the distributed array, position, velicity, and force, trough the N processor.
+ *
+ * @param[in]   nloc        INT, number of element of the arrays is on the processor
+ * @param[in]   xtot        DOUBLE, 2D array contains the distributed Position over the N procs 
+ * @param[in]   vtot        DOUBLE, 2D array contains the distributed Velocity over the N procs
+ * @param[in]   ftot        DOUBLE 2D array contains the distributed Forces over the N procs
+ * @param[in]   nat         INT, Number total of element of arrays
+ * @param[out]  x           DOUBLE, 2D array of Position
+ * @param[out]  v           DOUBLE, 2D array of Velocity
+ * @param[out]  f           DOUBLE, 2D array of Force
+ *
+ */
 void FixARTn::Spread_Arrays( int *nloc, double **xtot, double **vtot, double **ftot, int nat, double **x, double **v, double **f ){
 
   // ...Alloc temporary memory
@@ -1032,6 +1109,21 @@ void FixARTn::Spread_Arrays( int *nloc, double **xtot, double **vtot, double **f
 
 // ------------------------------------------------------------------- RESIZE total SYSTEM SIZE
 
+/**
+ * @authors 
+ *   Matic Poberznic
+ *   Miha Gunde
+ *   Nicolas Salles
+ *
+ * @brief Resize the global arrays
+ *
+ * @par Purpose
+ * ============
+ * Resize the 2D array containing the entire data of Position, Velocity and Forces
+ *
+ * @param[in]   ntot        INT, Total number of atoms in the system
+ *
+ */
 void FixARTn::resize_total_system( int ntot ){
 
 
@@ -1040,19 +1132,18 @@ void FixARTn::resize_total_system( int ntot ){
 
   int lresize(0);
   if( natoms != ntot )lresize = 1;
-  if( lresize ){
-    // Resize FTOT
+  if( lresize ){  // Resize 
+    // Deallocate arrays
     memory->destroy( ftot );
     memory->destroy( xtot );
     memory->destroy( vtot );
     memory->destroy( order_tot );
     natoms = atom->natoms;
-    //nat = natoms;
+    // Reallocate arrays
     memory->create( ftot, natoms, 3, "fix/artn:ftot");
     memory->create( xtot, natoms, 3, "fix/artn:xtot");
     memory->create( vtot, natoms, 3, "fix/artn:vtot");
     memory->create( order_tot, natoms, "fix/artn:order_tot");
-    //lresize = 0 ;
   }
 
 }
@@ -1060,6 +1151,21 @@ void FixARTn::resize_total_system( int ntot ){
 
 // ------------------------------------------------------------------- RESIZE local SYSTEM SIZE
 
+/**
+ * @authors 
+ *   Matic Poberznic
+ *   Miha Gunde
+ *   Nicolas Salles
+ *
+ * @brief Resize the local arrays
+ *
+ * @par Purpose
+ * ============
+ * Verify, resize and redistribut the data Position, Velocity and Forces through the N procs
+ *
+ * @param[in]   nlocal        INT, number of atoms on the proc
+ *
+ */
 void FixARTn::resize_local_system( int nlocal /*new nloc */ ){
 
 
