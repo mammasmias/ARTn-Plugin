@@ -1,15 +1,3 @@
-/*
-!> @author
-!!   Nicolas Salles
-!!   Matic Poberznik
-!!   Miha Gunde
-
-!> @brief
-!!   Plugin interface for the class FixARTn
-
-!> @note
-!!   Should be compiled with lammps/src/
-*/
 
 #include "lammpsplugin.h"
 #include "version.h"
@@ -34,12 +22,14 @@ using namespace LAMMPS_NS;
  * @return  pointer on Class FixARTn
  *
  * @ingroup Interface
+ * @snippet artnplugin.cpp creator 
  */
 static Fix *artn2creator( LAMMPS *lmp, int argc, char **argv ){
-
+  //! [creator]
   return new FixARTn( lmp, argc, argv );
-
+  //! [creator]
 }
+
 
 
 /**
@@ -51,15 +41,15 @@ static Fix *artn2creator( LAMMPS *lmp, int argc, char **argv ){
  * @brief 
  *   Interface between PLUGIN of lammps amd the shared library of ARTn
  * 
- * @param[in]  lmp       VOID PTR, on the Class lammps
- * @param[in]  handle    VOID PTR, on the shared library (dynamic)
- * @param[out] refunc    VOID PTR, on the constructor of FixARTn
+ * @param[in]  lmp        VOID PTR, on the Class lammps
+ * @param[in]  handle     VOID PTR, on the shared library (dynamic)
+ * @param[out] regfunc    VOID PTR, on the constructor of FixARTn
  *
  * @ingroup Interface
+ * @snippet artnplugin.cpp init 
  */
-
 extern "C" void lammpsplugin_init( void *lmp, void *handle, void *regfunc ){
-
+//! [init]
   lammpsplugin_t plugin;
   lammpsplugin_regfunc register_plugin = (lammpsplugin_regfunc) regfunc;
 
@@ -71,6 +61,6 @@ extern "C" void lammpsplugin_init( void *lmp, void *handle, void *regfunc ){
   plugin.creator.v2 = (lammpsplugin_factory2 *) &artn2creator;
   plugin.handle = handle;
   (*register_plugin)(&plugin, lmp);
-
+//! [init]
 }
 

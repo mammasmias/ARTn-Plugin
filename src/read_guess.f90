@@ -6,14 +6,14 @@
 !!   Nicolas Salles
 
 !> @brief
-!!   provide a 3 random number \in [-0.5:0.5] with norm < 0.25
+!!   provide a 3 random number \f$ \in [-0.5:0.5] \f$ with norm < 0.25
 ! 
 !> @param[in]    idum    seed for rng
 !! @param[inout] vec     output vector
 !
 !> @note
 !!   the random vector is inside a cercle of radius 0.5
-!!   because x, y, z \in [-.5:.5]
+!!   because x, y, z \f$ \in [-.5:.5] \f$
 !
 subroutine random_displacement( idum, vec )
   !
@@ -116,7 +116,7 @@ end subroutine neigh_random_displacement
 !> @param[in]     idum      seed for random number generator
 !> @param[out]    vec       initial push
 !> @param[in]     filename  input file name
-!
+!>
 !> @snippet read_guess.f90 read_guess
 !>
 SUBROUTINE READ_GUESS( idum, nat, vec, filename )
