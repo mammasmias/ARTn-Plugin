@@ -3,7 +3,10 @@
 #define ARTN_H
 
 
-// Routines from the library pARTn
+/*!
+  @file artn.h 
+  @brief Routines from the library pARTn
+*/
 
 extern "C"{
   void artn_( double *const f, double* etot, const int nat, const int *ityp, const char *elt, double *const tau, const int *order, const double *lat, const int *if_pos, int* disp, double *disp_vec, bool* lconv );
@@ -12,6 +15,7 @@ extern "C"{
   int get_iperp_();
   int get_perp_();
   int get_relx_();
+  int get_irelx_();
 }
 
 #endif

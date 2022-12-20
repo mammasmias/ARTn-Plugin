@@ -1,25 +1,43 @@
 
-
+!> @authors 
+!!   Nicolas Salles,
+!!   Matic Poberznic,
+!!   Miha Gunde
+!
+!> @brief
+!!   Clean and end the ARTn research to be ready for another or to stop
+!
+!> @ingroup ARTn
+!> @snippet clean_artn.f90  clean_artn
 SUBROUTINE clean_artn()
-  use units, only : DP
-  use artn_params, only : lrelax, linit, lbasin, lperp, &
-           llanczos, leigen, lpush_over, lbackward, lend,  &
-           iartn, istep, iinit, iperp, ilanc, ieigen, nlanc, ifails,  &
-           irelax, iover, istep, fpush_factor, lowest_eigval,  &
-           artn_resume, old_lanczos_vec, H, Vmat, lanczos_max_size,  &
-           iunartout, filout, nperp_step, old_lowest_eigval
+  !
+!> [clean_artn]
+  use units,       only : DP
+  use artn_params, only : lrelax, linit, lbasin, lperp,                 &
+           llanczos, leigen, lpush_over, lbackward, lend,               &
+           iartn, istep, iinit, iperp, ilanc, ieigen, nlanc, ifails,    &
+           irelax, iover, istep, fpush_factor, lowest_eigval,           &
+           artn_resume, old_lanczos_vec, H, Vmat, lanczos_max_size,     &
+           iunartout, filout, old_lowest_eigval, prev_disp, &
+           error_message, verbose
   implicit none
 
   integer :: ios
 
 
   ! ...Fails if finished before it converged
-  IF( .NOT.lend ) ifails = ifails + 1
+  IF( .NOT.lend )then
+    ifails = ifails + 1
+    error_message = 'ARTn RESEARCH STOP BEFORE THE END'
+    call write_fail_report( iunartout, prev_disp, lowest_eigval )
+  ENDIF
 
   ! ...Write in output log
   WRITE(*,'(5x,"!> CLEANING ARTn | Fail:",x,i0)') ifails
+  IF( verbose > 0 )THEN
   OPEN ( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'old', POSITION = 'append', IOSTAT = ios )
     WRITE(iunartout,'(5x,"!> CLEANING ARTn | Fail:",x,i0/5x,*(a))') ifails, repeat("-",50)
+  ENDIF
 
   lrelax = .false.
   linit = .true.
@@ -30,7 +48,7 @@ SUBROUTINE clean_artn()
   lpush_over = .false.
   lend = .false.
 
-  !> Internal param
+  ! Internal param
   lbackward = .true.
   fpush_factor = 1.0
 
@@ -47,9 +65,6 @@ SUBROUTINE clean_artn()
 
   ! ...Return the initial value of nperp
   call nperp_limitation_step( -1 )
-  !nperp = nperp_list(1)
-  !nperp_step = 1
-  !write(*,'(5x,"Reinitialize NPERP:",x,i0)') nperp
 
   
   old_lowest_eigval = huge( old_lowest_eigval ) 
@@ -68,7 +83,13 @@ SUBROUTINE clean_artn()
   H = 0.0_DP
   Vmat = 0.0_DP
 
-  WRITE(iunartout,'(/)')
-  CLOSE ( UNIT = iunartout, STATUS = 'KEEP')
+  IF( verbose > 0 )THEN
+    WRITE(iunartout,'(/)')
+    CLOSE ( UNIT = iunartout, STATUS = 'KEEP')
+  ENDIF
 
 END SUBROUTINE clean_artn
+!> [clean_artn]
+
+
+

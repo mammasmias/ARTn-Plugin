@@ -1,0 +1,41 @@
+&ARTN_PARAMETERS
+  !! Units definition::(eV,Ang,ps)  
+  engine_units='lammps/real'
+  verbose = 2
+
+  !! Artn mode
+  lpush_final = .true. 
+  lmove_nextmin = .true.
+
+  ninit = 2 
+  nsmooth = 4 
+  init_forc_thr = 0.5
+  forc_thr = 0.5
+  fpara_thr = 0.005
+
+  !! parameters for the push
+  push_step_size = 0.3
+  push_mode = 'list'
+
+  !! define which atoms are to be pushed and the constraints ...
+  add_const(:,1201) = 0.0, 0.0, -1.0, 60.0 
+  add_const(:,1202) = 0.0, 0.0, -1.0, 60.0
+  !! One of these two lines is added by exploration.sh
+  !!push_ids= 1201
+  !!push_ids= 1202
+
+  
+  !! lanczos parameters
+  lanczos_disp = 1.0D-4
+  lanczos_max_size =25 
+  eigval_thr = -10.0 
+  
+  !! eigenpush params
+  eigen_step_size = 0.1
+  frelax_ene_thr = -0.05
+  push_over = 1.5
+  nperp_limitation = 5, 5, 5, 5, 10, 15, 20, 20, 30
+
+  struc_format_out ='xyz'
+
+!!/ !!added by exploration.sh

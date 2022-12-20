@@ -1,38 +1,45 @@
-SUBROUTINE start_guess( idum, nat, order, force, push, eigenvec )
-  !
-  !> @brief
-  !!    Initialize the push and eigenvec arrays following the mode keyword
-  !!
-  !! MIHA
-  !! use force input as mask for push_ids when calling push_init for eigenvec.
-  !! Why? To not generate initial lanczos vec for fixed atoms.
-  !
-  !> @param[in]  idum       seed for random number
-  !> @param[in]  nat        number of point
-  !! @param[in]  order      atom order of engine
-  !! @param[in]  push
-  !! @param[in]  eigenvec
+
+!> @author
+!!  Matic Poberznik
+!!  Miha Gunde
+!!  Nicolas Salles
+
+!> @brief
+!!    Initialize the push and eigenvec arrays following the mode keyword
+!
+!> @par Purpose
+!  ============
+!> MIHA <= Move in push_init \n
+!! use force input as mask for push_ids when calling push_init for eigenvec. \n
+!! Why? To not generate initial lanczos vec for fixed atoms.
+!
+!> @param[in]   idum       seed for random number
+!> @param[in]   nat        number of point
+!! @param[in]   order      atom order of engine
+!! @param[out]  push       array(3*nat) push of atom   
+!! @param[out]  eigenvec   array(3*nat) eigenvec for lanczos
+!
+!SUBROUTINE start_guess( idum, nat, order, force, push, eigenvec )
+SUBROUTINE start_guess( idum, nat, order, push, eigenvec )
   !
   USE units,       ONLY : DP
   USE artn_params, ONLY : push_mode, push_step_size, add_const, dist_thr,             &
                           lat, tau_step, eigen_step_size, push_guess, eigenvec_guess, &
                           push_ids, iunartout, filout, verbose
-  USE tools,       ONLY : read_guess
   !
   IMPLICIT NONE
   ! 
   ! Arguments
   INTEGER,  INTENT(IN)  :: nat, idum
   INTEGER,  INTENT(IN)  :: order(nat)
-  REAL(DP), INTENT(IN)  :: force(3,nat)
+  !REAL(DP), INTENT(IN)  :: force(3,nat)
   REAL(DP), INTENT(OUT) :: push(3,nat)
   REAL(DP), INTENT(OUT) :: eigenvec(3,nat)
   !
   ! Local variables
   INTEGER               :: mask(nat)
-  INTEGER               :: i, j
   !
-  IF( verbose >1 ) OPEN ( UNIT = iunartout, FILE = filout, FORM = 'formatted', ACCESS = 'append', STATUS = 'unknown' )
+  IF( verbose >1 ) OPEN ( UNIT = iunartout, FILE = filout, FORM = 'formatted', ACCESS = 'append', STATUS = 'OLD' )
   !
   SELECT CASE( TRIM(push_mode) )
     !
@@ -50,30 +57,25 @@ SUBROUTINE start_guess( idum, nat, order, force, push, eigenvec )
   !
   ! ...Define EIGENVEC:
   IF( LEN_TRIM(eigenvec_guess) /= 0 ) THEN
+
     !! read the file
     IF( verbose>1 ) WRITE(iunartout,'(5x,"|> First EIGEN vectors read in file",x,a)') TRIM(eigenvec_guess)
     CALL read_guess( idum, nat, eigenvec, eigenvec_guess )
+
   ELSE
+
     !! random
     IF( verbose>1 ) WRITE(iunartout,'(5x,"|> First EIGEN vectors RANDOM")')
     add_const = 0
-    !! set up the mask according to input forces
-    mask(:) = 0
-    j = 1
-    DO i = 1, nat
-       !! Atoms with norm of the force > 1e-16 are most probably not fixed by the engine, use the array 'mask'
-       !! as list of push_ids to generate the initial eigenvec components.
-       !! This avoids generating components on atoms that are fixed.
-       IF( NORM2(force(:,i)) .GT. 1e-16 ) THEN
-          mask(j) = i
-          j = j + 1
-       ENDIF
-       !
-    ENDDO
-    call push_init( nat, tau_step, order, lat, idum, mask, dist_thr, add_const, eigen_step_size, eigenvec, 'list')
-    !
+    !! Replace Mask on norm(force) by keyword 'list_force'. 
+    !! keyword 'bias_force' = orient the randomness on the actual atomic forces
+    call push_init( nat, tau_step, order, lat, idum, mask, dist_thr, add_const, eigen_step_size, eigenvec, 'list_force')
+    !call push_init( nat, tau_step, order, lat, idum, mask, dist_thr, add_const, eigen_step_size, eigenvec, 'bias_force' )
+
   ENDIF
   !
   IF( verbose>1 ) CLOSE(UNIT=iunartout, STATUS='KEEP')
   !
 END SUBROUTINE start_guess
+
+

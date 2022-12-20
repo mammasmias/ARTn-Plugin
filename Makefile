@@ -9,13 +9,41 @@ lib :
 
 clean :
 	( cd src; $(MAKE) clean; cd - )
+	@rm Files_LAMMPS/*.o 
+	@rm *.so
 
+lammps:
+	@$(call check_defined, CXX)
+	@$(call check_defined, LAMMPS_PATH)
+	@echo cxx is: "${CXX}"
+	if  echo "${CXX}" | grep -q "mpi" ; then \
+	$(CXX) -fPIC -c Files_LAMMPS/fix_artn.cpp -o Files_LAMMPS/fix_artn.o -I${LAMMPS_PATH}/src; \
+	$(CXX) -fPIC -c Files_LAMMPS/artnplugin.cpp -o Files_LAMMPS/artnplugin.o -I${LAMMPS_PATH}/src; \
+	else \
+	$(CXX) -fPIC -c Files_LAMMPS/fix_artn.cpp -o Files_LAMMPS/fix_artn.o -I${LAMMPS_PATH}/src -I${LAMMPS_PATH}/src/STUBS; \
+	$(CXX) -fPIC -c Files_LAMMPS/artnplugin.cpp -o Files_LAMMPS/artnplugin.o -I${LAMMPS_PATH}/src -I${LAMMPS_PATH}/src/STUBS; \
+	fi
+
+
+sharelib: lib lammps
+	@echo "";echo ">>>> environment_variable verification"
+	@$(call check_defined, CC)
+	@$(call check_defined, FORT_LIB)
+	@$(call check_defined, BLAS_LIB)
+	@echo "<<<< OK "; echo ""
+	${CC} -shared -rdynamic -o libartn.so src/Obj/*.o Files_LAMMPS/*.o $(FORT_LIB) $(BLAS_LIB)
+	@echo ">>>> Shared library done" ; echo ""
+	@echo " 1) In LAMMPS Package PLUGIN must be loaded"
+	@echo " 2) LAMMPS must be compiled with mode=shared"
+	@echo " 3) To launch LAMMPS, lammps/src path should be loaded in LD_LIBRARY_PATH"
+	@echo " 4) Enjoy ;) "
+	@echo ""
 
 # -------------------------------------------------------------------------- LAMMPS
 patch-lammps:
 	@$(call check_defined, LAMMPS_PATH)
 	@cp Files_LAMMPS/*artn.*  ${LAMMPS_PATH}/src/
-	@echo " ***** Fix/artn files copied"
+	@echo " ***** File artnplugin.cpp copied"
 	@echo " ***** You have to compile LAMMPS before useing it"
 
 unpatch-lammps:
@@ -25,19 +53,15 @@ unpatch-lammps:
 	@echo " ***** You have to compile LAMMPS to have the effect"
 
 
+
 # -------------------------------------------------------------------------- Quantum ESPRESSO
 patch-qe: patch-QE
 patch-QE :
 	@$(call check_defined, QE_PATH)
 	echo "LIBOBJS += ${ART_PATH}/src/libartn.a" >> ${QE_PATH}/make.inc
 	echo "QELIBS += ${ART_PATH}/src/libartn.a" >> ${QE_PATH}/make.inc
-	#sh patch-ARTn.sh
 	cp ${QE_PATH}/PW/src/plugin_ext_forces.f90 Files_QE/.
 	cat Files_QE/PW-src-modified/plugin_ext_forces.f90 > ${QE_PATH}/PW/src/plugin_ext_forces.f90
-	#cp ${QE_PATH}/Modules/plugin_flags.f90 Files_QE/.
-	#cat Files_QE/Modules-modified/plugin_flags.f90 > ${QE_PATH}/Modules/plugin_flags.f90
-	#cp ${QE_PATH}/Modules/plugin_arguments.f90 Files_QE/.
-	#cat Files_QE/Modules-modified/plugin_arguments.f90 > ${QE_PATH}/Modules/plugin_arguments.f90
 
 	( cd ${QE_PATH}; $(MAKE) pw; cd - )
 
@@ -46,13 +70,9 @@ unpatch-QE :
 	@$(call check_defined, QE_PATH)
 	#sh unpatch-ARTn.sh
 	cp Files_QE/plugin_ext_forces.f90 ${QE_PATH}/PW/src/plugin_ext_forces.f90
-	#cp Files_QE/plugin_flags.f90 ${QE_PATH}/Modules/plugin_flags.f90
-	#cp Files_QE/plugin_arguments.f90 ${QE_PATH}/Modules/plugin_arguments.f90
 	head -n -1 ${QE_PATH}/make.inc > ${QE_PATH}/make.inc_tmp
 	mv ${QE_PATH}/make.inc_tmp ${QE_PATH}/make.inc
 	rm Files_QE/plugin_ext_forces.f90
-	#rm Files_QE/plugin_flags.f90
-	#rm Files_QE/plugin_arguments.f90
 
 	( cd ${QE_PATH}; $(MAKE) pw; cd - )
 
@@ -78,9 +98,13 @@ __verif_defined = \
 
 # ---------------------------------------------
 help:
+	@echo ""
 	@echo "*******************************************************************************"
 	@echo "*                    Plugin-ARTn Library "
 	@echo "*******************************************************************************"
+	@echo ""
+	@echo "* WARNNG: The user should take care to fill correctly the file environment_variable"
+	@echo "          before to compile ARTn"
 	@echo ""
 	@echo "* COMPILATION:"
 	@$(call verif_defined, F90)
@@ -90,8 +114,9 @@ help:
 	@echo ""
 	@echo "* LAMMPS Interface:"
 	@$(call verif_defined, LAMMPS_PATH)
-	@echo "make patch-lammps	copy the Files_LAMMPS/fix_artn.* and Files_LAMMPS/artn.h to LAMMPS_PATH/src"
-	@echo "make unpatch-lammps	delete the fix_artn.* and artn.h files from  LAMMPS_PATH/src"
+	@echo "make sharelib		compile dynamic library libartn.so with plugin interfaces for LAMMPS"
+	@#echo "make patch-lammps	copy the Files_LAMMPS/fix_artn.* and Files_LAMMPS/artn.h to LAMMPS_PATH/src"
+	@#echo "make unpatch-lammps	delete the fix_artn.* and artn.h files from  LAMMPS_PATH/src"
 	@echo ""
 	@echo "* QE Interface:"
 	@$(call verif_defined, QE_PATH)
