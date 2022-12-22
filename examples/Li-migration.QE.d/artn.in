@@ -1,0 +1,16 @@
+&ARTN_PARAMETERS
+  ninit = 4
+  lpush_final = .true. 
+  init_forc_thr = 5.0d-2
+  push_step_size = 0.40
+! parameters for the push
+  push_mode = 'list'
+  ! define which atoms are to be pushed and the constraints ...
+  push_ids = 25
+  add_const(:,25) = 1.0, 0.0, 0.0
+! lanczos parameters
+  lanczos_disp = 0.1D-1 
+  lanczos_max_size = 16
+  ! eigenpush parms
+  eigen_step_size = 0.3
+/

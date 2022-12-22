@@ -1,33 +1,36 @@
-
-!> @author
-!!  Matic Poberjnik,
-!!  Miha Gunde
-!!  Nicolas Salles
-
+!> @author Matic Poberznik
+!! @author Miha Gunde
+!! @author Nicolas Salles
+!
+!> @brief
+!!   translate specified move to appropriate force and set FIRE parameters accordingly  
+!
+!> @param [in]    nat         Size of list: Number of atoms
+!> @param [in]    order       Order of engine atoms list
+!> @param [inout] force       List of force on atoms
+!> @param [inout] vel         List of atomic velicity 
+!> @param [in]    alpha_init  Initial Value of alpha parameter of FIRE algorithm
+!> @param [in]    dt_init     Initial Value of dt parameter of FIRE algorithm
+!> @param [inout] etot        Actual energy total of the system
+!> @param [inout] alpha       Value of alpha paramter of FIRE algorithm
+!> @param [inout] dt_curr     Value of dt paramter of FIRE algorithm
+!> @param [inout] nsteppos    ??
+!> @param [in]    disp        Kind of actual displacement 
+!> @param [in]    displ_vec   Displacement field (unit lemgth/force/hessian ) 
+!
+!> @ingroup ARTn
+!> @snippet move_mode.f90 move_mode
 SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, alpha_init, dt_init, disp, displ_vec )
-  !
-  !> @breif
-  !!   translate specified move to appropriate force and set FIRE parameters accordingly  
-  !
-  !> @param [in]    nat		Size of list: Number of atoms
-  !> @param [in]    order	Order of engine atoms list
-  !> @param [inout] force	List of force on atoms
-  !> @param [inout] vel		List of atomic velicity 
-  !> @param [in]    alpha_init	Initial Value of alpha parameter of FIRE algorithm
-  !> @param [in]    dt_init     Initial Value of dt parameter of FIRE algorithm
-  !> @param [inout] etot	Actual energy total of the system
-  !> @param [inout] alpha	Value of alpha paramter of FIRE algorithm
-  !> @param [inout] dt_curr	Value of dt paramter of FIRE algorithm
-  !> @param [inout] nsteppos	??
-  !> @param [in]    disp	Kind of actual displacement 
-  !> @param [in]    displ_vec	Displacement field (unit lemgth/force/hessian ) 
-  !
+
+!> [move_mode]
   USE artn_params, ONLY:  lbasin, iperp, irelax, push, &
-                          eigenvec, lanczos_disp, MOVE , &
-                          istep, prev_disp, iunartout,filout
+                          eigenvec, MOVE , &
+                          prev_disp, iunartout, filout
 
   USE UNITS, Only: DP, convert_time, unconvert_time, &
-                   unconvert_force, mass
+                   unconvert_force, MASS
+
+  !use debug, only: report_atom_prop
   !
   IMPLICIT NONE
   !
@@ -43,9 +46,10 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
   INTEGER,                    INTENT(IN)    :: disp
   ! 
   ! -- Local Variables
-  REAL(DP)                                  :: dt0, dt, tmp0, tmp1, dr(3,nat)
-  REAL(DP), EXTERNAL                        :: ddot,dnrm2
-  INTEGER                                   :: u0,ios
+  REAL(DP)                                  :: dt0, dt, tmp0, tmp1 !, dr(3,nat)
+  REAL(DP), EXTERNAL                        :: ddot,dnrm2, dsum
+  !INTEGER                                   :: u0
+  !character(256) :: ctmp
   !
   ! do things depending on mode of the move
   ! NOTE force units of Ry/a.u. are assumed ... 
@@ -54,11 +58,8 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
   !force = convert_force( displ_vec )
   dt  = convert_time( dt_curr )
   dt0 = convert_time( dt_init )   !%! Finally we don't touch dt_init
-  u0  = 73
+  !u0  = 73
 
-  !if( istep == 1 )write(u0,'("# -- FIRE PARAMETERS"/" istep  |  alpha   |   dt   |  nsteppos")')
-  !10 format(x,i0,2x,a,2(x,f15.5),x,i0)
-  !open(newunit=u0,file="fire_params.dat", )
   !
 
 
@@ -77,7 +78,6 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
      nsteppos = 0
      !
      ! ...Displ_vec should be a Length
-     !force(:,:) = displ_vec(:,order(:))*amu_ry/dt**2
      force(:,:) = displ_vec(:,order(:))*Mass/dt**2
      !
   CASE( 'perp' )
@@ -85,7 +85,6 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
      ! ...Displ_vec is fperp
      force(:,:) = displ_vec(:,order(:))
      !
-
      IF( iperp - 1 .eq. 0 ) THEN  !%! Because I increment iperp before to enter in move_mode
         ! for the first step forget previous velocity (prevent P < 0)
         etot     = 0.D0
@@ -93,9 +92,6 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
         alpha    = alpha_init
         dt       = dt0
         nsteppos = 5
-          OPEN( UNIT = iunartout, FILE = filout, FORM = 'formatted', STATUS = 'unknown', POSITION='append', IOSTAT = ios )
-      WRITE(iunartout,*) 'iperp is ',iperp
-      CLOSE(iunartout)
 
         !
      ELSE
@@ -103,47 +99,24 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
         ! subtract the components that are parallel
         IF( lbasin ) THEN
           tmp0     = ddot( 3*nat, vel(:,:), 1, push(:,order(:)), 1 )
-          tmp1     = ddot( 3*nat, push(:,:), 1, push(:,:), 1 )          !> Don't need to be ordered
+          tmp1     = ddot( 3*nat, push(:,:), 1, push(:,:), 1 )          !! Don't need to be ordered
           vel(:,:) = vel(:,:) - tmp0 / tmp1 * push(:,order(:)) 
         ELSE
           tmp0     = ddot( 3*nat, vel(:,:)     , 1, eigenvec(:,order(:)), 1 )
-          tmp1     = ddot( 3*nat, eigenvec(:,:), 1, eigenvec(:,:), 1 )  !> Don't need to be ordered
+          tmp1     = ddot( 3*nat, eigenvec(:,:), 1, eigenvec(:,:), 1 )  !! Don't need to be ordered
           vel(:,:) = vel(:,:) - tmp0 / tmp1 * eigenvec(:,order(:)) 
         ENDIF
         !  
      ENDIF
      !
-     !write(u0,10) istep, MOVE(disp), alpha, dt, nsteppos
      !
-     ! ...FIRE integration anticipation
-     !call FIRE2_integration( iperp, nat, unconvert_force(force), vel, unconvert_time(dt), alpha, nsteppos, tmp0 )
-     !if( tmp0 < 1.0e-2 )then
-     !   force = force * (1. + 0.02)
-     !   call FIRE2_integration( iperp, nat, unconvert_force(force), vel, unconvert_time(dt), alpha, nsteppos, tmp0 )
-     !endif
-     !
-  CASE( 'lanc' )
-     !
-     ! ... set the velocity and acceleration and alpha of previous step to move correctly
-     etot     = 0.D0
-     vel(:,:) = 0.D0
-     dt       = dt0
-     alpha    = 0.D0
-     nsteppos = 0
-     !
-     ! ... the step performed should be like this now translate it into the correct force
-     !force(:,:) = displ_vec(:,order(:))*lanczos_disp*amu_ry/dt**2
-     force(:,:) = displ_vec(:,order(:))*lanczos_disp*Mass/dt**2
-     !print*, "MOVE MODE:lanc_disp, amu_ry, dt, C",lanczos_disp,amu_ry,dt, lanczos_disp*amu_ry/dt**2 
-     !
-  CASE( 'eign' )
+  CASE( 'eign', 'over', 'smth', 'lanc' )
      !
      etot       = 0.D0
      vel(:,:)   = 0.D0
      alpha      = 0.0_DP
      dt         = dt0
      nsteppos   = 0
-     !force(:,:) = displ_vec(:,order(:))*amu_ry/dt**2
      force(:,:) = displ_vec(:,order(:))*Mass/dt**2
      !
   CASE( 'relx' )
@@ -161,9 +134,17 @@ SUBROUTINE move_mode( nat, order, force, vel, etot, nsteppos, dt_curr, alpha, al
      write(*,'(5x,"|> No parameter conversion in move_mode:",x,a)') MOVE(disp)
      !  
   END SELECT
+
   !
   ! ...Unconvert the force & time
   dt_curr = unconvert_time( dt )
   force = unconvert_force( force )
-  !
+  
+
+!> [move_mode]
 END SUBROUTINE move_mode
+
+
+
+
+

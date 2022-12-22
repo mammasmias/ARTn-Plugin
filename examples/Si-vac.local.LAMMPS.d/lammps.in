@@ -1,0 +1,92 @@
+# Find minimum energy fcc configuration
+# Mark Tschopp, 2010
+
+
+# ---------- Initialize Simulation --------------------- 
+clear 
+units       metal 
+dimension   3 
+boundary    p p p 
+atom_style  atomic 
+atom_modify map array
+
+
+# ---------- Create Atoms --------------------- 
+#lattice 	fcc 4
+#region	box block 0 4 0 4 0 4 units lattice
+#create_box	1 box
+
+#lattice	fcc 4 orient x 1 0 0 orient y 0 1 0 orient z 0 0 1  
+#create_atoms 1 box
+#replicate 1 1 1
+
+read_data   conf.sw
+
+
+# ---------- Define Interatomic Potential --------------------- 
+pair_style   sw 
+pair_coeff   * * Si.sw Si
+
+mass        1  29.0
+
+neighbor     0.0 bin 
+neigh_modify delay 0 every 1 check no one 50 page 550 
+
+ 
+# ---------- Define Settings --------------------- 
+compute eng all pe/atom 
+compute eatoms all reduce sum c_eng 
+
+
+# ----------- OUTPUT
+dump 10  all custom 1 config.xyz id type x y z fx fy fz
+
+thermo 100 
+thermo_style custom step pe fnorm lx ly lz press pxx pyy pzz c_eatoms 
+
+
+#displace_atoms	all random 0.05 0.05 0.05 1258475
+
+
+# ---------- Run Minimization --------------------- 
+timestep 0.001
+
+#fix 1 all box/relax iso 0.0 vmax 0.001
+
+min_style fire 
+
+#min_modify: dmax or delaystep or dtgrow or dtshrink or alpha0 or alphahrink or...
+#            tmax or tmin or halfstepback or initialdelay or vdfmax or line or...
+#            norm or discrete_factor or integrator or tmax  
+#            alpha_damp: does not work anymore
+
+# Relax the structure
+minimize 1e-4 1e-5 2000 1000 
+
+
+# Artn research 
+undump 10
+reset_timestep 0
+
+dump 10  all custom 1 config.xyz id type x y z fx fy fz
+
+plugin load /home/mammasmias-1/Nico/Project_pARTn/artn-plugin-qe/libartn.so
+plugin list
+
+fix	  10 all artn alpha0 0.2 alphashrink 0.99 dtshrink 0.5 dmax 10.0 tmax 20 tmin 0.02 
+minimize  1e-4 1e-5 2000 1000 
+
+
+
+variable natoms equal "count(all)" 
+variable teng equal "c_eatoms"
+variable length equal "lx"
+variable ecoh equal "v_teng/v_natoms"
+
+print "Total energy (eV) = ${teng};"
+print "Number of atoms = ${natoms};"
+print "Lattice constant (Angstoms) = ${length};"
+print "Cohesive energy (eV) = ${ecoh};"
+
+print "All done!" 
+

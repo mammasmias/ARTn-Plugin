@@ -1,11 +1,46 @@
 !
-!> @author
-!!   Matic Poberznik
-!!   Miha Gunde
-!!   Nicolas Salles
+!! Group definition for all the code
+!
+!> @defgroup ARTn ARTn algorithm
+!>    Main routine of the ARTn algorithm
+!>
+!> @defgroup Control Routine Control
+!>    Routine allows to control the work flow
+!> 
+!> @defgroup Block ARTn block 
+!>    Computation block 
+!>
+!> @defgroup Interface Routine Interface 
+!>    Interface with E/F engine
+!>    
+
+
+
+!> @author Matic Poberznik
+!! @author Miha Gunde
+!! @author Nicolas Salles
 !
 !> @brief
 !!   This module contains all global variables that are used in the ARTn plugin
+!
+!> @note 
+!!   List of routine in-module:
+!!   - setup_artn()
+!!   - Fill_step_params()
+!!   - write_reastart()
+!!   - read_restart()
+!!   - warning_*
+!!   - flag_flase()
+!!   - ran3()
+!!   - dot_field()
+!!   - random_array()
+!!
+!! @note
+!!   List of routine out-module:
+!!   - get_iperp(), get_perp(), get_relx()
+!!   - make_filename()
+
+!> @ingroup ARTn
 !
 MODULE artn_params
   !
@@ -13,147 +48,154 @@ MODULE artn_params
   IMPLICIT NONE 
   SAVE
   ! constants unit pipe
-  !INTEGER, PARAMETER ::  DP = selected_real_kind(14,200) ! double precision
-  INTEGER, PARAMETER :: iunartin     = 52   !> fortran file unit for ARTn input file
-  INTEGER, PARAMETER :: iunartout    = 53   !> fortran file unit for ARTn output file
-  INTEGER, PARAMETER :: iunartres    = 54   !> fortran file unit for ARTn restart file
-  INTEGER, PARAMETER :: iunstruct    = 556  !> fortran file unit for writing the structure
-  INTEGER, PARAMETER :: iunrestart   = 557  !> fortran file unit for writing the structure
+  INTEGER, PARAMETER :: iunartin     = 52   !< @brief fortran file unit for ARTn input file
+  INTEGER, PARAMETER :: iunartout    = 53   !< @brief fortran file unit for ARTn output file
+  INTEGER, PARAMETER :: iunartres    = 54   !< @brief fortran file unit for ARTn restart file
+  INTEGER, PARAMETER :: iunstruct    = 556  !< @brief fortran file unit for writing the structure
+  INTEGER, PARAMETER :: iunrestart   = 557  !< @brief fortran file unit for writing the structure
   ! file names
-  CHARACTER(LEN=255) :: filin        = 'artn.in'
-  CHARACTER(LEN=255) :: filout       = 'artn.out'
-  CHARACTER(LEN=255) :: sadfname     = 'saddle'
-  CHARACTER(LEN=255) :: initpfname   = 'initp'
-  CHARACTER(LEN=255) :: eigenfname   = 'latest_eigenvec'
-  CHARACTER(LEN=255) :: restartfname = 'artn.restart'
-  CHARACTER(LEN=255) :: prefix_min   = 'min'
-  CHARACTER(LEN=255) :: prefix_sad   = 'sad'
-  CHARACTER(LEN=255) :: artn_resume
+  CHARACTER(LEN=255) :: filin        = 'artn.in'             !< @brief input file
+  CHARACTER(LEN=255) :: filout       = 'artn.out'            !< @brief ouput file
+  CHARACTER(LEN=255) :: sadfname     = 'saddle'              !< @brief prefix used for the saddle point file configuration
+  CHARACTER(LEN=255) :: initpfname   = 'initp'               !< @brief prefix used for the initial push file
+  CHARACTER(LEN=255) :: eigenfname   = 'latest_eigenvec'     !< @brief prefix used for the latest eigenvector file store
+  CHARACTER(LEN=255) :: restartfname = 'artn.restart'        !< @brief restart file
+  CHARACTER(LEN=255) :: prefix_min   = 'min'                 !< @brief prefix used to name the minimum configuration file
+  CHARACTER(LEN=255) :: prefix_sad   = 'sad'                 !< @brief prefix used to name the saddle point configuration file
+  CHARACTER(LEN=255) :: artn_resume                          !< @brief variable store the 2 minimum and saddle point configuration file
   ! optional file
-  CHARACTER(LEN=255) :: push_guess   = " " 
-  CHARACTER(LEN=255) :: eigenvec_guess = " "
+  CHARACTER(LEN=255) :: push_guess   = " "        !< @brief  user file where the initial push is defined
+  CHARACTER(LEN=255) :: eigenvec_guess = " "      !< @brief  user file where the first eigenvector of lanczos is defined
   ! Constante move
-  INTEGER :: VOID = 1, INIT = 2, PERP = 3, EIGN = 4, LANC = 5, RELX = 6, OVER = 7, SMTH = 8
+  INTEGER, parameter :: VOID = 1, INIT = 2, PERP = 3, EIGN = 4, LANC = 5, RELX = 6, OVER = 7, SMTH = 8
   CHARACTER(LEN=4) :: MOVE(8)
   PARAMETER( MOVE = [ 'void', 'init', 'perp', 'eign', 'lanc', 'relx', 'over', 'smth'])
   !
-  ! control flags
-  LOGICAL :: linit              !> initial push OF THE MACROSTEP
-  LOGICAL :: lperp              !> perpendicular relax
-  LOGICAL :: leigen             !> push with lanczos eigenvector
-  LOGICAL :: llanczos           !> lanczos algorithm
-  LOGICAL :: lbasin             !> true while in basin 
-  LOGICAL :: lpush_over         !> saddle point obtained
-  LOGICAL :: lbackward          !> backward saddle point obtained
-  LOGICAL :: lmove_nextmin      !> backward saddle point obtained
-  LOGICAL :: lread_param        !> flag read artn params
-  LOGICAL :: lnperp_limitation  !> Constrain on the nperp-relax above the inflation point 
-  LOGICAL :: lend
-  INTEGER :: verbose            !> Verbose Level
+  !! Control Flags
+  !  =============
+  LOGICAL :: linit              !< @brief initial push OF THE MACROSTEP
+  LOGICAL :: lperp              !< @brief perpendicular relax
+  LOGICAL :: leigen             !< @brief push with lanczos eigenvector
+  LOGICAL :: llanczos           !< @brief lanczos algorithm
+  LOGICAL :: lbasin             !< @brief true while in basin 
+  LOGICAL :: lpush_over         !< @brief saddle point obtained
+  LOGICAL :: lbackward          !< @brief backward saddle point obtained
+  LOGICAL :: lmove_nextmin      !< @brief backward saddle point obtained
+  LOGICAL :: lread_param        !< @brief flag read artn params
+  LOGICAL :: lnperp_limitation  !< @brief Constrain on the nperp-relax above the inflation point 
+  LOGICAL :: lend               !< @brief Flag to finish the ARTn research
+  INTEGER :: verbose            !< @brief Verbose Level
   !
   ! counters
   INTEGER :: istep
   INTEGER :: iartn
   INTEGER :: ifails
-  INTEGER :: inewchance         !> number of new attemps after loosing eigenvalue 
-  INTEGER :: iperp              !> number of steps in perpendicular relaxation
-  INTEGER :: iperp_save         !> number of steps in perpendicular relaxation
-  INTEGER :: iover
-  INTEGER :: irelax             !> Number of relaxation iteration
-  INTEGER :: ieigen             !> number of steps made with eigenvector
-  INTEGER :: iinit              !> number of pushes made
-  INTEGER :: ilanc              !> current lanczos iteration
-  INTEGER :: ilanc_save         !> save current lanczos iteration
-  INTEGER :: nlanc              !> max number of lanczos iterations
-  INTEGER :: ismooth            !> number of smoothing steps
-  INTEGER :: if_pos_ct          !> counter used to determine the number of fixed coordinates
-  INTEGER :: zseed              !> random number generator seed
-  INTEGER :: ifound             !> Number of saddle point found
-  INTEGER :: isearch            !> Number of saddle point research
-  INTEGER :: natoms             !> Number of atoms in the system
+  INTEGER :: inewchance         !< @brief number of new attemps after loosing eigenvalue 
+  INTEGER :: iperp              !< @brief number of steps in perpendicular relaxation
+  INTEGER :: iperp_save         !< @brief number of steps in perpendicular relaxation
+  INTEGER :: iover              !< @brief number of push_over step
+  INTEGER :: irelax             !< @brief Number of relaxation iteration
+  INTEGER :: ieigen             !< @brief number of steps made with eigenvector
+  INTEGER :: iinit              !< @brief number of pushes made
+  INTEGER :: ilanc              !< @brief current lanczos iteration
+  INTEGER :: ilanc_save         !< @brief save current lanczos iteration
+  INTEGER :: nlanc              !< @brief max number of lanczos iterations
+  INTEGER :: ismooth            !< @brief number of smoothing steps
+  INTEGER :: if_pos_ct          !< @brief counter used to determine the number of fixed coordinates
+  INTEGER :: ifound             !< @brief Number of saddle point found
+  INTEGER :: isearch            !< @brief Number of saddle point research
 
-  INTEGER :: Prev_Disp          !> Save the previous displacement
-  INTEGER :: Prev_Push          !> Save the previous push
+  ! system parameter
+  INTEGER :: natoms             !< @brief Number of atoms in the system
+  INTEGER :: zseed              !< @brief random number generator seed
+
+  ! output parameter
+  INTEGER :: prev_disp          !< @brief Save the previous displacement
+  INTEGER :: prev_push          !< @brief Save the previous push
+  INTEGER :: restart_freq       !< @brief Restart write down frequence (0 everystep, 1 ARTn step)
   ! 
-  ! optional staf
+  ! optional staff
   !! nperp
-  INTEGER :: nperp, nperp_step, noperp
-  INTEGER :: def_nperp_limitation(5) = [ 4, 8, 12, 16, -1 ]
-  ! INTEGER :: def_nperp_limitation(5) = [ 5, 10, 15, 20, -1 ]
-  INTEGER, ALLOCATABLE :: nperp_limitation(:)
+  INTEGER :: nperp                                              !< @brief  max perp-relax iteration  
+  INTEGER :: noperp                                             !< @brief  count number of time perp-relax is not done
+  INTEGER :: def_nperp_limitation(5) = [ 4, 8, 12, 16, -1 ]     !< @brief  default values for nperp limitation evolution
+  INTEGER, ALLOCATABLE :: nperp_limitation(:)                   !< @brief  array of nperp values
+  INTEGER :: nperp_step                                         !< @brief  nperp_limitation step
+  !
   !! output structure counter
-  INTEGER :: nmin       !> count the number of minimum found
-  INTEGER :: nsaddle    !> count the number of saddle point found
-
+  INTEGER :: nmin       !< @brief  count the number of minimum found
+  INTEGER :: nsaddle    !< @brief  count the number of saddle point found
+  !
   ! lanczos variables
-  REAL(DP) :: lowest_eigval !> Lowest eigenvalues obtained by lanczos algorithm
-  !                                           !
-  ! arrays that are needed by ARTn internally !
-  !                                           !
-  REAL(DP) :: lat(3,3)
-  REAL(DP), ALLOCATABLE :: tau_init(:,:)         !> initial coordinates
-  REAL(DP), ALLOCATABLE :: tau_nextmin(:,:)      !> coordinates of the new minimum
-  REAL(DP), ALLOCATABLE :: delr(:,:)             !> displacement vector  
-  REAL(DP), ALLOCATABLE :: push(:,:)             !> initial push vector
-  REAL(DP), ALLOCATABLE, target :: eigenvec(:,:) !> lanczos eigenvector
-  REAL(DP), ALLOCATABLE :: tau_step(:,:)         !> current coordinates (restart)
-  REAL(DP), ALLOCATABLE :: force_step(:,:)       !> current force (restart)
-  REAL(DP), ALLOCATABLE :: tau_saddle(:,:)       !> coordinates of saddle point
-  REAL(DP), ALLOCATABLE :: eigen_saddle(:,:)     !> saddle point eigenvector
+  REAL(DP) :: lowest_eigval                      !< @brief  Lowest eigenvalues obtained by lanczos algorithm
+  !                                           
+  !! arrays that are needed by ARTn internally !
+  !
+  REAL(DP) :: lat(3,3)                           !< @brief Box parameter
+  REAL(DP), ALLOCATABLE :: tau_init(:,:)         !< @brief initial coordinates
+  REAL(DP), ALLOCATABLE :: tau_nextmin(:,:)      !< @brief coordinates of the new minimum
+  REAL(DP), ALLOCATABLE :: delr(:,:)             !< @brief displacement vector  
+  REAL(DP), ALLOCATABLE :: push(:,:)             !< @brief initial push vector
+  REAL(DP), ALLOCATABLE :: eigenvec(:,:)         !< @brief lanczos eigenvector
+  REAL(DP), ALLOCATABLE :: tau_step(:,:)         !< @brief current coordinates (restart)
+  REAL(DP), ALLOCATABLE :: force_step(:,:)       !< @brief current force (restart)
+  REAL(DP), ALLOCATABLE :: tau_saddle(:,:)       !< @brief coordinates of saddle point
+  REAL(DP), ALLOCATABLE :: eigen_saddle(:,:)     !< @brief saddle point eigenvector
   !
   ! stored total energies and energy differences
   !
-  REAL(DP) :: etot_init    !>  the total energy of the initial state
-  REAL(DP) :: etot_step    !>  the total energy in the current step
-  REAL(DP) :: etot_saddle  !>  the total energy of the saddle point
-  REAL(DP) :: etot_final   !>  the total energy of the next minimum along eigenvector
-  REAL(DP) :: de_saddle    !>  change in E from starting point
-  REAL(DP) :: de_back      !>  backward barrier
-  REAL(DP) :: de_fwd       !>  forward barrier
+  REAL(DP) :: etot_init    !< @brief  the total energy of the initial state
+  REAL(DP) :: etot_step    !< @brief  the total energy in the current step
+  REAL(DP) :: etot_saddle  !< @brief  the total energy of the saddle point
+  REAL(DP) :: etot_final   !< @brief  the total energy of the next minimum along eigenvector
+  REAL(DP) :: de_saddle    !< @brief  change in E from starting point
+  REAL(DP) :: de_back      !< @brief  backward barrier
+  REAL(DP) :: de_fwd       !< @brief  forward barrier
   !                                               !
   ! arrays that are used by the Lanczos algorithm !
   !                                               !
-  REAL(DP) :: a1  !> dot product between previous and actual min lanczos vector
-  REAL(DP) :: old_lowest_eigval
-  REAL(DP), ALLOCATABLE :: old_lanczos_vec(:,:) !> Store the previous lanczos vec
-  REAL(DP), ALLOCATABLE :: H(:,:)               !> tridiagonal matrix
-  REAL(DP), ALLOCATABLE :: Vmat(:,:,:)          !> matrix containing the laczos vectors
-  REAL(DP), ALLOCATABLE :: force_old(:,:)       !> force in the previous step
-  REAL(DP), ALLOCATABLE :: v_in(:,:)            !> first lanczos eigenvector
+  REAL(DP) :: a1  !< @brief dot product between previous and actual min lanczos vector
+  REAL(DP) :: old_lowest_eigval                 !< @brief eigenvalue of the last lanczos computation
+  REAL(DP), ALLOCATABLE :: old_lanczos_vec(:,:) !< @brief Store the previous lanczos vec
+  REAL(DP), ALLOCATABLE :: H(:,:)               !< @brief tridiagonal matrix
+  REAL(DP), ALLOCATABLE :: Vmat(:,:,:)          !< @brief matrix containing the laczos vectors
+  REAL(DP), ALLOCATABLE :: force_old(:,:)       !< @brief force in the previous step
+  REAL(DP), ALLOCATABLE :: v_in(:,:)            !< @brief first lanczos eigenvector
   !------------------------------------------------------------!
   ! variables that are read from the input  start here
   !------------------------------------------------------------!
   !
-  LOGICAL :: lrestart                       !> do we want to restart the calculation
-  LOGICAL :: lrelax                         !> do start the relaxation to adjacent minima from the saddle point
-  LOGICAL :: lpush_final                    !> push to adjacent minimum along eigenvector
-  LOGICAL :: lanczos_always_random          !> always start lanczos with random vector
+  LOGICAL :: lrestart                       !< @brief do we want to restart the calculation
+  LOGICAL :: lrelax                         !< @brief do start the relaxation to adjacent minima from the saddle point
+  LOGICAL :: lpush_final                    !< @brief push to adjacent minimum along eigenvector
+  LOGICAL :: lanczos_always_random          !< @brief always start lanczos with random vector
   !
-  INTEGER :: ninit                          !> number of initial pushes before lanczos start
-  INTEGER :: neigen                         !> number of steps made with eigenvector before perp relax
-  INTEGER :: lanczos_max_size               !> size of the lanczos tridiagonal matrix 
-  INTEGER :: lanczos_min_size               !> minimal size of lanzos matrix (use with care)
-  INTEGER :: nsmooth                        !> number of smoothing steps from push to eigenvec
-  INTEGER :: nnewchance                     !> number of new attemps after loosing eigenvalue
-  CHARACTER(LEN = 4) :: push_mode           !> type of initial push (all , list or rad)
+  INTEGER :: ninit                          !< @brief number of initial pushes before lanczos start
+  INTEGER :: neigen                         !< @brief number of steps made with eigenvector before perp relax
+  INTEGER :: lanczos_max_size               !< @brief size of the lanczos tridiagonal matrix 
+  INTEGER :: lanczos_min_size               !< @brief minimal size of lanzos matrix (use with care)
+  INTEGER :: nsmooth                        !< @brief number of smoothing steps from push to eigenvec
+  INTEGER :: nnewchance                     !< @brief number of new attemps after loosing eigenvalue
+  INTEGER :: nrelax_print                   !< @brief print at every nrelax step 
+  CHARACTER(LEN = 4) :: push_mode           !< @brief type of initial push (all , list or rad)
   ! convergence criteria
-  REAL(DP) :: dist_thr                      !> distance threshold for push mode "rad"
-  REAL(DP) :: init_forc_thr                 !> initial perp force threshold for perp relax convergence
-  REAL(DP) :: forc_thr                      !> tightened force convergence criterion when near the saddle point
-  REAL(DP) :: fpara_thr                     !> parallel force convergence criterion, used to determine when to tighten convcrit_final
-  REAL(DP) :: eigval_thr                    !> threshold for eigenvalue
-  REAL(DP) :: frelax_ene_thr                !> threshold to start relaxation to adjacent minima
-  REAL(DP) :: etot_diff_limit               !> limit for energy difference, if above exit the research
+  REAL(DP) :: dist_thr                      !< @brief distance threshold for push mode "rad"
+  REAL(DP) :: init_forc_thr                 !< @brief initial perp force threshold for perp relax convergence
+  REAL(DP) :: forc_thr                      !< @brief tightened force convergence criterion when near the saddle point
+  REAL(DP) :: fpara_thr                     !< @brief parallel force convergence criterion, used to determine when to tighten convcrit_final
+  REAL(DP) :: eigval_thr                    !< @brief threshold for eigenvalue
+  REAL(DP) :: frelax_ene_thr                !< @brief threshold to start relaxation to adjacent minima
+  REAL(DP) :: etot_diff_limit               !< @brief limit for energy difference, if above exit the research
   ! step sizes
-  REAL(DP) :: push_step_size                !> step size of inital push in angstrom
-  REAL(DP) :: eigen_step_size               !> step size for a step with the lanczos eigenvector
-  REAL(DP) :: current_step_size             !> controls the current size of eigenvector step
-  REAL(DP) :: fpush_factor                  !> factor for the final push 
-  REAL(DP), target :: lanczos_disp          !> step size in the lanczos algorithm 
-  REAL(DP), target :: lanczos_eval_conv_thr !> threshold for convergence of eigenvalue in Lanczos
-  REAL(DP) :: push_over                     !> EigenVec fraction Push_over the saddle point for the relax
+  REAL(DP) :: push_step_size                !< @brief step size of inital push in angstrom
+  REAL(DP) :: eigen_step_size               !< @brief step size for a step with the lanczos eigenvector
+  REAL(DP) :: current_step_size             !< @brief controls the current size of eigenvector step
+  REAL(DP) :: fpush_factor                  !< @brief factor for the final push 
+  REAL(DP), target :: lanczos_disp          !< @brief step size in the lanczos algorithm 
+  REAL(DP), target :: lanczos_eval_conv_thr !< @brief threshold for convergence of eigenvalue in Lanczos
+  REAL(DP) :: push_over                     !< @brief EigenVec fraction Push_over the saddle point for the relax
   ! Default Values (in Ry, au)
-  REAL(DP), PARAMETER :: NAN = HUGE( lanczos_disp )  !! Biggest number in DP representation
+  REAL(DP), PARAMETER :: NAN = HUGE( lanczos_disp )  !< @brief Biggest number in DP representation
   REAL(DP), PARAMETER :: def_dist_thr = 0.0_DP,       def_init_forc_thr = 1.0d-2,   &
                          def_forc_thr = 1.0d-3,       def_fpara_thr = 0.5d-2,  &
                          def_eigval_thr = -0.01_DP,   def_frelax_ene_thr  = 0.00_DP,    &
@@ -161,47 +203,60 @@ MODULE artn_params
                          def_lanczos_disp = 1.D-2,    def_lanczos_eval_conv_thr = 1.0D-2, &
                          def_etot_diff_limit = 80.0_DP
   ! arrays related to constraints
-  INTEGER,  ALLOCATABLE :: push_ids(:)    !> IDs of atoms to be pushed
-  REAL(DP), ALLOCATABLE :: add_const(:,:) !> constraints on initial push
+  INTEGER,  ALLOCATABLE :: push_ids(:)    !< @brief IDs of atoms to be pushed
+  REAL(DP), ALLOCATABLE :: add_const(:,:) !< @brief constraints on initial push
   ! array related to the report
-  REAL(DP) :: bilan(8)
+  REAL(DP) :: bilan(8)                    !< @brief Array contains the values for the debrief output
+  !REAL(DP) :: debrief(8)                    !< @brief Array contains the values for the debrief output
   !
-  CHARACTER(LEN=256)            :: engine_units
-  CHARACTER(LEN=10)             :: struc_format_out
-  CHARACTER(LEN=3), ALLOCATABLE :: elements(:)
-  CHARACTER(:),     ALLOCATABLE :: converge_property
-  CHARACTER(LEN=500)            :: error_message
+  CHARACTER(LEN=256)            :: engine_units                     !< @brief variable contains the Engine[/units] 
+  CHARACTER(LEN=10)             :: struc_format_out                 !< @brief output format for the configuration
+  CHARACTER(LEN=10), PARAMETER  :: def_struc_format_out = 'xsf'     !< @brief default value of struc_format_out
+  CHARACTER(LEN=3), ALLOCATABLE :: elements(:)                      !< @brief Array containing the element name in the system
+  CHARACTER(:),     ALLOCATABLE :: converge_property                !< @brief Define the way to compute the force convergence (MAXVAL or NORM)
+  CHARACTER(LEN=500)            :: error_message                    !< @brief Variable to store the error message
   !
-  NAMELIST/artn_parameters/ lrestart, lrelax, lpush_final, lmove_nextmin, &
-       ninit, neigen, nperp, lanczos_max_size, nsmooth, push_mode, dist_thr,  &
+  NAMELIST/artn_parameters/ &
+       lrestart, lrelax, lpush_final, lmove_nextmin, &                                 !! FLAG
+       ninit, neigen, nperp, lanczos_max_size, nsmooth, &                              !! counter
+       push_mode, dist_thr, push_ids, add_const, &                                     !! constrain
        init_forc_thr,forc_thr, fpara_thr, eigval_thr, frelax_ene_thr, &
-       push_step_size, lanczos_disp, eigen_step_size, current_step_size, push_over, &
-       push_ids, add_const, engine_units, zseed, struc_format_out, elements, &
-       verbose, filout, sadfname, initpfname, eigenfname, restartfname, nnewchance,&
-       converge_property, lanczos_eval_conv_thr, push_guess, eigenvec_guess,  &
-       nperp_limitation, lnperp_limitation, lanczos_min_size, lanczos_always_random, etot_diff_limit
-  ! 
-  ! Curvature
-  REAL(DP), allocatable :: f0(:)
-  REAL(DP) :: rcurv
-  !
+       lanczos_eval_conv_thr, converge_property,   &                                   !! Threshold
+       push_step_size, lanczos_disp, eigen_step_size, current_step_size, push_over, &  !! Displacement length
+       engine_units, struc_format_out, elements, push_guess, eigenvec_guess,   &
+       filout, sadfname, initpfname, eigenfname, restartfname,  &                      !! Filename and format
+       verbose, zseed,  &
+       ! -- OPTION
+       nperp_limitation, lnperp_limitation, nnewchance,  &
+       lanczos_always_random, etot_diff_limit, nrelax_print
+
+
+  !> @interface warning
+  !! @brief 
+  !!   generic name for \b warning_nothing \b , \b warning_int \b , \b warning_real \b and \b warning_char \b subroutine
   INTERFACE warning
     module procedure :: warning_nothing, warning_int, warning_real, warning_char
   END INTERFACE 
-  !
+
+
+
 CONTAINS
   !
   !
+  !---------------------------------------------------------------
+  !!> @brief \b SETUP_ARTN
   !
-  SUBROUTINE setup_artn( nat, iunartin, filnam )
-    !
-    !> @breif
-    !!   Sets defaults, reads input and creates ARTn output file
-    !
-    !> @param[in] nat Number of Atoms
-    !> @param[in] iunartin Channel of input
-    !> @param[in] filnam Input file name
-    !
+  !> @par Purpose
+  !  ============
+  !> Sets defaults, reads input and creates ARTn output file
+  !
+  !> @param[in] nat        INTEGER, Number of Atoms
+  !> @param[in] iunartin   INTEGER, Channel of input
+  !> @param[in] filnam     CHARACTER, Input file name
+  !> @param[in] error      LOGICAL, flag if there is an error
+  !
+  SUBROUTINE setup_artn( nat, iunartin, filnam, error )
+
     USE iso_c_binding, ONLY : C_SIZE_T
     USE units
     IMPLICIT NONE
@@ -209,6 +264,7 @@ CONTAINS
     ! -- Arguments
     INTEGER,             INTENT(IN) :: nat,iunartin
     CHARACTER (LEN=255), INTENT(IN) :: filnam
+    LOGICAL,             INTENT(OUT) :: error
     !
     ! -- Local Variables
     LOGICAL                         :: file_exists, verb
@@ -219,6 +275,8 @@ CONTAINS
     !
     verb = .true.
     verb = .false.
+    !
+    error = .false.
     !
     INQUIRE( file = filnam, exist = file_exists )
     !
@@ -271,6 +329,7 @@ CONTAINS
 
       prev_disp         = VOID
       prev_push         = VOID
+      restart_freq      = 0
       !
       old_lowest_eigval = HUGE(lanczos_disp)
       lowest_eigval     = 0.D0
@@ -287,6 +346,7 @@ CONTAINS
       nmin              = 0
       nsaddle           = 0
       nnewchance        = 0
+      nrelax_print      = 5   ! print every 5 RELX step
       !
       dist_thr          = NAN
       init_forc_thr     = NAN
@@ -299,7 +359,7 @@ CONTAINS
       eigen_step_size   = NAN
       !
       push_mode         = 'all'
-      struc_format_out  = 'xsf'
+      struc_format_out  = ''
      
       bilan = 0.0_DP
       !
@@ -374,7 +434,7 @@ CONTAINS
     !
     ! --- Read the counter file
     !
-    !> min counter file
+    !! min counter file
     ftmp = trim(prefix_min)//"counter"
     inquire( file=trim(ftmp), exist=file_exists )
     IF( file_exists )then
@@ -383,7 +443,7 @@ CONTAINS
       close( ios )
     endif
     !  
-    !> saddle counter file
+    !! saddle counter file
     ftmp = trim(prefix_sad)//"counter"
     inquire( file=trim(ftmp), exist=file_exists )
     IF( file_exists )then
@@ -414,6 +474,7 @@ CONTAINS
       1 format(x,a,x,g15.5)
       2 format(*(x,a))
     endif
+    !
     !
     ! ...Convert the default values parameters from Engine_units
     !! For the moment the ARTn units is in a.u. (Ry, L, T)
@@ -462,6 +523,12 @@ CONTAINS
     else;                   lanczos_eval_conv_thr = lanczos_eval_conv_thr ; endif
     !lanczos_eval_conv_thr = 1.D-2
     !
+    ! the default output format is xsf for QE, and xyz otherwise
+    if( struc_format_out == '' ) then
+       struc_format_out = def_struc_format_out
+       if( trim(engine_units) /= 'qe' ) struc_format_out = 'xyz'
+    endif
+    !
     if( verb )then
       write(*,2) repeat("*",50)
       write(*,2) "* Units:          ", trim(engine_units)
@@ -481,35 +548,74 @@ CONTAINS
     endif
     !
     !
+    ! Check for errors in input parameters:: (probably should be routine)
+    !
     ! ...Character verification
     converge_property = to_lower( converge_property )
     select case( converge_property )
       case( "norm", 'maxval' ); continue
       case default
-        call warning( iunartout, "Initialize_artn",  &
-          "converge_property has no good keyword (norm or maxval)" )
+        call warning( iunartout, "setup_artn",  &
+             "converge_property has no good keyword (norm or maxval)" )
+        error = .true.
+        error_message = " ;compute_property has unsupported value; "//trim(error_message)
+       print*, error_message
     end select
+    !
+    select case( struc_format_out )
+    case( 'xsf', 'xyz' ); continue
+    case default
+        call warning( iunartout, "setup_artn",  &
+             "struc_format_out does not exist" )
+       error = .true.
+       error_message = " ;struc_format_out has unsupported value; "//trim(error_message)
+       print*, error_message
+    end select
+    !
+    select case( trim(engine_units) )
+    case( 'qe','quantum_espresso','lammps/real','lammps/metal','lammps/lj'); continue
+    case default
+        call warning( iunartout, "setup_artn",  &
+             "engine_unit has unsupprted value" )
+       error = .true.
+       error_message = " ;engine_units has unsupported value; "
+       print*, error_message
+    end select
+
+    !! Retsart frenquence
+    select case( trim(engine_units) )
+      case( 'qe','quantum_espresso' ); restart_freq = 0
+      case('lammps/real','lammps/metal','lammps/lj'); restart_freq = 1
+      case default
+         call warning( iunartout, "setup_artn", "Write restart file at each ARTn calls" )
+    end select
+
     !
     ! set initial random seed from input, value zseed = 0 means generate random seed
     IF( zseed .EQ. 0) THEN
       !
       ! generate random seed
+      CALL random_seed()
       CALL random_number(z)
       z     = z *1e8
       zseed = INT(z)
     ENDIF
-    !> Save the seed for DEBUG
+    !! Save the seed for DEBUG
     OPEN( NEWUNIT=u0, file="random_seed.dat" )
     WRITE( u0, * )" zseed = ", zseed
     CLOSE( u0 )
     !
+
+
    CONTAINS
     !
     !........................................................
     elemental Function to_lower( str )Result( string )
-      !   ==============================
-      !   Changes a string to lower case
-      !   ==============================
+      !> @brief
+      !!   Changes a string to lower case
+      !
+      !> @param[in]   str     input
+      !> @return      string  output
       Implicit None
       Character(*), Intent(IN) :: str
       Character(LEN(str))      :: string
@@ -537,21 +643,28 @@ CONTAINS
 
 
 
-!---------------------------------------------------------------------------
+  !---------------------------------------------------------------------------
+  !> @brief \b FILL_PARAM_STEP
+  !
+  !> @par Purpose
+  !  ============
+  !>   Fill the *_step arrays on which ARTn works on. \n
+  !!   For parallel Engine each proc has list from 1 to natproc:
+  !> @verbatim
+  !!   pos_eng( i ) is ordered such that order( i ) = iat 
+  !!   => pos( iat ) = pos_eng( i )
+  !!   Then pos( order(i) ) = pos_eng( i )
+  !> @endverbatim
+  !
+  !> @param[in]  nat    number of atoms
+  !! @param[in]  box    box parameters
+  !! @param[in]  order  index order of engine
+  !! @param[in]  pos    atomic position
+  !! @param[in]  etot   energy of the system
+  !! @param[in]  force  atomic force
+  !! @param[out] error   failure indicator
+  !
   SUBROUTINE Fill_param_step( nat, box, order, pos, etot, force, error )
-    !> @brief 
-    !!   fill the *_step arrays on which ARTn works on.
-    !!   For parallel Engine each proc has list from 1 to natproc,
-    !!   pos_eng( i ) such as order( i ) = iat means pos( iat ) = pos_eng( i )
-    !!   So pos( order(i) ) = pos_eng( i )
-    !
-    !> @param[in]  nat    number of atoms
-    !> @param[in]  box    box parameters
-    !> @param[in]  order  index order of engine
-    !> @param[in]  pos    atomic position
-    !> @param[in]  etot   energy of the system
-    !> @param[in]  force  atomic force
-    !> @param[out] error   failure indicator
     !
     use units, only : convert_energy, convert_force, convert_length
 
@@ -559,6 +672,7 @@ CONTAINS
     REAL(DP), INTENT(IN) :: box(3,3), etot, pos(3,nat), force(3,nat)
     LOGICAL, INTENT(OUT) :: error
 
+    !! reset the error message
     error = .false.
     error_message = ""
 
@@ -596,122 +710,16 @@ CONTAINS
   END SUBROUTINE Fill_param_step
 
 
-
   !
   !---------------------------------------------------------------------------
-  !SUBROUTINE write_restart( filnres, nat )
-  SUBROUTINE write_restart( filnres )
-    !
-    !> @breif Subroutine that writes the minimum parameters required for restart of a calculation
-    !! to a file
-    !!
-    ! LOGICAL FLAGS: linit, lperp, leigen, llanczos, lsaddle, lrelax
-    ! COUNTERS : istep, iinit, ilanc, ieigen, ismooth, nlanc
-    ! ARRAYS:
-    !  - LANCZOS: eigenvec, H, Vmat, force_old, lowest_eigval
-    !  - (INIT/SADDLE/STEP): etot, tau, force (, current_step_size, fpush_factor)
-    !
-    CHARACTER (LEN=255), INTENT(IN) :: filnres
-    !INTEGER, INTENT(IN) :: nat
-    INTEGER :: ios
-
-    OPEN( UNIT = iunartres, FILE = filnres, ACTION="WRITE", FORM = 'formatted', STATUS = 'unknown', IOSTAT = ios)
-    !OPEN( UNIT = iunartres, FILE = filnres, FORM = 'unformatted', ACCESS="SEQUENTIAL",  &
-    !      STATUS = 'unknown', ACTION="WRITE", IOSTAT = ios)
-
-    !WRITE ( iunartres, * ) linit, lperp, leigen, llanczos, lsaddle, lrelax, &
-    !     istep, iinit, ilanc, ieigen, ismooth, nlanc, nperp,  &
-    !     etot_init, etot_step, lowest_eigval, etot_saddle, etot_final, de_back, &
-    !     current_step_size, fpush_factor, &
-    !     tau_step, force_step, push, eigenvec, H, Vmat, force_old, tau_saddle, eigen_saddle
-    !WRITE ( iunartres, * ) linit, lperp, leigen, llanczos, lsaddle, lrelax, &
-    WRITE ( iunartres, * ) linit, lperp, leigen, llanczos, lpush_over, lrelax, &
-         iartn, istep, iinit, ieigen, iperp, ilanc, irelax, ismooth,   &
-         ninit, neigen, nlanc, lanczos_max_size, nperp, nmin, nsaddle, &
-         etot_init, &
-         etot_step, tau_step, force_step, current_step_size, fpush_factor, &    !> Actual step
-         eigenvec, H, Vmat, force_old, lowest_eigval, &
-         etot_saddle, tau_saddle 
-    !IF( llanczos )  &
-    !  WRITE( iunartres, * ) eigenvec, H, Vmat, force_old, lowest_eigval
-    !IF( lsaddle )  &
-    !  WRITE( iunartres, * ) etot_saddle, tau_saddle
-    CLOSE ( UNIT = iunartres, STATUS = 'KEEP')
-
-  END SUBROUTINE write_restart
+  !> @brief
+  !!   routine write warning
   !
-  !---------------------------------------------------------------------------
-  SUBROUTINE read_restart( filnres, nat, order, ityp, ierr )
-    !
-    ! Subroutine that reads the restart file, if a restart is requested
-    !
-    ! LOGICAL FLAGS: lpush_init, lperp, leigen, llanczos, lsaddle, lrelax
-    ! COUNTERS : istep, ipush, ilanc, ieigen, ismooth, nlanc
-    ! ARRAYS: eigenvec, H, Vmat
-    !
-    CHARACTER (LEN=255), INTENT(IN) :: filnres
-    LOGICAL :: file_exists
-    INTEGER :: ios
-    INTEGER :: nat, order(nat), ityp(nat)
-    LOGICAL, intent( out ) :: ierr
-    CHARACTER(LEN=255) :: fname
-
-    INQUIRE( file = filnres, exist = file_exists )
-    ierr = .NOT.file_exists
-    IF ( file_exists ) THEN
-       OPEN( UNIT = iunartres, FILE = filnres, ACTION="READ", FORM = 'formatted', STATUS = 'old', IOSTAT = ios)
-       !OPEN( UNIT = iunartres, FILE = filnres, FORM = 'unformatted', ACTION="READ", STATUS = 'OLD', IOSTAT = ios)
-       !READ ( iunartres, * ) linit, lperp, leigen, llanczos, lsaddle, lrelax, &
-       !     istep, iinit, ilanc, ieigen, ismooth, nlanc, nperp, &
-       !     etot_init, etot_step, lowest_eigval, etot_saddle, etot_final, de_back, &
-       !     current_step_size, fpush_factor,  &
-       !     tau_step, force_step, push, eigenvec, H, Vmat, force_old, tau_saddle, eigen_saddle
-       !READ( iunartres, * ) linit, lperp, leigen, llanczos, lsaddle, lrelax, &
-       READ( iunartres, * ) linit, lperp, leigen, llanczos, lpush_over, lrelax, &
-         iartn, istep, iinit, ieigen, iperp, ilanc, irelax, ismooth,   &
-         ninit, neigen, nlanc, lanczos_max_size, nperp, nmin, nsaddle, &
-         etot_init, &
-         etot_step, tau_step, force_step, current_step_size, fpush_factor, &   !> Actual step
-         eigenvec, H, Vmat, force_old, lowest_eigval, &
-         etot_saddle, tau_saddle
-       !IF( llanczos )  &
-       !  READ( iunartres, * ) eigenvec, H, Vmat, force_old, lowest_eigval
-       !IF( lsaddle )  &
-       !  READ( iunartres, * ) etot_saddle, tau_saddle
-       CLOSE ( UNIT = iunartres, STATUS = 'KEEP')
-
-       !> Maybe initialize de_back if needed
-
-       ! ...Read the initial configuration => push, tau_init
-       print*, "* RESTART:: init_structure file exist: ", trim(initpfname)
-       if( .not.allocated(tau_init) )allocate( tau_init, source=tau_step)
-       SELECT CASE( struc_format_out )
-         CASE( 'xsf' )
-           fname = TRIM(initpfname)//"."//TRIM(struc_format_out)
-           CALL read_xsf( lat, nat, tau_init, order, elements, ityp, push, fname )
-
-         CASE( 'xyz' )
-           fname = TRIM(initpfname)//"."//TRIM(struc_format_out)
-           CALL read_xyz( lat, nat, tau_init, order, elements, ityp, push, fname )
-       END SELECT
-
-    ELSE
-
-       WRITE(iunartout,*) "ARTn: restart file does not exist, exiting ..."
-
-    ENDIF
-
-
-    !print*,"* RESTART::"
-    !print*, nat 
-
-  END SUBROUTINE read_restart
-
-
+  !> @param[in]   u0     output unit chanel
+  !> @param[in]   STEP   name of function you call warning
+  !> @param[in]   text   comment for the user
   !
-  !---------------------------------------------------------------------------
   SUBROUTINE warning_nothing( u0, STEP, text )
-
     integer, intent( in ) :: u0
     character(*), intent( in ) :: STEP, text
 
@@ -721,8 +729,16 @@ CONTAINS
 
   END SUBROUTINE warning_nothing
 
+  !> @brief 
+  !!   routine write warning
+  !
+  !> @param[in]   u0     output unit chanel
+  !> @param[in]   STEP   name of function you call warning
+  !> @param[in]   text   comment for the user
+  !> @param[in]   intv   vector of integer
+  !
   SUBROUTINE warning_int( u0, STEP, text, intv )
-
+    !
     integer, intent( in ) :: u0, intv(:)
     character(*), intent( in ) :: STEP, text
 
@@ -735,8 +751,15 @@ CONTAINS
   END SUBROUTINE warning_int
 
 
+  !> @brief 
+  !!   routine write warning
+  !
+  !> @param[in]   u0     output unit chanel
+  !> @param[in]   STEP   name of function you call warning
+  !> @param[in]   text   comment for the user
+  !> @param[in]   realv   vector of real
+  !
   SUBROUTINE warning_real( u0, STEP, text, realv )
-
     integer, intent( in ) :: u0
     REAL(DP), intent( in ) :: realv(:)
     character(*), intent( in ) :: STEP, text
@@ -750,8 +773,15 @@ CONTAINS
   END SUBROUTINE warning_real
 
 
+  !> @brief 
+  !!   routine write warning
+  !
+  !> @param[in]   u0     output unit chanel
+  !> @param[in]   STEP   name of function you call warning
+  !> @param[in]   text   comment for the user
+  !> @param[in]   charv   vector of character
+  !
   SUBROUTINE warning_char( u0, STEP, text, charv )
-
     integer, intent( in ) :: u0
     character(*), intent( in ) :: charv(:)
     character(*), intent( in ) :: STEP, text
@@ -764,9 +794,12 @@ CONTAINS
   END SUBROUTINE warning_char
 
 
+ 
   !---------------------------------------------------------------------------
+  !> @brief 
+  !!   routine that turn off all the block flag 
+  !
   subroutine flag_false()
-
     implicit none
 
     lrelax = .false.
@@ -777,6 +810,7 @@ CONTAINS
     leigen = .false.
     !lsaddle = .false.
     lpush_over = .false.
+    lrestart = .false.
 
   end subroutine flag_false
 
@@ -791,10 +825,10 @@ CONTAINS
     !!   Random number generator.
     !
     !> @param [in] idum   dummy integer: on first call to ran3, this is the seed,
-    !                                    its value is put to 1 after the first
-    !                                    call. If the calling program modifies it
-    !                                    to a negative number, the generator is
-    !                                    re-seeded.
+    !!                                    its value is put to 1 after the first
+    !!                                    call. If the calling program modifies it
+    !!                                    to a negative number, the generator is
+    !!                                    re-seeded.
     !> @return a real(8) ramdom number
     !
     !
@@ -847,7 +881,16 @@ CONTAINS
   END FUNCTION ran3
 
 
+  !..................................................
   function dot_field( n, dx, dy )result( res )
+    !> @brief 
+    !!   Scalar product of 2 arrays
+    !
+    !> @param[in] n   size of array
+    !> @param[in] dx  array dx  
+    !> @param[in] dy  array dy 
+    !! @return  scalar product dx*dy
+    !
     use units, only : DP
     implicit none
     integer, intent(in) :: n
@@ -863,263 +906,64 @@ CONTAINS
     enddo
     res = tmp
   end function dot_field
+
+  !..................................................
+  !> @brief
+  !!   make real(DP) random array normalized with a possibility to 
+  !!   give a bias to the randomness  
+  !
+  !> @param[in]      n     length of the arrays
+  !> @param[inout]   v     array has to be random
+  !> @param[in]      bias  specific direction use to orient the randomization (optional)
+  !! @param[in]      seed  Seed for random number generator (optional)
+  !
+  SUBROUTINE random_array( n, v, bias, seed )
+    implicit none
+ 
+    integer, intent( in ) :: n
+    real(DP), intent( out ) :: v(*)
+    real(DP), intent( in ), optional :: bias(*)
+    integer, intent( in ), optional :: seed
+ 
+    integer :: i, iidum
+    REAL(DP) :: z, vnorm, vbias(n)
+    real(DP), external :: dsum
+ 
+    ! ...BIAS OPTION
+    vbias = 1.0_DP
+    if( present(bias) )then
+      do i = 1,n
+         vbias(i) = bias(i)
+      enddo
+    endif
+ 
+    ! ...SEED OPTION
+    if( present(seed) )then
+      iidum = seed
+    else
+      CALL random_number(z)
+      z = z *1e8
+      iidum = INT(z)
+    endif
+
+    ! ...Random Vector
+    DO i = 1, n
+       !! Antoine update
+       v( i ) = (0.5_DP - ran3(iidum))*vbias( i )
+    ENDDO
+ 
+    ! normalize
+    vnorm = 1.0_DP / sqrt(dsum(n,v))
+    DO i = 1,n
+       v(i) = v(i) * vnorm
+    ENDDO
+
+  END SUBROUTINE random_array
     
 END MODULE artn_params
+! ======================================================================== END MODULE 
  
  
-
-!......................................................................... FUNCTION
-integer function get_iperp()
-  !> @brief 
-  !!   give the parameters IPERP
-  !> @return  iperp
-  USE artn_params, only : iperp
-  get_iperp = iperp
-end function get_iperp
-
-
-integer function get_perp()
-  !> @brief 
-  !!   give the parameters PERP
-  !> @return  PERP
-  USE artn_params, only : perp
-  get_perp = perp
-end function get_perp
-
-
-integer function get_relx()
-  !> @brief 
-  !!   give the parameters RELX
-  !> @return RELX
-  USE artn_params, only : relx
-  get_relx = relx
-end function get_relx
-
-
-
-SUBROUTINE make_filename( f, prefix, n )
-
-  character(*), intent(out) :: f
-  character(*), intent(in) :: prefix
-  integer,      intent(inout) :: n
-
-  character(len=4) :: ctmp
-  character(len=256) :: fcounter
-  integer :: o0
-
-  n = n + 1
-  write( ctmp, '(I0.4)') n
-  f = trim(prefix)//trim(ctmp)
-
-  fcounter = trim(prefix)//"counter"
-  open( newunit=o0, file=fcounter, action="write" )
-    write( o0, '(x,"counter:",2(x,a))' ) trim(prefix), trim(ctmp)
-  close( o0 )
-
-END SUBROUTINE make_filename
-
-
-
-
-!......................................................................... DEBUGING 
-
-subroutine info_field( u0, n, v, txt )
-  use units, only : DP
-  implicit none
-
-  integer, intent(in) :: u0, n
-  real(DP), intent(in) :: v(3,n)
-  character(*), intent(in) :: txt
-
-  integer :: i
-  real(DP) :: lmax, vtot
-  real(DP), external :: dsum
-
-  write(u0,'("****** INFO FIELD:",x,a)') trim(txt)
-
-  lmax = 0.0_DP
-  do i = 1,n
-     lmax = max( lmax, norm2(v(:,i)) )
-  enddo
-  call sum_force( v, n, vtot )
-  vtot = dsum( 3*n, v )
-
-  write(u0,'("* total field: ",g12.4," | max norm: ",g12.4/)') vtot, lmax
-
-end subroutine info_field
-
-
-subroutine compute_curve( iter, n, r, f )
-
-  use units, only : DP, convert_length
-  use artn_params, only : tau_step, f0, rcurv
-  implicit none
-
-  integer, intent(in) :: iter, n
-  REAL(DP), intent(in) :: f(*), r(*)
-
-  real(DP) :: df(n), dr(n),nf
-
-  IF( iter == 0 )THEN
-
-    !r0 = [ convert_length(r(1:n)) ]
-    f0 = [ f(1:n) ]
-    rcurv = 0.0
-
-  ELSE
-
-    rcurv = ( MAXVAL(ABS(f(1:n))) - MAXVAL(ABS(f0(1:n))) ) / MAXVAL(ABS(f0(1:n)))
-    !dr = convert_length(r(1:n)) - r0(1:n)
-    !curv = [ df(1:n) / dr(1:n) ]
-    !rcurv =  MAXVAL(df/dnrm(f0)) 
-
-    f0 = [ f(1:n) ]
-    !r0 = [ convert_length(r(1:n)) ]
-
-  ENDIF
-
-
-end subroutine compute_curve
-
-
-subroutine fire2_integration( istep, n, f, v, dt, alpha, delaystep, rmax )
-
-  !> @brief 
-  !!    Fire intgration following FIRE in lammps
-
-  use units, only : DP 
-  use artn_params, only : u => iunartout, filout
-  implicit none
-
-  integer, intent( IN ) :: istep, n, delaystep
-  REAL(DP), intent( in ) :: f(3,n), v(3,n), dt, alpha
-  real(DP), intent( out ) :: rmax
-
-  integer :: last_neg, step_start, nmov, i
-
-  real(DP) :: vdotv, vdotf, fdotf, a1, a2, dtv, dtf, dtfm, ftm2v, mass, &
-              dmax, vmax, dtgrow, dtshrink, dtmin, dtmax,  &
-              alfa, alpha0, alpha_shrink
-  real(DP) :: rsum
-  real(DP) :: x(3,n), vloc(3,n), dr2(n)
-  logical :: flagv0, halfback
-
-  real(DP), external :: ddot, dsum
-
-  !! -- Parameters
-  halfback = .true.
-  ftm2v = 9648.53_DP
-  mass = 1.0_DP
-  dmax = 0.5_DP
-  dtgrow = 1.1
-  dtshrink = 0.5
-  dtmin = 6.0e-6
-  dtmax = 0.006
-  alpha0 = 0.0
-  alpha_shrink = 0.9
-  !! --------------------
-
-
-  if( istep == 1 )step_start = istep
-  vdotv = ddot( 3*n, v, 1, v, 1 )
-  vdotf = ddot( 3*n, v, 1, f, 1 )
-  fdotf = ddot( 3*n, f, 1, f, 1 )
-
-  dtv = dt
-
-  flagv0 = .false.
-  if( vdotf > 0.0_DP )then
-    a1 = 1. - alpha
-    if( fdotf < 1.0e-8 )then; a2 = 0.0
-    else; a2 = alpha * sqrt( vdotv / fdotf )
-    endif
-    !! delaystep 
-    if( istep - last_neg > delaystep )then
-      dtv = MIN(dt*dtgrow, dtmax)
-      alfa = alpha * alpha_shrink
-    endif
-    call dcopy( 3*n, v, 1, vloc, 1 )
-  else 
-    last_neg = istep
-    !! delaystep
-    if( .not.(istep - step_start < delaystep) )then
-      alfa = alpha0
-      if( dt*dtshrink >= dtmin )dtv = dt*dtshrink
-    endif
-    if( halfback ) x = x - 0.5 * dtv * v
-    flagv0 = .true.
-    vloc = 0.0
-  endif
-
-  !! now we work with vloc
-
-  dtfm = dtv * ftm2v / mass
-  if( flagv0 ) vloc = f * dtfm
-
-  ! ...Rescale dtv
-  !dtv = dt 
-  vmax = MAXVAL( ABS(vloc) )
-  if( dtv*vmax > dmax )dtv = dmax / vmax
-
-  if( flagv0 )vloc = 0.0_DP
-
-  
-  ! ...Euler integration
-
-  dtf = dtv * ftm2v 
-  dtfm = dtf / mass
-  vloc = vloc + dtfm * f
-  if( vdotf > 0.0_DP )vloc = a1 * vloc + a2 * f
-  x = x + dtv * vloc
-
-
-  ! ...Analysis
-
-  !write(*,'("******* FIRE INTEGRATION ANALYSIS::",x,i0)') istep
-  !write(*,'("* MAX displacment",x,f10.4)') MAXVAL(ABS(x))
-  !write(*,'("* sum displcmeemt",x,f10.4)') sqrt( dsum(3*n,x) )
-
-  rmax = 0.0
-  dr2 = 0.0
-  do i = 1,n
-     dr2(i) = dot_product( x(:,i), x(:,i))
-     rmax = MAX(rmax, dr2(i))
-  enddo
-  nmov = 0
-  rsum = 0.0
-  do i = 1,n
-     if( dr2(i) > rmax*(1.-0.05)**2 )then
-       nmov = nmov + 1
-       rsum = rsum + sqrt(dr2(i))
-     endif
-  enddo
-  rmax = sqrt( rmax )
-  
-  OPEN ( UNIT = u, FILE = filout, FORM = 'formatted', STATUS = 'old', POSITION = 'append' )
-
-  write(u,'(5x,"|> ",i3," FIRE integration: rmax",x,g10.4,x,"| sum_d",x,g10.4,x,"| ",i0,x,g10.4)') &
-     istep,  rmax, sqrt( dsum(3*n,x) ), nmov, rsum
-
-  close( unit=u, STATUS='KEEP' )
-
-
-end subroutine fire2_integration 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -1,15 +1,31 @@
 
+!> @author
+!!   Nicolas Salles
+!!   Matic Poberznik
+!!   Miha Gunde
 
+!> @brief
+!!   Allow to load the new minimum found at the end of the research
+!
+!> @param[in]      nat     number of atom
+!! @param[inout]   pos     atomic position
+!
+!> @ingroup Control
+!
+!> @snippet nextmin.f90 move
+!
 SUBROUTINE move_nextmin( nat, pos )
-
+  !
+!> [move]
   USE UNITS, only : DP
   USE artn_params, only : tau_nextmin, etot_init, etot_final
   implicit none
 
+  ! -- arguments
   INTEGER, INTENT(in) :: nat
   REAL(DP), INTENT(inout) :: pos(3,nat)
-  !LOGICAL, intent(in) :: lnext
 
+  !LOGICAL, intent(in) :: lnext
 
 
   if( .not.allocated(tau_nextmin) )then
@@ -25,20 +41,37 @@ SUBROUTINE move_nextmin( nat, pos )
     write(*,'(5x,"*** ARTn:: Next minimum loaded ")')
 
   endif
+!> [move]
 
 END SUBROUTINE move_nextmin
 
 
+!> @author
+!!   Nicolas Salles
+!!   Matic Poberznik
+!!   Miha Gunde
 
+!> @brief 
+!!   Save the configuration of new minimum if the distance from the 
+!!   initial minimum is greater than a threshold Rc
+!
+!> @param[in]      nat     number of atom
+!! @param[inout]   pos     atomic position
+!!
+!> @ingroup Control
+!!
+!> @snippet nextmin.f90 save
 SUBROUTINE save_min( nat, pos )
-
+!> [save]
   USE UNITS, only : DP, unconvert_length
   USE artn_params, only : tau_init, lat, tau_nextmin
   implicit none
 
+  ! -- Arguments
   INTEGER, INTENT(in) :: nat
   REAL(DP), INTENT(inout) :: pos(3,nat)  ! it is in ARTn units (bohr)
 
+  ! -- local variables
   REAL(DP) :: delr(3,nat), dr2, dr1, Rc
   REAL(DP), external :: dsum
 
@@ -71,6 +104,7 @@ SUBROUTINE save_min( nat, pos )
     write(*,*) " *** ARTn:: The minimum found is the initial minimum "
 
   endif
+!> [save]
 
 END SUBROUTINE save_min
 

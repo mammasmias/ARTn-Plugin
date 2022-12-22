@@ -1,0 +1,90 @@
+     --------------------------------------------------
+                     ARTn plugin                       
+     --------------------------------------------------
+      
+                    INPUT PARAMETERS                   
+     --------------------------------------------------
+     engine_units: qe
+     Verbosity Level:  0
+     --------------------------------------------------
+     Simulation Parameters:
+     --------------------------------------------------
+             * Iterators Parameter: 
+               ninit           =      3
+               nperp           =      4
+               neigen          =      1
+               nsmooth         =      0
+             * Threshold Parameter: 
+               converge_property = maxval
+               init_forc_thr     =  0.010  Ry/a.u.
+               forc_thr          =  0.001  Ry/a.u.
+               fpara_thr         =  0.005  Ry/a.u.
+               eigval_thr        = -0.010  Ry/a.u.**2
+               frelax_ene_thr    =  0.000  Ry
+             * Step size Parameter: 
+               push_step_size  =   0.40  a.u.
+               eigen_step_size =   0.40  a.u.
+               push_over       =  1.000  fraction of eigen_step_size
+               push_mode       =   list
+     --------------------------------------------------
+     Lanczos algorithm:
+     --------------------------------------------------
+               lanczos_max_size   =     16
+               lanczos_disp           =  0.1000E-01  a.u.
+               lanczos_eval_conv_thr   =  0.1000E-01
+     --------------------------------------------------
+
+
+
+     |> ARTn research : 1 0
+     --------------------------------------------------
+     istep    ART_step    Etot     init/eign/perp/lanc/relx     Ftot       Fperp      Fpara     eigval      delr  npart evalf  a1
+                           [Ry]                               -----------[Ry/a.u.]-----------  [Ry/a.u.**2]   [a.u.]
+        0   Bstep void    0.0000     0    0    0    0    0     0.0001     0.0001     0.0001     0.0000     0.0000     0     1   0.00
+        1   Bstep init    0.0054     1    0    0    0    0     0.0179     0.0052     0.0179     0.0000     0.4000     1     2   0.00
+        2   Bstep init    0.0190     2    0    0    0    0     0.0293     0.0118     0.0293     0.0000     0.8000     1     3   0.00
+        3   Bstep init    0.0344     3    0    2    0    0     0.0327     0.0174     0.0327     0.0000     1.2015     1     6   0.00
+        4   Bstep init    0.0446     4    0    3   14    0     0.0266     0.0158     0.0266    -0.0068     1.6150     1    24   0.11
+        5   Sstep eign    0.0499     4    1    3    5    0     0.0156     0.0089     0.0120    -0.0190     2.0278     5    33   0.99
+        6   Sstep eign    0.0550     4    2    0    5    0     0.0065     0.0069     0.0044    -0.0313     2.4198     5    39   0.99
+        7   Sstep eign    0.0550     4    3    3    5    0     0.0034     0.0034     0.0001    -0.0325     2.6788     5    48   0.99
+     --------------------------------------------------
+     |> ARTn found a potential saddle point | E_saddle - E_initial =     0.05427 Ry
+     |> Stored in Configuration Files: * Start: initp | sad0001
+     --------------------------------------------------
+     |> DEBRIEF | dE=      0.05501 Ry | F_{tot,para,perp}=      0.00344      0.00013      0.00344 Ry/a.u. | EigenVal=     -0.03251 Ry/a.u.**2 | npart=   5.  | delr=      2.67876 a.u. | evalf=   48. |
+            *** Pushing forward to a minimum  ***      
+     -------------------------------------------------
+     |> number of steps: 52
+        7   Rstep relx    0.0029     4    3    5    0    5     0.0061     0.0061     0.0033    -0.0325     5.0329    25    59   0.99
+        7   Rstep relx    0.0010     4    3    0    0   10     0.0037     0.0036     0.0033    -0.0325     5.2154    21    64   0.99
+        7   Rstep relx    0.0002     4    3    0    0   15     0.0015     0.0015     0.0005    -0.0325     5.1811    21    69   0.99
+        7   Rstep relx    0.0000     4    3    0    0   20     0.0012     0.0006     0.0013    -0.0325     5.1826    25    74   0.99
+     --------------------------------------------------
+     |> ARTn converged to a forward minimum | backward E_act =     0.05425 Ry
+     --------------------------------------------------
+     |> number of steps: 77
+     |> DEBRIEF | dE=      0.00004 Ry | F_{tot,para,perp}=      0.00124      0.00127      0.00061 Ry/a.u. | EigenVal=     -0.03251 Ry/a.u.**2 | npart=   5.  | delr=      2.67876 a.u. | evalf=   74. |
+        7   Rstep relx    0.0109     4    3    0    0    5     0.0152     0.0059     0.0153    -0.0325     0.7994     5    85   0.99
+        7   Rstep relx    0.0010     4    3    0    0   10     0.0033     0.0033     0.0028    -0.0325     0.3955     0    90   0.99
+        7   Rstep relx    0.0002     4    3    0    0   15     0.0015     0.0015     0.0007    -0.0325     0.3709     0    95   0.99
+        7   Rstep relx    0.0000     4    3    0    0   20     0.0013     0.0006     0.0013    -0.0325     0.3598     0   100   0.99
+        7   Rstep relx    0.0000     4    3    0    0   25     0.0009     0.0004     0.0010    -0.0325     0.3592     0   105   0.99
+     --------------------------------------------------
+         *** ARTn converged to a backward minimum ***   
+     --------------------------------------------------
+               forward  E_act =     0.05426 Ry
+               backward E_act =     0.05425 Ry
+               reaction dE    =    -0.00001 Ry
+               dEinit - dEfinal    =    -0.00002 Ry
+     --------------------------------------------------
+     |> Configuration Files: * Start: initp | sad0001 | min0001 | min0002
+     |> Configuration Files: * Start: initp | sad0001 | min0001 | min0002
+     --------------------------------------------------
+     |> DEBRIEF | dE=      0.00002 Ry | F_{tot,para,perp}=      0.00094      0.00096      0.00037 Ry/a.u. | EigenVal=     -0.03251 Ry/a.u.**2 | npart=   5.  | delr=      2.67876 a.u. | evalf=  105. |
+     |> BLOCK FINALIZE..
+     |> number of steps: 104
+     !> CLEANING ARTn | Fail: 0
+     --------------------------------------------------
+
+

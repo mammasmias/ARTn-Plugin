@@ -1,6 +1,5 @@
 #This script runs 10 differents searchs,
 #each located on one of the 2 oxygen atoms.
-LAMMPS_PATH=/home/mgunde/lammps/lammps-stable_29Sep2021_update3/src
 RANDOM=42  # Permits to have exactly the same jobs
 nevent=10
 for ievent in `seq 0 $nevent`; do
@@ -13,8 +12,7 @@ for ievent in `seq 0 $nevent`; do
     echo "push_ids = $((1201 + RANDOM % 2 ))">>artn.in
     echo "zseed = $((1 + RANDOM % 1000 ))">>artn.in
     echo "/">>artn.in
-    #mpirun -np 1 $LAMMPS_PATH/lmp_mpi -in lammps.in
-    $LAMMPS_PATH/lmp_serial -in lammps.in
+    mpirun -np 1 $LAMMPS_PATH/lmp_mpi -in lammps.in
     cd ../
 done
 grep Fail run_*/artn.out

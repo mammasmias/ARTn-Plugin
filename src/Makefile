@@ -1,5 +1,4 @@
 
-#include ${QE_PATH}/make.inc
 include ../environment_variables
 
 OBJ := Obj
@@ -25,23 +24,28 @@ LIB_OBJECTS := \
 	    $(OBJ)/move_mode.o \
 	    $(OBJ)/write_report.o \
 	    $(OBJ)/write_struct.o \
+	    $(OBJ)/restart.o \
             $(OBJ)/nextmin.o \
+            $(OBJ)/get_functions.o \
+            $(OBJ)/make_filename.o \
             $(OBJ)/read_guess.o \
             $(OBJ)/start_guess.o \
             $(OBJ)/nperp_limitation.o \
+            $(OBJ)/fperp_min_alignment.o \
             $(OBJ)/clean_artn.o \
             $(OBJ)/artn.o \
             $(OBJ)/artn_QE.o
+	    #$(OBJ)/DEBUG.o \
 
 
-FDEBUG := -g -fcheck=all #-check all  #-fcheck=all
+FDEBUG := -g -fcheck=all -Wall #-check all  #-fcheck=all
 
 ifeq ($(F90),ifort)
   MOD   := -module $(OBJ)
   FLAGS := $(FFLAGS) $(FDEBUG) $(LAPACK_LIBS) -fPIC
 else #($(F90),gfortran)
   MOD   := -I$(OBJ) -J$(OBJ) 
-  FLAGS := $(FFLAGS) $(FDEBUG) $(LAPACK_LIBS)
+  FLAGS := $(FFLAGS) $(FDEBUG) $(LAPACK_LIBS) -fPIC
 endif
 
 

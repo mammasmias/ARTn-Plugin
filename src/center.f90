@@ -1,13 +1,17 @@
 !
-!> @author
-!!  Matic Poberjnik,
-!!  Miha Gunde
+!> @author Matic Poberznik
+!! @author Miha Gunde
+!! @author Nicolas Salles
 !
-!> @brief
+!> @brief 
 !!   takes as input a vector of size (3,nat) and centers it
 !
-SUBROUTINE center ( vec, nat)
-  USE artn_params, ONLY: DP
+!> @param[in]     nat    number of atom
+!! @param[inout]  vec    output vector
+!
+SUBROUTINE center ( vec, nat )
+  !
+  USE units, ONLY: DP
   !
   !
   IMPLICIT none
@@ -27,3 +31,4 @@ SUBROUTINE center ( vec, nat)
 
 
 END SUBROUTINE center
+

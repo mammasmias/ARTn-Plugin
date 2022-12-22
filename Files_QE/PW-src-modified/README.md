@@ -1,10 +1,13 @@
 # A summary of changes to the PW/src/  files of QE: 
+
   - `dynamics_modules.f90`: [**fire**]
 
-    **line 47, lines 76-85**: global variables of the fire minimization algorithm
+    **line 47, lines 76-85**:  global variables of the fire minimization algorithm
+
     ```fortran
     PUBLIC :: fire_nmin, fire_f_inc, fire_f_dec, fire_alpha_init, fire_falpha, fire_dtmax
     ```
+
     and
     ```fortran
     !! 
@@ -88,7 +91,7 @@
                                trust_radius_ini, bfgs_ndim, &
                                fire_nmin, fire_f_inc, fire_f_dec, &
                                fire_alpha_init, fire_falpha, fire_dtmax
-     ```
+    ```
      **lines 407-417** : overwrite the fire variables of the dynamics_module with values from input_parameters
 
      ```fortran
@@ -134,5 +137,5 @@
         WRITE (*,*) "ARTn calculation converged, stopping" 
         STOP 1
      END IF
- 
-    ``` 
+     
+    ```

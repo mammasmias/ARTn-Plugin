@@ -1,29 +1,40 @@
+
 !> @author
-!!  Matic Poberznik,
+!!  Matic Poberznik
 !!  Miha Gunde
+!!  Nicolas Salles
+
+!
+!> @brief
+!!   Lanczos subroutine for the ARTn algorithm
+!!
+!> @par Purpose
+!  ============
+!> The idea is to overwrite the 'force' with the vector of desired move,
+!! according to Lanczos diagonalisation algorithm. \n The array 'force' (input)
+!! contains the real forces on structure.
+!
+!> @param [in]      nat              number of atoms
+!> @param [in]      v_in            Input lanczos vector: only used in first step of each lanczos call
+!> @param [in]      pushdir         List of Direction of push on atoms
+!> @param [in]      force            array of Forces on the atoms
+!> @param [in,out]   ilanc           current step of lanczos
+!> @param [in,out]   nlanc        maximal number of Lanczos steps, at convergence gets overwritten with ilanc value
+!> @param [in,out]   lowest_eigval   Lowest eigenvalue obtained by lanczos algo
+!> @param [in,out]   lowest_eigvec   Lowest eigenvector obtained by lanczos algo
+!> @param [out]     displ_vec       The displacement to perform
+!!
+!> @ingroup Control Block
+!!
+!> @snippet lanczos.f90 lanczos
+!!
 SUBROUTINE lanczos( nat, v_in, pushdir, force, &
      ilanc, nlanc, lowest_eigval, lowest_eigvec, displ_vec )
   !
+!> [lanczos]
   USE artn_params, ONLY: DP, Vmat, H, force_old, lanczos_disp, lanczos_eval_conv_thr, &
                          lanczos_min_size
   USE units,       ONLY: unconvert_length, unconvert_hessian
-  !
-  !> @brief
-  !!   Lanczos subroutine for the ARTn algorithm;
-  !! based on the lanczos subroutine as written by M. Gunde
-  !!
-  !! The idea is to overwrite the 'force' with the vector of desired move,
-  !! according to Lanczos diagonalisation algorithm. The array 'force' on input
-  !! contans the real forces, but gets overwritten with the desired move on output.
-  !
-  !> @param [in]      nat	       number of atoms
-  !> @param [in]      v_in	      Input lanczos vector: only used in first step of each lanczos call
-  !> @param [in]      pushdir	      List of Direction of push on atoms
-  !> @param [inout]   force	      on input: array of Forces on the atoms
-  !> @param [inout]   lowest_eigvec   Lowest eigenvector obtained by lanczos algo
-  !> @param [inout]   lowest_eigval   Lowest eigenvalue obtained by lanczos algo
-  !> @param [inout]   ilanc	      current step of lanczos
-  !
   IMPLICIT NONE
   !
   ! -- ARGUMENTS
@@ -38,7 +49,7 @@ SUBROUTINE lanczos( nat, v_in, pushdir, force, &
   REAL(DP), DIMENSION(3,nat), INTENT(OUT)   :: displ_vec
   !
   ! -- LOCAL VARIABLES
-  INTEGER                                   :: i, j, io, id_min
+  INTEGER                                   :: i, j, id_min
   REAL(DP), ALLOCATABLE                     :: v1(:,:), q(:,:), eigvals(:)
   REAL(DP)                                  :: dir
   REAL(DP), EXTERNAL                        :: ran3,dnrm2,ddot
@@ -119,7 +130,6 @@ SUBROUTINE lanczos( nat, v_in, pushdir, force, &
      ! write(785,*) 1, lowest_eigval_old, lowest_eigval, abs(eigval_diff)
      !
      IF ( abs(lowest_eigval_old) > 0.0_DP ) THEN
-!        IF ( ABS(eigval_diff) <= lanczos_eval_conv_thr ) THEN
         IF ( ilanc .ge. lanczos_min_size .and. ABS(eigval_diff) <= lanczos_eval_conv_thr ) THEN
            !
            ! lanczos has converged
@@ -178,7 +188,7 @@ SUBROUTINE lanczos( nat, v_in, pushdir, force, &
      ! Hstep now stores eigvecs of H
      ! eigvecs in coordinate space are computed as matmul(V, lowest_eigvec_H )
      !
-     ! Multiply matrices (V_1 | ... | V_ilanc)*H(min)=eigen(min) using dgemm of lapack
+     ! Multiply matrices (V_1 | ... | V_ilanc)*H(min)=eigen(min) using dgemm of lapack:
      !
      ! The call to dgemm contains:
      ! (see http://www.math.utah.edu/software/lapack/lapack-blas/dgemm.html)
@@ -198,7 +208,10 @@ SUBROUTINE lanczos( nat, v_in, pushdir, force, &
      !
      CALL dgemm('N','N',3*nat,1,ilanc,1.0_DP,Vmat(:,:,1:ilanc),3*nat,Hstep(:,id_min),ilanc,0.0_DP,lowest_eigvec,3*nat)
      !
-     ! check if the obtained eigenvec points in the same direction as the pushing direction
+     ! The direction of the obtained eigenvector is random at this point, since both +/- directions
+     ! are valid solutions.
+     ! Check if the eigenvec points in the same direction as the pushing direction,
+     ! if not, flip it. This is to coherently keep the same direction throughout the research.
      !
      dir = ddot(3*nat,lowest_eigvec,1, pushdir, 1)
      !write (*,*) "Lanczos::Debug dir:", dir
@@ -244,6 +257,8 @@ SUBROUTINE lanczos( nat, v_in, pushdir, force, &
            !
            ! new lanczos vector very small, stop (converge)
            !
+           ! In theory, this should happen only when ilanc exceeds the dimensionality of the problem (~3N)
+           !
            ! write(785,*) 'new vector small!'
            !
         ELSE
@@ -280,10 +295,12 @@ SUBROUTINE lanczos( nat, v_in, pushdir, force, &
   !    v1(:,:) = v1(:,:) - Vmat(:,:,nlanc)
   ! ENDIF
   !
-  ! Overwrite displ_vec by the next vector displacement
+  ! Overwrite displ_vec by the next vector displacement, scaled to lanczos_disp
   !
-  displ_vec(:,:) = v1(:,:)
+  ! displ_vec(:,:) = v1(:,:)
+  displ_vec(:,:) = v1(:,:)*lanczos_disp
   !
   DEALLOCATE( q, v1 )
+!> [lanczos]
   !
 END SUBROUTINE lanczos
