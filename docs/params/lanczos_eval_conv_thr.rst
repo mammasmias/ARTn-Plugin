@@ -21,7 +21,10 @@ Default
 
 Description
 """""""""""
-Threshold for convergence of eigenvalue in Lanczos
+
+Threshold for convergence of eigenvalue in Lanczos. Once convergence is reached, the Lanczos scheme exits.
+
+In relative units.
 
 
 Unexpected behavior
@@ -30,3 +33,5 @@ Unexpected behavior
 
 Related commands
 """"""""""""""""
+
+:doc:`lanczos_max_size`, :doc:`lanczos_disp`

@@ -21,7 +21,8 @@ Default
 
 Description
 """""""""""
-Maximum number of Lanczos iterations
+
+Maximum number of Lanczos iterations. 
 
 
 Unexpected behavior
@@ -31,3 +32,4 @@ Unexpected behavior
 Related commands
 """"""""""""""""
 
+:doc:`lanczos_eval_conv_thr`, :doc:`lanczos_disp`

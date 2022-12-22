@@ -30,3 +30,5 @@ Unexpected behavior
 
 Related commands
 """"""""""""""""
+
+:doc:`lanczos_max_size`, :doc:`lanczos_eval_conv_thr`

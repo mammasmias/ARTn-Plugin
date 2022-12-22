@@ -8,7 +8,7 @@ Syntax
 
    push_guess = arg
 
-* arg = integer
+* arg = character
 
 
 Default
@@ -16,11 +16,15 @@ Default
 
 .. code-block:: bash
 
-   push_guess = 3
+   push_guess = " "
 
 
 Description
 """""""""""
+
+Filename to read the initial push vector, used in combination with ``push_mode='file'``.
+
+The file format is *xyz*, vector read from file is used as-is.
 
 
 Unexpected behavior
@@ -29,3 +33,5 @@ Unexpected behavior
 
 Related commands
 """"""""""""""""
+
+:doc:`push_mode`, :doc:`eigenvec_guess`

@@ -24,9 +24,9 @@ subprocess.call('doxygen Doxyfile.in', shell=True)
 
 
 project = 'plugin-ARTn'
-copyright = '2022, MAMMASMIAS'
-author = 'MG'
-release = '0.01'
+copyright = '2022, MAMMASMIAS Consortium'
+author = 'MP, MG, NS, AJ, AH, NR, NM, LMS'
+release = 'v0.1'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

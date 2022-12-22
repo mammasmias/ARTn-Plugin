@@ -16,11 +16,13 @@ Default
 
 .. code-block:: bash
 
-   neigen = 3
+   neigen = 1
 
 
 Description
 """""""""""
+
+Number of pushes along the eignevector before starting a perpendicular relax.
 
 
 Unexpected behavior

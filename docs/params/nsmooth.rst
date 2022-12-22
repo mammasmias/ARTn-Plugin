@@ -16,11 +16,13 @@ Default
 
 .. code-block:: bash
 
-   nsmooth = 3
+   nsmooth = 0
 
 
 Description
 """""""""""
+
+Number of smoothing steps from initial displacement to eigenvector.
 
 
 Unexpected behavior
