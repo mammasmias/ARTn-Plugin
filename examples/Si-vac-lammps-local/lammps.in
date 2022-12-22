@@ -65,9 +65,11 @@ min_style fire
 #            alpha_damp: does not work anymore
 
 
+plugin load /home/mammasmias-1/Nico/Project_pARTn/artn-plugin-qe/libartn.so
+plugin list
+
+
 minimize 1e-4 1e-5 10000 10000 
-
-
 
 
 variable natoms equal "count(all)" 

@@ -32,7 +32,10 @@ SUBROUTINE displacement_validation( atom_const, push, lvalid)
   !
   !write (*,*) " * ARTn: Called displacement validation:", atom_id 
   !write(*,*) " with cone_dir:",atom_const(1:3), "current push:", push(:)
+
+  !! direction of the cone axis, specified by add_const(1:3) input
   cone_dir = atom_const(1:3)
+  !! angle of the cone from axis
   cone_angle = atom_const(4)
   !print*, 
   !
@@ -47,6 +50,7 @@ SUBROUTINE displacement_validation( atom_const, push, lvalid)
   !write (*,*) "Finished displacement validation",lvalid  !&
           !, displacement_norm, cone_dir_norm, dot_prod, displacement_angle, atom_const
   !
+  ! angle specified is 0, overwrite push with cone axis
   IF ( cone_angle == 0.0_DP) THEN
      lvalid = .TRUE.
      !
@@ -56,34 +60,9 @@ SUBROUTINE displacement_validation( atom_const, push, lvalid)
      !print*, "**disp_valid",push, norm2(push)
   ENDIF
   !
+  ! When the atom is not pushed, constrain is useless, return valid
+  IF (all(push(:) .EQ. 0,1)) lvalid = .TRUE.
+  !
 END SUBROUTINE displacement_validation
-
-
-
-!...........................................................................................
-!subroutine apply_constrain( atom_const, push )
-
-!  use units, only : DP
-!  implicit none
-
-!  integer, intent(in) :: atom_const(4)
-!  REAL(DP), INTENT(INOUT) :: push(3)
-
-  ! Local variables
-!  REAL(DP)               :: cone_angle, displacement_angle
-!  REAL(DP)               :: dot_prod, displacement_norm, cone_dir_norm
-!  REAL(DP), DIMENSION(3) :: cone_dir,displacement
-!  REAL(DP) :: r1, r2, r3
-
-  
-  
-
-!end subroutine apply_constrain
-
-
-
-
-
-
 
 

@@ -2,6 +2,8 @@
 
 # COMPILER
 #F90=
+#CXX=mpicxx
+#CC=mpicc
 
 #
 # ARTn PATH
@@ -18,3 +20,11 @@ ART_PATH=`pwd`
 
 # prefix for running the examples in parallel, i.e., PARA_PREFIX = "mpirun -np 4" 
 # PARA_PREFIX= 
+
+
+## Path for the blas and fortran library
+# BLAS
+#BLAS_LIB= /usr/lib/x86_64-linux-gnu/libopenblas.a  -lpthread
+
+# FORTAN LIB
+#FORT_LIB= /usr/lib/x86_64-linux-gnu/libgfortran.so.5
