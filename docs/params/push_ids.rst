@@ -8,7 +8,7 @@ Syntax
 
    push_ids = arg
 
-* arg = integer
+* arg = integer(:) array
 
 
 Default
@@ -29,3 +29,5 @@ Unexpected behavior
 
 Related commands
 """"""""""""""""
+
+:doc:`push_mode`

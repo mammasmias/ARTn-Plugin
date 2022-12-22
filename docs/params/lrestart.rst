@@ -8,7 +8,7 @@ Syntax
 
    lrestart = arg
 
-* arg = integer
+* arg = logical
 
 
 Default
@@ -16,11 +16,13 @@ Default
 
 .. code-block:: bash
 
-   lrestart = 3
+   lrestart = .false.
 
 
 Description
 """""""""""
+
+Restart flag. Set to ``.true.`` when restarting from a previous exploration.
 
 
 Unexpected behavior

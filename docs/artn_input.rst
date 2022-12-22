@@ -22,6 +22,7 @@ All parameters available in pARTn are listed below, grouped by the part of ARTn 
    params/lrestart
    params/lpush_final
    params/lmove_nextmin
+   params/zseed
 
 
 .. toctree::

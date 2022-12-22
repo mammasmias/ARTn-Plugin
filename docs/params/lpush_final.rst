@@ -8,7 +8,7 @@ Syntax
 
    lpush_final = arg
 
-* arg = integer
+* arg = logical
 
 
 Default
@@ -16,11 +16,13 @@ Default
 
 .. code-block:: bash
 
-   lpush_final = 3
+   lpush_final = .true.
 
 
 Description
 """""""""""
+
+When ``.true.``, perform relaxation to both minima adjacent to the saddle point.
 
 
 Unexpected behavior

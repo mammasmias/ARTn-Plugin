@@ -8,7 +8,7 @@ Syntax
 
    lmove_nextmin = arg
 
-* arg = integer
+* arg = logical
 
 
 Default
@@ -16,11 +16,13 @@ Default
 
 .. code-block:: bash
 
-   lmove_nextmin = 3
+   lmove_nextmin = .false.
 
 
 Description
 """""""""""
+
+Reset the configuration to that of the final minimum when the ARTn algorithm is finished.
 
 
 Unexpected behavior

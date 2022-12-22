@@ -8,7 +8,7 @@ Syntax
 
    verbose = arg
 
-* arg = integer
+* arg = integer, possible values: 0, 1, 2
 
 
 Default
@@ -21,6 +21,11 @@ Default
 
 Description
 """""""""""
+
+level of verbosity:
+ - value 0:
+ - value 1:
+ - value 2:
 
 
 Unexpected behavior
