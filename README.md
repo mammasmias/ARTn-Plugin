@@ -3,7 +3,7 @@
 This is a working repository of the current version of the plugin-ARTn; currently it can be used with Quantum ESPRESSO and LAMMPS.
 This code has been developed in collaboration by Matic Poberznik, Miha Gunde, Nicolas Salles and Antoine Jay.
 
-The repository is developed on [GitLab](https://gitlab.com/mammasmias/artn-plugin) and a copy of the `master` branch is on [GitHub](https://github.com/mammasmias/ARTn-Plugin).
+The repository is developed on [GitLab](https://gitlab.com/mammasmias/artn-plugin).
 Please post your issue(s) on [GitLab](https://gitlab.com/mammasmias/artn-plugin).
 
 <img src="./.extra/ARTn_workflow-1.png" alt="ARTn-Plugin Work Flow" width="400" size="auto" />
